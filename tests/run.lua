@@ -71,6 +71,12 @@ local ns = mock.LoadAddon("SpecSage", FILES, "SpecSage")
 
 _G.print = realPrint
 
+-- The slash-command tests further down replace ns.Codex with bare stand-in
+-- tables (and finally nil) to exercise Commands.lua's "Codex not loaded"
+-- fallback. Keep a handle on the real UI/Codex.lua module here so the Codex
+-- section near the end of this file can restore it.
+local RealCodex = ns.Codex
+
 -- Record every section the modules render, without touching production code.
 local rendered = {}
 local realSetSection = ns.UI.SetSection
@@ -920,6 +926,260 @@ local survived = pcall(function()
     end
 end)
 check(survived, "50 ticker cycles run without error")
+
+--------------------------------------------------------------------------------
+section("Loadouts module (Modules/Loadouts.lua)")
+--------------------------------------------------------------------------------
+
+local LoadoutsModule = ns:GetModule("Loadouts")
+check(LoadoutsModule ~= nil, "Loadouts module registered at load time")
+
+-- Uses a synthetic specID (9401), the same >=9000 convention the GuideStore
+-- tests above use, so this cannot collide with a shipped class guide's spec.
+check(#LoadoutsModule:GetForSpec(9401) == 0, "GetForSpec returns an empty list for a spec with nothing saved")
+check(ns.db.loadouts[9401] == nil, "reading an empty spec does not create clutter in the saved variables")
+
+do
+    local ok, err = LoadoutsModule:Add(9401, "", "Raid", "SomeExportString")
+    check(ok == false, "Add rejects an empty name", err)
+end
+
+do
+    local ok, err = LoadoutsModule:Add(9401, "   ", "Raid", "SomeExportString")
+    check(ok == false, "Add rejects a whitespace-only name", err)
+end
+
+do
+    local ok, err = LoadoutsModule:Add(9401, "My Build", "Raid", "")
+    check(ok == false, "Add rejects an empty export string", err)
+end
+
+do
+    local ok, err = LoadoutsModule:Add("not-a-number", "My Build", "Raid", "ExportABC")
+    check(ok == false, "Add rejects a non-number specID", err)
+end
+
+do
+    local ok, entry = LoadoutsModule:Add(9401, "  Raid Build  ", "Raid", "ExportABC")
+    check(ok == true, "Add accepts a valid loadout")
+    check(entry.name == "Raid Build", "Add trims surrounding whitespace from the name", entry.name)
+    check(entry.category == "Raid", "Add keeps a valid category", entry.category)
+end
+
+do
+    local ok, entry = LoadoutsModule:Add(9401, "Mythic+ Build", "NotARealCategory", "ExportDEF")
+    check(ok == true, "Add accepts an invalid category rather than rejecting the whole entry")
+    check(entry.category == "Other", "an invalid category falls back to Other", entry.category)
+end
+
+local savedList = LoadoutsModule:GetForSpec(9401)
+check(#savedList == 2, "both loadouts round-trip through GetForSpec", #savedList)
+check(savedList[1].name == "Raid Build" and savedList[2].name == "Mythic+ Build",
+    "loadouts keep registration order")
+check(ns.db.loadouts[9401] == savedList, "GetForSpec returns the live saved-variable table once one exists")
+
+check(LoadoutsModule:Delete(9401, 5) == false, "Delete rejects an out-of-range index")
+check(LoadoutsModule:Delete(9999, 1) == false, "Delete on a spec with nothing saved returns false rather than erroring")
+
+do
+    local ok = LoadoutsModule:Delete(9401, 1)
+    check(ok == true, "Delete removes the loadout at the given index")
+    local remaining = LoadoutsModule:GetForSpec(9401)
+    check(#remaining == 1 and remaining[1].name == "Mythic+ Build",
+        "the remaining loadout shifts into place", remaining[1] and remaining[1].name)
+end
+
+-- GetSpecialization()=2 -> GetSpecializationInfo(2) returns specID 252 in
+-- the mock (see wow_mock.lua); this is the same value Stats.lua's own
+-- primary-stat lookup already depends on.
+check(LoadoutsModule:GetCurrentSpecID() == 252, "GetCurrentSpecID reads the player's current spec from the mock",
+    LoadoutsModule:GetCurrentSpecID())
+
+check(LoadoutsModule:ExportCurrent() == "SpecSage-mock-export-string",
+    "ExportCurrent reads the mock's export string via the C_Traits fallback chain", LoadoutsModule:ExportCurrent())
+
+do
+    -- No active talent config: the fallback chain must degrade to nil
+    -- rather than erroring.
+    local realGetActiveConfigID = C_ClassTalents.GetActiveConfigID
+    C_ClassTalents.GetActiveConfigID = function() return nil end
+    check(LoadoutsModule:ExportCurrent() == nil, "ExportCurrent returns nil with no active talent config")
+    C_ClassTalents.GetActiveConfigID = realGetActiveConfigID
+end
+
+do
+    -- A client with no talent-loadout API at all (e.g. Classic) must not
+    -- error either.
+    local realC_ClassTalents = C_ClassTalents
+    C_ClassTalents = nil
+    check(LoadoutsModule:ExportCurrent() == nil, "ExportCurrent returns nil without C_ClassTalents at all")
+    C_ClassTalents = realC_ClassTalents
+end
+
+--------------------------------------------------------------------------------
+section("Notes module (Modules/Notes.lua)")
+--------------------------------------------------------------------------------
+
+local NotesModule = ns:GetModule("Notes")
+check(NotesModule ~= nil, "Notes module registered at load time")
+
+check(NotesModule:Get(9402) == "", "Get returns an empty string for a spec with no saved note")
+check(ns.db.notes[9402] == nil, "reading an unset note does not create a saved-variable entry")
+
+check(NotesModule:Set(9402, "Remember trinket swap at 30% add health.") == true, "Set accepts a real note")
+check(NotesModule:Get(9402) == "Remember trinket swap at 30% add health.", "Get round-trips the saved note")
+
+check(NotesModule:Set(9402, "   ") == true, "Set accepts whitespace-only text")
+check(NotesModule:Get(9402) == "", "whitespace-only text reads back as empty", NotesModule:Get(9402))
+check(ns.db.notes[9402] == nil, "whitespace-only text is stored as nil, not an empty string")
+
+NotesModule:Set(9402, "Second note.")
+NotesModule:Set(9402, "")
+check(ns.db.notes[9402] == nil, "an empty string also clears the saved note")
+
+check(NotesModule:Set("not-a-number", "text") == false, "Set rejects a non-number specID")
+check(NotesModule:Get("not-a-number") == "", "Get returns empty for a non-number specID rather than erroring")
+
+--------------------------------------------------------------------------------
+section("Codex (UI/Codex.lua)")
+--------------------------------------------------------------------------------
+
+-- Restore the real module the slash-command tests replaced with stand-ins.
+ns.Codex = RealCodex
+local Codex = ns.Codex
+
+check(Codex ~= nil, "Codex module registered at load time")
+check(type(Codex.Toggle) == "function" and type(Codex.Open) == "function" and type(Codex.IsShown) == "function",
+    "Codex exposes Toggle/Open/IsShown")
+check(Codex:IsShown() == false, "Codex starts hidden with no frame built yet")
+
+Codex:Toggle()
+check(Codex.frame ~= nil, "Toggle builds the frame lazily on first use, not at load")
+check(Codex:IsShown() == true, "Toggle shows the frame")
+check(Codex.selectedClass ~= nil, "first-ever open defaults to a class", Codex.selectedClass)
+check(Codex.selectedClass == "DEATHKNIGHT", "first-ever open defaults to the player's own class (per UnitClass in the mock)",
+    Codex.selectedClass)
+check(Codex.selectedSpecID == 252, "first-ever open defaults to the player's own current spec", Codex.selectedSpecID)
+
+Codex:Toggle()
+check(Codex:IsShown() == false, "a second Toggle hides the frame")
+Codex:Toggle()
+check(Codex:IsShown() == true, "a third Toggle shows it again, keeping the prior selection")
+
+-- Open() selects an explicit class/spec regardless of what was open before.
+Codex:Open("WARRIOR", 72)
+check(Codex.selectedClass == "WARRIOR", "Open selects the requested class")
+check(Codex.selectedSpecID == 72, "Open selects the requested spec")
+check(Codex:IsShown() == true, "Open leaves the frame shown")
+
+local TAB_NAMES = { "Overview", "Stats", "Rotation", "Cooldowns", "Consumables", "Loadouts", "Notes" }
+
+-- Tab switching must render every tab without error for a spec with real
+-- guide data (Warrior Fury, spec 72 - see Data/Guides_Warrior.lua).
+for _, tabName in ipairs(TAB_NAMES) do
+    local ok, err = pcall(function() Codex:SelectTab(tabName) end)
+    check(ok, "tab " .. tabName .. " renders without error for a spec WITH guide data (Warrior/72)", err)
+end
+check(Codex.activeTab == "Notes", "SelectTab updates the active tab", Codex.activeTab)
+
+-- ...and for a spec with no guide registered at all.
+check(ns.GuideStore:GetGuide(424242) == nil, "sanity check: specID 424242 has no guide registered")
+Codex:Open("WARRIOR", 424242)
+for _, tabName in ipairs(TAB_NAMES) do
+    local ok, err = pcall(function() Codex:SelectTab(tabName) end)
+    check(ok, "tab " .. tabName .. " renders without error for a spec WITHOUT guide data", err)
+end
+
+-- Stats tab must not error whether or not the viewed spec is the player's
+-- own (252); the live-value lookup only applies to the player's own spec.
+Codex:Open("DEATHKNIGHT", 252)
+check(pcall(function() Codex:SelectTab("Stats") end), "Stats tab renders for the player's own spec")
+Codex:Open("WARRIOR", 71) -- Arms: a real, different spec
+check(pcall(function() Codex:SelectTab("Stats") end), "Stats tab renders for a spec that is not the player's own")
+
+-- The class rail lists all 13 classes, matching GuideStore:GetClasses().
+for _, entry in ipairs(ns.GuideStore:GetClasses()) do
+    check(Codex.classButtons[entry.token] ~= nil, "class rail has a button for " .. entry.token)
+end
+
+--------------------------------------------------------------------------------
+section("Codex: Loadouts tab")
+--------------------------------------------------------------------------------
+
+Codex:Open("WARRIOR", 72)
+Codex:SelectTab("Loadouts")
+
+local beforeCount = #LoadoutsModule:GetForSpec(72)
+
+Codex:ShowAddDialog("TestImportString123")
+check(Codex.addDialog:IsShown(), "Save/Add opens the Add-from-string dialog")
+check(Codex.addImportBox:GetText() == "TestImportString123",
+    "the dialog prefills the import string when one is given (as Save current would)")
+
+Codex.addNameBox:SetText("My Mythic+ Build")
+Codex.addCategoryButton:GetScript("OnClick")() -- cycle the category away from its "Other" default
+Codex:OnAddDialogSave()
+
+check(not Codex.addDialog:IsShown(), "saving closes the Add dialog")
+local afterAdd = LoadoutsModule:GetForSpec(72)
+check(#afterAdd == beforeCount + 1, "saving from the Add dialog stores exactly one new loadout", #afterAdd)
+check(afterAdd[#afterAdd].name == "My Mythic+ Build", "the saved loadout keeps the entered name")
+check(afterAdd[#afterAdd].export == "TestImportString123", "the saved loadout keeps the entered import string")
+check(afterAdd[#afterAdd].category ~= "Other", "cycling the category button changed it away from the default",
+    afterAdd[#afterAdd].category)
+
+local savedRow = Codex.loadoutRowPool[#afterAdd]
+check(savedRow ~= nil, "the newly saved loadout has a row in the Loadouts tab")
+
+savedRow.copyButton:GetScript("OnClick")()
+check(Codex.copyDialog:IsShown(), "Copy opens a dialog")
+check(Codex.copyBox:GetText() == "TestImportString123", "the Copy dialog is populated with the loadout's export string")
+
+-- Delete is a two-click confirm: the first click arms it, the second removes it.
+local deleteButton = savedRow.deleteButton
+local countBeforeDelete = #LoadoutsModule:GetForSpec(72)
+
+deleteButton:GetScript("OnClick")(deleteButton)
+check(deleteButton.armed == true, "the first Delete click arms the confirm")
+check(#LoadoutsModule:GetForSpec(72) == countBeforeDelete, "the first Delete click does not remove anything yet")
+
+deleteButton:GetScript("OnClick")(deleteButton)
+check(#LoadoutsModule:GetForSpec(72) == countBeforeDelete - 1, "the second Delete click removes the loadout")
+
+-- "Save current" is only offered for the player's own spec.
+Codex:Open("DEATHKNIGHT", 252) -- the player's own spec, per the mock
+Codex:SelectTab("Loadouts")
+check(Codex.loadoutButtons.save:IsShown(), "Save current is shown while viewing the player's own spec")
+
+Codex:Open("WARRIOR", 71) -- not the player's own spec
+Codex:SelectTab("Loadouts")
+check(not Codex.loadoutButtons.save:IsShown(), "Save current is hidden while viewing another spec")
+
+--------------------------------------------------------------------------------
+section("Codex: Notes tab")
+--------------------------------------------------------------------------------
+
+Codex:Open("WARRIOR", 72)
+Codex:SelectTab("Notes")
+check(Codex.notesBox ~= nil, "the Notes tab builds an editbox")
+check(Codex.notesBox:GetText() == NotesModule:Get(72), "the Notes tab loads the spec's saved note")
+
+Codex.notesBox:SetText("Watch for the add-phase trinket swap.")
+Codex.notesBox:GetScript("OnEditFocusLost")(Codex.notesBox)
+check(NotesModule:Get(72) == "Watch for the add-phase trinket swap.", "losing focus saves the note")
+
+Codex.notesBox:SetText("Saved on window close.")
+Codex.frame:GetScript("OnHide")(Codex.frame)
+check(NotesModule:Get(72) == "Saved on window close.", "the Codex frame's OnHide also saves the open note")
+
+--------------------------------------------------------------------------------
+section("Codex: close")
+--------------------------------------------------------------------------------
+
+if not Codex:IsShown() then Codex:Toggle() end
+check(Codex:IsShown() == true, "Codex is shown before the final close check")
+Codex:Toggle()
+check(Codex:IsShown() == false, "Toggle closes the Codex")
 
 --------------------------------------------------------------------------------
 

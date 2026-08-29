@@ -11,6 +11,7 @@ globals = {
     "SpecSageDB",
     "SpecSageCharDB",
     "SpecSageOverlayFrame",
+    "SpecSageCodexFrame",
     "SLASH_SPECSAGE1",
     "SLASH_SPECSAGE2",
     "SlashCmdList",
@@ -35,7 +36,7 @@ read_globals = {
     "CreateSettingsListSectionHeaderInitializer", "CreateSettingsButtonInitializer",
 
     -- Unit and character info
-    "UnitGUID", "UnitStat", "UnitArmor", "UnitHealth", "UnitHealthMax", "InCombatLockdown",
+    "UnitGUID", "UnitStat", "UnitArmor", "UnitHealth", "UnitHealthMax", "UnitClass", "InCombatLockdown",
     "GetAverageItemLevel", "GetCritChance", "GetSpellCritChance", "GetRangedCritChance",
     "GetHaste", "GetMasteryEffect", "GetMastery",
     "GetCombatRating", "GetCombatRatingBonus", "GetVersatilityBonus",
@@ -54,5 +55,8 @@ read_globals = {
     "CR_CRIT_MELEE", "CR_CRIT_SPELL", "CR_HASTE_MELEE", "CR_HASTE_SPELL", "CR_MASTERY",
 
     -- Misc
-    "GetTime", "format", "strjoin", "tostringall", "bit",
+    "GetTime", "format", "strjoin", "tostringall", "bit", "tinsert", "tremove",
+
+    -- Codex: class rail colours/icons, and the talent-loadout export surface.
+    "RAID_CLASS_COLORS", "CLASS_ICON_TCOORDS",
 }

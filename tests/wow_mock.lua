@@ -27,6 +27,8 @@ end
 
 format = string.format
 strjoin = function(sep, ...) return table.concat({ ... }, sep) end
+tinsert = table.insert
+tremove = table.remove
 
 function tostringall(...)
     local out, count = {}, select("#", ...)
@@ -386,6 +388,52 @@ function GetClassInfo(classID)
     return entry.name, entry.token, entry.id
 end
 
+-- The Codex defaults to the player's own class/spec on first open. Kept in
+-- sync with mock.specializations[252] below (Death Knight) so that default
+-- lands on a spec the mock actually knows about.
+function UnitClass(unit)
+    if unit ~= "player" then return nil end
+    return "Death Knight", "DEATHKNIGHT", 6
+end
+
+-- Real client globals the Codex's class rail reads directly (not wrapped in
+-- a namespace, so they must exist as plain globals here too). Colours are
+-- close to Blizzard's but not pixel-exact — nothing in the addon depends on
+-- the exact channel values, only on every class token resolving to *a* colour.
+RAID_CLASS_COLORS = {
+    WARRIOR     = { r = 0.78, g = 0.61, b = 0.43 },
+    PALADIN     = { r = 0.96, g = 0.55, b = 0.73 },
+    HUNTER      = { r = 0.67, g = 0.83, b = 0.45 },
+    ROGUE       = { r = 1.00, g = 0.96, b = 0.41 },
+    PRIEST      = { r = 1.00, g = 1.00, b = 1.00 },
+    DEATHKNIGHT = { r = 0.77, g = 0.12, b = 0.23 },
+    SHAMAN      = { r = 0.00, g = 0.44, b = 0.87 },
+    MAGE        = { r = 0.41, g = 0.80, b = 0.94 },
+    WARLOCK     = { r = 0.58, g = 0.51, b = 0.79 },
+    MONK        = { r = 0.00, g = 1.00, b = 0.59 },
+    DRUID       = { r = 1.00, g = 0.49, b = 0.04 },
+    DEMONHUNTER = { r = 0.64, g = 0.19, b = 0.79 },
+    EVOKER      = { r = 0.20, g = 0.58, b = 0.50 },
+}
+
+-- Texture coordinates into Interface\GLUES\CHARACTERCREATE\UI-CHARACTERCREATE-CLASSES,
+-- the same class-icon atlas real WoW exposes this global for.
+CLASS_ICON_TCOORDS = {
+    WARRIOR     = { 0, 0.25, 0, 0.25 },
+    MAGE        = { 0.25, 0.49609375, 0, 0.25 },
+    ROGUE       = { 0.49609375, 0.7421875, 0, 0.25 },
+    DRUID       = { 0.7421875, 0.98828125, 0, 0.25 },
+    HUNTER      = { 0, 0.25, 0.25, 0.5 },
+    SHAMAN      = { 0.25, 0.49609375, 0.25, 0.5 },
+    PRIEST      = { 0.49609375, 0.7421875, 0.25, 0.5 },
+    WARLOCK     = { 0.7421875, 0.98828125, 0.25, 0.5 },
+    PALADIN     = { 0, 0.25, 0.5, 0.75 },
+    DEATHKNIGHT = { 0.25, 0.49609375, 0.5, 0.75 },
+    MONK        = { 0.49609375, 0.7421875, 0.5, 0.75 },
+    DEMONHUNTER = { 0.7421875, 0.98828125, 0.5, 0.75 },
+    EVOKER      = { 0, 0.25, 0.75, 1.0 },
+}
+
 -- A handful of specializations, enough to exercise the Codex/GuideStore
 -- integration without hand-typing all 39 retail specs into the mock.
 mock.specializations = {
@@ -426,6 +474,9 @@ C_Traits = {
         return { id = configID, name = "Active" }
     end,
     GenerateInspectImportString = function() return mock.exportString end,
+    -- The current retail export API; Modules/Loadouts.lua tries this before
+    -- falling back to GenerateInspectImportString, so both are defined here.
+    GenerateImportString = function() return mock.exportString end,
 }
 
 --------------------------------------------------------------------------------
