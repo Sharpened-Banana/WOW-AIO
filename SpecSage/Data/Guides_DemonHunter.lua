@@ -63,6 +63,16 @@ ns.GuideStore:RegisterSpec("DEMONHUNTER", 577, {
     { slot = "Enchants", text = "Max-rank Agility enchants on cloak and rings" },
     { slot = "Gems", text = "Agility/secondary stat gems in available sockets" },
   },
+  gear = {
+    { slot = "Head", text = "One of your tier-set slots — the four-piece bonus reinforces your Fury/burst-window engine, worth prioritizing" },
+    { slot = "Chest", text = "A large stat budget and often your other tier piece — push Critical Strike first for Chaos Strike/Blade Dance payoff" },
+    { slot = "Neck", text = "Usually carries a socket — favor Critical Strike, then Haste" },
+    { slot = "Ring", text = "No set bonus attached — use rings to round out Critical Strike and Haste" },
+    { slot = "Trinket", text = "One on-use trinket timed with Metamorphosis/Eye Beam so its burst overlaps your biggest window" },
+    { slot = "Trinket", text = "A passive Agility stat-stick trinket to keep pressure up between cooldowns" },
+    { slot = "Weapon", text = "Warglaives (fast one-handers) fit Havoc's dual-wield Fury generation — take the pair with the highest weapon damage" },
+    { slot = "Off-hand", text = "Match your off-hand glaive's secondary stats to your main-hand's Critical Strike lean" },
+  },
   tips = {
     "Don't let Fury sit capped — that's wasted generation from Demon's Bite/Fel Rush.",
     "Use Vengeful Retreat/Fel Rush proactively for both Fury and repositioning, not only when out of range.",
@@ -124,6 +134,16 @@ ns.GuideStore:RegisterSpec("DEMONHUNTER", 581, {
     { slot = "Weapon", text = "Ironclaw Whetstone or the current-tier weapon enchant" },
     { slot = "Enchants", text = "Max-rank Stamina/Agility enchants on cloak and rings" },
     { slot = "Gems", text = "Stamina/Agility gems in available sockets" },
+  },
+  gear = {
+    { slot = "Head", text = "One of your tier-set slots — the four-piece bonus strengthens your Pain/Soul Cleave self-healing loop, worth prioritizing" },
+    { slot = "Chest", text = "A large stat budget and often your other tier piece — balance Stamina for your health pool against Versatility for flat mitigation" },
+    { slot = "Neck", text = "Usually carries a socket — lean Versatility first, then Mastery" },
+    { slot = "Ring", text = "No set bonus attached — use rings to fill out Versatility and Mastery wherever your gear is light" },
+    { slot = "Trinket", text = "One trinket built around avoidance, armor, or a defensive proc rather than pure Agility, to smooth out incoming spikes" },
+    { slot = "Trinket", text = "A second trinket that adds Stamina or a passive mitigation effect so Soul Cleave healing isn't your only cushion" },
+    { slot = "Weapon", text = "Warglaives fit Vengeance's dual-wield Pain generation — take the pair with the highest weapon damage" },
+    { slot = "Waist", text = "An easy slot to fill in an extra gem toward whichever secondary — Versatility or Mastery — your build is short on" },
   },
   tips = {
     "Use Demon Spikes proactively before damage lands — its charges regenerate, so don't hoard them.",
