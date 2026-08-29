@@ -704,6 +704,73 @@ function mock.ClearAuras()
 end
 
 --------------------------------------------------------------------------------
+-- Items (BiS checklist)
+--
+-- itemID-keyed fixtures a test can populate before exercising Modules/BiS.lua
+-- or the Codex's BiS tab. Only the fields those actually read (name, quality)
+-- are modelled; the rest of GetItemInfo's real ~11-value return is filled
+-- with a placeholder so the shape still matches what the addon unpacks.
+--------------------------------------------------------------------------------
+
+mock.items = {
+    [19019] = { name = "Thunderfury, Blessed Blade of the Windseeker", quality = 4 },
+    [42] = { name = "Champion's Dreadful Gladiator's Pendant of Alacrity", quality = 3 },
+}
+
+C_Item = {
+    GetItemInfo = function(itemID)
+        local item = mock.items[itemID]
+        if not item then return nil end
+        return item.name, item.link or ("item:" .. itemID), item.quality or 1, item.level or 1,
+            item.reqLevel or 1, item.itemType or "Miscellaneous", item.subType or "Junk",
+            item.stackCount or 1, item.equipLoc or "", item.texture or 0, item.sellPrice or 0
+    end,
+}
+
+-- Approximates Blizzard's real item-quality colours (0=Poor..5=Legendary is
+-- all the Codex needs to colour a BiS entry's name by).
+ITEM_QUALITY_COLORS = {
+    [0] = { r = 0.61, g = 0.61, b = 0.61 },
+    [1] = { r = 1.00, g = 1.00, b = 1.00 },
+    [2] = { r = 0.12, g = 1.00, b = 0.00 },
+    [3] = { r = 0.00, g = 0.44, b = 0.87 },
+    [4] = { r = 0.64, g = 0.21, b = 0.93 },
+    [5] = { r = 1.00, g = 0.50, b = 0.00 },
+}
+
+-- Equipped items, keyed by inventory slot ID (see Modules/BiS.lua's
+-- SLOT_INVENTORY_IDS for which numbers map to which gear slot).
+mock.equipped = {}
+
+function GetInventoryItemID(unit, invSlot)
+    if unit ~= "player" then return nil end
+    return mock.equipped[invSlot]
+end
+
+-- Bag contents, keyed by bag index then slot index: mock.bags[0] = { [3] =
+-- 12345 } means bag 0 (the backpack) slot 3 holds itemID 12345. numSlots
+-- defaults to the highest configured slot index so a test does not have to
+-- set it explicitly for a simple one-item bag.
+mock.bags = {}
+
+C_Container = {
+    GetContainerNumSlots = function(bag)
+        local contents = mock.bags[bag]
+        if not contents then return 0 end
+        if contents.numSlots then return contents.numSlots end
+        local highest = 0
+        for slotIndex in pairs(contents) do
+            if type(slotIndex) == "number" and slotIndex > highest then highest = slotIndex end
+        end
+        return highest
+    end,
+    GetContainerItemID = function(bag, slotIndex)
+        local contents = mock.bags[bag]
+        return contents and contents[slotIndex] or nil
+    end,
+}
+
+--------------------------------------------------------------------------------
 -- Tooltip
 --
 -- Records what was rendered so tests can assert on tooltip content.
@@ -718,6 +785,7 @@ function GameTooltip:SetOwner(owner, anchor)
     self.owner, self.anchor = owner, anchor
     self.lines = {}
     self.spellID = nil
+    self.itemID = nil
 end
 
 function GameTooltip:ClearLines() self.lines = {} end
@@ -734,6 +802,12 @@ function GameTooltip:SetSpellByID(spellID)
     self.spellID = spellID
     local spell = mock.spells[spellID]
     table.insert(self.lines, { left = spell and spell.name or ("Spell " .. spellID) })
+end
+
+function GameTooltip:SetItemByID(itemID)
+    self.itemID = itemID
+    local item = mock.items[itemID]
+    table.insert(self.lines, { left = item and item.name or ("Item " .. tostring(itemID)) })
 end
 
 function GameTooltip:Show() self.shown = true end

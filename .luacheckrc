@@ -31,7 +31,7 @@ globals = {
 read_globals = {
     -- Namespaces
     "C_AddOns", "C_Spell", "C_SpecializationInfo", "C_Timer", "C_UnitAuras",
-    "C_ClassTalents", "C_Traits",
+    "C_ClassTalents", "C_Traits", "C_Item", "C_Container",
     "AuraUtil", "Settings", "MinimalSliderWithSteppersMixin",
 
     -- Frames and widgets
@@ -49,7 +49,8 @@ read_globals = {
     "GetLifesteal", "GetAvoidance", "GetSpeed",
     "GetSpecialization", "GetSpecializationInfo", "GetSpecializationInfoByID",
     "GetSpellInfo", "GetSpellTexture", "GetSpellCooldown", "GetAddOnMetadata",
-    "GetNumClasses", "GetClassInfo",
+    "GetNumClasses", "GetClassInfo", "GetItemInfo", "GetInventoryItemID",
+    "GetContainerNumSlots", "GetContainerItemID", "ITEM_QUALITY_COLORS",
 
     -- Combat log
     "CombatLogGetCurrentEventInfo",

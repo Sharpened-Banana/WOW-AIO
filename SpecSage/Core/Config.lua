@@ -70,6 +70,10 @@ local DEFAULTS = {
 
     -- Free-text notes, keyed by specID.
     notes = {},
+
+    -- Personal BiS checklist entries, keyed by specID: { {slot=, itemID=,
+    -- name=, note=}, ... }. Curated data like loadouts and notes.
+    bis = {},
 }
 
 -- Anything class- or spec-specific belongs here rather than in the shared DB:
@@ -128,8 +132,8 @@ function ns.StatsShown()
 end
 
 -- Restores display settings and this character's stat rows. The watch list,
--- loadouts and notes are deliberately kept: they are curated data, not a
--- setting.
+-- loadouts, notes and BiS checklist are deliberately kept: they are curated
+-- data, not a setting.
 function ns.ResetConfig()
     -- Close pins against the old table before it is replaced, or their frames
     -- would linger on screen with nothing backing them.
@@ -137,11 +141,12 @@ function ns.ResetConfig()
         ns.Tooltips:UnpinAll()
     end
 
-    local loadouts, notes = SpecSageDB.loadouts, SpecSageDB.notes
+    local loadouts, notes, bis = SpecSageDB.loadouts, SpecSageDB.notes, SpecSageDB.bis
 
     SpecSageDB = CopyDefaults({}, DEFAULTS)
     SpecSageDB.loadouts = loadouts
     SpecSageDB.notes = notes
+    SpecSageDB.bis = bis
     ns.db = SpecSageDB
 
     ns.chardb.statsShow = CopyDefaults({}, CHAR_DEFAULTS.statsShow)

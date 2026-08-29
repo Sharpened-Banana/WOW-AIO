@@ -55,6 +55,7 @@ local FILES = {
     "Modules\\Combat.lua",
     "Modules\\Procs.lua",
     "Modules\\Loadouts.lua",
+    "Modules\\BiS.lua",
     "Modules\\Notes.lua",
     "Core\\Options.lua",
     "Core\\Commands.lua",
@@ -272,6 +273,65 @@ do
     end)
     check(ok, "RegisterSpec with an unknown class token does not error", result)
     check(result == false, "unknown class token is rejected")
+end
+
+-- gear is optional (DESIGN.md's "BiS / Gear" section) — a guide with no gear
+-- key at all must still be accepted, the same as every guide before v1.1.
+do
+    local guide = { specName = "No Gear Spec", role = "DAMAGER" }
+    local ok = GuideStore:RegisterSpec("MAGE", 9004, guide)
+    check(ok == true, "RegisterSpec accepts a guide with no gear key at all")
+    check(GuideStore:GetGuide(9004).gear == nil, "a guide with no gear key round-trips with gear still nil")
+end
+
+-- A valid gear array is accepted and round-trips, including a repeated slot
+-- (DESIGN.md explicitly allows "two Trinket lines").
+do
+    local guide = {
+        specName = "Gear Spec",
+        role = "DAMAGER",
+        gear = {
+            { slot = "Head", text = "Tier set piece" },
+            { slot = "Trinket", text = "On-use burst trinket" },
+            { slot = "Trinket", text = "Passive stat stick" },
+            { slot = "Weapon", text = "Highest item level" },
+        },
+    }
+    local ok = GuideStore:RegisterSpec("MAGE", 9005, guide)
+    check(ok == true, "RegisterSpec accepts a valid gear array")
+    local roundTripped = GuideStore:GetGuide(9005)
+    check(roundTripped ~= nil and #roundTripped.gear == 4, "round-tripped guide keeps its full gear array",
+        roundTripped and roundTripped.gear and #roundTripped.gear)
+end
+
+-- An invalid slot value is rejected (guide skipped entirely), the same
+-- validate-and-skip contract as a bad statPriority stat key.
+do
+    local badGuide = {
+        specName = "Bad Gear Spec",
+        role = "DAMAGER",
+        gear = {
+            { slot = "Head", text = "Fine" },
+            { slot = "Cape", text = "Not a real slot name" },
+        },
+    }
+    local ok, result = silently(function() return GuideStore:RegisterSpec("MAGE", 9006, badGuide) end)
+    check(ok, "RegisterSpec with a bad gear slot does not error", result)
+    check(result == false, "guide with an invalid gear slot is rejected")
+    check(GuideStore:GetGuide(9006) == nil, "guide with a bad gear slot is not stored")
+end
+
+-- Empty gear text is rejected too.
+do
+    local badGuide = {
+        specName = "Bad Gear Text Spec",
+        role = "DAMAGER",
+        gear = { { slot = "Head", text = "" } },
+    }
+    local ok, result = silently(function() return GuideStore:RegisterSpec("MAGE", 9007, badGuide) end)
+    check(ok, "RegisterSpec with empty gear text does not error", result)
+    check(result == false, "guide with empty gear text is rejected")
+    check(GuideStore:GetGuide(9007) == nil, "guide with empty gear text is not stored")
 end
 
 -- Accepts a valid guide and round-trips it through GetGuide.
@@ -963,8 +1023,15 @@ check(ns.db.locked == false, "lock then unlock leaves it unlocked")
 run("scale 99")
 check(ns.db.scale == 1.5, "out-of-range scale rejected", ns.db.scale)
 
+-- Curated data (loadouts, notes, bis) must all survive a full reset — the
+-- same guarantee Core/Config.lua's ResetConfig already gives loadouts and
+-- notes (DESIGN.md: "/sage reset all leaves SpecSageDB.bis alone").
+ns.db.bis[9601] = { { slot = "Head", itemID = 123, name = "Reset Test Item" } }
+
 run("reset all")
 check(ns.db.scale == 1.0, "reset all restores defaults", ns.db.scale)
+check(ns.db.bis[9601] ~= nil and ns.db.bis[9601][1].name == "Reset Test Item",
+    "reset all leaves SpecSageDB.bis alone, like loadouts and notes")
 
 -- /specsage is registered as an alias of /sage.
 check(SLASH_SPECSAGE1 == "/sage", "SLASH_SPECSAGE1 is /sage")
@@ -1082,6 +1149,161 @@ do
 end
 
 --------------------------------------------------------------------------------
+section("BiS module (Modules/BiS.lua)")
+--------------------------------------------------------------------------------
+
+local BiSModule = ns:GetModule("BiS")
+check(BiSModule ~= nil, "BiS module registered at load time")
+
+-- Uses a synthetic specID (9501), the same >=9000 convention the GuideStore/
+-- Loadouts tests above use, so this cannot collide with a shipped spec.
+check(#BiSModule:GetForSpec(9501) == 0, "GetForSpec returns an empty list for a spec with nothing saved")
+check(ns.db.bis[9501] == nil, "reading an empty spec does not create clutter in the saved variables")
+
+do
+    local ok, err = BiSModule:Add(9501, "NotASlot", "12345")
+    check(ok == false, "Add rejects an invalid slot", err)
+end
+
+do
+    local ok, err = BiSModule:Add(9501, "Head", "")
+    check(ok == false, "Add rejects an empty itemText", err)
+end
+
+do
+    local ok, err = BiSModule:Add("not-a-number", "Head", "12345")
+    check(ok == false, "Add rejects a non-number specID", err)
+end
+
+-- Form 1: a pasted item link — itemID and name both come straight out of
+-- the link text, no GetItemInfo lookup needed.
+do
+    local link = "|cffa335ee|Hitem:19019:0:0:0:0:0:0:0:0:0|h[Thunderfury, Blessed Blade of the Windseeker]|h|r"
+    local ok, entry = BiSModule:Add(9501, "Weapon", link)
+    check(ok == true, "Add accepts a pasted item link", entry)
+    check(entry.itemID == 19019, "item link parsing extracts the itemID", entry.itemID)
+    check(entry.name == "Thunderfury, Blessed Blade of the Windseeker",
+        "item link parsing extracts the display name", entry.name)
+    check(entry.slot == "Weapon", "the entry keeps the slot it was added under", entry.slot)
+end
+
+-- Form 2: a bare numeric itemID — name resolved via the GetItemInfo fallback
+-- chain (mock.items[42] is fixtured in tests/wow_mock.lua).
+do
+    local ok, entry = BiSModule:Add(9501, "Neck", "42")
+    check(ok == true, "Add accepts a bare numeric itemID", entry)
+    check(entry.itemID == 42, "numeric itemID is stored as a number", entry.itemID)
+    check(entry.name == "Champion's Dreadful Gladiator's Pendant of Alacrity",
+        "a cached itemID resolves its name immediately via GetItemInfo", entry.name)
+end
+
+-- A numeric itemID the item cache does not know about yet (async — the
+-- server has not handed back a name) still gets listed, per DESIGN.md, with
+-- a placeholder name rather than being rejected.
+do
+    local ok, entry = BiSModule:Add(9501, "Feet", "999999")
+    check(ok == true, "Add accepts an itemID GetItemInfo cannot resolve yet", entry)
+    check(entry.itemID == 999999, "the unresolved itemID is still stored", entry.itemID)
+    check(type(entry.name) == "string" and entry.name ~= "", "an unresolved itemID still gets a placeholder name",
+        entry.name)
+
+    -- Once the item becomes "cached" (a test fixture appears), ResolveDisplay
+    -- picks up the real name lazily, on render, per DESIGN.md.
+    mock.items[999999] = { name = "Freshly Cached Trinket", quality = 4 }
+    local resolvedName, quality = BiSModule:ResolveDisplay(entry)
+    check(resolvedName == "Freshly Cached Trinket", "ResolveDisplay re-resolves a name that became available later",
+        resolvedName)
+    check(quality == 4, "ResolveDisplay also returns the item's quality", quality)
+    check(entry.name == "Freshly Cached Trinket", "the resolved name is written back onto the entry", entry.name)
+    mock.items[999999] = nil
+end
+
+-- Form 3: a plain name — no itemID at all, still listed.
+do
+    local ok, entry = BiSModule:Add(9501, "Trinket", "Some Trinket I Read About")
+    check(ok == true, "Add accepts a plain name with no itemID", entry)
+    check(entry.itemID == nil, "a plain-name entry has no itemID", entry.itemID)
+    check(entry.name == "Some Trinket I Read About", "a plain-name entry keeps the typed name", entry.name)
+end
+
+local bisList = BiSModule:GetForSpec(9501)
+check(#bisList == 4, "all four added entries round-trip through GetForSpec", #bisList)
+check(ns.db.bis[9501] == bisList, "GetForSpec returns the live saved-variable table once one exists")
+
+-- Per-spec isolation: a second spec's list is independent.
+do
+    local ok = BiSModule:Add(9502, "Head", "Different Spec's Item")
+    check(ok == true, "Add works for a second, unrelated spec")
+    check(#BiSModule:GetForSpec(9502) == 1, "the second spec has exactly its own entry")
+    check(#BiSModule:GetForSpec(9501) == 4, "the first spec's list is untouched by the second spec's Add")
+end
+
+check(BiSModule:Delete(9501, 99) == false, "Delete rejects an out-of-range index")
+check(BiSModule:Delete(9999, 1) == false, "Delete on a spec with nothing saved returns false rather than erroring")
+
+do
+    local ok = BiSModule:Delete(9501, 1)
+    check(ok == true, "Delete removes the entry at the given index")
+    local remaining = BiSModule:GetForSpec(9501)
+    check(#remaining == 3, "the remaining entries shift into place", #remaining)
+end
+
+--------------------------------------------------------------------------------
+section("BiS module: GetStatus")
+--------------------------------------------------------------------------------
+
+-- No itemID at all: GetStatus has nothing to check against, so it reports
+-- neither equipped, owned, nor missing — just nil.
+check(BiSModule:GetStatus({ slot = "Trinket", name = "No ID" }) == nil,
+    "GetStatus returns nil for an entry with no itemID")
+check(BiSModule:GetStatus("not a table") == nil, "GetStatus returns nil rather than erroring on a non-table")
+
+mock.equipped = {}
+mock.bags = {}
+
+-- Equipped: a single-slot gear type (Head -> inventory slot 1).
+do
+    mock.equipped[1] = 55001
+    local status = BiSModule:GetStatus({ slot = "Head", itemID = 55001 })
+    check(status == "equipped", "a Head item in inventory slot 1 reports equipped", status)
+    mock.equipped[1] = nil
+end
+
+-- Equipped: Ring maps to two inventory slots (11 and 12) — the item sitting
+-- in the *second* ring slot must still be found.
+do
+    mock.equipped[12] = 55002
+    local status = BiSModule:GetStatus({ slot = "Ring", itemID = 55002 })
+    check(status == "equipped", "a Ring item equipped in the second ring slot (12) still reports equipped", status)
+    mock.equipped[12] = nil
+end
+
+-- Owned: the item is in a bag, not equipped anywhere.
+do
+    mock.bags[0] = { [3] = 55003 }
+    local status = BiSModule:GetStatus({ slot = "Trinket", itemID = 55003 })
+    check(status == "owned", "an item sitting in a bag reports owned", status)
+    mock.bags[0] = nil
+end
+
+-- Missing: neither equipped nor in any bag.
+do
+    local status = BiSModule:GetStatus({ slot = "Legs", itemID = 55004 })
+    check(status == "missing", "an item that is neither equipped nor in bags reports missing", status)
+end
+
+-- Weapon/Off-hand map to the main-hand/off-hand inventory slots (16/17).
+do
+    mock.equipped[17] = 55005
+    local status = BiSModule:GetStatus({ slot = "Off-hand", itemID = 55005 })
+    check(status == "equipped", "an Off-hand item in inventory slot 17 reports equipped", status)
+    mock.equipped[17] = nil
+end
+
+mock.equipped = {}
+mock.bags = {}
+
+--------------------------------------------------------------------------------
 section("Notes module (Modules/Notes.lua)")
 --------------------------------------------------------------------------------
 
@@ -1155,7 +1377,7 @@ check(Codex.selectedClass == "WARRIOR", "Open selects the requested class")
 check(Codex.selectedSpecID == 72, "Open selects the requested spec")
 check(Codex:IsShown() == true, "Open leaves the frame shown")
 
-local TAB_NAMES = { "Overview", "Stats", "Rotation", "Cooldowns", "Consumables", "Loadouts", "Notes" }
+local TAB_NAMES = { "Overview", "Stats", "Rotation", "Cooldowns", "Consumables", "BiS", "Loadouts", "Notes" }
 
 -- Tab switching must render every tab without error for a spec with real
 -- guide data (Warrior Fury, spec 72 - see Data/Guides_Warrior.lua).
@@ -1193,6 +1415,144 @@ end
 for _, tabName in ipairs(TAB_NAMES) do
     check(Codex.tabButtons[tabName]:GetText() == tabName,
         "tab strip button '" .. tabName .. "' has a text-capable template and shows its label")
+end
+
+--------------------------------------------------------------------------------
+section("Codex: BiS tab")
+--------------------------------------------------------------------------------
+
+check(Codex.frame:GetWidth() == 984, "the widened Codex frame is 984px wide, to fit all 8 tabs without clipping",
+    Codex.frame:GetWidth())
+check(Codex.scrollChild:GetWidth() == 674, "CONTENT_WIDTH grew by the same 84px as FRAME_WIDTH",
+    Codex.scrollChild:GetWidth())
+
+do
+    -- The bug this guards: DESIGN.md's original +60 sizing left the tab
+    -- strip 16px narrower than 8 tabs at the existing 84/86 width/stride
+    -- actually need, so the last tab (Notes) rendered past the frame's own
+    -- right edge. Assert the strip's real available width fits all 8 tabs.
+    local needed = 7 * 86 + 84
+    local specRailRight = 120 + 4 + 150
+    local stripLeft = specRailRight + 8
+    local stripRight = Codex.frame:GetWidth() - 8
+    local available = stripRight - stripLeft
+    check(available >= needed, "tab strip has enough width for all 8 tabs without clipping",
+        format("available=%d needed=%d", available, needed))
+end
+
+local BiSCodexModule = ns:GetModule("BiS")
+
+local function CountShownRows(pool)
+    local n = 0
+    for _, row in ipairs(pool) do
+        if row:IsShown() then n = n + 1 end
+    end
+    return n
+end
+
+-- MAGE spec 9005 was registered in the GuideStore section above with a
+-- 4-entry gear array; opening the Codex there exercises the shipped gear
+-- guidance half of the BiS tab against real data.
+Codex:Open("MAGE", 9005)
+Codex:SelectTab("BiS")
+check(Codex.activeTab == "BiS", "SelectTab switches to the BiS tab")
+check(CountShownRows(Codex.pools.bis) == 5,
+    "the BiS tab renders one row per shipped gear entry plus the checklist header",
+    CountShownRows(Codex.pools.bis))
+
+-- MAGE spec 9004 (also registered above) has no gear key at all: the
+-- guidance half falls back to the shared NO_DATA line, same as every other
+-- tab.
+Codex:Open("MAGE", 9004)
+Codex:SelectTab("BiS")
+check(Codex.pools.bis[1]:IsShown() and Codex.pools.bis[1].text:GetText():find("no guide data", 1, true) ~= nil,
+    "a spec with no gear data renders the NO_DATA line", Codex.pools.bis[1].text:GetText())
+
+-- The Add row: cycling the slot button, typing into the editbox, and
+-- clicking Add stores a new personal checklist entry for the viewed spec.
+local beforeBiSCount = #BiSCodexModule:GetForSpec(9004)
+Codex:CycleBiSSlot()
+local cycledSlot = Codex.bisSlot
+check(Codex.bisButtons.slotButton:GetText() == cycledSlot, "cycling the slot button updates its label", cycledSlot)
+
+Codex.bisItemBox:SetText("A Test BiS Item")
+Codex:OnBiSAddClicked()
+
+local afterBiS = BiSCodexModule:GetForSpec(9004)
+check(#afterBiS == beforeBiSCount + 1, "the Add row's Add button stores exactly one new entry", #afterBiS)
+check(afterBiS[#afterBiS].name == "A Test BiS Item", "the new entry keeps the typed text as its name",
+    afterBiS[#afterBiS].name)
+check(afterBiS[#afterBiS].slot == cycledSlot, "the new entry uses the cycled slot", afterBiS[#afterBiS].slot)
+check(Codex.bisItemBox:GetText() == "", "the editbox clears itself after a successful add")
+
+-- Pressing Enter in the item editbox also adds an entry, not just the Add
+-- button.
+local beforeEnterCount = #BiSCodexModule:GetForSpec(9004)
+Codex.bisItemBox:SetText("Added Via Enter")
+Codex.bisItemBox:GetScript("OnEnterPressed")()
+check(#BiSCodexModule:GetForSpec(9004) == beforeEnterCount + 1,
+    "pressing Enter in the item editbox also adds an entry")
+
+-- Status tags: shown only for the player's own viewed spec (252, per the
+-- mock) with a resolvable itemID.
+mock.equipped = {}
+mock.bags = {}
+BiSCodexModule:Add(252, "Head", "55010")
+mock.equipped[1] = 55010
+
+Codex:Open("DEATHKNIGHT", 252)
+Codex:SelectTab("BiS")
+
+local ownList = BiSCodexModule:GetForSpec(252)
+local ownRow = Codex.bisRowPool[#ownList]
+check(ownRow ~= nil, "the checklist row for the player's own spec exists")
+check(ownRow.status:GetText() == "equipped", "an equipped item on the player's own spec shows the equipped status tag",
+    ownRow.status:GetText())
+
+-- Not the player's own spec: no status tag at all, even with a resolvable
+-- itemID.
+BiSCodexModule:Add(71, "Head", "55010")
+Codex:Open("WARRIOR", 71)
+Codex:SelectTab("BiS")
+local otherList = BiSCodexModule:GetForSpec(71)
+local otherRow = Codex.bisRowPool[#otherList]
+check(otherRow ~= nil, "the checklist row for a non-own spec exists")
+check(otherRow.status:GetText() == "", "a non-own spec's entry shows no status tag even with an itemID",
+    otherRow.status:GetText())
+
+mock.equipped = {}
+mock.bags = {}
+
+-- Delete is a two-click confirm, same as Loadouts.
+Codex:Open("MAGE", 9004)
+Codex:SelectTab("BiS")
+local deleteCountBefore = #BiSCodexModule:GetForSpec(9004)
+local firstRow = Codex.bisRowPool[1]
+firstRow.deleteButton:GetScript("OnClick")(firstRow.deleteButton)
+check(firstRow.deleteButton.armed == true, "the first Delete click arms the confirm")
+check(#BiSCodexModule:GetForSpec(9004) == deleteCountBefore, "the first Delete click does not remove anything yet")
+firstRow.deleteButton:GetScript("OnClick")(firstRow.deleteButton)
+check(#BiSCodexModule:GetForSpec(9004) == deleteCountBefore - 1, "the second Delete click removes the entry")
+
+-- Hover shows the real item tooltip via GameTooltip:SetItemByID (pcall
+-- wrapped), the same shared-tooltip approach rotation/cooldown spell icons
+-- use.
+Codex:Open("MAGE", 9005)
+Codex:SelectTab("BiS")
+BiSCodexModule:Add(9005, "Neck", "42")
+Codex:SelectTab("BiS") -- re-render to build a row for the entry just added
+local hoverRow = Codex.bisRowPool[#BiSCodexModule:GetForSpec(9005)]
+check(hoverRow ~= nil, "a row exists for the item-linked entry to hover")
+check(pcall(function() hoverRow:GetScript("OnEnter")(hoverRow) end), "hovering a BiS row does not error")
+check(GameTooltip.itemID == 42, "hovering a BiS row shows the real item tooltip via SetItemByID", GameTooltip.itemID)
+hoverRow:GetScript("OnLeave")(hoverRow)
+
+-- All 8 tabs (BiS included) still render for both a spec with data and a
+-- spec without, and the widened tab strip still builds without error.
+Codex:Open("WARRIOR", 424242)
+for _, tabName in ipairs(TAB_NAMES) do
+    local ok, err = pcall(function() Codex:SelectTab(tabName) end)
+    check(ok, "tab " .. tabName .. " still renders without error now that BiS has been added", err)
 end
 
 --------------------------------------------------------------------------------

@@ -31,6 +31,7 @@ Modules\Stats.lua
 Modules\Combat.lua
 Modules\Procs.lua
 Modules\Loadouts.lua
+Modules\BiS.lua
 Modules\Notes.lua
 Core\Options.lua
 Core\Commands.lua

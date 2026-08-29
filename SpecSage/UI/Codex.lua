@@ -42,20 +42,29 @@ local GetSpecializationInfoByID = (C_SpecializationInfo and C_SpecializationInfo
 -- and CONTENT_WIDTH set to the scroll area's real geometry (frame width minus
 -- both rails, their gaps, and the scrollbar) rather than an independent guess
 -- that used to leave ~30px of dead space on the right of every content tab.
-local FRAME_WIDTH, FRAME_HEIGHT = 900, 520
+-- FRAME_WIDTH widened to fit the BiS tab (DESIGN.md's "BiS / Gear" section)
+-- with tab button width/stride left as they are per that section. DESIGN.md
+-- specified +60 (900->960), but that only accounted for CONTENT_WIDTH's
+-- geometry chain; the tab strip is a separate chain (frame width minus both
+-- rails, their gaps, and its own 8px side margins) and 8 tabs at the
+-- existing 84/86 need 686px, which +60 alone left 16px short, clipping the
+-- last tab past the frame's right edge. +84 (900->984) covers the tab
+-- strip's real requirement with a small margin; CONTENT_WIDTH grows by the
+-- same 84px to keep its own invariant (frame width minus 310px of chrome).
+local FRAME_WIDTH, FRAME_HEIGHT = 984, 520
 local CLASS_RAIL_WIDTH = 120
 local SPEC_RAIL_WIDTH = 150
 local TITLE_HEIGHT = 26
 local TAB_HEIGHT = 24
 local TAB_BUTTON_WIDTH = 84
 local TAB_BUTTON_STRIDE = 86
-local CONTENT_WIDTH = 590
+local CONTENT_WIDTH = 674
 local PADDING = 10
 local LINE_GAP = 3
 local PARAGRAPH_GAP = 6
 local GROUP_GAP = 10
 
-local TABS = { "Overview", "Stats", "Rotation", "Cooldowns", "Consumables", "Loadouts", "Notes" }
+local TABS = { "Overview", "Stats", "Rotation", "Cooldowns", "Consumables", "BiS", "Loadouts", "Notes" }
 
 local CLASS_ICON_TEXTURE = "Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES"
 local DEFAULT_CLASS_COLOR = { r = 0.8, g = 0.8, b = 0.8 }
@@ -69,6 +78,21 @@ local DEFAULT_CLASS_COLOR = { r = 0.8, g = 0.8, b = 0.8 }
 local NO_DATA_TEXT = "no guide data yet - see SpecSage/Data/Guides_<Class>.lua to add some"
 local MUTED_COLOR = { 0.55, 0.55, 0.55 }
 local HEADER_COLOR = { 0.4, 0.8, 1.0 }
+
+-- BiS tab: status-tag colours (DESIGN.md: green/yellow/grey) and the default
+-- item colour for an entry whose quality is not known yet (a plain-name
+-- entry, or an itemID GetItemInfo has not resolved yet).
+local BIS_STATUS_COLOR = {
+    equipped = { 0.2, 0.9, 0.2 },
+    owned = { 0.95, 0.85, 0.2 },
+    missing = { 0.6, 0.6, 0.6 },
+}
+local BIS_STATUS_LABEL = {
+    equipped = "equipped",
+    owned = "in bags",
+    missing = "missing",
+}
+local DEFAULT_ITEM_COLOR = { 0.8, 0.8, 0.8 }
 
 -- Data/API.lua's statPriority vocabulary, in the Codex's own display words.
 local STAT_LABELS = {
@@ -147,6 +171,16 @@ local function SpellIcon(spellID)
     end)
     if ok then return icon end
     return nil
+end
+
+-- Maps an item quality (0=Poor..5=Legendary) to its r,g,b colour, the same
+-- ITEM_QUALITY_COLORS global fallback pattern Codex.lua already uses for
+-- RAID_CLASS_COLORS. A nil quality (item link/plain-name entry, or an
+-- itemID GetItemInfo has not resolved yet) falls back to a neutral grey.
+local function ItemQualityColor(quality)
+    local entry = ITEM_QUALITY_COLORS and quality and ITEM_QUALITY_COLORS[quality]
+    if entry then return entry.r, entry.g, entry.b end
+    return DEFAULT_ITEM_COLOR[1], DEFAULT_ITEM_COLOR[2], DEFAULT_ITEM_COLOR[3]
 end
 
 -- Creates a multi-line EditBox backed by a bordered BackdropTemplate frame.
@@ -454,6 +488,239 @@ function Codex:RenderConsumables(guide)
     end
 
     self:FinishPool(pool, index, y)
+end
+
+--------------------------------------------------------------------------------
+-- BiS tab
+--
+-- Two halves sharing one scroll child: shipped gear guidance (read-only text
+-- rows, drawn into self.pools.bis the same way Consumables draws into
+-- self.pools.consumables) on top, then a divider, then the player's own
+-- interactive checklist (its own row pool, like Loadouts' loadoutRowPool)
+-- and an Add row below it. Positions continue down the same `y` cursor
+-- across both halves so nothing overlaps.
+--------------------------------------------------------------------------------
+
+local function AcquireBiSRow(pool, index, parent)
+    local row = pool[index]
+    if not row then
+        row = CreateFrame("Frame", nil, parent)
+        row:EnableMouse(true)
+
+        row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        row.text:SetJustifyH("LEFT")
+        row.text:SetPoint("LEFT", row, "LEFT", 0, 0)
+
+        row.status = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        row.status:SetJustifyH("RIGHT")
+        row.status:SetPoint("RIGHT", row, "RIGHT", -58, 0)
+
+        row.deleteButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+        row.deleteButton:SetSize(50, 18)
+        row.deleteButton:SetText("Delete")
+        row.deleteButton:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+
+        -- Real spell tooltip on hover, the same shared-GameTooltip approach
+        -- AcquireLineRow uses for rotation/cooldown spell icons ("the Codex
+        -- has no pinning" per DESIGN.md).
+        row:SetScript("OnEnter", function(self2)
+            if not self2.itemID then return end
+            pcall(function()
+                GameTooltip:SetOwner(self2, "ANCHOR_RIGHT")
+                GameTooltip:SetItemByID(self2.itemID)
+                GameTooltip:Show()
+            end)
+        end)
+        row:SetScript("OnLeave", function()
+            pcall(function() GameTooltip:Hide() end)
+        end)
+
+        pool[index] = row
+    end
+    return row
+end
+
+function Codex:EnsureBiSWidgets()
+    if self.bisButtons then return end
+
+    local parent = self.scrollChild
+
+    local slotButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+    slotButton:SetSize(90, 20)
+    slotButton:SetScript("OnClick", function() self:CycleBiSSlot() end)
+
+    local itemBox = CreateFrame("EditBox", nil, parent, "InputBoxTemplate")
+    itemBox:SetSize(300, 20)
+    itemBox:SetAutoFocus(false)
+    itemBox:SetScript("OnEscapePressed", function(self2) self2:ClearFocus() end)
+    itemBox:SetScript("OnEnterPressed", function() self:OnBiSAddClicked() end)
+
+    local addButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+    addButton:SetSize(60, 20)
+    addButton:SetText("Add")
+    addButton:SetScript("OnClick", function() self:OnBiSAddClicked() end)
+
+    self.bisButtons = { slotButton = slotButton, addButton = addButton }
+    self.bisItemBox = itemBox
+    self.bisRowPool = {}
+
+    local BiSModule = ns:GetModule("BiS")
+    self.bisSlot = (BiSModule and BiSModule.SLOT_ORDER and BiSModule.SLOT_ORDER[1]) or "Head"
+    slotButton:SetText(self.bisSlot)
+end
+
+function Codex:CycleBiSSlot()
+    local BiSModule = ns:GetModule("BiS")
+    local order = (BiSModule and BiSModule.SLOT_ORDER) or { "Head" }
+
+    local currentIndex = 1
+    for i, slot in ipairs(order) do
+        if slot == self.bisSlot then
+            currentIndex = i
+            break
+        end
+    end
+
+    self.bisSlot = order[(currentIndex % #order) + 1]
+    self.bisButtons.slotButton:SetText(self.bisSlot)
+end
+
+function Codex:OnBiSAddClicked()
+    local BiSModule = ns:GetModule("BiS")
+    local specID = self.selectedSpecID
+    if not BiSModule or not specID then return end
+
+    local itemText = self.bisItemBox:GetText()
+    local ok, err = BiSModule:Add(specID, self.bisSlot, itemText)
+    if ok then
+        self.bisItemBox:SetText("")
+        if self.activeTab == "BiS" then self:RenderActiveTab() end
+    else
+        ns.Print("could not add BiS entry: " .. tostring(err))
+    end
+end
+
+-- Same two-click confirm as Codex:OnDeleteLoadoutClicked (see its comment for
+-- why the timer callback resets to the idle label unconditionally).
+function Codex:OnDeleteBiSClicked(button, specID, index)
+    if button.armed then
+        local BiSModule = ns:GetModule("BiS")
+        BiSModule:Delete(specID, index)
+        button.armed = false
+        if self.activeTab == "BiS" then self:RenderActiveTab() end
+        return
+    end
+
+    button.armed = true
+    button:SetText("Confirm?")
+    C_Timer.After(4, function()
+        button.armed = false
+        pcall(button.SetText, button, "Delete")
+    end)
+end
+
+function Codex:RenderBiS(guide, specID)
+    self:EnsureBiSWidgets()
+    local parent, width = self.scrollChild, CONTENT_WIDTH
+    local pool = self.pools.bis
+    local y, index = -PADDING, 0
+
+    -- Shipped gear guidance (read-only, per DESIGN.md: "never a scraped item
+    -- list" — slot + our own words on what to look for).
+    local gear = guide and guide.gear
+    if not gear or #gear == 0 then
+        index = index + 1
+        y = PlaceLine(pool, index, parent, y, width, NO_DATA_TEXT, { color = MUTED_COLOR })
+    else
+        for _, entry in ipairs(gear) do
+            index = index + 1
+            y = PlaceLine(pool, index, parent, y, width, format("%s: %s", entry.slot or "?", entry.text or ""))
+        end
+    end
+
+    y = y - GROUP_GAP
+    index = index + 1
+    y = PlaceLine(pool, index, parent, y, width, "Personal Checklist", { color = HEADER_COLOR })
+    self:FinishPool(pool, index, y)
+
+    y = y - LINE_GAP
+
+    -- Personal checklist. Status tags only make sense for the player's own
+    -- viewed spec with a resolvable itemID (DESIGN.md).
+    local BiSModule = ns:GetModule("BiS")
+    local list = (BiSModule and specID) and BiSModule:GetForSpec(specID) or {}
+    local rowPool = self.bisRowPool
+    local isOwnSpec = IsPlayersSpec(specID)
+
+    if #list == 0 then
+        local empty = AcquireBiSRow(rowPool, 1, parent)
+        empty:ClearAllPoints()
+        empty:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
+        empty:SetSize(width, 18)
+        empty.text:SetText("no BiS entries yet - add one below")
+        empty.text:SetTextColor(MUTED_COLOR[1], MUTED_COLOR[2], MUTED_COLOR[3])
+        empty.status:SetText("")
+        empty.itemID = nil
+        empty.deleteButton:Hide()
+        empty:Show()
+        y = y - 20
+        HidePoolFrom(rowPool, 2)
+    else
+        for i, entry in ipairs(list) do
+            local row = AcquireBiSRow(rowPool, i, parent)
+            row:ClearAllPoints()
+            row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
+            row:SetSize(width, 18)
+
+            local displayName, quality = BiSModule:ResolveDisplay(entry)
+            local r, g, b = ItemQualityColor(quality)
+            row.text:SetText(format("[%s] %s", entry.slot or "?", displayName or entry.name or "?"))
+            row.text:SetTextColor(r, g, b)
+            row.itemID = entry.itemID
+
+            if isOwnSpec and entry.itemID then
+                local status = BiSModule:GetStatus(entry) or "missing"
+                local color = BIS_STATUS_COLOR[status] or BIS_STATUS_COLOR.missing
+                row.status:SetText(BIS_STATUS_LABEL[status] or status)
+                row.status:SetTextColor(color[1], color[2], color[3])
+            else
+                row.status:SetText("")
+            end
+
+            row.deleteButton.armed = false
+            row.deleteButton:SetText("Delete")
+            row.deleteButton:Show()
+            row.deleteButton:SetScript("OnClick", function(btn)
+                self:OnDeleteBiSClicked(btn, specID, i)
+            end)
+
+            row:Show()
+            y = y - 20
+        end
+        HidePoolFrom(rowPool, #list + 1)
+    end
+
+    y = y - GROUP_GAP
+
+    -- Add row: slot cycler + editbox + Add button, own spec or any viewed
+    -- spec (the checklist is per viewed specID, per DESIGN.md).
+    local buttons = self.bisButtons
+    buttons.slotButton:ClearAllPoints()
+    buttons.slotButton:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
+    buttons.slotButton:Show()
+
+    self.bisItemBox:ClearAllPoints()
+    self.bisItemBox:SetPoint("LEFT", buttons.slotButton, "RIGHT", 8, 0)
+    self.bisItemBox:Show()
+
+    buttons.addButton:ClearAllPoints()
+    buttons.addButton:SetPoint("LEFT", self.bisItemBox, "RIGHT", 8, 0)
+    buttons.addButton:Show()
+
+    y = y - 24
+
+    self.scrollChild:SetHeight(math.max(-y, 10))
+    pcall(self.scrollFrame.UpdateScrollChildRect, self.scrollFrame)
 end
 
 --------------------------------------------------------------------------------
@@ -782,13 +1049,22 @@ end
 -- Every simple-text pool, plus the Loadouts row pool and the Notes box, are
 -- hidden before rendering the newly active tab; only one tab's widgets are
 -- ever visible at a time, all sharing the same scroll child.
-local POOL_BY_TAB = { Overview = "overview", Stats = "stats", Rotation = "rotation", Cooldowns = "cooldowns", Consumables = "consumables" }
+local POOL_BY_TAB = { Overview = "overview", Stats = "stats", Rotation = "rotation", Cooldowns = "cooldowns", Consumables = "consumables", BiS = "bis" }
 
 function Codex:HideOtherTabWidgets(activeTab)
     for tabName, poolName in pairs(POOL_BY_TAB) do
         if tabName ~= activeTab then
             HidePoolFrom(self.pools[poolName], 1)
         end
+    end
+
+    if activeTab ~= "BiS" then
+        if self.bisButtons then
+            self.bisButtons.slotButton:Hide()
+            self.bisButtons.addButton:Hide()
+        end
+        if self.bisItemBox then self.bisItemBox:Hide() end
+        if self.bisRowPool then HidePoolFrom(self.bisRowPool, 1) end
     end
 
     if activeTab ~= "Loadouts" then
@@ -828,6 +1104,8 @@ function Codex:RenderActiveTab()
         self:RenderCooldowns(guide)
     elseif tab == "Consumables" then
         self:RenderConsumables(guide)
+    elseif tab == "BiS" then
+        self:RenderBiS(guide, specID)
     elseif tab == "Loadouts" then
         self:RenderLoadouts(specID)
     elseif tab == "Notes" then
@@ -1076,7 +1354,7 @@ function Codex:BuildContentArea()
 
     self.scrollFrame = scrollFrame
     self.scrollChild = scrollChild
-    self.pools = { overview = {}, stats = {}, rotation = {}, cooldowns = {}, consumables = {} }
+    self.pools = { overview = {}, stats = {}, rotation = {}, cooldowns = {}, consumables = {}, bis = {} }
 end
 
 function Codex:BuildFrame()
