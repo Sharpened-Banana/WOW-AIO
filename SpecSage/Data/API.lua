@@ -48,6 +48,17 @@ local VALID_STAT_KEYS = {
 
 local VALID_ROLES = { DAMAGER = true, TANK = true, HEALER = true }
 
+-- Valid `slot` values inside a guide's optional `gear` array (DESIGN.md's
+-- "BiS / Gear" section — the same 14-slot vocabulary Modules/BiS.lua's
+-- personal checklist entries are validated against, kept as an independent
+-- copy there the same way Modules/Loadouts.lua's VALID_CATEGORIES stands on
+-- its own rather than reaching into another module's internals).
+local VALID_GEAR_SLOTS = {
+    Head = true, Neck = true, Shoulder = true, Back = true, Chest = true,
+    Wrist = true, Hands = true, Waist = true, Legs = true, Feet = true,
+    Ring = true, Trinket = true, Weapon = true, ["Off-hand"] = true,
+}
+
 --------------------------------------------------------------------------------
 -- Storage
 --------------------------------------------------------------------------------
@@ -81,6 +92,29 @@ local function ValidateStatPriority(statPriority)
     return true
 end
 
+-- Optional, per DESIGN.md: shipped guides that predate v1.1 have no `gear`
+-- key at all, which must validate the same as an empty one.
+local function ValidateGear(gear)
+    if gear == nil then return true end
+    if type(gear) ~= "table" then
+        return false, "gear must be a table"
+    end
+
+    for index, entry in ipairs(gear) do
+        if type(entry) ~= "table" then
+            return false, format("gear[%d] must be a table", index)
+        end
+        if type(entry.slot) ~= "string" or not VALID_GEAR_SLOTS[entry.slot] then
+            return false, format("gear[%d] has an invalid slot '%s'", index, tostring(entry.slot))
+        end
+        if type(entry.text) ~= "string" or entry.text == "" then
+            return false, format("gear[%d] must have non-empty text", index)
+        end
+    end
+
+    return true
+end
+
 local function ValidateGuide(classToken, specID, guide)
     if type(classToken) ~= "string" or not CLASS_BY_TOKEN[classToken] then
         return false, format("unknown class token '%s'", tostring(classToken))
@@ -103,6 +137,11 @@ local function ValidateGuide(classToken, specID, guide)
     end
 
     local ok, err = ValidateStatPriority(guide.statPriority)
+    if not ok then
+        return false, "guide." .. err
+    end
+
+    ok, err = ValidateGear(guide.gear)
     if not ok then
         return false, "guide." .. err
     end
