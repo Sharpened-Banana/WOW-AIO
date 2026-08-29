@@ -155,6 +155,62 @@ is community-maintained; each entry is a sensible, conventional guideline
 (stat priorities and rotations that match the spec's long-standing design),
 not a claim of being bleeding-edge optimal.
 
+## BiS / Gear (v1.1)
+
+WoW addons have no network access at runtime, so nothing can be pulled from
+Wowhead, Method, Archon, or anywhere else in game — and item-level BiS lists
+belong to the sites that maintain them and go stale every patch. SpecSage
+therefore splits gear into two halves:
+
+**1. Shipped gear guidance** — the guide schema gains an optional `gear`
+array of slot guidance (what to look for, in our own words — stats, tier
+bonuses, trinket styles — never a scraped item list):
+
+```lua
+gear = {
+  { slot = "Head",    text = "Tier set piece — the 4-piece bonus outweighs raw item level" },
+  { slot = "Trinket", text = "One on-use Strength burst trinket to pair with cooldowns, one passive stat stick" },
+  { slot = "Weapon",  text = "Highest item level two-hander; weapon damage dominates" },
+}
+```
+
+Valid `slot` values: `Head, Neck, Shoulder, Back, Chest, Wrist, Hands,
+Waist, Legs, Feet, Ring, Trinket, Weapon, Off-hand` (validated by
+`Data/API.lua` like statPriority keys; a guide may repeat a slot, e.g. two
+Trinket lines).
+
+**2. Personal BiS checklist** (`Modules/BiS.lua`, module name "BiS") — the
+user builds their own list from whatever source they trust, and the addon
+tracks progress live:
+
+- Storage: `SpecSageDB.bis[specID]` = array of
+  `{ slot = <valid slot>, itemID = <number or nil>, name = <string>, note = <string or nil> }`.
+- API (frame-free, testable): `BiS:GetForSpec(specID)`,
+  `BiS:Add(specID, slot, itemText, note)` — `itemText` may be a pasted item
+  link (`|Hitem:12345:...|h[Name]|h`; parse the itemID and name out of it),
+  a bare numeric itemID (resolve the name via `C_Item.GetItemInfo` fallback
+  chain, which may be async — store the ID and re-resolve lazily on render),
+  or a plain name (no ID; still listed, just can't be auto-checked);
+  `BiS:Delete(specID, index)`; `BiS:GetStatus(entry)` returning `"equipped"`,
+  `"owned"` (in bags, via `C_Container.GetContainerNumSlots`/`GetContainerItemID`
+  fallback chain), or `"missing"` — only meaningful when the entry has an
+  itemID and the viewed spec is the player's; pcall-wrap container/item APIs.
+- Codex **BiS** tab: shipped gear guidance rows on top (slot label +
+  text), then a divider, then the personal checklist — each row shows slot,
+  item name (item-quality colour when known), status tag
+  (green "equipped" / yellow "in bags" / grey "missing", only for own spec
+  with itemID), a Delete button, and item `GameTooltip:SetItemByID` on
+  hover (pcall). Below: an Add row — slot dropdown/cycler + editbox
+  accepting link, itemID, or name.
+
+The Codex grows to 8 tabs: Overview | Stats | Rotation | Cooldowns |
+Consumables | BiS | Loadouts | Notes. To fit, `FRAME_WIDTH` widens to 960
+and `CONTENT_WIDTH` grows by the same 60px; tab width/stride stay as they
+are.
+
+`/sage reset all` leaves `SpecSageDB.bis` alone (curated data, like
+loadouts and notes).
+
 ## Codex window (UI/Codex.lua)
 
 - One movable, resizable-feeling frame (fixed size is fine: ~740x520),

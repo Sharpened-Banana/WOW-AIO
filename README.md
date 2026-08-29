@@ -7,6 +7,10 @@ class guides, talent loadouts, and live character tracking in one place:
   stat priority, rotation priorities, cooldowns, consumables & enchants, and
   practical tips. Opens on your own spec, but you can read up on any class —
   teammates, enemies, or the alt you are levelling.
+- **BiS & Gear** — per-spec gear guidance (what to look for in each slot),
+  plus a personal best-in-slot checklist: paste item links from whatever
+  guide site you trust and SpecSage tracks live which pieces you have
+  equipped, in your bags, or still missing.
 - **Talent Loadout Vault** — save, label, import, and export talent loadout
   strings per spec, organised by content type (Raid, Mythic+, Delves, PvP).
 - **Personal Notes** — free-text notes per spec, kept between sessions.
@@ -27,6 +31,19 @@ anyone can amend a guide or publish their own guide pack as a separate addon
 that registers into SpecSage. What ships in the box is conventional, stable
 guidance for each spec — the priorities and habits that survive patch churn —
 not week-by-week sim results.
+
+## Where BiS data comes from
+
+Nowhere, automatically — and that is deliberate. WoW addons have no network
+access, so no addon can pull Wowhead, Method, or Archon data in game; addons
+that appear to are re-shipped with scraped data every few days, and that
+data belongs to the sites that maintain it. SpecSage ships slot-by-slot
+*guidance* in its own words (which slots carry your tier set, what stats to
+look for on rings, what trinket styles suit the spec), and gives you a
+personal checklist to fill from whichever source you trust: open the BiS
+tab, pick a slot, shift-click an item link (or paste an item ID or name)
+from chat, a guide, or the dungeon journal, and SpecSage marks each entry
+equipped / in bags / missing as you gear up.
 
 ## Install
 
@@ -75,14 +92,14 @@ it, then `/sage lock` to fix it in place (locking lets clicks pass through).
 
 ## Configuration storage
 
-- `SpecSageDB` — display settings, saved talent loadouts, and per-spec notes,
-  shared across all characters.
+- `SpecSageDB` — display settings, saved talent loadouts, BiS checklists,
+  and per-spec notes, shared across all characters.
 - `SpecSageCharDB` — which overlay stats are shown and the proc watch list,
   per character, since both are class- and role-specific.
 
 `/sage reset all` restores display settings and this character's stat rows. It
-leaves loadouts, notes, and the watch list alone: that is curated data, not a
-setting.
+leaves loadouts, notes, BiS checklists, and the watch list alone: that is
+curated data, not a setting.
 
 ## Editing guide content
 
