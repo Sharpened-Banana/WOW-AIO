@@ -5,8 +5,9 @@
 
 local ADDON, ns = ...
 
+-- Reached only via ns:GetModule("Notes"); no separate ns.Notes alias (see
+-- Modules/Loadouts.lua's equivalent note).
 local Notes = ns:NewModule("Notes")
-ns.Notes = Notes
 
 -- Returns the saved note text for a spec, or "" if none is saved (never nil,
 -- so callers can hand this straight to an EditBox:SetText without a guard).

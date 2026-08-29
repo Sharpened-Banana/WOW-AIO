@@ -118,5 +118,5 @@ date. The current value is shown by `/dump select(4, GetBuildInfo())` in game.
 
 ## Credits
 
-The overlay half of SpecSage grew out of the author's earlier
-[StatOverlay](https://github.com/Sharpened-Banana/stat-overlay) addon.
+The overlay half of SpecSage grew out of the author's earlier StatOverlay
+addon, folded in here so the guides and the live tracking ship as one addon.

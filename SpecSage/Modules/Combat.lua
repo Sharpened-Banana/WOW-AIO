@@ -12,6 +12,11 @@ local band = bit.band
 
 -- Combat log payload layouts. The number is the index of `amount` in the
 -- variadic returned by CombatLogGetCurrentEventInfo().
+--
+-- Deliberately not tracked: SPELL_ABSORBED (absorbed damage/healing) and
+-- SWING_DAMAGE_LANDED (a duplicate of SWING_DAMAGE for melee swings against
+-- multiple targets). Both would double-count against what SWING_DAMAGE/
+-- SPELL_DAMAGE/SPELL_HEAL already report; this is not an oversight.
 local DAMAGE_EVENTS = {
     SWING_DAMAGE = 12,
     ENVIRONMENTAL_DAMAGE = 13,
@@ -84,12 +89,24 @@ local function IsPlayerSource(guid, flags)
     return band(flags, AFFILIATION_MINE) ~= 0 and band(flags, PET_MASK) ~= 0
 end
 
+-- Highest payload index anything below reads (SPELL_HEAL's overhealing sits
+-- at 16); capturing exactly that many locals lets every subevent be indexed
+-- out of a single CombatLogGetCurrentEventInfo() call instead of calling it
+-- again per index. COMBAT_LOG_EVENT_UNFILTERED can fire thousands of times a
+-- second in a raid, and each call returns ~20 values, so doing this two or
+-- three times per event (damage the player both dealt and took) was pure
+-- waste.
 local function OnCombatLogEvent()
-    local _, subevent, _, sourceGUID, _, sourceFlags, _, destGUID = CombatLogGetCurrentEventInfo()
+    local _, subevent, _, sourceGUID, _, sourceFlags, _, destGUID,
+        _, _, _, p12, p13, p14, p15, p16 = CombatLogGetCurrentEventInfo()
 
     local damageIndex = DAMAGE_EVENTS[subevent]
     if damageIndex then
-        local amount = select(damageIndex, CombatLogGetCurrentEventInfo()) or 0
+        local amount
+        if damageIndex == 12 then amount = p12
+        elseif damageIndex == 13 then amount = p13
+        else amount = p15 end
+        amount = amount or 0
 
         if IsPlayerSource(sourceGUID, sourceFlags) then
             AddDamage(amount)
@@ -102,7 +119,8 @@ local function OnCombatLogEvent()
 
     local healIndex = HEAL_EVENTS[subevent]
     if healIndex and IsPlayerSource(sourceGUID, sourceFlags) then
-        local amount, overhealing = select(healIndex, CombatLogGetCurrentEventInfo())
+        -- Both current HEAL_EVENTS entries read amount/overhealing at 15/16.
+        local amount, overhealing = p15, p16
         -- Overhealing is not throughput; only count what actually landed.
         local effective = (amount or 0) - (overhealing or 0)
         if effective > 0 then

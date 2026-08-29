@@ -12,6 +12,12 @@ globals = {
     "SpecSageCharDB",
     "SpecSageOverlayFrame",
     "SpecSageCodexFrame",
+    "SpecSageCodexScrollFrame",
+    -- The hover tooltip has a fixed name; the pinned tooltips
+    -- (SpecSagePinnedTooltip1, 2, 3, ...) do not, since luacheck's globals
+    -- list takes exact names, not patterns - those are only exercised by
+    -- tests/wow_mock.lua and tests/run.lua, not linted here.
+    "SpecSageHoverTooltip",
     "SLASH_SPECSAGE1",
     "SLASH_SPECSAGE2",
     "SlashCmdList",
@@ -42,7 +48,7 @@ read_globals = {
     "GetCombatRating", "GetCombatRatingBonus", "GetVersatilityBonus",
     "GetLifesteal", "GetAvoidance", "GetSpeed",
     "GetSpecialization", "GetSpecializationInfo", "GetSpecializationInfoByID",
-    "GetSpellInfo", "GetSpellCooldown", "GetAddOnMetadata",
+    "GetSpellInfo", "GetSpellTexture", "GetSpellCooldown", "GetAddOnMetadata",
     "GetNumClasses", "GetClassInfo",
 
     -- Combat log
@@ -59,4 +65,9 @@ read_globals = {
 
     -- Codex: class rail colours/icons, and the talent-loadout export surface.
     "RAID_CLASS_COLORS", "CLASS_ICON_TCOORDS",
+
+    -- Codex: fonts and widget templates the buttons/editboxes need to
+    -- actually render in the client, rather than a bare untemplated frame
+    -- that draws nothing.
+    "ChatFontNormal", "UIPanelButtonTemplate", "InputBoxTemplate", "UIPanelCloseButton",
 }

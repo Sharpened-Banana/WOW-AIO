@@ -3,9 +3,10 @@
 --
 -- The bare command toggles the Codex (the class/spec guide window) rather
 -- than the overlay, since the Codex is the addon's primary surface; the
--- overlay moved to its own "overlay" subcommand. Codex.lua is owned by a
--- later work package, so every Codex-facing handler here degrades to a
--- "Codex not loaded" print until ns.Codex exists.
+-- overlay moved to its own "overlay" subcommand. Every Codex-facing handler
+-- here still checks for ns.Codex rather than assuming it exists, so a build
+-- of the addon with the Codex stripped out (a guide pack installed without
+-- it) degrades to a "Codex not loaded" print instead of erroring.
 
 local ADDON, ns = ...
 
@@ -24,7 +25,7 @@ local HELP = {
     "  |cffffff00/sage stat <name>|r - toggle a stat row for this character",
     "  |cffffff00/sage tooltips|r - toggle hover tooltips",
     "  |cffffff00/sage pin [stat]|r - keep a tooltip on screen (hovered one if no stat given)",
-    "  |cffffff00/sage unpin [stat|all]|r - close pinned tooltips",
+    "  |cffffff00/sage unpin [stat or all]|r - close pinned tooltips",
     "  |cffffff00/sage pins|r - list what is pinned",
     "  |cffffff00/sage dps|r - report the last fight",
     "  |cffffff00/sage reset dps|r - clear combat totals",
@@ -49,9 +50,9 @@ end
 --------------------------------------------------------------------------------
 -- Codex hand-off
 --
--- UI/Codex.lua is a placeholder until a later work package implements it.
 -- Every path that would open or drive the Codex checks for it here instead
--- of assuming it exists, so /sage stays usable on a partially built addon.
+-- of assuming it exists, so /sage stays usable even without UI/Codex.lua
+-- loaded.
 --------------------------------------------------------------------------------
 
 local function ToggleCodex()

@@ -83,50 +83,50 @@ local function BuildPanel()
 
     do
         local get, set = Accessors(db, "locked")
-        AddCheckbox(category, "SAGE_locked", "Lock overlay",
+        AddCheckbox(category, "SpecSage_locked", "Lock overlay",
             "Stops the overlay from being dragged and lets clicks pass through it.", get, set)
     end
 
     do
         local get, set = Accessors(db, "hideOutOfCombat")
-        AddCheckbox(category, "SAGE_hideOOC", "Hide out of combat",
+        AddCheckbox(category, "SpecSage_hideOOC", "Hide out of combat",
             "Only show the overlay while you are in combat.", get, set)
     end
 
     do
         local get, set = Accessors(db, "showHeaders")
-        AddCheckbox(category, "SAGE_headers", "Show section headers",
+        AddCheckbox(category, "SpecSage_headers", "Show section headers",
             "Show the Stats / Combat / Procs labels.", get, set)
     end
 
     do
         local get, set = Accessors(db, "tooltips")
-        AddCheckbox(category, "SAGE_tooltips", "Show tooltips on hover",
+        AddCheckbox(category, "SpecSage_tooltips", "Show tooltips on hover",
             "Explain each stat and show the rating behind it when you hover a row. "
             .. "Clicks still pass through to whatever is underneath.", get, set)
     end
 
     do
         local get, set = Accessors(db, "scale")
-        AddSlider(category, "SAGE_scale", "Scale", "Overall size of the overlay.",
+        AddSlider(category, "SpecSage_scale", "Scale", "Overall size of the overlay.",
             0.5, 2.0, 0.05, function(value) return format("%.2f", value) end, get, set)
     end
 
     do
         local get, set = Accessors(db, "opacity")
-        AddSlider(category, "SAGE_opacity", "Background opacity", "Transparency of the overlay background.",
+        AddSlider(category, "SpecSage_opacity", "Background opacity", "Transparency of the overlay background.",
             0, 1, 0.05, function(value) return format("%d%%", value * 100) end, get, set)
     end
 
     do
         local get, set = Accessors(db, "width")
-        AddSlider(category, "SAGE_width", "Width", "Overlay width in pixels.",
+        AddSlider(category, "SpecSage_width", "Width", "Overlay width in pixels.",
             120, 320, 10, function(value) return format("%d", value) end, get, set)
     end
 
     do
         local get, set = Accessors(db, "fontSize")
-        AddSlider(category, "SAGE_fontSize", "Font size", "Text size used for rows.",
+        AddSlider(category, "SpecSage_fontSize", "Font size", "Text size used for rows.",
             8, 20, 1, function(value) return format("%d", value) end, get, set)
     end
 
@@ -139,12 +139,12 @@ local function BuildPanel()
 
     do
         local get, set = Accessors(statsTable, "enabled")
-        AddCheckbox(category, "SAGE_stats", "Show stats section", nil, get, set)
+        AddCheckbox(category, "SpecSage_stats", "Show stats section", nil, get, set)
     end
 
     for _, entry in ipairs(ns.STAT_LIST) do
         local get, set = Accessors(showTable, entry.key)
-        AddCheckbox(category, "SAGE_stat_" .. entry.key, entry.label,
+        AddCheckbox(category, "SpecSage_stat_" .. entry.key, entry.label,
             "Shown on this character only.", get, set)
     end
 
@@ -163,7 +163,7 @@ local function BuildPanel()
 
     for _, entry in ipairs(combatOptions) do
         local get, set = Accessors(combatTable, entry.key)
-        AddCheckbox(category, "SAGE_combat_" .. entry.key, entry.label, nil, get, set)
+        AddCheckbox(category, "SpecSage_combat_" .. entry.key, entry.label, nil, get, set)
     end
 
     AddButton(layout, "Meters", "Reset session", function()
@@ -175,31 +175,31 @@ local function BuildPanel()
 
     do
         local get, set = Accessors(procsTable, "enabled")
-        AddCheckbox(category, "SAGE_procs", "Show procs section", nil, get, set)
+        AddCheckbox(category, "SpecSage_procs", "Show procs section", nil, get, set)
     end
 
     do
         local get, set = Accessors(procsTable, "autoDetect")
-        AddCheckbox(category, "SAGE_procs_auto", "Auto-detect procs",
+        AddCheckbox(category, "SpecSage_procs_auto", "Auto-detect procs",
             "Automatically show short buffs on you, such as trinket and talent procs.", get, set)
     end
 
     do
         local get, set = Accessors(procsTable, "showInactiveWatched")
-        AddCheckbox(category, "SAGE_procs_inactive", "Show watched spells when ready",
+        AddCheckbox(category, "SpecSage_procs_inactive", "Show watched spells when ready",
             "Keep watched spells on the list even when they are not active.", get, set)
     end
 
     do
         local get, set = Accessors(procsTable, "maxAuto")
-        AddSlider(category, "SAGE_procs_maxAuto", "Max auto-detected procs",
+        AddSlider(category, "SpecSage_procs_maxAuto", "Max auto-detected procs",
             "How many auto-detected procs to show at once.",
             1, 10, 1, function(value) return format("%d", value) end, get, set)
     end
 
     do
         local get, set = Accessors(procsTable, "maxDuration")
-        AddSlider(category, "SAGE_procs_maxDuration", "Max proc duration",
+        AddSlider(category, "SpecSage_procs_maxDuration", "Max proc duration",
             "Ignore buffs longer than this, so flasks and food do not show up.",
             5, 120, 5, function(value) return format("%ds", value) end, get, set)
     end

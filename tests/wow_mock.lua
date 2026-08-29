@@ -95,9 +95,67 @@ local function NewTexture()
     return texture
 end
 
+-- Real WoW's EditBox:SetFocus() is a documented no-op when the frame (or any
+-- ancestor) is not shown. Walks the parent chain the way the client's own
+-- effective-visibility check would, so a widget hidden only because its
+-- parent dialog is hidden is still caught.
+local function IsEffectivelyShown(frame)
+    local current = frame
+    while current do
+        if current.shown == false then return false end
+        current = current.parent
+    end
+    return true
+end
+
+-- Every template string this addon actually passes to CreateFrame. An
+-- unlisted (typo'd, or newly introduced without checking what it provides in
+-- the real client) template fails the run immediately rather than silently
+-- granting whatever widget surface happens to be convenient.
+local KNOWN_TEMPLATES = {
+    BackdropTemplate = true,
+    UIPanelScrollFrameTemplate = true,
+    UIPanelCloseButton = true,
+    UIPanelButtonTemplate = true,
+    InputBoxTemplate = true,
+    GameTooltipTemplate = true,
+}
+
+-- Button templates that wire up a label FontString, the same way the real
+-- UIPanelButtonTemplate does. A bare CreateFrame("Button", ...) - or a
+-- template not in this set - has no such FontString, so Button:SetText below
+-- has nothing to write into: exactly the bug this table exists to catch.
+local BUTTON_TEXT_TEMPLATES = {
+    UIPanelButtonTemplate = true,
+}
+
+-- Iterates the (possibly comma-separated) parts of a `template` argument.
+local function EachTemplate(template)
+    local index = 0
+    local parts = {}
+    if template then
+        for part in template:gmatch("[^,]+") do
+            parts[#parts + 1] = part:match("^%s*(.-)%s*$")
+        end
+    end
+    return function()
+        index = index + 1
+        return parts[index]
+    end
+end
+
 mock.frames = {}
 
 function CreateFrame(frameType, name, parent, template)
+    if template then
+        for part in EachTemplate(template) do
+            assert(KNOWN_TEMPLATES[part],
+                "CreateFrame: unregistered template '" .. tostring(part) .. "' - add it to "
+                .. "tests/wow_mock.lua's KNOWN_TEMPLATES once you've checked what widget "
+                .. "surface it actually provides in the real client")
+        end
+    end
+
     local frame = NewRegion("frame")
     frame.frameType, frame.name, frame.parent, frame.template = frameType, name, parent, template
     frame.scripts = {}
@@ -114,7 +172,6 @@ function CreateFrame(frameType, name, parent, template)
     end
     function frame:UnregisterEvent(event) self.events[event] = nil end
     function frame:RegisterForDrag() end
-    function frame:RegisterForClicks() end
     function frame:SetMovable() end
     function frame:SetClampedToScreen() end
     function frame:SetResizable() end
@@ -131,7 +188,7 @@ function CreateFrame(frameType, name, parent, template)
     function frame:SetFrameStrata() end
     function frame:SetFrameLevel() end
 
-    -- Tooltip surface, for frames created from GameTooltipTemplate.
+    -- Tooltip surface, for frames created with frameType "GameTooltip".
     frame.lines = {}
     function frame:SetOwner(owner, anchor)
         self.owner, self.anchor = owner, anchor
@@ -167,38 +224,92 @@ function CreateFrame(frameType, name, parent, template)
         return texture
     end
 
-    -- EditBox surface (used by the Codex's "add loadout" dialog and the
-    -- Notes tab). Kept on every frame rather than gated on frameType, since
-    -- the mock does not otherwise distinguish widget subclasses.
-    function frame:SetMultiLine(value) self.multiLine = value end
-    function frame:SetAutoFocus(value) self.autoFocus = value end
-    function frame:SetFocus() self.focused = true end
-    function frame:ClearFocus() self.focused = false end
-    function frame:SetText(text) self.text = text end
-    function frame:GetText() return self.text or "" end
-    function frame:HighlightText() end
-    function frame:SetMaxLetters(n) self.maxLetters = n end
-    function frame:SetFontObject() end
-    function frame:SetTextInsets() end
-    function frame:SetCursorPosition() end
+    -- From here on the widget surface is keyed off frameType (and, for
+    -- Button's label, template): a bare "Frame" gets none of this, matching
+    -- the real client where these methods simply do not exist on the wrong
+    -- widget subclass. An earlier version of this mock granted the full
+    -- EditBox/ScrollFrame/Button surface to every frame regardless of type or
+    -- template, which is exactly what let an untemplated, unfonted Codex
+    -- button or editbox pass the test suite while rendering nothing in game.
+    if frameType == "EditBox" then
+        -- InputBoxTemplate is the only template here that provides a font by
+        -- itself; anything else (including no template at all) needs an
+        -- explicit SetFontObject call before it can render text, the same as
+        -- the real client.
+        local hasFont = false
+        for part in EachTemplate(template) do
+            if part == "InputBoxTemplate" then hasFont = true end
+        end
 
-    -- ScrollFrame surface (used by the Codex's content area).
-    function frame:SetScrollChild(child) self.scrollChild = child end
-    function frame:GetScrollChild() return self.scrollChild end
-    function frame:SetVerticalScroll(value) self.vScroll = value end
-    function frame:GetVerticalScroll() return self.vScroll or 0 end
-    function frame:GetVerticalScrollRange() return self.vScrollRange or 0 end
-    function frame:UpdateScrollChildRect() end
+        function frame:SetMultiLine(value) self.multiLine = value end
+        function frame:SetAutoFocus(value) self.autoFocus = value end
+        function frame:SetFontObject(obj)
+            self.fontObject = obj
+            if obj then hasFont = true end
+        end
+        function frame:SetFocus()
+            assert(IsEffectivelyShown(self),
+                "EditBox:SetFocus called while hidden (directly, or via a hidden "
+                .. "ancestor) - SetFocus is a no-op on a hidden widget in the real "
+                .. "client, so this box would never actually receive focus; show "
+                .. "the frame first")
+            self.focused = true
+        end
+        function frame:ClearFocus() self.focused = false end
+        function frame:SetText(text)
+            assert(hasFont,
+                "EditBox:SetText called with no font set - call SetFontObject or use "
+                .. "a font-providing template (e.g. InputBoxTemplate) first, or this "
+                .. "cannot render text in the real client")
+            self.text = text
+        end
+        function frame:GetText() return self.text or "" end
+        -- Highlighting only actually selects anything once the box is
+        -- focused; an unfocused HighlightText() call leaves nothing selected.
+        function frame:HighlightText() self.highlighted = self.focused or false end
+        function frame:SetMaxLetters(n) self.maxLetters = n end
+        function frame:SetTextInsets() end
+        function frame:SetCursorPosition() end
+    elseif frameType == "ScrollFrame" then
+        function frame:SetScrollChild(child) self.scrollChild = child end
+        function frame:GetScrollChild() return self.scrollChild end
+        function frame:SetVerticalScroll(value) self.vScroll = value end
+        function frame:GetVerticalScroll() return self.vScroll or 0 end
+        function frame:GetVerticalScrollRange() return self.vScrollRange or 0 end
+        function frame:UpdateScrollChildRect() end
+    elseif frameType == "Button" then
+        function frame:RegisterForClicks() end
+        function frame:SetNormalTexture() end
+        function frame:SetHighlightTexture() end
+        function frame:SetPushedTexture() end
+        function frame:SetDisabledTexture() end
+        function frame:SetHitRectInsets() end
+        function frame:Enable() self.enabled = true end
+        function frame:Disable() self.enabled = false end
+        function frame:IsEnabled() return self.enabled ~= false end
 
-    -- Button/texture surface used by clickable rows.
-    function frame:SetNormalTexture() end
-    function frame:SetHighlightTexture() end
-    function frame:SetPushedTexture() end
-    function frame:SetDisabledTexture() end
-    function frame:SetHitRectInsets() end
-    function frame:Enable() self.enabled = true end
-    function frame:Disable() self.enabled = false end
-    function frame:IsEnabled() return self.enabled ~= false end
+        -- A label FontString exists only when a text-capable template
+        -- created one (real UIPanelButtonTemplate behaviour) or the caller
+        -- wires one up explicitly via SetFontString (the real Button API) -
+        -- never just because something is a Button.
+        local label
+        for part in EachTemplate(template) do
+            if BUTTON_TEXT_TEMPLATES[part] then
+                label = frame:CreateFontString()
+            end
+        end
+        function frame:SetFontString(fs) label = fs end
+        function frame:GetFontString() return label end
+        function frame:SetText(text)
+            assert(label,
+                "Button:SetText called with no label FontString - use a text-capable "
+                .. "template (e.g. UIPanelButtonTemplate) or call SetFontString first; "
+                .. "a bare CreateFrame(\"Button\", ...) has no font string and renders "
+                .. "no label at all in the real client")
+            label:SetText(text)
+        end
+        function frame:GetText() return label and label:GetText() or nil end
+    end
 
     if name then _G[name] = frame end
     table.insert(mock.frames, frame)
@@ -214,6 +325,7 @@ UISpecialFrames = {}
 GameFontNormal = NewFontString()
 GameFontNormalSmall = NewFontString()
 GameFontHighlightSmall = NewFontString()
+ChatFontNormal = NewFontString()
 
 --------------------------------------------------------------------------------
 -- Events
@@ -346,7 +458,18 @@ function GetSpellCritChance(school) return 18 + school end
 function GetRangedCritChance() return 21.34 end
 function GetHaste() return 14.77 end
 function GetMasteryEffect() return 31.02 end
-function GetCombatRatingBonus() return 4.5 end
+-- Real WoW returns a different bonus per rating index; ignoring the index
+-- entirely (as an earlier version of this mock did) hid whether
+-- Modules/Stats.lua's melee-vs-spell crit/haste rating selection
+-- (Stats.lua:261-268) was actually picking the right index. Every index used
+-- by the addon still resolves to a bonus; only crit-spell and haste-spell
+-- differ from the rest, which is enough to tell them apart from their melee
+-- counterparts in a test.
+local RATING_BONUS_BY_INDEX = {
+    [CR_CRIT_SPELL] = 6.25,
+    [CR_HASTE_SPELL] = 8.10,
+}
+function GetCombatRatingBonus(index) return RATING_BONUS_BY_INDEX[index] or 4.5 end
 function GetCombatRating(index) return 1000 + index end
 function GetVersatilityBonus() return 3.1 end
 function GetMastery() return 24.5 end
@@ -354,7 +477,14 @@ function GetLifesteal() return 2.4 end
 function GetAvoidance() return 1.8 end
 function GetSpeed() return 0.9 end
 function GetSpecialization() return 2 end
-function GetSpecializationInfo() return 252, "Frost", "desc", 135773, "DAMAGER", 2 end
+-- Mutable rather than a hardcoded 2 (Agility): Modules/Stats.lua captures
+-- this function's *value* once at load time (the "local X = ... or X"
+-- pattern used throughout the addon), so a test that wants to exercise a
+-- different primaryStat cannot swap out the global function afterwards - it
+-- has to flip mock.playerPrimaryStat, which this same already-captured
+-- closure reads fresh on every call.
+mock.playerPrimaryStat = 2
+function GetSpecializationInfo() return 252, "Frost", "desc", 135773, "DAMAGER", mock.playerPrimaryStat end
 
 --------------------------------------------------------------------------------
 -- Classes and specializations
@@ -448,7 +578,11 @@ mock.specializations = {
 function GetSpecializationInfoByID(specID)
     local spec = mock.specializations[specID]
     if not spec then return nil end
-    return spec.id, spec.name, spec.name, spec.icon, spec.role, spec.classID, spec.primaryStat
+    -- Real signature: id, name, description, icon, role, primaryStat (6
+    -- values). An earlier version of this mock returned 7, with classID
+    -- inserted before primaryStat - nothing here reads position 6 today, but
+    -- it would have silently misaligned any future caller that does.
+    return spec.id, spec.name, spec.name, spec.icon, spec.role, spec.primaryStat
 end
 
 --------------------------------------------------------------------------------
@@ -520,15 +654,38 @@ C_UnitAuras = {
 }
 
 AuraUtil = {
-    ForEachAura = function(_, _, _, callback)
+    -- Mirrors the real (unit, filter, maxCount, func, usePackedAura)
+    -- signature: filter actually filters HELPFUL vs HARMFUL, maxCount
+    -- actually caps how many auras the callback sees, and usePackedAura
+    -- actually changes the callback's argument shape - instead of silently
+    -- ignoring all three the way an earlier version of this mock did, which
+    -- left HELPFUL filtering entirely unverified.
+    ForEachAura = function(_, filter, maxCount, callback, usePackedAura)
+        assert(filter == "HELPFUL" or filter == "HARMFUL",
+            "ForEachAura filter must be HELPFUL or HARMFUL, got " .. tostring(filter))
+        local wantHelpful = filter == "HELPFUL"
+        local count = 0
         for _, aura in ipairs(mock.auras) do
-            if callback(aura) then return end
+            if (aura.isHelpful ~= false) == wantHelpful then
+                local stop
+                if usePackedAura then
+                    stop = callback(aura)
+                else
+                    stop = callback(aura.name, aura.icon, aura.applications, nil,
+                        aura.duration, aura.expirationTime, aura.sourceUnit, false, nil, nil, aura.spellId)
+                end
+                if stop then return end
+
+                count = count + 1
+                if maxCount and maxCount > 0 and count >= maxCount then return end
+            end
         end
     end,
 }
 
--- Adds a buff to the player for the duration of the test.
-function mock.AddAura(spellID, duration, applications)
+-- Adds a buff (or, with isHelpful=false, a debuff) to the player for the
+-- duration of the test.
+function mock.AddAura(spellID, duration, applications, isHelpful)
     local spell = mock.spells[spellID] or { name = "Spell " .. spellID, icon = 0 }
     table.insert(mock.auras, {
         spellId = spellID,
@@ -538,6 +695,7 @@ function mock.AddAura(spellID, duration, applications)
         expirationTime = mock.now + duration,
         applications = applications or 1,
         sourceUnit = "player",
+        isHelpful = isHelpful ~= false,
     })
 end
 

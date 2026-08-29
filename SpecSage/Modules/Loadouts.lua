@@ -6,8 +6,10 @@
 
 local ADDON, ns = ...
 
+-- Reached only via ns:GetModule("Loadouts") (the pattern UI/Codex.lua uses
+-- throughout); no separate ns.Loadouts alias, so there is exactly one path
+-- to this module.
 local Loadouts = ns:NewModule("Loadouts")
-ns.Loadouts = Loadouts
 
 -- These moved into C_SpecializationInfo in modern retail but the globals are
 -- still around; prefer the namespaced versions when present (same pattern as
@@ -117,13 +119,21 @@ function Loadouts:ExportCurrent()
 
     if not C_Traits then return nil end
 
-    for _, fnName in ipairs({ "GenerateImportString", "GenerateInspectImportString" }) do
-        local fn = C_Traits[fnName]
-        if fn then
-            local callOk, result = pcall(fn, configID)
-            if callOk and type(result) == "string" and result ~= "" then
-                return result
-            end
+    -- GenerateImportString takes the configID; GenerateInspectImportString
+    -- takes a unit token instead ("player" here) - passing configID to it
+    -- would hand it a number where a string is expected and it would just
+    -- fail silently under the pcall below, making the "fallback" a dead link.
+    if C_Traits.GenerateImportString then
+        local ok, result = pcall(C_Traits.GenerateImportString, configID)
+        if ok and type(result) == "string" and result ~= "" then
+            return result
+        end
+    end
+
+    if C_Traits.GenerateInspectImportString then
+        local ok, result = pcall(C_Traits.GenerateInspectImportString, "player")
+        if ok and type(result) == "string" and result ~= "" then
+            return result
         end
     end
 

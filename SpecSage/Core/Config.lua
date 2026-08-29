@@ -37,6 +37,11 @@ local DEFAULTS = {
 
     position = { point = "CENTER", relPoint = "CENTER", x = 300, y = 0 },
 
+    -- The Codex window's own remembered position, independent of the
+    -- overlay's. Centred by default; updated on drag (see UI/Codex.lua's
+    -- OnDragStop).
+    codexPosition = { point = "CENTER", relPoint = "CENTER", x = 0, y = 0 },
+
     -- Which stats are shown lives per character, in SpecSageCharDB.
     stats = {
         enabled = true,
@@ -110,33 +115,11 @@ end
 ns.CopyDefaults = CopyDefaults
 ns.DEFAULTS = DEFAULTS
 
--- Stat visibility used to live in the shared DB. Move an existing account-wide
--- choice onto this character the first time it is seen, so upgrading does not
--- silently reset anyone's layout.
-local function MigrateStatVisibility(db, chardb)
-    local legacy = db.stats and db.stats.show
-    if not legacy then return end
-
-    if not chardb.migratedStatVisibility then
-        for key, value in pairs(legacy) do
-            if chardb.statsShow[key] ~= nil then
-                chardb.statsShow[key] = value
-            end
-        end
-        chardb.migratedStatVisibility = true
-    end
-
-    -- Only drop the shared copy once every character that could inherit it has.
-    -- Keeping it costs a few bytes and makes the migration safe to repeat.
-end
-
 function ns.InitConfig()
     SpecSageDB = CopyDefaults(SpecSageDB or {}, DEFAULTS)
     SpecSageCharDB = CopyDefaults(SpecSageCharDB or {}, CHAR_DEFAULTS)
     ns.db = SpecSageDB
     ns.chardb = SpecSageCharDB
-
-    MigrateStatVisibility(ns.db, ns.chardb)
 end
 
 -- Single point of truth for which stats this character shows.

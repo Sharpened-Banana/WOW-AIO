@@ -3,10 +3,12 @@
 -- and personal notes. Built lazily (BuildFrame runs on the first Toggle or
 -- Open, not at load) so an addon load never pays for a frame nobody opens.
 --
--- Layout: a fixed ~740x520 frame with a class-icon rail on the left, that
--- class's spec buttons next to it, a tab strip (Overview/Stats/Rotation/
--- Cooldowns/Consumables/Loadouts/Notes) and a scrollable content area below
--- the tabs. Content rows are pooled per tab (one pool per simple text tab,
+-- Layout: a fixed ~900x520 frame (wide enough for a class-coloured name next
+-- to each class icon, and for "Consumables" to fit its tab button without
+-- clipping) with a class-icon rail on the left, that class's spec buttons
+-- next to it, a tab strip (Overview/Stats/Rotation/Cooldowns/Consumables/
+-- Loadouts/Notes) and a scrollable content area below the tabs. Content rows
+-- are pooled per tab (one pool per simple text tab,
 -- plus dedicated widgets for Loadouts/Notes) and reused across renders, the
 -- same "keep old frames, hide the leftover ones" approach UI/Overlay.lua
 -- uses for its rows.
@@ -15,6 +17,15 @@ local ADDON, ns = ...
 
 local Codex = ns:NewModule("Codex")
 ns.Codex = Codex
+
+-- Without this, the first /sage of a session runs RenderActiveTab with
+-- activeTab == nil: none of its "if tab == ..." branches match, so the Codex
+-- opens completely blank until the player happens to click a tab. See
+-- RenderActiveTab's own defensive fallback below for the second half of this
+-- fix.
+function Codex:OnInit()
+    self.activeTab = self.activeTab or "Overview"
+end
 
 -- Retail has been moving specialization lookups into C_SpecializationInfo;
 -- prefer the namespaced version when present, same pattern as
@@ -26,12 +37,19 @@ local GetSpecializationInfoByID = (C_SpecializationInfo and C_SpecializationInfo
 -- Layout constants
 --------------------------------------------------------------------------------
 
-local FRAME_WIDTH, FRAME_HEIGHT = 740, 520
-local CLASS_RAIL_WIDTH = 40
+-- Class rail wide enough for icon + class-coloured name (DESIGN.md), tab
+-- strip buttons wide enough for "Consumables" under UIPanelButtonTemplate,
+-- and CONTENT_WIDTH set to the scroll area's real geometry (frame width minus
+-- both rails, their gaps, and the scrollbar) rather than an independent guess
+-- that used to leave ~30px of dead space on the right of every content tab.
+local FRAME_WIDTH, FRAME_HEIGHT = 900, 520
+local CLASS_RAIL_WIDTH = 120
 local SPEC_RAIL_WIDTH = 150
 local TITLE_HEIGHT = 26
 local TAB_HEIGHT = 24
-local CONTENT_WIDTH = 480
+local TAB_BUTTON_WIDTH = 84
+local TAB_BUTTON_STRIDE = 86
+local CONTENT_WIDTH = 590
 local PADDING = 10
 local LINE_GAP = 3
 local PARAGRAPH_GAP = 6
@@ -45,8 +63,10 @@ local DEFAULT_CLASS_COLOR = { r = 0.8, g = 0.8, b = 0.8 }
 -- Per Data/API.lua's schema comment, missing/empty guide sections render this
 -- single italic-styled (see the colour-only note below) line rather than
 -- nothing at all. WoW's SetFont has no italic flag, only OUTLINE/MONOCHROME/
--- THICKOUTLINE, so "italic" here is approximated with a muted colour.
-local NO_DATA_TEXT = "no guide data yet - /sage config explains how to contribute"
+-- THICKOUTLINE, so "italic" here is approximated with a muted colour. Names
+-- the real place to add data (a Lua data file) rather than the options
+-- panel, which has no Codex section (see Core/Options.lua).
+local NO_DATA_TEXT = "no guide data yet - see SpecSage/Data/Guides_<Class>.lua to add some"
 local MUTED_COLOR = { 0.55, 0.55, 0.55 }
 local HEADER_COLOR = { 0.4, 0.8, 1.0 }
 
@@ -127,6 +147,38 @@ local function SpellIcon(spellID)
     end)
     if ok then return icon end
     return nil
+end
+
+-- Creates a multi-line EditBox backed by a bordered BackdropTemplate frame.
+-- A bare EditBox has no font set and no backdrop/inset of its own: in the
+-- real client that means invisible text (or a "font not set" error on
+-- SetText) and no visual hint of where to click or type. Returns the
+-- backdrop (position/size this) and the EditBox itself (read/write text on
+-- this).
+local function NewBackdropEditBox(parent, width, height)
+    local backdrop = CreateFrame("Frame", nil, parent, "BackdropTemplate")
+    backdrop:SetSize(width, height)
+    backdrop:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+        edgeFile = "Interface\\Buttons\\WHITE8X8",
+        edgeSize = 1,
+    })
+    backdrop:SetBackdropColor(0, 0, 0, 0.6)
+    backdrop:SetBackdropBorderColor(0.35, 0.35, 0.35, 1)
+
+    local box = CreateFrame("EditBox", nil, backdrop)
+    box:SetMultiLine(true)
+    box:SetAutoFocus(false)
+    box:SetFontObject(ChatFontNormal)
+    box:SetTextInsets(4, 4, 2, 2)
+    box:SetPoint("TOPLEFT", backdrop, "TOPLEFT", 4, -4)
+    box:SetPoint("BOTTOMRIGHT", backdrop, "BOTTOMRIGHT", -4, 4)
+    -- The Codex is in UISpecialFrames, so an unhandled ESC inside a focused
+    -- EditBox would otherwise close the whole window out from under whatever
+    -- was being typed.
+    box:SetScript("OnEscapePressed", function(self2) self2:ClearFocus() end)
+
+    return backdrop, box
 end
 
 --------------------------------------------------------------------------------
@@ -417,12 +469,12 @@ local function AcquireLoadoutRow(pool, index, parent)
         row.name:SetJustifyH("LEFT")
         row.name:SetPoint("LEFT", row, "LEFT", 0, 0)
 
-        row.copyButton = CreateFrame("Button", nil, row)
+        row.copyButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
         row.copyButton:SetSize(50, 18)
         row.copyButton:SetText("Copy")
         row.copyButton:SetPoint("RIGHT", row, "RIGHT", -58, 0)
 
-        row.deleteButton = CreateFrame("Button", nil, row)
+        row.deleteButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
         row.deleteButton:SetSize(50, 18)
         row.deleteButton:SetText("Delete")
         row.deleteButton:SetPoint("RIGHT", row, "RIGHT", 0, 0)
@@ -437,12 +489,12 @@ function Codex:EnsureLoadoutWidgets()
 
     local parent = self.scrollChild
 
-    local save = CreateFrame("Button", nil, parent)
+    local save = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
     save:SetSize(110, 20)
     save:SetText("Save current")
     save:SetScript("OnClick", function() self:OnSaveCurrentClicked() end)
 
-    local add = CreateFrame("Button", nil, parent)
+    local add = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
     add:SetSize(120, 20)
     add:SetText("Add from string")
     add:SetScript("OnClick", function() self:ShowAddDialog() end)
@@ -580,12 +632,14 @@ function Codex:EnsureAddDialog()
     nameLabel:SetPoint("TOPLEFT", dialog, "TOPLEFT", 12, -12)
     nameLabel:SetText("Name")
 
-    local nameBox = CreateFrame("EditBox", nil, dialog)
+    local nameBox = CreateFrame("EditBox", nil, dialog, "InputBoxTemplate")
     nameBox:SetSize(336, 20)
     nameBox:SetAutoFocus(false)
     nameBox:SetPoint("TOPLEFT", nameLabel, "BOTTOMLEFT", 0, -4)
+    nameBox:SetScript("OnEscapePressed", function(self2) self2:ClearFocus() end)
+    nameBox:SetScript("OnEnterPressed", function() self:OnAddDialogSave() end)
 
-    local categoryButton = CreateFrame("Button", nil, dialog)
+    local categoryButton = CreateFrame("Button", nil, dialog, "UIPanelButtonTemplate")
     categoryButton:SetSize(120, 20)
     categoryButton:SetPoint("TOPLEFT", nameBox, "BOTTOMLEFT", 0, -10)
     categoryButton:SetScript("OnClick", function() self:CycleAddCategory() end)
@@ -594,19 +648,16 @@ function Codex:EnsureAddDialog()
     importLabel:SetPoint("TOPLEFT", categoryButton, "BOTTOMLEFT", 0, -10)
     importLabel:SetText("Import string")
 
-    local importBox = CreateFrame("EditBox", nil, dialog)
-    importBox:SetMultiLine(true)
-    importBox:SetSize(336, 70)
-    importBox:SetAutoFocus(false)
-    importBox:SetPoint("TOPLEFT", importLabel, "BOTTOMLEFT", 0, -4)
+    local importBoxBackdrop, importBox = NewBackdropEditBox(dialog, 336, 70)
+    importBoxBackdrop:SetPoint("TOPLEFT", importLabel, "BOTTOMLEFT", 0, -4)
 
-    local saveButton = CreateFrame("Button", nil, dialog)
+    local saveButton = CreateFrame("Button", nil, dialog, "UIPanelButtonTemplate")
     saveButton:SetSize(80, 22)
     saveButton:SetText("Save")
     saveButton:SetPoint("BOTTOMLEFT", dialog, "BOTTOMLEFT", 12, 12)
     saveButton:SetScript("OnClick", function() self:OnAddDialogSave() end)
 
-    local cancelButton = CreateFrame("Button", nil, dialog)
+    local cancelButton = CreateFrame("Button", nil, dialog, "UIPanelButtonTemplate")
     cancelButton:SetSize(80, 22)
     cancelButton:SetText("Cancel")
     cancelButton:SetPoint("BOTTOMRIGHT", dialog, "BOTTOMRIGHT", -12, 12)
@@ -662,11 +713,8 @@ function Codex:EnsureCopyDialog()
 
     -- Read-only in spirit (nothing writes it back anywhere): the box exists
     -- purely so the string is selected and focused for the player to copy.
-    local box = CreateFrame("EditBox", nil, dialog)
-    box:SetMultiLine(true)
-    box:SetAutoFocus(false)
-    box:SetSize(336, 60)
-    box:SetPoint("TOP", label, "BOTTOM", 0, -8)
+    local boxBackdrop, box = NewBackdropEditBox(dialog, 336, 60)
+    boxBackdrop:SetPoint("TOP", label, "BOTTOM", 0, -8)
 
     local closeButton = CreateFrame("Button", nil, dialog, "UIPanelCloseButton")
     closeButton:SetSize(24, 24)
@@ -679,10 +727,13 @@ end
 
 function Codex:ShowCopyDialog(exportString)
     self:EnsureCopyDialog()
+    -- Show first: EditBox:SetFocus() is a no-op on a hidden widget in the
+    -- real client, so focusing/highlighting before Show() leaves nothing
+    -- selected for Ctrl+C despite the dialog's own "Ctrl+C to copy" label.
+    self.copyDialog:Show()
     self.copyBox:SetText(exportString or "")
     self.copyBox:SetFocus()
     self.copyBox:HighlightText()
-    self.copyDialog:Show()
 end
 
 --------------------------------------------------------------------------------
@@ -699,26 +750,26 @@ end
 function Codex:EnsureNotesBox()
     if self.notesBox then return end
 
-    local box = CreateFrame("EditBox", nil, self.scrollChild)
-    box:SetMultiLine(true)
-    box:SetAutoFocus(false)
+    local backdrop, box = NewBackdropEditBox(self.scrollChild, CONTENT_WIDTH, 400)
     pcall(box.SetJustifyH, box, "LEFT")
     box:SetScript("OnEditFocusLost", function(self2) self:SaveNotes(self2) end)
 
+    self.notesBoxFrame = backdrop
     self.notesBox = box
 end
 
 function Codex:RenderNotes(specID)
     self:EnsureNotesBox()
-    local box = self.notesBox
+    local backdrop, box = self.notesBoxFrame, self.notesBox
 
-    box:ClearAllPoints()
-    box:SetPoint("TOPLEFT", self.scrollChild, "TOPLEFT", 0, -PADDING)
-    box:SetSize(CONTENT_WIDTH, 400)
+    backdrop:ClearAllPoints()
+    backdrop:SetPoint("TOPLEFT", self.scrollChild, "TOPLEFT", 0, -PADDING)
+    backdrop:SetSize(CONTENT_WIDTH, 400)
     box.specID = specID
 
     local Notes = ns:GetModule("Notes")
     box:SetText((Notes and specID) and Notes:Get(specID) or "")
+    backdrop:Show()
     box:Show()
 
     self.scrollChild:SetHeight(420)
@@ -748,8 +799,9 @@ function Codex:HideOtherTabWidgets(activeTab)
         if self.loadoutRowPool then HidePoolFrom(self.loadoutRowPool, 1) end
     end
 
-    if activeTab ~= "Notes" and self.notesBox then
-        self.notesBox:Hide()
+    if activeTab ~= "Notes" then
+        if self.notesBoxFrame then self.notesBoxFrame:Hide() end
+        if self.notesBox then self.notesBox:Hide() end
     end
 end
 
@@ -758,7 +810,11 @@ function Codex:RenderActiveTab()
 
     local specID = self.selectedSpecID
     local guide = specID and ns.GuideStore:GetGuide(specID) or nil
-    local tab = self.activeTab
+    -- Defensive fallback alongside OnInit: activeTab should already be set by
+    -- the time anything renders, but never draw nothing just because it
+    -- somehow was not.
+    local tab = self.activeTab or "Overview"
+    self.activeTab = tab
 
     self:HideOtherTabWidgets(tab)
 
@@ -889,6 +945,17 @@ function Codex:SelectClass(classToken)
 end
 
 function Codex:SelectSpec(specID)
+    -- Flush whatever note is open against the spec it belongs to before
+    -- swapping in a different spec: clicking a spec-rail button does not
+    -- clear an EditBox's focus in WoW, so RenderNotes below would otherwise
+    -- silently overwrite the still-open buffer with the new spec's saved
+    -- note. Also close the Add/Copy dialogs, which otherwise stay open
+    -- across the switch and would write (or show) against whatever spec is
+    -- now selected instead of the one the player was looking at.
+    self:SaveNotes()
+    self:HideAddDialog()
+    if self.copyDialog then self.copyDialog:Hide() end
+
     self.selectedSpecID = specID
     self:UpdateSpecHighlight()
     if self.scrollFrame then self.scrollFrame:SetVerticalScroll(0) end
@@ -901,6 +968,10 @@ function Codex:SelectTab(tabName)
         if name == tabName then valid = true break end
     end
     if not valid then return end
+
+    self:SaveNotes()
+    self:HideAddDialog()
+    if self.copyDialog then self.copyDialog:Hide() end
 
     self.activeTab = tabName
     if self.scrollFrame then self.scrollFrame:SetVerticalScroll(0) end
@@ -922,16 +993,28 @@ function Codex:BuildClassRail()
     local y = -4
     for _, entry in ipairs(ns.GuideStore:GetClasses()) do
         local btn = CreateFrame("Button", nil, rail)
-        btn:SetSize(32, 32)
+        btn:SetSize(CLASS_RAIL_WIDTH - 8, 26)
         btn:SetPoint("TOPLEFT", rail, "TOPLEFT", 4, y)
 
         local icon = btn:CreateTexture(nil, "ARTWORK")
-        icon:SetSize(28, 28)
-        icon:SetPoint("TOPLEFT", btn, "TOPLEFT", 2, -2)
+        icon:SetSize(20, 20)
+        icon:SetPoint("LEFT", btn, "LEFT", 0, 0)
         icon:SetTexture(CLASS_ICON_TEXTURE)
         local coords = CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[entry.token]
         if coords then icon:SetTexCoord(unpack(coords)) end
         btn.icon = icon
+
+        -- DESIGN.md: "class icon + class-coloured name" - the name's colour
+        -- is permanent (it is what makes the rail class-coloured at all);
+        -- UpdateClassHighlight dims the whole button via alpha for
+        -- whichever class is not currently selected.
+        local label = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        label:SetJustifyH("LEFT")
+        label:SetPoint("LEFT", icon, "RIGHT", 4, 0)
+        label:SetText(entry.name)
+        local color = ClassColor(entry.token)
+        label:SetTextColor(color.r, color.g, color.b)
+        btn.label = label
 
         btn:SetScript("OnClick", function() self:SelectClass(entry.token) end)
         btn:SetScript("OnEnter", function(self2)
@@ -944,7 +1027,7 @@ function Codex:BuildClassRail()
         btn:SetScript("OnLeave", function() pcall(function() GameTooltip:Hide() end) end)
 
         self.classButtons[entry.token] = btn
-        y = y - 34
+        y = y - 28
     end
 end
 
@@ -967,18 +1050,22 @@ function Codex:BuildTabStrip()
     self.tabButtons = {}
     local x = 0
     for _, tabName in ipairs(TABS) do
-        local btn = CreateFrame("Button", nil, strip)
-        btn:SetSize(64, TAB_HEIGHT)
+        local btn = CreateFrame("Button", nil, strip, "UIPanelButtonTemplate")
+        btn:SetSize(TAB_BUTTON_WIDTH, TAB_HEIGHT)
         btn:SetPoint("TOPLEFT", strip, "TOPLEFT", x, 0)
         btn:SetText(tabName)
         btn:SetScript("OnClick", function() self:SelectTab(tabName) end)
         self.tabButtons[tabName] = btn
-        x = x + 66
+        x = x + TAB_BUTTON_STRIDE
     end
 end
 
 function Codex:BuildContentArea()
-    local scrollFrame = CreateFrame("ScrollFrame", nil, self.frame, "UIPanelScrollFrameTemplate")
+    -- Named (rather than anonymous): UIPanelScrollFrameTemplate has, in past
+    -- client revisions, resolved its scrollbar via the frame's own global
+    -- name when self.ScrollBar is not set by a parentKey; an anonymous frame
+    -- makes that a concat-on-nil risk for no benefit.
+    local scrollFrame = CreateFrame("ScrollFrame", "SpecSageCodexScrollFrame", self.frame, "UIPanelScrollFrameTemplate")
     scrollFrame:SetPoint("TOPLEFT", self.tabStrip, "BOTTOMLEFT", 0, -4)
     scrollFrame:SetPoint("BOTTOMRIGHT", self.frame, "BOTTOMRIGHT", -28, 8)
 
@@ -995,7 +1082,10 @@ end
 function Codex:BuildFrame()
     local frame = CreateFrame("Frame", "SpecSageCodexFrame", UIParent, "BackdropTemplate")
     frame:SetSize(FRAME_WIDTH, FRAME_HEIGHT)
-    frame:SetPoint("CENTER")
+
+    local pos = (ns.db and ns.db.codexPosition) or ns.DEFAULTS.codexPosition
+    frame:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
+
     frame:SetMovable(true)
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
@@ -1009,14 +1099,21 @@ function Codex:BuildFrame()
     frame:SetBackdropBorderColor(0, 0, 0, 1)
 
     frame:SetScript("OnDragStart", function(self2) self2:StartMoving() end)
-    frame:SetScript("OnDragStop", function(self2) self2:StopMovingOrSizing() end)
+    frame:SetScript("OnDragStop", function(self2)
+        self2:StopMovingOrSizing()
+        local point, _, relPoint, x, y = self2:GetPoint()
+        local saved = ns.db and ns.db.codexPosition
+        if saved then
+            saved.point, saved.relPoint, saved.x, saved.y = point, relPoint, x, y
+        end
+    end)
     -- Notes save on window close as well as on focus-lost, so a note typed
     -- and then closed without tabbing away is never lost.
     frame:SetScript("OnHide", function() self:SaveNotes() end)
 
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     title:SetPoint("TOPLEFT", frame, "TOPLEFT", 12, -8)
-    title:SetText("SpecSage Codex")
+    title:SetText(ns.version and ("SpecSage Codex " .. ns.version) or "SpecSage Codex")
     frame.title = title
 
     local closeButton = CreateFrame("Button", nil, frame, "UIPanelCloseButton")

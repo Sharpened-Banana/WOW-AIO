@@ -64,12 +64,18 @@ local FILES = {
 local realPrint = print
 local addonOutput = {}
 _G.print = function(...)
-    addonOutput[#addonOutput + 1] = table.concat({ mock and "" or "" }, "") .. tostring((select(1, ...)))
+    addonOutput[#addonOutput + 1] = tostring((select(1, ...)))
 end
 
 local ns = mock.LoadAddon("SpecSage", FILES, "SpecSage")
 
 _G.print = realPrint
+
+-- A guide file whose top-level RegisterSpec call gets rejected would print a
+-- warning and otherwise load silently; nothing before this asserted that
+-- addonOutput (captured above) was actually empty, so that failure mode
+-- could pass the whole suite unnoticed.
+check(#addonOutput == 0, "no addon warnings printed while loading", addonOutput[1])
 
 -- The slash-command tests further down replace ns.Codex with bare stand-in
 -- tables (and finally nil) to exercise Commands.lua's "Codex not loaded"
@@ -207,9 +213,13 @@ do
     end
 end
 
--- A class nobody has registered a guide for is still listed.
-check(#GuideStore:GetClassSpecs("MONK") >= 0, "GetClassSpecs never errors for a class with no guides",
-    #GuideStore:GetClassSpecs("MONK"))
+-- A class nobody has registered a guide for returns an empty list, not an
+-- error. "#t >= 0" is always true regardless of what GetClassSpecs actually
+-- returns (and Monk has three shipped guides anyway, so it was never testing
+-- the "nobody registered" case its own comment claimed); NOTACLASS is not a
+-- real class token, so it is guaranteed to have nothing registered.
+check(#GuideStore:GetClassSpecs("NOTACLASS") == 0, "GetClassSpecs returns an empty table for a class with no guides",
+    #GuideStore:GetClassSpecs("NOTACLASS"))
 
 local silencedOutput
 local function silently(fn)
@@ -329,14 +339,31 @@ do
 end
 
 -- Every shipped data file (populated by work package C) registers guides
--- with valid stat keys and non-empty rotations.
+-- with valid stat keys and non-empty rotations. Also assert the exact
+-- shipped spec count per class (a class silently missing a spec, or a guide
+-- file that fails to load, used to slip through unnoticed since the old loop
+-- only ever walked specs that *are* registered) and that every statPriority
+-- entry actually resolves through Stats:GetStatValue.
 do
+    local EXPECTED_SPEC_COUNT = {
+        WARRIOR = 3, PALADIN = 3, HUNTER = 3, ROGUE = 3, PRIEST = 3,
+        DEATHKNIGHT = 3, SHAMAN = 3, MAGE = 3, WARLOCK = 3, MONK = 3,
+        DRUID = 4, DEMONHUNTER = 2, EVOKER = 3,
+    }
+
     local anyShipped = false
+    local totalShipped = 0
+
     for _, classEntry in ipairs(GuideStore:GetClasses()) do
+        local shippedForClass = 0
+
         for _, specID in ipairs(GuideStore:GetClassSpecs(classEntry.token)) do
             -- Skip the synthetic test specIDs registered above (9000+).
             if specID < 9000 then
                 anyShipped = true
+                shippedForClass = shippedForClass + 1
+                totalShipped = totalShipped + 1
+
                 local guide = GuideStore:GetGuide(specID)
                 check(guide ~= nil, format("shipped guide exists for %s spec %d", classEntry.token, specID))
                 if guide then
@@ -346,11 +373,24 @@ do
                         check(type(guide.rotation) == "table" and #guide.rotation > 0,
                             format("shipped guide for %s spec %d has a non-empty rotation", classEntry.token, specID))
                     end
+                    if guide.statPriority then
+                        for _, entry in ipairs(guide.statPriority) do
+                            check(StatsModule:GetStatValue(entry.stat) ~= nil,
+                                format("statPriority stat '%s' for %s spec %d resolves through Stats:GetStatValue",
+                                    tostring(entry.stat), classEntry.token, specID))
+                        end
+                    end
                 end
             end
         end
+
+        check(shippedForClass == EXPECTED_SPEC_COUNT[classEntry.token],
+            format("%s has exactly %d shipped spec(s)", classEntry.token, EXPECTED_SPEC_COUNT[classEntry.token]),
+            shippedForClass)
     end
+
     check(anyShipped == true, "at least one shipped class guide is registered (Shaman)", anyShipped)
+    check(totalShipped == 39, "exactly 39 shipped specs are registered across all classes", totalShipped)
 end
 
 --------------------------------------------------------------------------------
@@ -453,6 +493,13 @@ mock.AddAura(12472, 3600)
 mock.Fire("UNIT_AURA", "player")
 check(findRow("procs", "Icy Veins") == nil, "buffs longer than maxDuration are ignored")
 
+-- Procs.lua asks AuraUtil.ForEachAura for "HELPFUL" only; a debuff on the
+-- player must never show up as a proc. Previously unverifiable because the
+-- mock's ForEachAura ignored the filter argument entirely.
+mock.AddAura(999001, 10, 1, false)
+mock.Fire("UNIT_AURA", "player")
+check(findRow("procs", "Spell 999001") == nil, "a HARMFUL aura (debuff) is not shown by the HELPFUL-filtered proc list")
+
 mock.ClearAuras()
 mock.Fire("UNIT_AURA", "player")
 
@@ -516,18 +563,20 @@ check(ns.chardb.statsShow.speed == false, "second character does not inherit the
     ns.chardb.statsShow.speed)
 check(firstCharacter.statsShow.speed == true, "first character keeps its own choice")
 
--- An upgrade from the account-wide layout carries the old choice across once.
+-- Core/Config.lua used to have a MigrateStatVisibility function that read
+-- SpecSageDB.stats.show onto the character DB, but DEFAULTS.stats never
+-- creates that key and this addon never writes it either (SpecSageDB is a
+-- brand-new saved variable, not the predecessor addon's StatOverlayDB) - the
+-- only thing that ever exercised the branch was this test writing to it by
+-- hand. It was dead code (see REVIEW.md #13) and has been removed; confirm a
+-- stray legacy-shaped key like this is simply left alone, not read into a
+-- player's real per-character choices.
 SpecSageDB.stats.show = { crit = false, armor = true, haste = false }
 SpecSageCharDB = nil
 ns.InitConfig()
-check(ns.chardb.statsShow.crit == false, "legacy account-wide choice migrated (crit off)", ns.chardb.statsShow.crit)
-check(ns.chardb.statsShow.armor == true, "legacy account-wide choice migrated (armor on)", ns.chardb.statsShow.armor)
-check(ns.chardb.migratedStatVisibility == true, "migration is marked done")
-
--- Migration must not run twice and undo later changes.
-ns.chardb.statsShow.crit = true
-ns.InitConfig()
-check(ns.chardb.statsShow.crit == true, "migration does not re-run over later changes")
+check(ns.chardb.statsShow.crit == true, "a stray SpecSageDB.stats.show is not read into the character DB",
+    ns.chardb.statsShow.crit)
+check(ns.chardb.migratedStatVisibility == nil, "there is no migration flag - the migration path was removed")
 
 SpecSageDB.stats.show = nil
 SpecSageCharDB = firstCharacter
@@ -570,6 +619,22 @@ check(dump:find("Rating=1009") ~= nil, "tooltip shows the underlying combat rati
 check(dump:find("From rating=4.50%%") ~= nil, "tooltip shows what the rating converts to", dump)
 check(dump:find("critically strike") ~= nil, "tooltip explains what the stat does", dump)
 check(dump:find("Click to keep this on screen") ~= nil, "hover tooltip explains how to pin it", dump)
+
+-- Melee vs. spell crit rating selection (Stats.lua:261-268) actually picks a
+-- different combat-rating index depending on primaryStat - previously
+-- unverifiable because the mock's GetCombatRatingBonus ignored its index
+-- argument and always returned the same number regardless of which rating
+-- was asked for.
+do
+    local realPrimaryStat = mock.playerPrimaryStat
+    mock.playerPrimaryStat = 4 -- Intellect
+    critFrame.scripts.OnEnter(critFrame)
+    local spellDump = dumpOf(hoverTip)
+    mock.playerPrimaryStat = realPrimaryStat
+    check(spellDump:find("From rating=6.25%%") ~= nil,
+        "an Intellect-primary spec's crit tooltip uses the spell rating index, not melee", spellDump)
+end
+critFrame.scripts.OnEnter(critFrame) -- back to the mock's real (non-Intellect) primary stat
 
 -- Leaving the row must not hide instantly, or the mouse could never reach the
 -- tooltip to click it.
@@ -1061,6 +1126,24 @@ check(Codex.selectedClass == "DEATHKNIGHT", "first-ever open defaults to the pla
     Codex.selectedClass)
 check(Codex.selectedSpecID == 252, "first-ever open defaults to the player's own current spec", Codex.selectedSpecID)
 
+-- The very first Toggle() must render visible content with no explicit
+-- SelectTab call: Codex.activeTab used to start out nil (only ever set
+-- inside SelectTab), so RenderActiveTab's "if tab == ..." chain matched
+-- nothing and the Codex opened completely blank until the player happened
+-- to click a tab.
+do
+    local function CountShown(pool)
+        local n = 0
+        for _, row in ipairs(pool) do
+            if row:IsShown() then n = n + 1 end
+        end
+        return n
+    end
+    check(Codex.activeTab == "Overview", "the Codex defaults to the Overview tab", Codex.activeTab)
+    check(CountShown(Codex.pools.overview) > 0,
+        "the first Toggle() renders visible Overview content rows without an explicit SelectTab")
+end
+
 Codex:Toggle()
 check(Codex:IsShown() == false, "a second Toggle hides the frame")
 Codex:Toggle()
@@ -1102,6 +1185,16 @@ for _, entry in ipairs(ns.GuideStore:GetClasses()) do
     check(Codex.classButtons[entry.token] ~= nil, "class rail has a button for " .. entry.token)
 end
 
+-- Under the stricter mock, Button:SetText only works when the button was
+-- created with a text-capable template (see tests/wow_mock.lua); a bare
+-- CreateFrame("Button", ...) - the pre-fix state of every button below -
+-- would raise an assertion the moment it tried to set its label, failing
+-- this run outright rather than passing while rendering nothing in game.
+for _, tabName in ipairs(TAB_NAMES) do
+    check(Codex.tabButtons[tabName]:GetText() == tabName,
+        "tab strip button '" .. tabName .. "' has a text-capable template and shows its label")
+end
+
 --------------------------------------------------------------------------------
 section("Codex: Loadouts tab")
 --------------------------------------------------------------------------------
@@ -1131,9 +1224,22 @@ check(afterAdd[#afterAdd].category ~= "Other", "cycling the category button chan
 local savedRow = Codex.loadoutRowPool[#afterAdd]
 check(savedRow ~= nil, "the newly saved loadout has a row in the Loadouts tab")
 
-savedRow.copyButton:GetScript("OnClick")()
+check(Codex.loadoutButtons.save:GetText() == "Save current", "the Save current button has a text-capable template")
+check(Codex.loadoutButtons.add:GetText() == "Add from string", "the Add from string button has a text-capable template")
+check(savedRow.copyButton:GetText() == "Copy", "the loadout row's Copy button has a text-capable template")
+check(savedRow.deleteButton:GetText() == "Delete", "the loadout row's Delete button has a text-capable template")
+
+-- The Copy dialog must be shown before its EditBox is focused/highlighted:
+-- EditBox:SetFocus() is a no-op on a hidden widget in the real client (the
+-- stricter mock now enforces this - see tests/wow_mock.lua's
+-- IsEffectivelyShown - so getting the order wrong here would error instead
+-- of silently copying nothing).
+local copyOk = pcall(function() savedRow.copyButton:GetScript("OnClick")() end)
+check(copyOk, "Copy does not error under the mock's visibility-checked SetFocus (dialog is shown before focusing)")
 check(Codex.copyDialog:IsShown(), "Copy opens a dialog")
 check(Codex.copyBox:GetText() == "TestImportString123", "the Copy dialog is populated with the loadout's export string")
+check(Codex.copyBox.focused == true, "the copy box is focused once the dialog is shown")
+check(Codex.copyBox.highlighted == true, "the copy box's text is highlighted (selected) once focused, ready for Ctrl+C")
 
 -- Delete is a two-click confirm: the first click arms it, the second removes it.
 local deleteButton = savedRow.deleteButton
@@ -1171,6 +1277,22 @@ check(NotesModule:Get(72) == "Watch for the add-phase trinket swap.", "losing fo
 Codex.notesBox:SetText("Saved on window close.")
 Codex.frame:GetScript("OnHide")(Codex.frame)
 check(NotesModule:Get(72) == "Saved on window close.", "the Codex frame's OnHide also saves the open note")
+
+--------------------------------------------------------------------------------
+section("Codex: notes survive a spec switch")
+--------------------------------------------------------------------------------
+
+-- Clicking a spec-rail button does not clear an EditBox's focus in WoW, so
+-- SelectSpec must flush the still-open note itself before RenderNotes
+-- overwrites the buffer with the newly selected spec's saved text.
+Codex:Open("WARRIOR", 72)
+Codex:SelectTab("Notes")
+Codex.notesBox:SetText("Typed but not yet saved for 72.")
+Codex:SelectSpec(71) -- Arms: a different real spec, same class, Notes tab stays open
+check(NotesModule:Get(72) == "Typed but not yet saved for 72.",
+    "switching spec flushes the previously open note for its own spec")
+check(Codex.notesBox:GetText() == NotesModule:Get(71),
+    "the newly selected spec's own note is shown, not the old spec's buffer")
 
 --------------------------------------------------------------------------------
 section("Codex: close")
