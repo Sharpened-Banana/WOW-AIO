@@ -32,13 +32,13 @@ ns.GuideStore:RegisterSpec("MONK", 268, {
     { title = "Single Target", steps = {
         { spellID = 121253, text = "Keg Smash on cooldown to build threat and reduce other cooldowns" },
         { spellID = 100780, text = "Tiger Palm to spend Chi and build Blackout Combo synergy" },
-        { spellID = 121283, text = "Breath of Fire to apply the Dizzying Haze debuff and refresh Stagger benefits" },
+        { spellID = 115181, text = "Breath of Fire to apply the Dizzying Haze debuff and refresh Stagger benefits" },
         { text = "Blackout Kick / Rising Sun Kick per talent build for extra damage" },
         { text = "Expel Harm when Chi is capped or self-healing is needed" },
     }},
     { title = "AoE", steps = {
         { spellID = 121253, text = "Keg Smash on cooldown, it's your main AoE threat generator" },
-        { spellID = 121283, text = "Breath of Fire to damage and weaken nearby enemies" },
+        { spellID = 115181, text = "Breath of Fire to damage and weaken nearby enemies" },
         { text = "Spinning Crane Kick to hit all nearby targets" },
         { text = "Weave Rushing Jade Wind / Charred Passions (talent-dependent) for sustained cleave" },
         { text = "Keep Keg Smash on cooldown above all else when tanking a pack" },

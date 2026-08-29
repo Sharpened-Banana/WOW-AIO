@@ -149,9 +149,8 @@ ns.GuideStore:RegisterSpec("SHAMAN", 264, {
     { title = "Priorities", steps = {
         { spellID = 61295, text = "Riptide on cooldown, cycled across multiple targets for HoT uptime" },
         { spellID = 1064, text = "Chain Heal for efficient grouped-up raid healing" },
-        { spellID = 5394, text = "Healing Rain placed on top of the raid before or during damage" },
+        { spellID = 73920, text = "Healing Rain placed on top of the raid before or during damage" },
         { spellID = 8004, text = "Healing Surge for fast reactive single-target healing" },
-        { spellID = 61301, text = "Riptide re-application prioritized over pure direct healing when mana allows" },
         { text = "Pre-position Healing Rain and Riptide before predictable raid damage lands" },
     }},
     { title = "Cooldown Usage", steps = {

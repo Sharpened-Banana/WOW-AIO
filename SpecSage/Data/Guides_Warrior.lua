@@ -35,7 +35,7 @@ ns.GuideStore:RegisterSpec("WARRIOR", 71, {
         { spellID = 163201, text = "Execute once the target drops below execute-range health" },
     }},
     { title = "AoE", steps = {
-        { spellID = 46924, text = "Bladestorm to open on 3+ targets" },
+        { spellID = 227847, text = "Bladestorm to open on 3+ targets" },
         { spellID = 167105, text = "Colossus Smash / Warbreaker before committing cooldowns" },
         { spellID = 845, text = "Cleave as your rage dump against multiple targets" },
         { spellID = 772, text = "Rend on priority targets for extra bleed damage" },
@@ -48,9 +48,9 @@ ns.GuideStore:RegisterSpec("WARRIOR", 71, {
     }},
   },
   cooldowns = {
-    { spellID = 1719, text = "Recklessness — pair with Colossus Smash for maximum burst" },
+    { spellID = 107574, text = "Avatar — pair with Colossus Smash for maximum burst" },
     { spellID = 167105, text = "Colossus Smash — core damage-amp window, use on cooldown" },
-    { spellID = 46924, text = "Bladestorm — strong AoE/cleave cooldown, also usable defensively" },
+    { spellID = 227847, text = "Bladestorm — strong AoE/cleave cooldown, also usable defensively" },
     { spellID = 118038, text = "Die by the Sword — major defensive, use under heavy melee pressure" },
     { spellID = 97462, text = "Rallying Cry — raid-wide defensive cooldown for group survival checks" },
   },
@@ -65,7 +65,7 @@ ns.GuideStore:RegisterSpec("WARRIOR", 71, {
   tips = {
     "Never let Rend fall off a target you'll be hitting for more than a few seconds.",
     "Save Overpower charges to spend rather than letting them cap and go to waste.",
-    "Line up Colossus Smash, trinkets, and Recklessness together whenever possible for maximum burst windows.",
+    "Line up Colossus Smash, trinkets, and Avatar together whenever possible for maximum burst windows.",
     "Watch your rage bar during downtime — starving Mortal Strike of rage is a common DPS loss.",
   },
 })
@@ -110,7 +110,7 @@ ns.GuideStore:RegisterSpec("WARRIOR", 72, {
     { spellID = 1719, text = "Recklessness — pop for a burst window, ideally with trinkets" },
     { spellID = 46924, text = "Bladestorm — strong cleave/AoE cooldown, also a brief defensive tool" },
     { spellID = 184364, text = "Enraged Regeneration — self-healing cooldown for sustain checks" },
-    { spellID = 118038, text = "Die by the Sword — major defensive cooldown under heavy damage" },
+    { spellID = 23920, text = "Spell Reflection — reflects the next incoming spell, use against dangerous casts" },
     { spellID = 97462, text = "Rallying Cry — raid-wide defensive utility cooldown" },
   },
   consumables = {

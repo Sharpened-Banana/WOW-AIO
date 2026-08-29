@@ -37,7 +37,7 @@ ns.GuideStore:RegisterSpec("PRIEST", 256, {
     { title = "Cooldown Usage", steps = {
         { spellID = 33206, text = "Pain Suppression on the tank or target about to take a lethal-range hit" },
         { spellID = 62618, text = "Power Word: Barrier for a raid-wide damage reduction and healing zone" },
-        { spellID = 47788, text = "Guardian Spirit as an emergency save on a critical target" },
+        { text = "Power Word: Life as an emergency instant heal on a critically low-health target" },
         { text = "Pre-shield the raid and refresh Atonement right before a known burst damage phase" },
         { text = "Save your strongest cooldown for the highest predicted damage spike rather than reacting late" },
     }},
@@ -45,9 +45,9 @@ ns.GuideStore:RegisterSpec("PRIEST", 256, {
   cooldowns = {
     { spellID = 62618, text = "Power Word: Barrier — raid-wide cooldown, use for known heavy damage windows" },
     { spellID = 33206, text = "Pain Suppression — strong single-target defensive/healing cooldown" },
-    { spellID = 47788, text = "Guardian Spirit — emergency save, prevents a lethal hit" },
+    { text = "Power Word: Life — emergency instant heal, prevents a lethal hit on a low-health target" },
     { spellID = 10060, text = "Power Infusion — offensive/support cooldown, use on yourself or a strong DPS ally" },
-    { spellID = 47585, text = "Dispersion — personal defensive/mana cooldown for emergencies" },
+    { spellID = 47536, text = "Rapture — boosts Power Word: Shield strength and grants Atonement to everyone you shield" },
   },
   consumables = {
     { slot = "Flask", text = "Flask of Alchemical Chaos (Intellect)" },
@@ -146,7 +146,7 @@ ns.GuideStore:RegisterSpec("PRIEST", 258, {
     }},
     { title = "AoE", steps = {
         { spellID = 205385, text = "Shadow Crash to spread DoTs to multiple targets at once" },
-        { spellID = 48045, text = "Mind Sear as an AoE Insanity-neutral filler across grouped targets" },
+        { text = "Multi-dot with Mind Blast/Void Bolt and let Shadow Word: Pain/Vampiric Touch carry the AoE damage — Mind Sear was removed and Shadow has no dedicated AoE filler" },
         { spellID = 589, text = "Shadow Word: Pain maintained on priority targets" },
         { spellID = 8092, text = "Mind Blast on cooldown, still strong even while cleaving" },
         { spellID = 205448, text = "Void Bolt on cooldown for burst during add waves" },

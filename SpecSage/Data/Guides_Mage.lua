@@ -30,7 +30,6 @@ ns.GuideStore:RegisterSpec("MAGE", 62, {
   rotation = {
     { title = "Opener", steps = {
         { text = "Pre-cast Arcane Blast to land as combat starts" },
-        { spellID = 12042, text = "Arcane Power before your first burn window" },
         { spellID = 365350, text = "Arcane Surge to open the burn phase" },
         { spellID = 44425, text = "Arcane Barrage at 4 charges to dump and reset" },
     }},
@@ -51,7 +50,6 @@ ns.GuideStore:RegisterSpec("MAGE", 62, {
   },
   cooldowns = {
     { spellID = 365350, text = "Arcane Surge — opens your main burn window, use on cooldown around boss burst phases" },
-    { spellID = 12042, text = "Arcane Power — pair with Arcane Surge for a stacked burn window" },
     { text = "Touch of the Magi (talent) — line up before dumping Arcane Barrage for extra damage" },
     { spellID = 45438, text = "Ice Block — defensive, use to survive unavoidable burst damage" },
     { spellID = 55342, text = "Mirror Image — minor defensive/utility cooldown, use when threat or a small buffer helps" },
@@ -95,7 +93,7 @@ ns.GuideStore:RegisterSpec("MAGE", 63, {
         { spellID = 108853, text = "Fire Blast to convert Heating Up into Hot Streak during Combustion" },
     }},
     { title = "Single Target", steps = {
-        { spellID = 2120, text = "Fireball as your default filler to build Heating Up" },
+        { spellID = 133, text = "Fireball as your default filler to build Heating Up" },
         { spellID = 108853, text = "Fire Blast to convert Heating Up into Hot Streak" },
         { text = "Phoenix Flames as an additional Heating Up/Hot Streak generator" },
         { spellID = 11366, text = "Pyroblast whenever Hot Streak is active" },

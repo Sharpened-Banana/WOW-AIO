@@ -30,7 +30,7 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 250, {
     { title = "Single Target", steps = {
         { spellID = 195182, text = "Marrowrend to keep Bone Shield charges topped up" },
         { spellID = 49998, text = "Death Strike to spend Runic Power for healing and mitigation" },
-        { spellID = 55090, text = "Scourge Strike / diseases kept active on the target" },
+        { spellID = 206930, text = "Heart Strike as your primary Rune spender and threat generator" },
         { spellID = 43265, text = "Death and Decay kept active under yourself when relevant" },
         { spellID = 61999, text = "Raise Ally or utility abilities as needed" },
         { text = "Don't cast Death Strike below a meaningful Runic Power threshold unless you need the heal now" },

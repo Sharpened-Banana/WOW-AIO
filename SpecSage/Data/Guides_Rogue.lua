@@ -31,25 +31,25 @@ ns.GuideStore:RegisterSpec("ROGUE", 259, {
         { spellID = 1943, text = "Rupture kept up — refresh before it falls off" },
         { spellID = 32645, text = "Envenom to spend combo points once Rupture is active" },
         { spellID = 1329, text = "Mutilate on cooldown as the primary combo point builder" },
-        { spellID = 79140, text = "Vendetta on cooldown for a burst damage window" },
+        { spellID = 360194, text = "Deathmark on cooldown for a burst damage window" },
         { text = "Refresh poisons before they expire — lost uptime is a real DPS loss" },
     }},
     { title = "AoE", steps = {
         { spellID = 1830, text = "Fan of Knives as the primary combo point builder against 3+ targets" },
         { text = "Deadly Poison spread to all engaged targets" },
         { spellID = 1943, text = "Rupture on priority targets once poisons are spread" },
-        { spellID = 79140, text = "Vendetta on cooldown for burst during add waves" },
+        { spellID = 360194, text = "Deathmark on cooldown for burst during add waves" },
         { spellID = 32645, text = "Envenom to spend combo points when Rupture upkeep isn't needed" },
         { text = "Prioritize spreading DoTs over single-target finishers early in an AoE pull" },
     }},
     { title = "Opener Notes", steps = {
         { text = "Open from Stealth with Garrote for its bonus damage, then build toward Rupture" },
-        { text = "Line up Vendetta with your first full combo point Envenom for maximum burst" },
+        { text = "Line up Deathmark with your first full combo point Envenom for maximum burst" },
     }},
   },
   cooldowns = {
-    { spellID = 79140, text = "Vendetta — core offensive cooldown, use on cooldown" },
-    { spellID = 121471, text = "Shadow Blades — burst cooldown, pair with Vendetta when possible" },
+    { spellID = 360194, text = "Deathmark — core offensive cooldown, use on cooldown" },
+    { text = "Kingsbane — poison burst cooldown, pair with Deathmark when possible" },
     { spellID = 31224, text = "Cloak of Shadows — major magic defensive, clears many magic effects" },
     { spellID = 5277, text = "Evasion — physical defensive cooldown" },
     { spellID = 1856, text = "Vanish — reset positioning, re-open with a stealth opener, or drop aggro" },
@@ -57,7 +57,7 @@ ns.GuideStore:RegisterSpec("ROGUE", 259, {
   consumables = {
     { slot = "Flask", text = "Flask of Alchemical Chaos (Agility)" },
     { slot = "Food", text = "An Agility-focused feast or food buff" },
-    { slot = "Potion", text = "Tempered Potion, used inside Vendetta" },
+    { slot = "Potion", text = "Tempered Potion, used inside Deathmark" },
     { slot = "Weapon", text = "Instant Poison and Wound Poison (or current-tier equivalents) on both weapons" },
     { slot = "Enchants", text = "Weapon enchant for Agility/Crit; ring enchants for secondary stats" },
     { slot = "Gems", text = "Agility or Agility/secondary hybrid gems in available sockets" },
@@ -65,7 +65,7 @@ ns.GuideStore:RegisterSpec("ROGUE", 259, {
   tips = {
     "Never let Rupture or Garrote fall off a target you'll be attacking for more than a few seconds.",
     "Keep your weapon poisons refreshed — a lapsed poison is a silent DPS loss.",
-    "Line up Vendetta and Shadow Blades together whenever their cooldowns allow.",
+    "Line up Deathmark and Kingsbane together whenever their cooldowns allow.",
     "Fan of Knives spreads your bleeds efficiently — use it to seed DoTs across a pull before single-targeting.",
   },
 })

@@ -29,7 +29,7 @@ ns.GuideStore:RegisterSpec("DRUID", 102, {
   },
   rotation = {
     { title = "Opener", steps = {
-        { spellID = 194153, text = "Wrath / Starfire to begin building toward an Eclipse" },
+        { text = "Wrath / Starfire to begin building toward an Eclipse" },
         { text = "Sunfire and Moonfire to apply dots to the target before committing to burst" },
         { spellID = 194223, text = "Celestial Alignment once dots are up, to open a strong burst window" },
         { spellID = 78674, text = "Starsurge to spend Astral Power during the burst window" },
