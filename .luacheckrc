@@ -52,6 +52,14 @@ read_globals = {
     "GetNumClasses", "GetClassInfo", "GetItemInfo", "GetInventoryItemID",
     "GetContainerNumSlots", "GetContainerItemID", "ITEM_QUALITY_COLORS",
 
+    -- BiS: real Blizzard inventory slot ID constants (Modules/BiS.lua builds
+    -- SLOT_INVENTORY_IDS from these rather than hardcoding numbers).
+    "INVSLOT_HEAD", "INVSLOT_NECK", "INVSLOT_SHOULDER", "INVSLOT_CHEST",
+    "INVSLOT_WAIST", "INVSLOT_LEGS", "INVSLOT_FEET", "INVSLOT_WRIST",
+    "INVSLOT_HAND", "INVSLOT_FINGER1", "INVSLOT_FINGER2",
+    "INVSLOT_TRINKET1", "INVSLOT_TRINKET2", "INVSLOT_BACK",
+    "INVSLOT_MAINHAND", "INVSLOT_OFFHAND",
+
     -- Combat log
     "CombatLogGetCurrentEventInfo",
     "COMBATLOG_OBJECT_AFFILIATION_MINE",

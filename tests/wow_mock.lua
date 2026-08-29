@@ -347,6 +347,10 @@ for _, event in ipairs({
     "PLAYER_SPECIALIZATION_CHANGED", "PLAYER_TALENT_UPDATE",
     -- Reserved for the Codex/Loadouts work: talent config changes.
     "TRAIT_CONFIG_UPDATED", "TRAIT_CONFIG_LIST_UPDATED",
+    -- Modules/BiS.lua: fires once C_Item.RequestLoadItemDataByID's async
+    -- fetch resolves, so Codex:OnBiSItemInfoReceived can re-render a
+    -- checklist row that was still showing "Item 12345" when it was added.
+    "GET_ITEM_INFO_RECEIVED",
 }) do
     mock.KNOWN_EVENTS[event] = true
 end
@@ -725,7 +729,17 @@ C_Item = {
             item.reqLevel or 1, item.itemType or "Miscellaneous", item.subType or "Junk",
             item.stackCount or 1, item.equipLoc or "", item.texture or 0, item.sellPrice or 0
     end,
+    -- Records the request rather than doing anything with it: the real
+    -- client's async fetch-then-fire-GET_ITEM_INFO_RECEIVED behaviour is
+    -- simulated by a test populating mock.items and firing that event
+    -- itself (mock.Fire("GET_ITEM_INFO_RECEIVED", itemID)), same as the
+    -- existing item/spell/aura fixtures in this file.
+    RequestLoadItemDataByID = function(itemID)
+        table.insert(mock.itemLoadRequests, itemID)
+    end,
 }
+
+mock.itemLoadRequests = {}
 
 -- Approximates Blizzard's real item-quality colours (0=Poor..5=Legendary is
 -- all the Codex needs to colour a BiS entry's name by).
@@ -738,8 +752,34 @@ ITEM_QUALITY_COLORS = {
     [5] = { r = 1.00, g = 0.50, b = 0.00 },
 }
 
+-- Blizzard's real INVSLOT_* inventory slot IDs. Defined here independently
+-- of Modules/BiS.lua's SLOT_INVENTORY_IDS (which now reads these same
+-- globals rather than hardcoding its own numbers) so a wrong slot mapping in
+-- the addon shows up as this file's tests indexing mock.equipped by the
+-- *correct* named slot and getting no match, instead of both sides agreeing
+-- on the same made-up literal by construction (the "permissive mock hides a
+-- live bug" pattern from round 1's review).
+INVSLOT_HEAD = 1
+INVSLOT_NECK = 2
+INVSLOT_SHOULDER = 3
+INVSLOT_BODY = 4 -- shirt; not a BiS-trackable slot, listed for completeness
+INVSLOT_CHEST = 5
+INVSLOT_WAIST = 6
+INVSLOT_LEGS = 7
+INVSLOT_FEET = 8
+INVSLOT_WRIST = 9
+INVSLOT_HAND = 10
+INVSLOT_FINGER1 = 11
+INVSLOT_FINGER2 = 12
+INVSLOT_TRINKET1 = 13
+INVSLOT_TRINKET2 = 14
+INVSLOT_BACK = 15
+INVSLOT_MAINHAND = 16
+INVSLOT_OFFHAND = 17
+
 -- Equipped items, keyed by inventory slot ID (see Modules/BiS.lua's
--- SLOT_INVENTORY_IDS for which numbers map to which gear slot).
+-- SLOT_INVENTORY_IDS, and the INVSLOT_* constants just above, for which
+-- numbers map to which gear slot).
 mock.equipped = {}
 
 function GetInventoryItemID(unit, invSlot)

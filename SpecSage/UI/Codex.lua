@@ -27,6 +27,18 @@ function Codex:OnInit()
     self.activeTab = self.activeTab or "Overview"
 end
 
+-- Modules/BiS.lua queues a C_Item.RequestLoadItemDataByID call whenever a
+-- checklist entry's item is still uncached; this is the other half of that
+-- fix. Without it, a freshly-added entry whose item was not yet cached would
+-- sit at its "Item 12345" placeholder (no quality colour, no live status)
+-- until the player happened to switch tab or spec again - the async fetch
+-- was queued, but nothing ever acted on it resolving.
+function Codex:OnEnable()
+    ns:RegisterEvent("GET_ITEM_INFO_RECEIVED", function(_, itemID)
+        self:OnBiSItemInfoReceived(itemID)
+    end)
+end
+
 -- Retail has been moving specialization lookups into C_SpecializationInfo;
 -- prefer the namespaced version when present, same pattern as
 -- Modules/Stats.lua and Modules/Loadouts.lua.
@@ -93,6 +105,12 @@ local BIS_STATUS_LABEL = {
     missing = "missing",
 }
 local DEFAULT_ITEM_COLOR = { 0.8, 0.8, 0.8 }
+
+-- How much of a BiS row's width row.text is allowed to use: the remaining
+-- 120px covers row.status (anchored at RIGHT -58, room for the widest
+-- status label plus its own margin) and the 50px Delete button (anchored at
+-- RIGHT 0) that sit to its right on the same row.
+local BIS_ROW_TEXT_WIDTH_INSET = 120
 
 -- Data/API.lua's statPriority vocabulary, in the Codex's own display words.
 local STAT_LABELS = {
@@ -510,6 +528,14 @@ local function AcquireBiSRow(pool, index, parent)
         row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         row.text:SetJustifyH("LEFT")
         row.text:SetPoint("LEFT", row, "LEFT", 0, 0)
+        -- Bounded and non-wrapping: row.text is arbitrary user text (a
+        -- plain-name entry has no length limit of its own), and a
+        -- FontString does not clip to its parent frame - without a width
+        -- and SetWordWrap(false), a long name draws straight through
+        -- row.status and row.deleteButton instead of eliding. Guarded since
+        -- SetWordWrap is not on every FontString method surface (including
+        -- the test mock's).
+        pcall(row.text.SetWordWrap, row.text, false)
 
         row.status = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         row.status:SetJustifyH("RIGHT")
@@ -552,6 +578,10 @@ function Codex:EnsureBiSWidgets()
     local itemBox = CreateFrame("EditBox", nil, parent, "InputBoxTemplate")
     itemBox:SetSize(300, 20)
     itemBox:SetAutoFocus(false)
+    -- A plain-name entry has no other length limit (see row.text's own
+    -- width bound above), so an unbounded box lets a player type something
+    -- that would overflow the checklist row it renders into.
+    itemBox:SetMaxLetters(255)
     itemBox:SetScript("OnEscapePressed", function(self2) self2:ClearFocus() end)
     itemBox:SetScript("OnEnterPressed", function() self:OnBiSAddClicked() end)
 
@@ -591,12 +621,41 @@ function Codex:OnBiSAddClicked()
     if not BiSModule or not specID then return end
 
     local itemText = self.bisItemBox:GetText()
+    if not itemText or itemText:match("^%s*$") then
+        -- An empty/whitespace box (a stray click, or Enter on an untouched
+        -- box) is a silent no-op, not a "could not add BiS entry" chat
+        -- message - BiS:Add's rejection is only interesting when the player
+        -- actually typed something.
+        return
+    end
+
     local ok, err = BiSModule:Add(specID, self.bisSlot, itemText)
     if ok then
         self.bisItemBox:SetText("")
         if self.activeTab == "BiS" then self:RenderActiveTab() end
     else
         ns.Print("could not add BiS entry: " .. tostring(err))
+    end
+end
+
+-- Fired (via Codex:OnEnable) on GET_ITEM_INFO_RECEIVED. Re-renders only the
+-- BiS tab's own pool/rows (RenderBiS), not the whole Codex, and only when
+-- the resolved itemID actually belongs to an entry on the spec currently
+-- being viewed - an item info event for some unrelated addon's lookup, or
+-- for a spec the player is not looking at right now, is a no-op.
+function Codex:OnBiSItemInfoReceived(itemID)
+    if type(itemID) ~= "number" then return end
+    if not self.frame or self.activeTab ~= "BiS" then return end
+
+    local specID = self.selectedSpecID
+    local BiSModule = ns:GetModule("BiS")
+    if not BiSModule or not specID then return end
+
+    for _, entry in ipairs(BiSModule:GetForSpec(specID)) do
+        if entry.itemID == itemID then
+            self:RenderBiS(ns.GuideStore:GetGuide(specID), specID)
+            return
+        end
     end
 end
 
@@ -652,11 +711,18 @@ function Codex:RenderBiS(guide, specID)
     local rowPool = self.bisRowPool
     local isOwnSpec = IsPlayersSpec(specID)
 
+    -- Bag contents are scanned once per render, here, rather than once per
+    -- row inside BiS:GetStatus - a full checklist used to mean N x 5 bags x
+    -- ~36 slots of C_Container reads on every render. Status tags (and so
+    -- this scan) only ever matter for the player's own viewed spec.
+    local bagSet = (isOwnSpec and BiSModule) and BiSModule:ScanBags() or nil
+
     if #list == 0 then
         local empty = AcquireBiSRow(rowPool, 1, parent)
         empty:ClearAllPoints()
         empty:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
         empty:SetSize(width, 18)
+        empty.text:SetWidth(width - BIS_ROW_TEXT_WIDTH_INSET)
         empty.text:SetText("no BiS entries yet - add one below")
         empty.text:SetTextColor(MUTED_COLOR[1], MUTED_COLOR[2], MUTED_COLOR[3])
         empty.status:SetText("")
@@ -671,6 +737,7 @@ function Codex:RenderBiS(guide, specID)
             row:ClearAllPoints()
             row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
             row:SetSize(width, 18)
+            row.text:SetWidth(width - BIS_ROW_TEXT_WIDTH_INSET)
 
             local displayName, quality = BiSModule:ResolveDisplay(entry)
             local r, g, b = ItemQualityColor(quality)
@@ -679,7 +746,7 @@ function Codex:RenderBiS(guide, specID)
             row.itemID = entry.itemID
 
             if isOwnSpec and entry.itemID then
-                local status = BiSModule:GetStatus(entry) or "missing"
+                local status = BiSModule:GetStatus(entry, bagSet) or "missing"
                 local color = BIS_STATUS_COLOR[status] or BIS_STATUS_COLOR.missing
                 row.status:SetText(BIS_STATUS_LABEL[status] or status)
                 row.status:SetTextColor(color[1], color[2], color[3])
@@ -1063,7 +1130,14 @@ function Codex:HideOtherTabWidgets(activeTab)
             self.bisButtons.slotButton:Hide()
             self.bisButtons.addButton:Hide()
         end
-        if self.bisItemBox then self.bisItemBox:Hide() end
+        -- ClearFocus before Hide: a focused EditBox that is hidden without
+        -- releasing keyboard focus is a long-standing source of "my
+        -- keybinds stopped working" reports (same fix as self.notesBox
+        -- below).
+        if self.bisItemBox then
+            self.bisItemBox:ClearFocus()
+            self.bisItemBox:Hide()
+        end
         if self.bisRowPool then HidePoolFrom(self.bisRowPool, 1) end
     end
 
@@ -1077,7 +1151,10 @@ function Codex:HideOtherTabWidgets(activeTab)
 
     if activeTab ~= "Notes" then
         if self.notesBoxFrame then self.notesBoxFrame:Hide() end
-        if self.notesBox then self.notesBox:Hide() end
+        if self.notesBox then
+            self.notesBox:ClearFocus()
+            self.notesBox:Hide()
+        end
     end
 end
 
@@ -1233,6 +1310,15 @@ function Codex:SelectSpec(specID)
     self:SaveNotes()
     self:HideAddDialog()
     if self.copyDialog then self.copyDialog:Hide() end
+    -- The BiS Add row gets the same treatment as Notes/the Add dialog:
+    -- clicking a spec-rail button does not clear an EditBox's focus in WoW,
+    -- so a half-typed item would otherwise silently land against whichever
+    -- spec is selected when Add is next clicked, not the one it was typed
+    -- while viewing.
+    if self.bisItemBox then
+        self.bisItemBox:ClearFocus()
+        self.bisItemBox:SetText("")
+    end
 
     self.selectedSpecID = specID
     self:UpdateSpecHighlight()
@@ -1250,6 +1336,10 @@ function Codex:SelectTab(tabName)
     self:SaveNotes()
     self:HideAddDialog()
     if self.copyDialog then self.copyDialog:Hide() end
+    if self.bisItemBox then
+        self.bisItemBox:ClearFocus()
+        self.bisItemBox:SetText("")
+    end
 
     self.activeTab = tabName
     if self.scrollFrame then self.scrollFrame:SetVerticalScroll(0) end

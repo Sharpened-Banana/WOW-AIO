@@ -204,9 +204,13 @@ tracks progress live:
   accepting link, itemID, or name.
 
 The Codex grows to 8 tabs: Overview | Stats | Rotation | Cooldowns |
-Consumables | BiS | Loadouts | Notes. To fit, `FRAME_WIDTH` widens to 960
-and `CONTENT_WIDTH` grows by the same 60px; tab width/stride stay as they
-are.
+Consumables | BiS | Loadouts | Notes. To fit, `FRAME_WIDTH` widens to 984
+and `CONTENT_WIDTH` grows by the same 84px; tab width/stride stay as they
+are. (The tab strip is a separate geometry chain from `CONTENT_WIDTH` -
+frame width minus both rails, their gaps, and its own 8px side margins - and
+8 tabs at the existing 84/86 width/stride need 686px; +60 alone left that
+16px short, clipping the last tab past the frame's right edge. +84 covers
+it with a small margin.)
 
 `/sage reset all` leaves `SpecSageDB.bis` alone (curated data, like
 loadouts and notes).
@@ -220,7 +224,7 @@ loadouts and notes).
   selected class's specs beneath/next to it (spec icon + name). Defaults to
   the player's own class and current spec on open.
 - Main pane: tab strip — **Overview | Stats | Rotation | Cooldowns |
-  Consumables | Loadouts | Notes** — and a scrollable content area.
+  Consumables | BiS | Loadouts | Notes** — and a scrollable content area.
 - Section renderers read from `ns.GuideStore`; missing sections render an
   italic "no data yet — /sage config explains how to contribute" line.
 - Stats tab: for the *player's own spec*, each priority row also shows the

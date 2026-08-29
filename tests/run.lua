@@ -1261,21 +1261,21 @@ check(BiSModule:GetStatus("not a table") == nil, "GetStatus returns nil rather t
 mock.equipped = {}
 mock.bags = {}
 
--- Equipped: a single-slot gear type (Head -> inventory slot 1).
+-- Equipped: a single-slot gear type (Head -> INVSLOT_HEAD).
 do
-    mock.equipped[1] = 55001
+    mock.equipped[INVSLOT_HEAD] = 55001
     local status = BiSModule:GetStatus({ slot = "Head", itemID = 55001 })
-    check(status == "equipped", "a Head item in inventory slot 1 reports equipped", status)
-    mock.equipped[1] = nil
+    check(status == "equipped", "a Head item in INVSLOT_HEAD reports equipped", status)
+    mock.equipped[INVSLOT_HEAD] = nil
 end
 
--- Equipped: Ring maps to two inventory slots (11 and 12) — the item sitting
--- in the *second* ring slot must still be found.
+-- Equipped: Ring maps to two inventory slots (INVSLOT_FINGER1/2) — the item
+-- sitting in the *second* ring slot must still be found.
 do
-    mock.equipped[12] = 55002
+    mock.equipped[INVSLOT_FINGER2] = 55002
     local status = BiSModule:GetStatus({ slot = "Ring", itemID = 55002 })
-    check(status == "equipped", "a Ring item equipped in the second ring slot (12) still reports equipped", status)
-    mock.equipped[12] = nil
+    check(status == "equipped", "a Ring item equipped in INVSLOT_FINGER2 still reports equipped", status)
+    mock.equipped[INVSLOT_FINGER2] = nil
 end
 
 -- Owned: the item is in a bag, not equipped anywhere.
@@ -1292,12 +1292,126 @@ do
     check(status == "missing", "an item that is neither equipped nor in bags reports missing", status)
 end
 
--- Weapon/Off-hand map to the main-hand/off-hand inventory slots (16/17).
+-- Weapon fans out to BOTH the main-hand and off-hand inventory slots (High
+-- finding #1: it used to check INVSLOT_MAINHAND only, so a dual-wield
+-- entry's second weapon permanently reported "missing" while visibly
+-- equipped). Off-hand still maps to INVSLOT_OFFHAND alone.
 do
-    mock.equipped[17] = 55005
-    local status = BiSModule:GetStatus({ slot = "Off-hand", itemID = 55005 })
-    check(status == "equipped", "an Off-hand item in inventory slot 17 reports equipped", status)
-    mock.equipped[17] = nil
+    mock.equipped[INVSLOT_MAINHAND] = 55005
+    local status = BiSModule:GetStatus({ slot = "Weapon", itemID = 55005 })
+    check(status == "equipped", "a Weapon item equipped in INVSLOT_MAINHAND reports equipped", status)
+    mock.equipped[INVSLOT_MAINHAND] = nil
+end
+
+do
+    mock.equipped[INVSLOT_OFFHAND] = 55006
+    local status = BiSModule:GetStatus({ slot = "Weapon", itemID = 55006 })
+    check(status == "equipped",
+        "a Weapon item equipped in INVSLOT_OFFHAND (the second of two dual-wield weapons) reports equipped", status)
+    mock.equipped[INVSLOT_OFFHAND] = nil
+end
+
+do
+    mock.equipped[INVSLOT_OFFHAND] = 55007
+    local status = BiSModule:GetStatus({ slot = "Off-hand", itemID = 55007 })
+    check(status == "equipped", "an Off-hand item in INVSLOT_OFFHAND reports equipped", status)
+    mock.equipped[INVSLOT_OFFHAND] = nil
+end
+
+mock.equipped = {}
+mock.bags = {}
+
+--------------------------------------------------------------------------------
+section("BiS module: GetStatus covers every slot's real inventory ID (Medium #1/#3)")
+--------------------------------------------------------------------------------
+
+-- Every BiS.SLOT_ORDER slot, checked against Blizzard's real INVSLOT_*
+-- constants (defined independently in tests/wow_mock.lua, not copied from
+-- Modules/BiS.lua). Multi-slot gear types list every inventory slot that
+-- should satisfy them. This is the comprehensive version of the three-entry
+-- coverage the round-2 review flagged (Head/Ring/Off-hand only): a wrong
+-- numeric literal or a wrong INVSLOT_* name anywhere in
+-- Modules/BiS.lua's SLOT_INVENTORY_IDS fails one of these checks instead of
+-- silently agreeing with a test that used the same wrong literal.
+local SLOT_INVSLOT_EXPECTATIONS = {
+    { slot = "Head", invSlots = { INVSLOT_HEAD } },
+    { slot = "Neck", invSlots = { INVSLOT_NECK } },
+    { slot = "Shoulder", invSlots = { INVSLOT_SHOULDER } },
+    { slot = "Back", invSlots = { INVSLOT_BACK } },
+    { slot = "Chest", invSlots = { INVSLOT_CHEST } },
+    { slot = "Wrist", invSlots = { INVSLOT_WRIST } },
+    { slot = "Hands", invSlots = { INVSLOT_HAND } },
+    { slot = "Waist", invSlots = { INVSLOT_WAIST } },
+    { slot = "Legs", invSlots = { INVSLOT_LEGS } },
+    { slot = "Feet", invSlots = { INVSLOT_FEET } },
+    { slot = "Ring", invSlots = { INVSLOT_FINGER1, INVSLOT_FINGER2 } },
+    { slot = "Trinket", invSlots = { INVSLOT_TRINKET1, INVSLOT_TRINKET2 } },
+    { slot = "Weapon", invSlots = { INVSLOT_MAINHAND, INVSLOT_OFFHAND } },
+    { slot = "Off-hand", invSlots = { INVSLOT_OFFHAND } },
+}
+
+check(#SLOT_INVSLOT_EXPECTATIONS == #BiSModule.SLOT_ORDER,
+    "the coverage table above lists every slot in BiS.SLOT_ORDER, not a subset",
+    #SLOT_INVSLOT_EXPECTATIONS .. " vs " .. #BiSModule.SLOT_ORDER)
+
+for _, expectation in ipairs(SLOT_INVSLOT_EXPECTATIONS) do
+    for _, invSlot in ipairs(expectation.invSlots) do
+        mock.equipped = {}
+        local itemID = 60000 + invSlot
+        mock.equipped[invSlot] = itemID
+        local status = BiSModule:GetStatus({ slot = expectation.slot, itemID = itemID })
+        check(status == "equipped",
+            format("%s reports equipped when its item sits in inventory slot %d", expectation.slot, invSlot),
+            status)
+    end
+end
+
+mock.equipped = {}
+mock.bags = {}
+
+--------------------------------------------------------------------------------
+section("BiS module: GetStatus with a precomputed bag set (Medium #6, perf cache)")
+--------------------------------------------------------------------------------
+
+-- Codex:RenderBiS now builds one bagSet per render (BiS:ScanBags()) and
+-- passes it into GetStatus instead of letting GetStatus rescan bags itself
+-- on every row. GetStatus's own contract when a bagSet is supplied:
+do
+    local bagSet = { [77001] = true }
+    local status = BiSModule:GetStatus({ slot = "Trinket", itemID = 77001 }, bagSet)
+    check(status == "owned", "GetStatus reports owned from a precomputed bag set", status)
+end
+
+do
+    local bagSet = {}
+    local status = BiSModule:GetStatus({ slot = "Trinket", itemID = 77002 }, bagSet)
+    check(status == "missing", "GetStatus reports missing when the item is absent from a precomputed bag set",
+        status)
+end
+
+do
+    -- Equipped still wins even when a bagSet is supplied.
+    mock.equipped[INVSLOT_HEAD] = 77003
+    local bagSet = {}
+    local status = BiSModule:GetStatus({ slot = "Head", itemID = 77003 }, bagSet)
+    check(status == "equipped", "equipped still takes priority over a precomputed bag set", status)
+    mock.equipped[INVSLOT_HEAD] = nil
+end
+
+do
+    mock.bags[0] = { [1] = 77004 }
+    local bagSet = BiSModule:ScanBags()
+    check(bagSet[77004] == true, "ScanBags finds an item sitting in bag 0", bagSet[77004])
+    mock.bags[0] = nil
+end
+
+do
+    -- No bagSet at all: GetStatus falls back to scanning bags itself, same
+    -- as before this fix - callers that do not build a bagSet still work.
+    mock.bags[1] = { [2] = 77005 }
+    local status = BiSModule:GetStatus({ slot = "Neck", itemID = 77005 })
+    check(status == "owned", "GetStatus without a bagSet argument still falls back to scanning bags itself", status)
+    mock.bags[1] = nil
 end
 
 mock.equipped = {}
@@ -1498,7 +1612,7 @@ check(#BiSCodexModule:GetForSpec(9004) == beforeEnterCount + 1,
 mock.equipped = {}
 mock.bags = {}
 BiSCodexModule:Add(252, "Head", "55010")
-mock.equipped[1] = 55010
+mock.equipped[INVSLOT_HEAD] = 55010
 
 Codex:Open("DEATHKNIGHT", 252)
 Codex:SelectTab("BiS")
@@ -1523,6 +1637,46 @@ check(otherRow.status:GetText() == "", "a non-own spec's entry shows no status t
 mock.equipped = {}
 mock.bags = {}
 
+-- "owned" status also flows through the render-time bag cache (Medium #6:
+-- Codex:RenderBiS now builds one BiS:ScanBags() bagSet per render and hands
+-- it into GetStatus instead of GetStatus rescanning bags itself per row).
+BiSCodexModule:Add(252, "Trinket", "55011")
+mock.bags[0] = { [1] = 55011 }
+Codex:Open("DEATHKNIGHT", 252)
+Codex:SelectTab("BiS")
+local ownedList = BiSCodexModule:GetForSpec(252)
+local ownedRow = Codex.bisRowPool[#ownedList]
+check(ownedRow ~= nil, "the checklist row for the owned-but-not-equipped entry exists")
+check(ownedRow.status:GetText() == "in bags",
+    "an owned-but-not-equipped item on the player's own spec shows the 'in bags' status tag via the render-time bag cache",
+    ownedRow.status:GetText())
+
+mock.equipped = {}
+mock.bags = {}
+
+--------------------------------------------------------------------------------
+section("Codex: BiS row text width is bounded (Medium #4)")
+--------------------------------------------------------------------------------
+
+-- Real item names are short enough to be safe, but a plain-name entry is
+-- arbitrary user text with no length limit of its own - without a width
+-- bound, a long name draws straight through row.status and
+-- row.deleteButton instead of stopping short of them.
+check(Codex.bisItemBox.maxLetters == 255,
+    "the BiS Add editbox caps input length so a pasted/typed entry cannot be unbounded",
+    Codex.bisItemBox.maxLetters)
+
+Codex:Open("MAGE", 9005)
+Codex:SelectTab("BiS")
+BiSCodexModule:Add(9005, "Trinket", string.rep("Extremely Long Hand-Typed Item Name ", 10))
+Codex:SelectTab("BiS") -- re-render so the new row exists in the pool
+local longNameList = BiSCodexModule:GetForSpec(9005)
+local longNameRow = Codex.bisRowPool[#longNameList]
+check(longNameRow ~= nil, "a row exists for the overlong plain-name entry")
+check(longNameRow.text:GetWidth() == Codex.scrollChild:GetWidth() - 120,
+    "the row's text FontString has a fixed width leaving room for the status tag and Delete button",
+    longNameRow.text:GetWidth())
+
 -- Delete is a two-click confirm, same as Loadouts.
 Codex:Open("MAGE", 9004)
 Codex:SelectTab("BiS")
@@ -1546,6 +1700,89 @@ check(hoverRow ~= nil, "a row exists for the item-linked entry to hover")
 check(pcall(function() hoverRow:GetScript("OnEnter")(hoverRow) end), "hovering a BiS row does not error")
 check(GameTooltip.itemID == 42, "hovering a BiS row shows the real item tooltip via SetItemByID", GameTooltip.itemID)
 hoverRow:GetScript("OnLeave")(hoverRow)
+
+--------------------------------------------------------------------------------
+section("Codex: BiS row updates on GET_ITEM_INFO_RECEIVED (Medium #2)")
+--------------------------------------------------------------------------------
+
+-- An itemID the item cache does not know about yet: Add stores the "Item
+-- <id>" placeholder (Modules/BiS.lua's ParseItemText), and Modules/BiS.lua's
+-- ResolveItemInfo queues a C_Item.RequestLoadItemDataByID call for it.
+mock.items[888888] = nil
+mock.itemLoadRequests = {}
+BiSCodexModule:Add(9005, "Wrist", "888888")
+Codex:Open("MAGE", 9005)
+Codex:SelectTab("BiS")
+
+local asyncList = BiSCodexModule:GetForSpec(9005)
+local asyncRow = Codex.bisRowPool[#asyncList]
+check(asyncRow ~= nil, "a row exists for the not-yet-cached entry")
+check(asyncRow.text:GetText():find("Item 888888", 1, true) ~= nil,
+    "the row shows the placeholder name before the item is cached", asyncRow.text:GetText())
+
+local requestedLoad = false
+for _, itemID in ipairs(mock.itemLoadRequests) do
+    if itemID == 888888 then requestedLoad = true end
+end
+check(requestedLoad, "an unresolved entry queues a C_Item.RequestLoadItemDataByID request", mock.itemLoadRequests)
+
+-- The item becomes cached (a test fixture appears, same as the real client
+-- caching it server-side) and the client fires GET_ITEM_INFO_RECEIVED for
+-- it. The row must update on its own - no explicit re-render, tab switch,
+-- or spec switch needed - which is the bug this finding is about: nothing
+-- previously listened for this event at all.
+mock.items[888888] = { name = "Freshly Cached Wristguard", quality = 3 }
+mock.Fire("GET_ITEM_INFO_RECEIVED", 888888)
+
+local updatedRow = Codex.bisRowPool[#asyncList]
+check(updatedRow.text:GetText():find("Freshly Cached Wristguard", 1, true) ~= nil,
+    "the row's text updates to the real name once GET_ITEM_INFO_RECEIVED fires, with no explicit re-render",
+    updatedRow.text:GetText())
+
+-- An item-info event for an itemID that is not on the currently viewed
+-- spec's checklist at all must not error and must not touch anything.
+check(pcall(function() mock.Fire("GET_ITEM_INFO_RECEIVED", 55) end),
+    "GET_ITEM_INFO_RECEIVED for an unrelated itemID does not error")
+
+mock.items[888888] = nil
+
+--------------------------------------------------------------------------------
+section("Codex: the BiS Add box does not survive a spec or tab switch (Medium #5)")
+--------------------------------------------------------------------------------
+
+-- Mirrors "Codex: notes survive a spec switch" above: clicking a spec-rail
+-- button does not clear an EditBox's focus in WoW, so SelectSpec must flush
+-- (here: clear, since there is nothing to save) the BiS Add box itself
+-- before a later Add can land against the wrong spec.
+Codex:Open("WARRIOR", 72)
+Codex:SelectTab("BiS")
+Codex.bisItemBox:SetText("Half-typed entry meant for Fury (72)")
+Codex.bisItemBox:SetFocus()
+check(Codex.bisItemBox.focused == true, "sanity: the BiS Add box can be focused while its tab is active")
+
+local specSwitchAddCountBefore = #BiSCodexModule:GetForSpec(71)
+Codex:SelectSpec(71) -- Arms: a different spec, same class, BiS tab stays open
+check(Codex.bisItemBox:GetText() == "", "switching spec clears the half-typed BiS Add box")
+check(Codex.bisItemBox.focused == false, "switching spec also clears the BiS Add box's focus")
+
+Codex:OnBiSAddClicked() -- the box is now empty; must be a silent no-op (Low #11)
+check(#BiSCodexModule:GetForSpec(71) == specSwitchAddCountBefore,
+    "the emptied box after a spec switch adds nothing to the newly selected spec")
+
+-- Same guarantee for a tab switch away from BiS (not just a spec switch).
+Codex:Open("WARRIOR", 72)
+Codex:SelectTab("BiS")
+Codex.bisItemBox:SetText("Half-typed entry, tab switch this time")
+Codex:SelectTab("Notes")
+check(Codex.bisItemBox:GetText() == "", "switching tab away from BiS clears the half-typed Add box")
+
+-- The one-line notesBox fix from the same finding: HideOtherTabWidgets now
+-- clears focus before hiding self.notesBox too, not just self.bisItemBox.
+Codex:SelectTab("Notes")
+Codex.notesBox:SetFocus()
+check(Codex.notesBox.focused == true, "sanity: the notes box can be focused while its tab is active")
+Codex:SelectTab("BiS")
+check(Codex.notesBox.focused == false, "switching away from Notes clears its focus too")
 
 -- All 8 tabs (BiS included) still render for both a spec with data and a
 -- spec without, and the widened tab strip still builds without error.
