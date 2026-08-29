@@ -1,0 +1,388 @@
+-- Modules/Stats.lua
+-- Character stat readout: item level, primary stat, and secondary ratings.
+
+local ADDON, ns = ...
+
+local Stats = ns:NewModule("Stats")
+
+-- These moved into C_SpecializationInfo in modern retail but the globals are
+-- still around; prefer the namespaced versions when present.
+local GetSpecialization = (C_SpecializationInfo and C_SpecializationInfo.GetSpecialization) or GetSpecialization
+local GetSpecializationInfo = (C_SpecializationInfo and C_SpecializationInfo.GetSpecializationInfo) or GetSpecializationInfo
+
+local STAT_STRENGTH, STAT_AGILITY, STAT_STAMINA, STAT_INTELLECT = 1, 2, 3, 4
+
+-- Combat rating indices, with numeric fallbacks in case a global is missing.
+local RATING = {
+    critMelee = CR_CRIT_MELEE or 9,
+    critSpell = CR_CRIT_SPELL or 11,
+    hasteMelee = CR_HASTE_MELEE or 18,
+    hasteSpell = CR_HASTE_SPELL or 20,
+    mastery = CR_MASTERY or 26,
+    versDone = CR_VERSATILITY_DAMAGE_DONE or 29,
+    versTaken = CR_VERSATILITY_DAMAGE_TAKEN or 31,
+    lifesteal = CR_LIFESTEAL or 17,
+    avoidance = CR_AVOIDANCE or 21,
+    speed = CR_SPEED or 14,
+}
+
+local STAT_NAMES = {
+    [STAT_STRENGTH] = "Strength",
+    [STAT_AGILITY] = "Agility",
+    [STAT_STAMINA] = "Stamina",
+    [STAT_INTELLECT] = "Intellect",
+}
+
+local UPDATE_EVENTS = {
+    "UNIT_STATS",
+    "UNIT_AURA",
+    "UNIT_MAXHEALTH",
+    "UNIT_ATTACK_POWER",
+    "COMBAT_RATING_UPDATE",
+    "MASTERY_UPDATE",
+    "SPEED_UPDATE",
+    "LIFESTEAL_UPDATE",
+    "AVOIDANCE_UPDATE",
+    "PLAYER_EQUIPMENT_CHANGED",
+    "PLAYER_AVG_ITEM_LEVEL_UPDATE",
+    "PLAYER_SPECIALIZATION_CHANGED",
+    "PLAYER_TALENT_UPDATE",
+}
+
+-- Data/API.lua (ns.GuideStore) speaks a slightly different stat-key
+-- vocabulary than the overlay's internal row keys (statPriority entries use
+-- "versatility"/"avoidance"; overlay rows use the shorter "vers"/"avoid" so
+-- they line up with SpecSageCharDB.statsShow). This maps the public,
+-- guide-facing vocabulary onto the internal reader keys.
+local PUBLIC_STAT_ALIASES = {
+    versatility = "vers",
+    avoidance = "avoid",
+}
+
+--------------------------------------------------------------------------------
+-- Stat readers
+--------------------------------------------------------------------------------
+
+-- Which primary stat this spec actually scales with.
+local function GetPrimaryStatIndex()
+    local spec = GetSpecialization and GetSpecialization()
+    if spec then
+        local _, _, _, _, _, primaryStat = GetSpecializationInfo(spec)
+        if primaryStat then return primaryStat end
+    end
+
+    -- No spec yet (low level characters): fall back to the largest of the three.
+    local best, bestValue = STAT_STRENGTH, -1
+    for _, index in ipairs({ STAT_STRENGTH, STAT_AGILITY, STAT_INTELLECT }) do
+        local _, value = UnitStat("player", index)
+        if value > bestValue then
+            best, bestValue = index, value
+        end
+    end
+    return best
+end
+
+-- Casters care about spell crit, everyone else about melee crit. Spell crit is
+-- per-school, so take the best school the way the paper doll does.
+local function GetBestSpellCrit()
+    local best = 0
+    for school = 2, 7 do
+        local crit = GetSpellCritChance(school) or 0
+        if crit > best then best = crit end
+    end
+    return best
+end
+
+local function GetCrit(primaryStat)
+    if primaryStat == STAT_INTELLECT then
+        return GetBestSpellCrit()
+    end
+    return GetCritChance() or 0
+end
+
+local function GetVersatility()
+    local rating = CR_VERSATILITY_DAMAGE_DONE or 29
+    return (GetCombatRatingBonus(rating) or 0) + (GetVersatilityBonus(rating) or 0)
+end
+
+local readers = {}
+
+readers.ilvl = function()
+    local _, equipped = GetAverageItemLevel()
+    return "Item Level", format("%.1f", equipped or 0)
+end
+
+readers.primary = function(primaryStat)
+    local _, value = UnitStat("player", primaryStat)
+    return STAT_NAMES[primaryStat] or "Primary", ns.FormatNumber(value)
+end
+
+readers.stamina = function()
+    local _, value = UnitStat("player", STAT_STAMINA)
+    return "Stamina", ns.FormatNumber(value)
+end
+
+readers.health = function()
+    return "Health", ns.FormatNumber(UnitHealthMax("player"))
+end
+
+readers.crit = function(primaryStat)
+    return "Crit", ns.FormatPercent(GetCrit(primaryStat))
+end
+
+readers.haste = function()
+    return "Haste", ns.FormatPercent(GetHaste() or 0)
+end
+
+readers.mastery = function()
+    return "Mastery", ns.FormatPercent(GetMasteryEffect() or 0)
+end
+
+readers.vers = function()
+    return "Versatility", ns.FormatPercent(GetVersatility())
+end
+
+readers.leech = function()
+    local value = GetLifesteal and GetLifesteal() or GetCombatRatingBonus(CR_LIFESTEAL or 17) or 0
+    return "Leech", ns.FormatPercent(value)
+end
+
+readers.avoid = function()
+    local value = GetAvoidance and GetAvoidance() or GetCombatRatingBonus(CR_AVOIDANCE or 21) or 0
+    return "Avoidance", ns.FormatPercent(value)
+end
+
+readers.speed = function()
+    local value = GetSpeed and GetSpeed() or GetCombatRatingBonus(CR_SPEED or 14) or 0
+    return "Speed", ns.FormatPercent(value)
+end
+
+readers.armor = function()
+    local _, effectiveArmor = UnitArmor("player")
+    return "Armor", ns.FormatNumber(effectiveArmor)
+end
+
+--------------------------------------------------------------------------------
+-- Shared computation
+--
+-- Both the overlay row builder and the public GetStatValue accessor read a
+-- stat through this one function, so there is exactly one place that turns a
+-- reader key into a label/value pair.
+--------------------------------------------------------------------------------
+
+local function ReadStat(key, primaryStat)
+    local reader = readers[key]
+    if not reader then return nil end
+
+    local ok, label, value = pcall(reader, primaryStat)
+    if not ok then return nil end
+    return label, value
+end
+
+--------------------------------------------------------------------------------
+-- Tooltips
+--
+-- Built on hover rather than on every stat update, which fires often in combat.
+--------------------------------------------------------------------------------
+
+local function Rating(index)
+    return GetCombatRating and GetCombatRating(index) or 0
+end
+
+local function RatingLines(index, ratingLabel)
+    return {
+        { left = ratingLabel or "Rating", right = ns.FormatNumber(Rating(index)) },
+        { left = "From rating", right = ns.FormatPercent(GetCombatRatingBonus(index) or 0) },
+    }
+end
+
+local DESCRIPTIONS = {
+    ilvl = "The average item level of the gear you are wearing. Overall also counts items in your bags.",
+    primary = "Your specialisation's main stat. It increases the damage or healing of most of your abilities.",
+    stamina = "Each point of Stamina increases your maximum health.",
+    health = "The most damage you can take before dying.",
+    crit = "Chance for your attacks and spells to critically strike for extra damage or healing.",
+    haste = "Increases attack and casting speed, and the rate of many periodic effects and resource generation.",
+    mastery = "Improves a bonus specific to your specialisation.",
+    vers = "Increases damage and healing done, and reduces damage taken.",
+    leech = "Heals you for a portion of the damage and healing you deal.",
+    avoid = "Reduces damage taken from area-of-effect attacks.",
+    speed = "Increases your movement speed.",
+    armor = "Reduces the physical damage you take.",
+}
+
+local tooltipBuilders = {}
+
+tooltipBuilders.ilvl = function()
+    local overall, equipped = GetAverageItemLevel()
+    return {
+        lines = {
+            { left = "Equipped", right = format("%.1f", equipped or 0) },
+            { left = "Overall", right = format("%.1f", overall or 0) },
+        },
+    }
+end
+
+local function StatBreakdown(index)
+    local base, total, posBuff, negBuff = UnitStat("player", index)
+    local lines = {
+        { left = "Base", right = ns.FormatNumber(base) },
+    }
+    if (posBuff or 0) > 0 then
+        lines[#lines + 1] = { left = "From gear and buffs", right = "+" .. ns.FormatNumber(posBuff) }
+    end
+    if (negBuff or 0) < 0 then
+        lines[#lines + 1] = { left = "Reduced by", right = ns.FormatNumber(negBuff) }
+    end
+    return lines, total
+end
+
+tooltipBuilders.primary = function(primaryStat)
+    local lines = StatBreakdown(primaryStat)
+    return { lines = lines }
+end
+
+tooltipBuilders.stamina = function()
+    local lines = StatBreakdown(STAT_STAMINA)
+    lines[#lines + 1] = { left = "Maximum health", right = ns.FormatNumber(UnitHealthMax("player")) }
+    return { lines = lines }
+end
+
+tooltipBuilders.health = function()
+    return {
+        lines = {
+            { left = "Current", right = ns.FormatNumber(UnitHealth("player")) },
+            { left = "Maximum", right = ns.FormatNumber(UnitHealthMax("player")) },
+        },
+    }
+end
+
+tooltipBuilders.crit = function(primaryStat)
+    local index = (primaryStat == STAT_INTELLECT) and RATING.critSpell or RATING.critMelee
+    return { lines = RatingLines(index) }
+end
+
+tooltipBuilders.haste = function(primaryStat)
+    local index = (primaryStat == STAT_INTELLECT) and RATING.hasteSpell or RATING.hasteMelee
+    return { lines = RatingLines(index) }
+end
+
+tooltipBuilders.mastery = function()
+    local lines = RatingLines(RATING.mastery)
+    if GetMastery then
+        lines[#lines + 1] = { left = "Mastery points", right = format("%.2f", GetMastery() or 0) }
+    end
+    return { lines = lines }
+end
+
+tooltipBuilders.vers = function()
+    return {
+        lines = {
+            { left = "Rating", right = ns.FormatNumber(Rating(RATING.versDone)) },
+            { left = "Damage and healing done", right = ns.FormatPercent(GetVersatility()) },
+            { left = "Damage taken reduced by", right = ns.FormatPercent(
+                (GetCombatRatingBonus(RATING.versTaken) or 0) + (GetVersatilityBonus(RATING.versTaken) or 0)) },
+        },
+    }
+end
+
+tooltipBuilders.leech = function() return { lines = RatingLines(RATING.lifesteal) } end
+tooltipBuilders.avoid = function() return { lines = RatingLines(RATING.avoidance) } end
+tooltipBuilders.speed = function() return { lines = RatingLines(RATING.speed) } end
+
+tooltipBuilders.armor = function()
+    local base, effective, _, posBuff = UnitArmor("player")
+    local lines = {
+        { left = "Base", right = ns.FormatNumber(base) },
+        { left = "Effective", right = ns.FormatNumber(effective) },
+    }
+    if (posBuff or 0) > 0 then
+        lines[#lines + 1] = { left = "From buffs", right = "+" .. ns.FormatNumber(posBuff) }
+    end
+    return { lines = lines }
+end
+
+-- Called by the UI when the mouse enters a stat row.
+local function TooltipProvider(key)
+    local entry
+    for _, candidate in ipairs(ns.STAT_LIST) do
+        if candidate.key == key then
+            entry = candidate
+            break
+        end
+    end
+    if not entry then return nil end
+
+    local primaryStat = GetPrimaryStatIndex()
+    local label, value = ReadStat(key, primaryStat)
+
+    local data = { title = label or entry.label, value = value, description = DESCRIPTIONS[key] }
+
+    local builder = tooltipBuilders[key]
+    if builder then
+        local ok, built = pcall(builder, primaryStat)
+        if ok and built then
+            data.lines = built.lines
+        end
+    end
+
+    return data
+end
+
+--------------------------------------------------------------------------------
+-- Module
+--------------------------------------------------------------------------------
+
+function Stats:Update()
+    if not ns.db.stats.enabled then
+        ns.UI:SetSection("stats", nil)
+        return
+    end
+
+    local shown = ns.StatsShown()
+    local primaryStat = GetPrimaryStatIndex()
+    local rows = {}
+
+    for _, entry in ipairs(ns.STAT_LIST) do
+        if shown[entry.key] then
+            local label, value = ReadStat(entry.key, primaryStat)
+            if value then
+                rows[#rows + 1] = { label = label, value = value, tooltipKey = entry.key }
+            end
+        end
+    end
+
+    ns.UI:SetSection("stats", rows, TooltipProvider)
+end
+
+-- Public accessor for other parts of the addon (the Codex's stat-priority
+-- page) that want just the formatted display value for a stat, without
+-- caring whether the overlay is showing that row right now. Accepts both the
+-- overlay's internal keys and the guide-facing vocabulary from
+-- Data/API.lua (e.g. "versatility", "avoidance"). Returns nil for a key that
+-- does not resolve to a reader, rather than erroring.
+function Stats:GetStatValue(statKey)
+    if type(statKey) ~= "string" then return nil end
+
+    local key = PUBLIC_STAT_ALIASES[statKey] or statKey
+    local _, value = ReadStat(key, GetPrimaryStatIndex())
+    return value
+end
+
+function Stats:OnEnable()
+    local function OnStatEvent(event, unit)
+        -- Unit-scoped events fire for every unit in range; only ours matters.
+        if unit and unit ~= "player" then return end
+        self:Update()
+    end
+
+    for _, event in ipairs(UPDATE_EVENTS) do
+        ns:RegisterEvent(event, OnStatEvent)
+    end
+
+    self:Update()
+end
+
+function Stats:OnConfigChanged()
+    self:Update()
+end

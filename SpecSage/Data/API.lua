@@ -1,0 +1,177 @@
+-- Data/API.lua
+-- ns.GuideStore: the registration API guide packs (shipped or third-party)
+-- use to publish class/spec guide content.
+--
+-- Guide data files contain data only, so a typo or a bad third-party guide
+-- pack must never be able to take the rest of the addon down. Every entry
+-- point here validates its input and skips (with a printed warning) rather
+-- than erroring.
+
+local ADDON, ns = ...
+
+local GuideStore = {}
+ns.GuideStore = GuideStore
+
+--------------------------------------------------------------------------------
+-- The 13 retail classes, in Blizzard's classID order. Listed here (rather
+-- than read from the game) so GetClasses() works the same in and out of the
+-- client, and so a class with no guides registered yet is still listed.
+--------------------------------------------------------------------------------
+
+local CLASSES = {
+    { token = "WARRIOR",     name = "Warrior",      classID = 1 },
+    { token = "PALADIN",     name = "Paladin",       classID = 2 },
+    { token = "HUNTER",      name = "Hunter",        classID = 3 },
+    { token = "ROGUE",       name = "Rogue",         classID = 4 },
+    { token = "PRIEST",      name = "Priest",        classID = 5 },
+    { token = "DEATHKNIGHT", name = "Death Knight",  classID = 6 },
+    { token = "SHAMAN",      name = "Shaman",        classID = 7 },
+    { token = "MAGE",        name = "Mage",          classID = 8 },
+    { token = "WARLOCK",     name = "Warlock",       classID = 9 },
+    { token = "MONK",        name = "Monk",          classID = 10 },
+    { token = "DRUID",       name = "Druid",         classID = 11 },
+    { token = "DEMONHUNTER", name = "Demon Hunter",  classID = 12 },
+    { token = "EVOKER",      name = "Evoker",        classID = 13 },
+}
+
+local CLASS_BY_TOKEN = {}
+for _, entry in ipairs(CLASSES) do
+    CLASS_BY_TOKEN[entry.token] = entry
+end
+
+-- Valid `stat` keys inside a guide's statPriority list. Matches the overlay's
+-- public stat vocabulary (see Modules/Stats.lua's Stats:GetStatValue).
+local VALID_STAT_KEYS = {
+    primary = true, crit = true, haste = true, mastery = true, versatility = true,
+    leech = true, avoidance = true, speed = true, armor = true, stamina = true,
+}
+
+local VALID_ROLES = { DAMAGER = true, TANK = true, HEALER = true }
+
+--------------------------------------------------------------------------------
+-- Storage
+--------------------------------------------------------------------------------
+
+local guides = {}         -- specID -> guide table
+local classSpecs = {}      -- classToken -> ordered array of specIDs, registration order
+local specClass = {}        -- specID -> classToken, for cross-checking
+
+--------------------------------------------------------------------------------
+-- Validation
+--
+-- Every check returns false plus a human-readable reason on failure, so
+-- RegisterSpec can print one useful line and move on.
+--------------------------------------------------------------------------------
+
+local function ValidateStatPriority(statPriority)
+    if statPriority == nil then return true end
+    if type(statPriority) ~= "table" then
+        return false, "statPriority must be a table"
+    end
+
+    for index, entry in ipairs(statPriority) do
+        if type(entry) ~= "table" then
+            return false, format("statPriority[%d] must be a table", index)
+        end
+        if type(entry.stat) ~= "string" or not VALID_STAT_KEYS[entry.stat] then
+            return false, format("statPriority[%d] has an invalid stat key '%s'", index, tostring(entry.stat))
+        end
+    end
+
+    return true
+end
+
+local function ValidateGuide(classToken, specID, guide)
+    if type(classToken) ~= "string" or not CLASS_BY_TOKEN[classToken] then
+        return false, format("unknown class token '%s'", tostring(classToken))
+    end
+
+    if type(specID) ~= "number" then
+        return false, "specID must be a number"
+    end
+
+    if type(guide) ~= "table" then
+        return false, "guide must be a table"
+    end
+
+    if type(guide.specName) ~= "string" or guide.specName == "" then
+        return false, "guide.specName must be a non-empty string"
+    end
+
+    if guide.role ~= nil and not VALID_ROLES[guide.role] then
+        return false, format("guide.role must be DAMAGER, TANK or HEALER, got '%s'", tostring(guide.role))
+    end
+
+    local ok, err = ValidateStatPriority(guide.statPriority)
+    if not ok then
+        return false, "guide." .. err
+    end
+
+    return true
+end
+
+--------------------------------------------------------------------------------
+-- Public API
+--------------------------------------------------------------------------------
+
+-- Registers (or overwrites) the guide for one spec. Returns true on success;
+-- on failure it prints a warning and returns false without touching storage.
+function GuideStore:RegisterSpec(classToken, specID, guide)
+    local ok, err = ValidateGuide(classToken, specID, guide)
+    if not ok then
+        ns.Print(format("|cffff4444guide rejected|r (class=%s spec=%s): %s",
+            tostring(classToken), tostring(specID), err))
+        return false
+    end
+
+    guides[specID] = guide
+    specClass[specID] = classToken
+
+    local specs = classSpecs[classToken]
+    if not specs then
+        specs = {}
+        classSpecs[classToken] = specs
+    end
+
+    local alreadyListed = false
+    for _, existing in ipairs(specs) do
+        if existing == specID then
+            alreadyListed = true
+            break
+        end
+    end
+    if not alreadyListed then
+        specs[#specs + 1] = specID
+    end
+
+    return true
+end
+
+-- Returns the guide table for a specID, or nil if none is registered.
+function GuideStore:GetGuide(specID)
+    return guides[specID]
+end
+
+-- Returns an array of specIDs registered for classToken, in registration
+-- order. Always a fresh table, so callers cannot mutate internal state.
+function GuideStore:GetClassSpecs(classToken)
+    local specs = classSpecs[classToken]
+    if not specs then return {} end
+
+    local copy = {}
+    for index, specID in ipairs(specs) do
+        copy[index] = specID
+    end
+    return copy
+end
+
+-- Returns all 13 retail classes in classID order, each as a fresh
+-- { token, name, classID } table. Classes with no guides registered are
+-- still listed, so the Codex's class rail is always complete.
+function GuideStore:GetClasses()
+    local list = {}
+    for index, entry in ipairs(CLASSES) do
+        list[index] = { token = entry.token, name = entry.name, classID = entry.classID }
+    end
+    return list
+end

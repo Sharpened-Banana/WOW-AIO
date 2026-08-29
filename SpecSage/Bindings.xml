@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="SPECSAGE_PIN_TOOLTIP" header="SPECSAGE">
+		SpecSage_PinHoveredTooltip()
+	</Binding>
+</Bindings>
