@@ -8,7 +8,16 @@ local ADDON, ns = ...
 -- Rotation/overview/tips/gear prose throughout this file is hand-authored
 -- and was reviewed for Midnight ability changes, not derived from or
 -- checked against SimC's APLs, and was not re-verified against current
--- tuning this pass.
+-- tuning this pass — EXCEPT Discipline (256), Holy (257), and Shadow (258),
+-- which each gained an `mplusMetaLoadout` (DESIGN.md's v1.4 section) this
+-- pass: pulled live from Blizzard's own Battle.net Game Data API
+-- (client-credentials OAuth, US region) rather than SimC, on 2026-08-30.
+-- Methodology: every current-season Mythic+ leaderboard (8-dungeon pool,
+-- period 1078) across all 83 US connected realms was scanned (top 20 groups
+-- per realm/dungeon) for each spec's group members; the top-observed-keystone
+-- characters (up to 50 per spec) had their live `specializations` looked up
+-- for their active loadout's `talent_loadout_code`. See each field's own
+-- `source` comment for the resulting distribution.
 -- This is community-maintained conventional guidance (stat priorities and
 -- rotations that match the spec's long-standing design) — not a claim of
 -- bleeding-edge sim-perfect optimization.
@@ -83,6 +92,17 @@ ns.GuideStore:RegisterSpec("PRIEST", 256, {
     { slot = "Weapon", text = "A one-hander with strong Intellect and secondary stats rather than a pure item-level chase" },
     { slot = "Off-hand", text = "An off-hand caster stat stick for extra Intellect and secondary stats" },
   },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 2/50 (4%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 38/50 (76%) ran Oracle overall. Reported honestly
+  -- rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CAQAR03Gt7xPmcDNOjs2Zlb3yCDsMDWmZMmBmZbmtZmZmxMDAAAAAAAAAgZYZGMzMzwYmBbmmJGgZWwQYMLDwYwCAAMmZmxgZAmZGBzA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Discipline Priests by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (2/50, 4%); 38/50 (76%) ran Oracle overall.",
+    patch = "12.1",
+    sampleSize = 50,
+  },
   tips = {
     "Keep Atonement spread across the raid before damage happens, not after.",
     "Power Word: Shield is both mitigation and an Atonement application tool — use it proactively.",
@@ -156,6 +176,17 @@ ns.GuideStore:RegisterSpec("PRIEST", 257, {
     { slot = "Trinket", text = "One throughput trinket timed with Apotheosis or Divine Hymn windows" },
     { slot = "Weapon", text = "A one-hander with strong Intellect and secondary stats rather than a pure item-level chase" },
     { slot = "Off-hand", text = "An off-hand caster stat stick for extra Intellect and secondary stats" },
+  },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 3/50 (6%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 50/50 (100%) ran Oracle overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CEQAR03Gt7xPmcDNOjs2Zlb3yyYAAAAAAAMzMmlxMjZGDzALzMzMAAAAGzsMDmZmx2MmZAMTBwMLYIMmtBYMwiZmBgmxMjxgZAmZGwA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Holy Priests by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (3/50, 6%); 50/50 (100%) ran Oracle overall.",
+    patch = "12.1",
+    sampleSize = 50,
   },
   tips = {
     "Weave in a damage spell when nobody needs healing — it reduces your Holy Word cooldowns.",
@@ -237,6 +268,17 @@ ns.GuideStore:RegisterSpec("PRIEST", 258, {
     string = "CIQAAAAAAAAAAAAAAAAAAAAAAMMjZGAAAAAAAAAAAAMLmxMbzMMz2MzYG2mZGzMzYDZGLmpBYmZGAIAz2stEMbMAwgxMzMmtxMYmBzgB",
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
+  },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 2/49 (4%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 29/49 (59%) ran Archon overall. Reported honestly
+  -- rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CIQAR03Gt7xPmcDNOjs2Zlb3yOjZMAAAAAAAAAAAAYMLzMGbzMmZ2mZGzw2MzYmZGbIzYxMNAzMzAABY2mtlgZjBAGMmZmxsNmBzMYGMA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 49 current-season Mythic+ Shadow Priests by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (2/49, 4%); 29/49 (59%) ran Archon overall.",
+    patch = "12.1",
+    sampleSize = 49,
   },
   tips = {
     "Never let Shadow Word: Pain or Vampiric Touch fall off a target you'll keep attacking.",

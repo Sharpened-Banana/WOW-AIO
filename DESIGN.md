@@ -454,14 +454,14 @@ direct field read (`loadouts[].talent_loadout_code` for the entry where
 `is_active` is true), the same "just pull the string" scope
 `mplusLoadout`/`raidLoadout` already had.
 
-**The pipeline is built and has produced one real, shipped result.** For
-Protection Paladin (specID 66), the full pipeline ran end-to-end on
-2026-08-30: `GET /data/wow/connected-realm/{id}/mythic-leaderboard/{dungeonId}/period/{period}`
+**The pipeline is built and has now shipped for all 39 specs in the addon.**
+Protection Paladin (specID 66) ran first, end-to-end, on 2026-08-30:
+`GET /data/wow/connected-realm/{id}/mythic-leaderboard/{dungeonId}/period/{period}`
 (the confirmed live path — note `mythic-leaderboard`, not
 `mythic-keystone-leaderboard`) scanned across all 83 US connected realms ×
 the current season's 8-dungeon pool (no single global leaderboard exists,
-so this genuinely means enumerating every realm — 664 calls for one spec,
-mechanically simple and fast, not structurally hard), filtering
+so this genuinely means enumerating every realm — 664 calls, mechanically
+simple and fast, not structurally hard), filtering
 `leading_groups[].members[].specialization.id` for Protection Paladin
 directly from the leaderboard response (no extra lookup needed just to
 identify a member's spec). The top 50 distinct characters by best observed
@@ -469,15 +469,28 @@ keystone level had their `specializations` looked up for their active
 Protection loadout's `talent_loadout_code`; the plurality exact build (4/50,
 8%) shipped as `mplusMetaLoadout.string`, with the far stronger 94%
 Lightsmith-hero-talent consensus called out in `source` for the fuller
-picture a single percentage on the literal string would undersell. See
-`Guides_Paladin.lua`'s Protection entry (and its file header) for exactly
-what shipped, and `.claude/skills/specsage-mplus-meta-refresh/SKILL.md` for
-the generalized, repeatable pipeline (per-spec, run separately from
-`/specsage-refresh`'s full-repo SimC pass) - the query path, the
-`is_active`-within-a-spec's-own-loadouts nuance, the URL-encoding pitfall
-hit once already (non-ASCII character names), and the "report thin
-consensus honestly, don't inflate it" rule the worked example's own
-`source` string follows.
+picture a single percentage on the literal string would undersell.
+
+The remaining 38 specs followed the same day in a second pass, generalized
+to cover every class/spec pair in one scan: rather than re-running the
+664-call leaderboard scan per spec, a single pass bucketed every
+`leading_groups[].members[]` entry across all 83 realms × 8 dungeons by
+`specialization.id` for all 38 target specs simultaneously (the leaderboard
+data doesn't change between specs, so this is strictly cheaper than 38
+separate scans), then resolved each spec's own top ~50 characters
+independently. All 38 resolved with a usable sample (22-50 characters each —
+a few off-meta specs, like Evoker's Augmentation and Mage's Fire, simply had
+fewer distinct top-keystone characters to draw from; none fell below the
+15-character honesty floor that would have required skipping a spec rather
+than shipping a thin sample). See each `Guides_*.lua` file's Loadouts
+section (and file header) for exactly what shipped per spec, and
+`.claude/skills/specsage-mplus-meta-refresh/SKILL.md` for the generalized,
+repeatable pipeline (run separately from `/specsage-refresh`'s full-repo
+SimC pass) - the query path, the `is_active`-within-a-spec's-own-loadouts
+nuance, the URL-encoding pitfall hit once already (non-ASCII character
+names), the "scan once for every spec, not once per spec" efficiency this
+second pass added, and the "report thin consensus honestly, don't inflate
+it" rule every shipped `source` string follows.
 
 ## Tests
 

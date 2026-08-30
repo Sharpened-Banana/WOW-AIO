@@ -8,7 +8,16 @@ local ADDON, ns = ...
 -- Rotation/overview/tips/gear prose throughout this file is hand-authored
 -- and was reviewed for Midnight ability changes, not derived from or
 -- checked against SimC's APLs, and was not re-verified against current
--- tuning this pass.
+-- tuning this pass — EXCEPT Devastation (1467), Preservation (1468), and Augmentation (1473),
+-- which each gained an `mplusMetaLoadout` (DESIGN.md's v1.4 section) this
+-- pass: pulled live from Blizzard's own Battle.net Game Data API
+-- (client-credentials OAuth, US region) rather than SimC, on 2026-08-30.
+-- Methodology: every current-season Mythic+ leaderboard (8-dungeon pool,
+-- period 1078) across all 83 US connected realms was scanned (top 20 groups
+-- per realm/dungeon) for each spec's group members; the top-observed-keystone
+-- characters (up to 50 per spec) had their live `specializations` looked up
+-- for their active loadout's `talent_loadout_code`. See each field's own
+-- `source` comment for the resulting distribution.
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -90,6 +99,17 @@ ns.GuideStore:RegisterSpec("EVOKER", 1467, {
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.0 (MID1, previous tier)",
   },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 4/50 (8%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 49/50 (98%) ran Scalecommander overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CsbBPJc41CfcseY0baneJ1IHrBAAAAAAAAAAAjZgZYGzMgBjZamZmpZM2mxMzMzMzMzAmxMGzMLzMDMwYwGsMGN2GQmJAbYgZGMMA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Devastation Evokers by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (4/50, 8%); 49/50 (98%) ran Scalecommander overall.",
+    patch = "12.1",
+    sampleSize = 50,
+  },
   tips = {
     "Only hold an empowered cast to a higher level when it's safe to stand still that long — a lower, on-time empower often beats a perfect one that gets interrupted by movement.",
     "Enter Dragonrage with dots already applied so the window isn't spent ramping up.",
@@ -167,6 +187,17 @@ ns.GuideStore:RegisterSpec("EVOKER", 1468, {
     { slot = "Trinket", text = "A second trinket built around a burst-healing proc you can align with Dream Flight/Rewind" },
     { slot = "Weapon", text = "Evokers wield ranged caster weapons — take the highest item level available as a pure stat stick" },
     { slot = "Off-hand", text = "A caster off-hand leaning Haste keeps your empowered casts and Echo-based healing flowing smoothly" },
+  },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 1/49 (2%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 46/49 (94%) ran Flameshaper overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CwbBPJc41CfcseY0baneJ1IHrBAAAAAmZmZ2MeAGmZmZzMeAmtBAAwMmxMzYYmYmZAAAAzMzkxMzMzyYGAYMzYmlFWswwMzMN0sBbGGzMYmhB",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 49 current-season Mythic+ Preservation Evokers by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (1/49, 2%); 46/49 (94%) ran Flameshaper overall.",
+    patch = "12.1",
+    sampleSize = 49,
   },
   tips = {
     "Place Echo ahead of expected damage rather than reactively — it rewards planning over reacting.",
@@ -248,6 +279,17 @@ ns.GuideStore:RegisterSpec("EVOKER", 1473, {
     { slot = "Trinket", text = "A passive secondary-stat trinket to keep your own direct damage relevant between cooldown windows" },
     { slot = "Weapon", text = "Evokers wield ranged caster weapons — take the highest item level available as a stat stick" },
     { slot = "Off-hand", text = "A caster off-hand leaning Critical Strike or Haste supports both your own damage and your buff uptime" },
+  },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 2/22 (9%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 13/22 (59%) ran Chronowarden overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CEcBPJc41CfcseY0baneJ1IHrNMzMbjZGMDzMLzYmZMzGAAAAAAAAmhZGYM1YmZGAAAAMzMjxMzyYmBmZzYwCsMGGbDgZiYDjZwMDgB",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 22 current-season Mythic+ Augmentation Evokers by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (2/22, 9%); 13/22 (59%) ran Chronowarden overall.",
+    patch = "12.1",
+    sampleSize = 22,
   },
   tips = {
     "Communicate with the allies you're buffing so Ebon Might and Prescience land while their own cooldowns are active.",

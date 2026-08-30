@@ -8,7 +8,16 @@ local ADDON, ns = ...
 -- Rotation/overview/tips/gear prose throughout this file is hand-authored
 -- and was reviewed for Midnight ability changes, not derived from or
 -- checked against SimC's APLs, and was not re-verified against current
--- tuning this pass.
+-- tuning this pass — EXCEPT Affliction (265), Demonology (266), and Destruction (267),
+-- which each gained an `mplusMetaLoadout` (DESIGN.md's v1.4 section) this
+-- pass: pulled live from Blizzard's own Battle.net Game Data API
+-- (client-credentials OAuth, US region) rather than SimC, on 2026-08-30.
+-- Methodology: every current-season Mythic+ leaderboard (8-dungeon pool,
+-- period 1078) across all 83 US connected realms was scanned (top 20 groups
+-- per realm/dungeon) for each spec's group members; the top-observed-keystone
+-- characters (up to 50 per spec) had their live `specializations` looked up
+-- for their active loadout's `talent_loadout_code`. See each field's own
+-- `source` comment for the resulting distribution.
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -88,6 +97,17 @@ ns.GuideStore:RegisterSpec("WARLOCK", 265, {
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
   },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 5/50 (10%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 44/50 (88%) ran Soul Harvester overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CkQAMrNP5kak+EBqLfUa3dMm+yMjZGNbmx2MzYWGAAwMzsMLmZ2GDAM2WGYATwMsFYYbAAAYGAAAzMjZMzsNGzYMzMzYYmZGAgBMA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Affliction Warlocks by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (5/50, 10%); 44/50 (88%) ran Soul Harvester overall.",
+    patch = "12.1",
+    sampleSize = 50,
+  },
   tips = {
     "Never let Agony or Corruption fall off early — dropped dots and re-ramping cost significant damage.",
     "Don't dump Malefic Rapture with only one or two dots active; wait for a fuller board when possible.",
@@ -163,6 +183,17 @@ ns.GuideStore:RegisterSpec("WARLOCK", 266, {
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
   },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 3/50 (6%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 50/50 (100%) ran Diabolist overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CoQAMrNP5kak+EBqLfUa3dMm+yMmZGNbMz2MzYWGAAAAAAAwYGDLwAbjWohFjZGLz2MzMmBAmZMzMmZAGzYGbAAgxMzMGGWmxAGA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Demonology Warlocks by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (3/50, 6%); 50/50 (100%) ran Diabolist overall.",
+    patch = "12.1",
+    sampleSize = 50,
+  },
   tips = {
     "Pool Soul Shards and demon summons before Demonic Tyrant so the empower window has as many demons as possible.",
     "Don't let Wild Imps sit unused if running Implosion — detonate them for burst when the timing calls for it.",
@@ -236,6 +267,17 @@ ns.GuideStore:RegisterSpec("WARLOCK", 267, {
     string = "CsQAAAAAAAAAAAAAAAAAAAAAAwMmZGNLMzmZmZWmFzMzsYMWMDAAmZGzMziNYgZxoxMAmtYjBAAGDM2AAmZwYGzYDAAwMzMAAMGG",
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
+  },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 3/50 (6%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 34/50 (68%) ran Diabolist overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CsQAMrNP5kak+EBqLfUa3dMm+yMMzoZzMz2MzYWmNzMzsYmZZZMAAYGjZmZDMmxwCZgthFaswAAAjBDAwMDwYGzMbAAAmZmBAAzwA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Destruction Warlocks by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (3/50, 6%); 34/50 (68%) ran Diabolist overall.",
+    patch = "12.1",
+    sampleSize = 50,
   },
   tips = {
     "Never let Immolate fall off the target — it feeds Rain of Fire and Channel Demonfire damage.",

@@ -9,7 +9,8 @@ local ADDON, ns = ...
 -- Rotation/overview/tips/gear prose throughout this file is hand-authored
 -- and was reviewed for Midnight ability changes, not derived from or
 -- checked against SimC's APLs, and was not re-verified against current
--- tuning this pass — EXCEPT Arms, refreshed this pass:
+-- tuning this pass — EXCEPT Arms, refreshed this pass, and all three specs,
+-- which each also gained an `mplusMetaLoadout` this pass:
 --   * `mplusLoadout.string` re-pulled from profiles/MID1/MID1_Warrior_Arms.simc's
 --     `talents=` line (superseding an earlier, now-stale pull of the same
 --     file - SimC's `midnight` branch updates its default profiles via
@@ -27,6 +28,16 @@ local ADDON, ns = ...
 --     data to a player who only sees "Suggested Raid" vs "Suggested
 --     Mythic+" in the Codex with no way to see this comment. See
 --     DESIGN.md's v1.3 section.
+--   * `mplusMetaLoadout` (DESIGN.md's v1.4 section) added for Arms (71),
+--     Fury (72), and Protection (73): pulled live from Blizzard's own
+--     Battle.net Game Data API (client-credentials OAuth, US region) rather
+--     than SimC, on 2026-08-30. Methodology: every current-season Mythic+
+--     leaderboard (8-dungeon pool, period 1078) across all 83 US connected
+--     realms was scanned (top 20 groups per realm/dungeon) for each spec's
+--     group members; the 50 distinct characters per spec with the highest
+--     observed keystone level had their live `specializations` looked up
+--     for their active loadout's `talent_loadout_code`. See each field's
+--     own `source` comment for the resulting distribution.
 -- This is community-maintained conventional guidance (stat priorities and
 -- rotations that match the spec's long-standing design) — not a claim of
 -- bleeding-edge sim-perfect optimization.
@@ -109,6 +120,17 @@ ns.GuideStore:RegisterSpec("WARRIOR", 71, {
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
   },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 8/50 (16%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 50/50 (100%) ran Slayer overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CcEASWsDSHNyPDXnbxuIhH3ZdjZmZmFzYmZGAAAghphxYmZzMzMzYmxMDAAAAgxyMDMhxy2ALgBMDTIzgNwMDDDmlZ2GgZGAMDDA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Arms Warriors by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (8/50, 16%); 50/50 (100%) ran Slayer overall.",
+    patch = "12.1",
+    sampleSize = 50,
+  },
   tips = {
     "Never let Rend fall off a target you'll be hitting for more than a few seconds.",
     "Save Overpower charges to spend rather than letting them cap and go to waste.",
@@ -184,6 +206,17 @@ ns.GuideStore:RegisterSpec("WARRIOR", 72, {
     string = "CgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgGDzMmZ2MzMzMDjZmZGzMzsMzMmZmZzYmBAAixy2ALgJYGmAzwGwMDjNAAYmhxYYMYM",
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
+  },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 6/50 (12%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 46/50 (92%) ran Slayer overall. Reported honestly
+  -- rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CgEASWsDSHNyPDXnbxuIhH3ZdDAAAAAAAjhxYmZzMzMzMzMmZmZmZm5BWmxYmxsZmZGAAAjltBWADYGGgZYDYmhBAAYmhxsMMGMG",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Fury Warriors by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (6/50, 12%); 46/50 (92%) ran Slayer overall.",
+    patch = "12.1",
+    sampleSize = 50,
   },
   tips = {
     "Try to stay Enraged as close to 100% of the time as possible — it underpins most of Fury's damage.",
@@ -268,6 +301,17 @@ ns.GuideStore:RegisterSpec("WARRIOR", 73, {
     string = "CkEAAAAAAAAAAAAAAAAAAAAAA02AAAzMDzMzMzMzmxsMjxYmGGDLzMzMDGzMAAAAYZAYGDAsYGDbwAzwCNmZBmxMDmNAAzMAgZgxA",
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
+  },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 2/50 (4%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 43/50 (86%) ran Mountain Thane overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CkEASWsDSHNyPDXnbxuIhH3ZdnBAAGzYmZmZmxsZmZZGjxoxMGWMzMzYGmZAAAAwyMDwMGgB2glFjGzAYWiZ2AmZGGbAwMDAAzAjB",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Protection Warriors by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (2/50, 4%); 43/50 (86%) ran Mountain Thane overall.",
+    patch = "12.1",
+    sampleSize = 50,
   },
   tips = {
     "Keep Shield Block active before big physical hits rather than reacting after the fact.",

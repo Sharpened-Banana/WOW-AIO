@@ -8,18 +8,19 @@ local ADDON, ns = ...
 -- Rotation/overview/tips/gear prose throughout this file is hand-authored
 -- and was reviewed for Midnight ability changes, not derived from or
 -- checked against SimC's APLs, and was not re-verified against current
--- tuning this pass — EXCEPT Protection (66), which gained an
--- `mplusMetaLoadout` (DESIGN.md's v1.4 section) this pass: pulled live from
--- Blizzard's own Battle.net Game Data API (client-credentials OAuth, US
--- region) rather than SimC, on 2026-08-30. Methodology: every current-season
--- Mythic+ leaderboard (8-dungeon pool, period 1078) across all 83 US
--- connected realms was scanned (top 20 groups per realm/dungeon) for
--- Protection Paladin group members; the 50 distinct characters with the
--- highest observed keystone level had their live `specializations` looked
--- up for their active Protection loadout's `talent_loadout_code` (confirmed
--- via a prior test call to be Blizzard's real export-string format, not
--- structured data needing a custom encoder). See the field's own `source`
--- comment below for the resulting distribution.
+-- tuning this pass — EXCEPT Holy (65), Protection (66), and Retribution (70),
+-- which each gained an `mplusMetaLoadout` (DESIGN.md's v1.4 section): pulled
+-- live from Blizzard's own Battle.net Game Data API (client-credentials
+-- OAuth, US region) rather than SimC (Protection first, on 2026-08-30; Holy
+-- and Retribution followed the same day in a second pass). Methodology:
+-- every current-season Mythic+ leaderboard (8-dungeon pool, period 1078)
+-- across all 83 US connected realms was scanned (top 20 groups per
+-- realm/dungeon) for each spec's group members; the 50 distinct characters
+-- per spec with the highest observed keystone level had their live
+-- `specializations` looked up for their active loadout's
+-- `talent_loadout_code` (confirmed to be Blizzard's real export-string
+-- format, not structured data needing a custom encoder). See each field's
+-- own `source` comment for the resulting distribution.
 -- This is community-maintained conventional guidance (stat priorities and
 -- rotations that match the spec's long-standing design) — not a claim of
 -- bleeding-edge sim-perfect optimization.
@@ -94,6 +95,17 @@ ns.GuideStore:RegisterSpec("PALADIN", 65, {
     { slot = "Trinket", text = "One throughput trinket, on-use or proc, timed with Avenging Wrath or Holy Avenger" },
     { slot = "Weapon", text = "A one-hander with strong Intellect and secondary stats rather than a pure item-level chase" },
     { slot = "Off-hand", text = "An off-hand caster stat stick for extra Intellect and secondary stats" },
+  },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 2/50 (4%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 41/50 (82%) ran Herald of the Sun overall.
+  -- Reported honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CEEAzbn3egSOtoSwvPw1U1vTLAAAALAwMAAD2mZGmZWmZsAzMsM2MziRTMMmZGGzWGAGA2AbsNzMzysNzMbNAAAALshBbmBzYwMAAmZYGjRDA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Holy Paladins by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (2/50, 4%); 41/50 (82%) ran Herald of the Sun overall.",
+    patch = "12.1",
+    sampleSize = 50,
   },
   tips = {
     "Keep Beacon of Light on the tank at all times unless you're intentionally repositioning it.",
@@ -273,6 +285,17 @@ ns.GuideStore:RegisterSpec("PALADIN", 70, {
     string = "CYEAAAAAAAAAAAAAAAAAAAAAAAAAAAAQz22MzsMMzAAAAAAwoMmhZGbDz2wMbzYMmZYGbsNMAAkZm2mZ2mBAsBYAwYGmBzYMbYZGMMmxgB",
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.0 (MID1, previous tier)",
+  },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 6/50 (12%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 49/50 (98%) ran Herald of the Sun overall.
+  -- Reported honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CYEAzbn3egSOtoSwvPw1U1vTLAAAAAwoZbbmZWGzMzAAAAAAYmyYGmZsNmthZ2mxYMGmxCbAYWmtZmZrBBAAsAYAwYGGYGzMbAzMDjZMYA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Retribution Paladins by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (6/50, 12%); 49/50 (98%) ran Herald of the Sun overall.",
+    patch = "12.1",
+    sampleSize = 50,
   },
   tips = {
     "Don't let Holy Power sit at cap — spend it before you overflow and waste generation.",

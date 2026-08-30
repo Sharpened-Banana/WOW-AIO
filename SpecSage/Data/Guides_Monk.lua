@@ -8,7 +8,16 @@ local ADDON, ns = ...
 -- Rotation/overview/tips/gear prose throughout this file is hand-authored
 -- and was reviewed for Midnight ability changes, not derived from or
 -- checked against SimC's APLs, and was not re-verified against current
--- tuning this pass.
+-- tuning this pass — EXCEPT Brewmaster (268), Mistweaver (270), and Windwalker (269),
+-- which each gained an `mplusMetaLoadout` (DESIGN.md's v1.4 section) this
+-- pass: pulled live from Blizzard's own Battle.net Game Data API
+-- (client-credentials OAuth, US region) rather than SimC, on 2026-08-30.
+-- Methodology: every current-season Mythic+ leaderboard (8-dungeon pool,
+-- period 1078) across all 83 US connected realms was scanned (top 20 groups
+-- per realm/dungeon) for each spec's group members; the top-observed-keystone
+-- characters (up to 50 per spec) had their live `specializations` looked up
+-- for their active loadout's `talent_loadout_code`. See each field's own
+-- `source` comment for the resulting distribution.
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -89,6 +98,17 @@ ns.GuideStore:RegisterSpec("MONK", 268, {
     string = "CwQAAAAAAAAAAAAAAAAAAAAAAAAAAgZbzYGzMWmxGmZMAAAAAAALLYmwMwMM2MDmZmZY2GzMmZBLb22GzYWAAglZZaZ2mZZAAgAMDbgZGw0YADAYA",
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
+  },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 2/50 (4%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 50/50 (100%) ran Master of Harmony overall.
+  -- Reported honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CwQAQnG51S19isUJoJoTeJ/IKDAAAgZbzYGGzyMzGzMjBAAAAAAYZBzEzMwMM2gxMzMDz2YmxYZYZ7B22mNMLAAwysMtMbzsMAAQAMsBmZATjBAAMA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Brewmaster Monks by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (2/50, 4%); 50/50 (100%) ran Master of Harmony overall.",
+    patch = "12.1",
+    sampleSize = 50,
   },
   tips = {
     "Purify when the stagger pool is meaningfully full, not reflexively on cooldown — timing it right smooths damage better.",
@@ -174,6 +194,18 @@ ns.GuideStore:RegisterSpec("MONK", 270, {
     { slot = "Weapon", text = "Monks can dual-wield one-handers or wield a two-hander — take the highest weapon damage option since it feeds both Fistweaving damage and healing" },
     { slot = "Off-hand", text = "If dual-wielding, an off-hand that leans Haste or Mastery keeps your cast-heavy healing loop smooth" },
   },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 3/50 (6%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 50/50 (100%) ran Conduit of the Celestials
+  -- overall. Reported honestly rather than dressed up as more decisive than it
+  -- is.
+  mplusMetaLoadout = {
+    string = "C4QAQnG51S19isUJoJoTeJ/IKDAAAAAAAghx2YZYzixMzyyM2wYGmZZZbmxCzoZMDYwgxYmZmhZbMGsYCAAAAgAsYZmlZbmBEAMgBYGwYYsIjZA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Mistweaver Monks by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (3/50, 6%); 50/50 (100%) ran Conduit of the Celestials overall.",
+    patch = "12.1",
+    sampleSize = 50,
+  },
   tips = {
     "Keep Renewing Mist bouncing across as many raid members as reasonable — it's efficient passive throughput.",
     "Save Thunder Focus Tea for your highest-value cast rather than spending it on cooldown by default.",
@@ -249,6 +281,18 @@ ns.GuideStore:RegisterSpec("MONK", 269, {
     string = "C0QAAAAAAAAAAAAAAAAAAAAAAMzYw2MmhlZGbzAAAAAAAAAAAAsMMaGzAGwMGmZmZY2GmhZZmAAWMz2MDzMzMAA2AQzys0MzMLAYgZGAGLDgB8B",
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
+  },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 2/50 (4%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 29/50 (58%) ran Conduit of the Celestials
+  -- overall. Reported honestly rather than dressed up as more decisive than it
+  -- is.
+  mplusMetaLoadout = {
+    string = "C0QAQnG51S19isUJoJoTeJ/IKPzYMgxYZmZ2mBAAAAAAAAAAAYZYmwMMMgZMMzMzwsxMDzyMBAswsxMmZmZgAYxMLz2YCCAYGDgZAGLDgZmZzA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Windwalker Monks by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (2/50, 4%); 29/50 (58%) ran Conduit of the Celestials overall.",
+    patch = "12.1",
+    sampleSize = 50,
   },
   tips = {
     "Never repeat the same ability twice in a row when possible — combo strikes are core to Windwalker's damage and mastery.",

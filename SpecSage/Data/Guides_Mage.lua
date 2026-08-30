@@ -8,7 +8,16 @@ local ADDON, ns = ...
 -- Rotation/overview/tips/gear prose throughout this file is hand-authored
 -- and was reviewed for Midnight ability changes, not derived from or
 -- checked against SimC's APLs, and was not re-verified against current
--- tuning this pass.
+-- tuning this pass — EXCEPT Arcane (62), Fire (63), and Frost (64),
+-- which each gained an `mplusMetaLoadout` (DESIGN.md's v1.4 section) this
+-- pass: pulled live from Blizzard's own Battle.net Game Data API
+-- (client-credentials OAuth, US region) rather than SimC, on 2026-08-30.
+-- Methodology: every current-season Mythic+ leaderboard (8-dungeon pool,
+-- period 1078) across all 83 US connected realms was scanned (top 20 groups
+-- per realm/dungeon) for each spec's group members; the top-observed-keystone
+-- characters (up to 50 per spec) had their live `specializations` looked up
+-- for their active loadout's `talent_loadout_code`. See each field's own
+-- `source` comment for the resulting distribution.
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -86,6 +95,17 @@ ns.GuideStore:RegisterSpec("MAGE", 62, {
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
   },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 11/50 (22%) ran this exact code, since flex-point choices vary -
+  -- but the bigger signal is that 50/50 (100%) ran Sunfury overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "C4DAche08tHz49KSVf7iKFnyuNzwYZmZmFMzQzMGAAAGAwMz0sssMDAEbAAsBzMDbWmxMLzYMzMzMswMzMzMAADAAwAMzAMAYYmZA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Arcane Mages by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (11/50, 22%); 50/50 (100%) ran Sunfury overall.",
+    patch = "12.1",
+    sampleSize = 50,
+  },
   tips = {
     "Track your mana closely — running out mid-burn wastes the window; running out too early forces a weak conserve phase.",
     "Pre-cast your first Arcane Blast before the pull timer hits zero for a free head start.",
@@ -162,6 +182,17 @@ ns.GuideStore:RegisterSpec("MAGE", 63, {
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
   },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 1/22 (5%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 22/22 (100%) ran Sunfury overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "C8DAche08tHz49KSVf7iKFnyuNmtlZWmZmZBzMYGmBAAwAAmZGzyyyMAAbmZmZbGjZmFAAAAAsYmZmBAAmxYGmhZWmBwMDMGAzwA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 22 current-season Mythic+ Fire Mages by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (1/22, 5%); 22/22 (100%) ran Sunfury overall.",
+    patch = "12.1",
+    sampleSize = 22,
+  },
   tips = {
     "Enter Combustion with Heating Up or Hot Streak already active so the window starts strong.",
     "Never overcap Fire Blast or Phoenix Flames charges — that's wasted proc generation.",
@@ -237,6 +268,17 @@ ns.GuideStore:RegisterSpec("MAGE", 64, {
     string = "CAEAAAAAAAAAAAAAAAAAAAAAAYGGLzMzsMmZmYmZGjZMziZmZmZMDEAAYmZmllZm2AAAAAAgNA2WGzMzAbzYmZYBAAgZ2AmBGwADD",
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
+  },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 2/28 (7%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 19/28 (68%) ran Spellslinger overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CAEAche08tHz49KSVf7iKFnyuNzwYZmZmFMzEzMmZmZmZWMzMzMzMzsMTzMbzCAAAaBAAWAAAAAYbZMzMDmtZMzM2WAAAAzMYGGDYAMA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 28 current-season Mythic+ Frost Mages by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (2/28, 7%); 19/28 (68%) ran Spellslinger overall.",
+    patch = "12.1",
+    sampleSize = 28,
   },
   tips = {
     "Shatter your burst spells (Ice Lance, Frostbolt vs a rooted/frozen target) whenever a root or Freeze is available for guaranteed crits.",

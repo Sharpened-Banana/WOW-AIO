@@ -8,7 +8,16 @@ local ADDON, ns = ...
 -- Rotation/overview/tips/gear prose throughout this file is hand-authored
 -- and was reviewed for Midnight ability changes, not derived from or
 -- checked against SimC's APLs, and was not re-verified against current
--- tuning this pass.
+-- tuning this pass — EXCEPT Assassination (259), Outlaw (260), and Subtlety (261),
+-- which each gained an `mplusMetaLoadout` (DESIGN.md's v1.4 section) this
+-- pass: pulled live from Blizzard's own Battle.net Game Data API
+-- (client-credentials OAuth, US region) rather than SimC, on 2026-08-30.
+-- Methodology: every current-season Mythic+ leaderboard (8-dungeon pool,
+-- period 1078) across all 83 US connected realms was scanned (top 20 groups
+-- per realm/dungeon) for each spec's group members; the top-observed-keystone
+-- characters (up to 50 per spec) had their live `specializations` looked up
+-- for their active loadout's `talent_loadout_code`. See each field's own
+-- `source` comment for the resulting distribution.
 -- This is community-maintained conventional guidance (stat priorities and
 -- rotations that match the spec's long-standing design) — not a claim of
 -- bleeding-edge sim-perfect optimization.
@@ -86,6 +95,17 @@ ns.GuideStore:RegisterSpec("ROGUE", 259, {
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
   },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 2/50 (4%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 34/50 (68%) ran Deathstalker overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CMQA5HmDzx68KWyrW/8Y781L7bmlZmFDGAAAAAYWGsNDAAAAAotlZmZmZmxYbmZmtZWmZmHwDMmZMzwMjxAsZWGYALBLDTghFDmZAGMA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Assassination Rogues by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (2/50, 4%); 34/50 (68%) ran Deathstalker overall.",
+    patch = "12.1",
+    sampleSize = 50,
+  },
   tips = {
     "Never let Rupture or Garrote fall off a target you'll be attacking for more than a few seconds.",
     "Keep your weapon poisons refreshed — a lapsed poison is a silent DPS loss.",
@@ -162,6 +182,17 @@ ns.GuideStore:RegisterSpec("ROGUE", 260, {
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
   },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 11/50 (22%) ran this exact code, since flex-point choices vary -
+  -- but the bigger signal is that 50/50 (100%) ran Trickster overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CQQA5HmDzx68KWyrW/8Y781L7Dgx2MMzMjZmtZmZMzMzsAmZbaZw2MAAAAAgZbZmZGmZmZWMzMbDAAAAjBAjZxwQGYWYhWYjBYmBDMA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Outlaw Rogues by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (11/50, 22%); 50/50 (100%) ran Trickster overall.",
+    patch = "12.1",
+    sampleSize = 50,
+  },
   tips = {
     "Don't re-roll Roll the Bones just because it feels weak — check whether it's actually below the keep threshold first.",
     "Blade Flurry is worth toggling on immediately when a second target joins the fight.",
@@ -237,6 +268,17 @@ ns.GuideStore:RegisterSpec("ROGUE", 261, {
     string = "CUQAAAAAAAAAAAAAAAAAAAAAAAgx2MAAAAAwsMGLTMbbjxMDDzMzMzw8AbzYGbbzMzMzMjBjZ2GAAAAGMmFzyADYBsMMhMLYGmZAmxA",
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
+  },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 4/50 (8%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 46/50 (92%) ran Deathstalker overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CUQA5HmDzx68KWyrW/8Y781L7Dgx2MAAAAAwsMGLTMbbjxMDjZmZmZGGbzYGbLzMzMzMjBjZ2GAAAAGMmNzyADYBsMMhMLYGmZAmxA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Subtlety Rogues by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (4/50, 8%); 46/50 (92%) ran Deathstalker overall.",
+    patch = "12.1",
+    sampleSize = 50,
   },
   tips = {
     "Sync Symbols of Death with Shadow Dance whenever possible for the strongest burst windows.",

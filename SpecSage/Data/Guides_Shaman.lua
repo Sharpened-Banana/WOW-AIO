@@ -8,7 +8,16 @@ local ADDON, ns = ...
 -- Rotation/overview/tips/gear prose throughout this file is hand-authored
 -- and was reviewed for Midnight ability changes, not derived from or
 -- checked against SimC's APLs, and was not re-verified against current
--- tuning this pass.
+-- tuning this pass — EXCEPT Elemental (262), Enhancement (263), and Restoration (264),
+-- which each gained an `mplusMetaLoadout` (DESIGN.md's v1.4 section) this
+-- pass: pulled live from Blizzard's own Battle.net Game Data API
+-- (client-credentials OAuth, US region) rather than SimC, on 2026-08-30.
+-- Methodology: every current-season Mythic+ leaderboard (8-dungeon pool,
+-- period 1078) across all 83 US connected realms was scanned (top 20 groups
+-- per realm/dungeon) for each spec's group members; the top-observed-keystone
+-- characters (up to 50 per spec) had their live `specializations` looked up
+-- for their active loadout's `talent_loadout_code`. See each field's own
+-- `source` comment for the resulting distribution.
 -- This is community-maintained conventional guidance (stat priorities and
 -- rotations that match the spec's long-standing design) — not a claim of
 -- bleeding-edge sim-perfect optimization.
@@ -90,6 +99,17 @@ ns.GuideStore:RegisterSpec("SHAMAN", 262, {
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
   },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 2/50 (4%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 50/50 (100%) ran Farseer overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CYQALMl7AwW51MWzGneuHE3tPCAAAAzMbLzMGjZZbZMmhZAAAAgFzsBDYAzGTIzCAMbzMzYssYajZmtxyMzMjhFLzMLDjZmFAgBAmZMMMA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Elemental Shamans by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (2/50, 4%); 50/50 (100%) ran Farseer overall.",
+    patch = "12.1",
+    sampleSize = 50,
+  },
   tips = {
     "Keep Flame Shock active on the target at all times — it's the engine behind Lava Surge procs.",
     "Don't cap Maelstrom — spend it on Earth Shock before it overflows.",
@@ -167,6 +187,17 @@ ns.GuideStore:RegisterSpec("SHAMAN", 263, {
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
   },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 7/50 (14%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 50/50 (100%) ran Stormbringer overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CcQALMl7AwW51MWzGneuHE3tPOzMzgZmZmZmhZmZAAAAAAAAA2AsZGDbkFYGGawCAz2MmxYZZGbMzsNWmZmZYsMmBAYGGzMMCMzgBjB",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Enhancement Shamans by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (7/50, 14%); 50/50 (100%) ran Stormbringer overall.",
+    patch = "12.1",
+    sampleSize = 50,
+  },
   tips = {
     "Don't let Maelstrom Weapon stacks sit at cap — spend them before generation is wasted.",
     "Keep Crash Lightning's buff active whenever it benefits your current target count.",
@@ -241,6 +272,17 @@ ns.GuideStore:RegisterSpec("SHAMAN", 264, {
     { slot = "Trinket", text = "One throughput trinket timed with Healing Tide Totem or Ascendance windows" },
     { slot = "Weapon", text = "A one-hander with strong Intellect and secondary stats" },
     { slot = "Off-hand", text = "An off-hand caster stat stick for extra Intellect and secondary stats" },
+  },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: 2/50 (4%) ran this exact code, since flex-point choices vary - but
+  -- the bigger signal is that 47/50 (94%) ran Totemic overall. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CgQALMl7AwW51MWzGneuHE3tPCAAAgBAAAAzMzsstMmZmZmZmZMjhFYDmxiGbDIzAbYmBzyMjRzyyMzmZMbsYMzYYZWGAAMAmZwMDAMYA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Restoration Shamans by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (2/50, 4%); 47/50 (94%) ran Totemic overall.",
+    patch = "12.1",
+    sampleSize = 50,
   },
   tips = {
     "Cycle Riptide across the raid rather than only refreshing it on one target — the HoT is efficient healing, and got stronger again in patch 12.1.",
