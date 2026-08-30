@@ -402,6 +402,71 @@ do
     check(GuideStore:GetGuide(9013) == nil, "guide with an empty mplusLoadout.patch is not stored")
 end
 
+-- raidLoadout (DESIGN.md's v1.3 section) is validated identically to
+-- mplusLoadout - same shared validator, so these mirror the mplusLoadout
+-- cases above rather than re-deriving the rules.
+do
+    local guide = { specName = "No Raid Loadout Spec", role = "DAMAGER" }
+    local ok = GuideStore:RegisterSpec("MAGE", 9014, guide)
+    check(ok == true, "RegisterSpec accepts a guide with no raidLoadout key at all")
+    check(GuideStore:GetGuide(9014).raidLoadout == nil,
+        "a guide with no raidLoadout key round-trips with raidLoadout still nil")
+end
+
+do
+    local guide = {
+        specName = "Raid Loadout Spec",
+        role = "DAMAGER",
+        mplusLoadout = { string = "MplusStringSideBySide", patch = "12.1" },
+        raidLoadout = {
+            string = "C0EAy0kSampleRaidExportStringFromSimC",
+            source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+            patch = "12.1",
+        },
+    }
+    local ok = GuideStore:RegisterSpec("MAGE", 9015, guide)
+    check(ok == true, "RegisterSpec accepts a valid raidLoadout")
+    local roundTripped = GuideStore:GetGuide(9015)
+    check(roundTripped ~= nil and roundTripped.raidLoadout.string == "C0EAy0kSampleRaidExportStringFromSimC",
+        "round-tripped guide keeps its raidLoadout.string",
+        roundTripped and roundTripped.raidLoadout and roundTripped.raidLoadout.string)
+    check(roundTripped.mplusLoadout.string == "MplusStringSideBySide",
+        "a guide can carry both mplusLoadout and raidLoadout without either overwriting the other",
+        roundTripped.mplusLoadout.string)
+end
+
+do
+    local badGuide = { specName = "Bad Raid Loadout Spec A", role = "DAMAGER", raidLoadout = "not a table" }
+    local ok, result = silently(function() return GuideStore:RegisterSpec("MAGE", 9016, badGuide) end)
+    check(ok, "RegisterSpec with a non-table raidLoadout does not error", result)
+    check(result == false, "guide with a non-table raidLoadout is rejected")
+    check(GuideStore:GetGuide(9016) == nil, "guide with a non-table raidLoadout is not stored")
+end
+
+do
+    local badGuide = {
+        specName = "Bad Raid Loadout Spec B",
+        role = "DAMAGER",
+        raidLoadout = { string = "", patch = "12.1" },
+    }
+    local ok, result = silently(function() return GuideStore:RegisterSpec("MAGE", 9017, badGuide) end)
+    check(ok, "RegisterSpec with an empty raidLoadout.string does not error", result)
+    check(result == false, "guide with an empty raidLoadout.string is rejected")
+    check(GuideStore:GetGuide(9017) == nil, "guide with an empty raidLoadout.string is not stored")
+end
+
+do
+    local badGuide = {
+        specName = "Bad Raid Loadout Spec C",
+        role = "DAMAGER",
+        raidLoadout = { string = "C0EAy0k", patch = "" },
+    }
+    local ok, result = silently(function() return GuideStore:RegisterSpec("MAGE", 9018, badGuide) end)
+    check(ok, "RegisterSpec with an empty raidLoadout.patch does not error", result)
+    check(result == false, "guide with an empty raidLoadout.patch is rejected")
+    check(GuideStore:GetGuide(9018) == nil, "guide with an empty raidLoadout.patch is not stored")
+end
+
 -- Accepts a valid guide and round-trips it through GetGuide.
 do
     local goodGuide = {
@@ -2175,13 +2240,14 @@ Codex:SelectTab("Loadouts")
 check(not Codex.loadoutButtons.save:IsShown(), "Save current is hidden while viewing another spec")
 
 --------------------------------------------------------------------------------
-section("Codex: Suggested Mythic+ loadout row (v1.2)")
+section("Codex: Suggested Mythic+ and Raid loadout rows (v1.2 / v1.3)")
 --------------------------------------------------------------------------------
 
 -- Inline fixture guides on scratch specIDs (the >=9000 convention used
 -- throughout this suite), registered here rather than relying on any real
 -- shipped Guides_*.lua content - two other agents are concurrently adding
--- mplusLoadout data to those files, so this section must not race with them.
+-- mplusLoadout/raidLoadout data to those files, so this section must not
+-- race with them.
 GuideStore:RegisterSpec("WARRIOR", 9201, {
     specName = "Loadout Warrior",
     role = "DAMAGER",
@@ -2190,73 +2256,194 @@ GuideStore:RegisterSpec("WARRIOR", 9201, {
         source = "SimulationCraft default profile (credit, not endorsement of 'best')",
         patch = "12.1",
     },
+    raidLoadout = {
+        string = "C0EAy0kSampleRaidExportStringFromSimC",
+        source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+        patch = "12.1",
+    },
+})
+GuideStore:RegisterSpec("WARRIOR", 9203, {
+    specName = "Mplus Only Warrior",
+    role = "DAMAGER",
+    mplusLoadout = {
+        string = "C0EAy0kMplusOnlyString",
+        source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+        patch = "12.1",
+    },
 })
 GuideStore:RegisterSpec("WARRIOR", 9202, { specName = "No Loadout Warrior", role = "DAMAGER" })
 
--- Present: the extra row renders above the saved-loadout list, labeled per
--- DESIGN.md, with both buttons shown.
+-- Both present: two rows render above the saved-loadout list, Mythic+ above
+-- Raid (SUGGESTED_LOADOUT_KINDS order), each independently labeled, and
+-- neither one's content bleeds into the other's.
 Codex:Open("WARRIOR", 9201)
 Codex:SelectTab("Loadouts")
-check(Codex.suggestedLoadoutRow:IsShown(), "the suggested row is shown for a spec whose guide ships mplusLoadout")
-check(Codex.suggestedLoadoutRow.name:GetText() == "Suggested Mythic+ (via SimulationCraft, patch 12.1)",
-    "the suggested row is labeled per DESIGN.md, including the guide's patch",
-    Codex.suggestedLoadoutRow.name:GetText())
-check(Codex.suggestedLoadoutRow.copyButton:IsShown(), "the suggested row's Copy button is shown")
-check(Codex.suggestedLoadoutRow.addButton:IsShown(), "the suggested row's Add to my vault button is shown")
-check(Codex.suggestedLoadoutRow.addButton:GetText() == "Add to my vault",
-    "the suggested row's Add button is labeled 'Add to my vault'", Codex.suggestedLoadoutRow.addButton:GetText())
+local mplusRow = Codex.suggestedLoadoutRows.mplus
+local raidRow = Codex.suggestedLoadoutRows.raid
 
--- Absent: no placeholder text, the row simply doesn't render (per DESIGN.md).
+check(mplusRow:IsShown(), "the Mythic+ row is shown for a spec whose guide ships mplusLoadout")
+check(mplusRow.name:GetText() == "Suggested Mythic+ (via SimulationCraft, patch 12.1)",
+    "the Mythic+ row is labeled per DESIGN.md, including the guide's patch", mplusRow.name:GetText())
+check(mplusRow.copyButton:IsShown(), "the Mythic+ row's Copy button is shown")
+check(mplusRow.addButton:IsShown(), "the Mythic+ row's Add to my vault button is shown")
+check(mplusRow.addButton:GetText() == "Add to my vault",
+    "the Mythic+ row's Add button is labeled 'Add to my vault'", mplusRow.addButton:GetText())
+
+check(raidRow:IsShown(), "the Raid row is shown for a spec whose guide ships raidLoadout")
+check(raidRow.name:GetText() == "Suggested Raid (via SimulationCraft, patch 12.1)",
+    "the Raid row is labeled per DESIGN.md, including the guide's patch", raidRow.name:GetText())
+check(raidRow.copyButton:IsShown(), "the Raid row's Copy button is shown")
+check(raidRow.addButton:IsShown(), "the Raid row's Add to my vault button is shown")
+
+-- The mock's GetPoint() is a fixed stub (it does not track real SetPoint
+-- calls), so ordering is checked against the recorded .points table instead
+-- - row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y) after a ClearAllPoints
+-- leaves exactly one recorded point, whose 5th element is the y offset.
+-- Higher on screen means a less negative y (SetPoint uses UIParent's
+-- bottom-up coordinate space), so the Mythic+ row is above the Raid row
+-- when its y is greater.
+local mplusTop = mplusRow.points[#mplusRow.points][5]
+local raidTop = raidRow.points[#raidRow.points][5]
+check(type(mplusTop) == "number" and type(raidTop) == "number" and mplusTop > raidTop,
+    "the Mythic+ row sits above the Raid row", format("mplus y=%s raid y=%s", tostring(mplusTop), tostring(raidTop)))
+
+-- Only one kind present: that row shows, the other stays hidden, and no gap
+-- is left where the missing one would have gone.
+Codex:Open("WARRIOR", 9203)
+Codex:SelectTab("Loadouts")
+check(Codex.suggestedLoadoutRows.mplus:IsShown(), "the Mythic+ row shows on a spec with only mplusLoadout")
+check(not Codex.suggestedLoadoutRows.raid:IsShown(), "the Raid row stays hidden on a spec with no raidLoadout")
+
+-- Neither present: no placeholder text, both rows simply don't render (per
+-- DESIGN.md).
 Codex:Open("WARRIOR", 9202)
 Codex:SelectTab("Loadouts")
-check(not Codex.suggestedLoadoutRow:IsShown(),
-    "the suggested row is hidden entirely for a spec whose guide has no mplusLoadout")
+check(not Codex.suggestedLoadoutRows.mplus:IsShown(),
+    "the Mythic+ row is hidden entirely for a spec whose guide has no mplusLoadout")
+check(not Codex.suggestedLoadoutRows.raid:IsShown(),
+    "the Raid row is hidden entirely for a spec whose guide has no raidLoadout")
 
 -- Copy: same read-only highlighted-editbox pattern as a saved loadout's
 -- Copy, and the same Show-before-focus ordering the mock enforces via
 -- IsEffectivelyShown (see the saved-loadout Copy test above) - a reordering
 -- mistake here would error under the mock instead of silently copying
--- nothing.
+-- nothing. Checked for both kinds, so a shared-helper bug that only shows up
+-- on the second row built is not masked by testing just the first.
 Codex:Open("WARRIOR", 9201)
 Codex:SelectTab("Loadouts")
-local suggestedCopyOk = pcall(function() Codex.suggestedLoadoutRow.copyButton:GetScript("OnClick")() end)
-check(suggestedCopyOk, "Copy on the suggested row does not error under the mock's visibility-checked SetFocus")
-check(Codex.copyDialog:IsShown(), "Copy on the suggested row opens the copy dialog")
+
+local mplusCopyOk = pcall(function() mplusRow.copyButton:GetScript("OnClick")() end)
+check(mplusCopyOk, "Copy on the Mythic+ row does not error under the mock's visibility-checked SetFocus")
+check(Codex.copyDialog:IsShown(), "Copy on the Mythic+ row opens the copy dialog")
 check(Codex.copyBox:GetText() == "C0EAy0kSampleExportStringFromSimC",
-    "the copy dialog is populated with the suggested loadout's export string, not a saved loadout's",
+    "the copy dialog is populated with the Mythic+ loadout's export string", Codex.copyBox:GetText())
+
+local raidCopyOk = pcall(function() raidRow.copyButton:GetScript("OnClick")() end)
+check(raidCopyOk, "Copy on the Raid row does not error under the mock's visibility-checked SetFocus")
+check(Codex.copyBox:GetText() == "C0EAy0kSampleRaidExportStringFromSimC",
+    "the copy dialog is populated with the Raid loadout's export string, not the Mythic+ one",
     Codex.copyBox:GetText())
-check(Codex.copyBox.focused == true, "the copy box is focused for the suggested row's string")
-check(Codex.copyBox.highlighted == true, "the copy box's text is highlighted for the suggested row's string")
 
 -- Add to my vault: calls Loadouts:Add with the exact arguments DESIGN.md
--- specifies, never touching SpecSageDB before the click, and gives a brief
--- confirmation via a temporary label change that reverts on its own.
+-- specifies for each kind, never touching SpecSageDB before the click, and
+-- gives a brief confirmation via a temporary label change that reverts on
+-- its own.
 local vaultCountBefore = #LoadoutsModule:GetForSpec(9201)
-Codex.suggestedLoadoutRow.addButton:GetScript("OnClick")(Codex.suggestedLoadoutRow.addButton)
+mplusRow.addButton:GetScript("OnClick")(mplusRow.addButton)
 
 local vaultAfter = LoadoutsModule:GetForSpec(9201)
 check(#vaultAfter == vaultCountBefore + 1, "Add to my vault stores exactly one new loadout", #vaultAfter)
 check(vaultAfter[#vaultAfter].name == "Suggested M+ (SimC)",
-    "the added loadout uses the exact name DESIGN.md specifies", vaultAfter[#vaultAfter].name)
+    "the added Mythic+ loadout uses the exact name DESIGN.md specifies", vaultAfter[#vaultAfter].name)
 check(vaultAfter[#vaultAfter].category == "Mythic+",
-    "the added loadout uses the exact category DESIGN.md specifies", vaultAfter[#vaultAfter].category)
+    "the added Mythic+ loadout uses the exact category DESIGN.md specifies", vaultAfter[#vaultAfter].category)
 check(vaultAfter[#vaultAfter].export == "C0EAy0kSampleExportStringFromSimC",
     "the added loadout keeps the guide's mplusLoadout.string as its export", vaultAfter[#vaultAfter].export)
-check(Codex.suggestedLoadoutRow.addButton:GetText() == "Added!",
+check(mplusRow.addButton:GetText() == "Added!",
     "clicking Add to my vault gives a brief confirmation via a temporary label change",
-    Codex.suggestedLoadoutRow.addButton:GetText())
+    mplusRow.addButton:GetText())
 
 mock.RunAfter()
-check(Codex.suggestedLoadoutRow.addButton:GetText() == "Add to my vault",
-    "the confirmation label reverts to 'Add to my vault' after the timer",
-    Codex.suggestedLoadoutRow.addButton:GetText())
+check(mplusRow.addButton:GetText() == "Add to my vault",
+    "the confirmation label reverts to 'Add to my vault' after the timer", mplusRow.addButton:GetText())
 
--- Clicking Add to my vault a second time adds a second entry rather than
+-- The Raid row's Add is independent: its own name/category, and it does not
+-- disturb the Mythic+ entry already in the vault.
+raidRow.addButton:GetScript("OnClick")(raidRow.addButton)
+local vaultAfterRaid = LoadoutsModule:GetForSpec(9201)
+check(#vaultAfterRaid == vaultCountBefore + 2, "Add to my vault on the Raid row stores a second loadout")
+check(vaultAfterRaid[#vaultAfterRaid].name == "Suggested Raid (SimC)",
+    "the added Raid loadout uses its own name, not the Mythic+ one", vaultAfterRaid[#vaultAfterRaid].name)
+check(vaultAfterRaid[#vaultAfterRaid].category == "Raid",
+    "the added Raid loadout uses the Raid category", vaultAfterRaid[#vaultAfterRaid].category)
+check(vaultAfterRaid[#vaultAfterRaid].export == "C0EAy0kSampleRaidExportStringFromSimC",
+    "the added Raid loadout keeps the guide's raidLoadout.string as its export",
+    vaultAfterRaid[#vaultAfterRaid].export)
+check(vaultAfterRaid[1].name == "Suggested M+ (SimC)",
+    "the earlier Mythic+ entry is untouched by adding the Raid one")
+mock.RunAfter()
+
+-- Clicking Add to my vault a second time adds a third entry rather than
 -- silently no-oping - it is a plain Loadouts:Add call, not a toggle.
-Codex.suggestedLoadoutRow.addButton:GetScript("OnClick")(Codex.suggestedLoadoutRow.addButton)
-check(#LoadoutsModule:GetForSpec(9201) == vaultCountBefore + 2,
-    "clicking Add to my vault again stores a second loadout")
+mplusRow.addButton:GetScript("OnClick")(mplusRow.addButton)
+check(#LoadoutsModule:GetForSpec(9201) == vaultCountBefore + 3,
+    "clicking Add to my vault again stores another loadout")
 mock.RunAfter()
+
+--------------------------------------------------------------------------------
+section("Codex: rotation/cooldown conditions (v1.3)")
+--------------------------------------------------------------------------------
+
+-- A step's optional `condition` (the APL if= logic behind it, translated to
+-- plain English) renders as its own sub-line, distinct in colour from the
+-- step's own text and from a section header, and only when present - a step
+-- with no condition costs no extra row.
+GuideStore:RegisterSpec("WARRIOR", 9301, {
+    specName = "Condition Warrior",
+    role = "DAMAGER",
+    rotation = {
+        { title = "Single Target", steps = {
+            { spellID = 163201, text = "Execute", condition = "with Rage above 40, or on a Sudden Death proc" },
+            { spellID = 12294, text = "Mortal Strike on cooldown" },
+        }},
+    },
+    cooldowns = {
+        { spellID = 227847, text = "Bladestorm", condition = "while your Colossus Smash debuff is active" },
+        { spellID = 107574, text = "Avatar" },
+    },
+})
+
+Codex:Open("WARRIOR", 9301)
+Codex:SelectTab("Rotation")
+
+local rotationPool = Codex.pools.rotation
+check(rotationPool[1].text:GetText() == "Single Target", "the rotation group title renders first",
+    rotationPool[1].text:GetText())
+check(rotationPool[2].text:GetText() == "Execute", "a step with a condition still renders its own line first",
+    rotationPool[2].text:GetText())
+check(rotationPool[2].icon:IsShown(), "the step's own line keeps its spell icon")
+check(rotationPool[3].text:GetText() == "with Rage above 40, or on a Sudden Death proc",
+    "the step's condition renders as a separate line right after it", rotationPool[3].text:GetText())
+check(not rotationPool[3].icon:IsShown(), "the condition line has no spell icon of its own")
+check(rotationPool[3].text.color[1] == 0.55 and rotationPool[3].text.color[2] == 0.75
+    and rotationPool[3].text.color[3] == 0.95,
+    "the condition line uses its own colour, distinct from step text and from a section header",
+    table.concat(rotationPool[3].text.color or {}, ","))
+check(rotationPool[4].text:GetText() == "Mortal Strike on cooldown",
+    "a step with no condition is followed directly by the next step, with no blank line between",
+    rotationPool[4].text:GetText())
+check(rotationPool[5] == nil or not rotationPool[5]:IsShown(),
+    "a step with no condition costs no extra row")
+
+Codex:SelectTab("Cooldowns")
+local cooldownsPool = Codex.pools.cooldowns
+check(cooldownsPool[1].text:GetText() == "Bladestorm", "a cooldown entry's own line renders first",
+    cooldownsPool[1].text:GetText())
+check(cooldownsPool[2].text:GetText() == "while your Colossus Smash debuff is active",
+    "the cooldown entry's condition renders as a separate line right after it", cooldownsPool[2].text:GetText())
+check(cooldownsPool[3].text:GetText() == "Avatar",
+    "a cooldown entry with no condition is followed directly by the next entry",
+    cooldownsPool[3].text:GetText())
 
 --------------------------------------------------------------------------------
 section("Codex: Options tab")

@@ -2,13 +2,31 @@ local ADDON, ns = ...
 
 -- SpecSage guide data: Warrior (Arms 71, Fury 72, Protection 73)
 -- Content targets Midnight (patch 12.1). Specs below with an `mplusLoadout`
--- field have that talent string (only) cross-checked against
--- SimulationCraft's public profiles (github.com/simulationcraft/simc,
--- GPLv3) as of patch 12.1; specs without one have no such reference.
+-- and/or `raidLoadout` field have that talent string (only) cross-checked
+-- against SimulationCraft's public profiles (github.com/simulationcraft/simc,
+-- GPLv3, `midnight` branch) as of patch 12.1; specs without one have no such
+-- reference.
 -- Rotation/overview/tips/gear prose throughout this file is hand-authored
 -- and was reviewed for Midnight ability changes, not derived from or
 -- checked against SimC's APLs, and was not re-verified against current
--- tuning this pass.
+-- tuning this pass — EXCEPT Arms, refreshed this pass:
+--   * `mplusLoadout.string` re-pulled from profiles/MID1/MID1_Warrior_Arms.simc's
+--     `talents=` line (superseding an earlier, now-stale pull of the same
+--     file - SimC's `midnight` branch updates its default profiles via
+--     automation), fetched twice to confirm an exact match before use.
+--   * The Slayer hero-talent `condition` lines on the Execute rotation step
+--     and the Bladestorm cooldown were translated (not pasted) from
+--     actions.slayer_execute/actions.slayer_st lines in that same file,
+--     same double-fetch confirmation.
+--   * NOT added: `raidLoadout`. As of this pass, SimC's `midnight` branch
+--     ships exactly one profile per spec here (this same file, referenced
+--     by the profiles/MID1_Raid.simc aggregator) - no genuinely separate
+--     Mythic+/dungeon-context build to source a second field from. Adding
+--     `raidLoadout` anyway, pointed at the same profile under a UI label
+--     that implies real raid-vs-M+ differentiation, would misrepresent the
+--     data to a player who only sees "Suggested Raid" vs "Suggested
+--     Mythic+" in the Codex with no way to see this comment. See
+--     DESIGN.md's v1.3 section.
 -- This is community-maintained conventional guidance (stat priorities and
 -- rotations that match the spec's long-standing design) — not a claim of
 -- bleeding-edge sim-perfect optimization.
@@ -40,7 +58,8 @@ ns.GuideStore:RegisterSpec("WARRIOR", 71, {
         { spellID = 772, text = "Rend — keep the bleed active on the target" },
         { spellID = 7384, text = "Overpower when charges are available" },
         { spellID = 845, text = "Cleave / Slam to spend excess rage between cooldowns" },
-        { spellID = 163201, text = "Execute once the target drops below execute-range health, or on a Sudden Death proc even outside execute range" },
+        { spellID = 163201, text = "Execute once the target drops below execute-range health, or on a Sudden Death proc even outside execute range",
+          condition = "Slayer hero talent: use with Rage above 40, or on a Sudden Death proc" },
         { spellID = 376079, text = "Champion's Spear on cooldown for extra burst inside your Colossus Smash window" },
     }},
     { title = "AoE", steps = {
@@ -60,7 +79,8 @@ ns.GuideStore:RegisterSpec("WARRIOR", 71, {
   cooldowns = {
     { spellID = 107574, text = "Avatar — pair with Colossus Smash for maximum burst" },
     { spellID = 167105, text = "Colossus Smash — core damage-amp window, use on cooldown" },
-    { spellID = 227847, text = "Bladestorm — strong AoE/cleave cooldown, also usable defensively; under the Slayer hero talent it's pulled into the Colossus Smash burst window instead" },
+    { spellID = 227847, text = "Bladestorm — strong AoE/cleave cooldown, also usable defensively; under the Slayer hero talent it's pulled into the Colossus Smash burst window instead",
+      condition = "Slayer hero talent: use while your Colossus Smash debuff is active" },
     { spellID = 118038, text = "Die by the Sword — major defensive, use under heavy melee pressure" },
     { spellID = 97462, text = "Rallying Cry — raid-wide defensive cooldown for group survival checks" },
   },
@@ -82,8 +102,10 @@ ns.GuideStore:RegisterSpec("WARRIOR", 71, {
     { slot = "Trinket", text = "A second, passive stat-stick trinket for consistent damage between cooldown windows" },
     { slot = "Weapon", text = "The highest item level two-hander available — weapon damage drives a large share of Arms' output" },
   },
+  -- Refreshed this pass (see file header): superseded string from an
+  -- earlier, now-stale pull of the same file.
   mplusLoadout = {
-    string = "CcEAAAAAAAAAAAAAAAAAAAAAAAzMzsMzMmZGAAAghphxYmxyMzMzgxMDAAAAgZWmZAhxyyALgBMDTIzgNwMjtx2ALzsMAzMAYGGA",
+    string = "CcEAAAAAAAAAAAAAAAAAAAAAAAzMzsMzMzMDAAAghphxYmxyMzMzgxMDAAAAgZWmZAZMWWGYBMgZYCZGsBMjNz2YwMGgZGAmxwA",
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
   },

@@ -115,23 +115,23 @@ local function ValidateGear(gear)
     return true
 end
 
--- Optional, per DESIGN.md's "Shipped Mythic+ talent loadout (v1.2)" section:
--- most guides have no `mplusLoadout` key at all, which must validate the
--- same as every pre-v1.2 guide. `source` is documentary (credits SimC) and
--- is not itself validated - only `string` and `patch`, the two fields the
--- Codex actually reads, gate acceptance.
-local function ValidateMplusLoadout(mplusLoadout)
-    if mplusLoadout == nil then return true end
-    if type(mplusLoadout) ~= "table" then
-        return false, "mplusLoadout must be a table"
+-- Shared shape for `mplusLoadout` (v1.2) and `raidLoadout` (v1.3): most
+-- guides have neither key at all, which must validate the same as a
+-- pre-v1.2 guide. `source` is documentary (credits SimC) and is not itself
+-- validated - only `string` and `patch`, the two fields the Codex actually
+-- reads, gate acceptance. `fieldName` is only used to word the error.
+local function ValidateLoadoutSuggestion(loadout, fieldName)
+    if loadout == nil then return true end
+    if type(loadout) ~= "table" then
+        return false, fieldName .. " must be a table"
     end
 
-    if type(mplusLoadout.string) ~= "string" or mplusLoadout.string == "" then
-        return false, "mplusLoadout.string must be a non-empty string"
+    if type(loadout.string) ~= "string" or loadout.string == "" then
+        return false, fieldName .. ".string must be a non-empty string"
     end
 
-    if type(mplusLoadout.patch) ~= "string" or mplusLoadout.patch == "" then
-        return false, "mplusLoadout.patch must be a non-empty string"
+    if type(loadout.patch) ~= "string" or loadout.patch == "" then
+        return false, fieldName .. ".patch must be a non-empty string"
     end
 
     return true
@@ -168,7 +168,12 @@ local function ValidateGuide(classToken, specID, guide)
         return false, "guide." .. err
     end
 
-    ok, err = ValidateMplusLoadout(guide.mplusLoadout)
+    ok, err = ValidateLoadoutSuggestion(guide.mplusLoadout, "mplusLoadout")
+    if not ok then
+        return false, "guide." .. err
+    end
+
+    ok, err = ValidateLoadoutSuggestion(guide.raidLoadout, "raidLoadout")
     if not ok then
         return false, "guide." .. err
     end

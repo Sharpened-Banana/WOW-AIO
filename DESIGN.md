@@ -212,6 +212,14 @@ frame width minus both rails, their gaps, and its own 8px side margins - and
 16px short, clipping the last tab past the frame's right edge. +84 covers
 it with a small margin.)
 
+A later pass (options-in-Codex work, not otherwise documented in this file)
+added a 9th tab, **Options**, and widened the frame again to 984 -> 1070
+with the same `FRAME_WIDTH - 310` invariant carrying `CONTENT_WIDTH` along
+with it (760). `tests/run.lua`'s tab-strip width assertion derives its
+"needed" width from the live tab count rather than a hardcoded number, so
+adding a further tab fails that test instead of silently clipping in the
+client.
+
 `/sage reset all` leaves `SpecSageDB.bis` alone (curated data, like
 loadouts and notes).
 
@@ -255,6 +263,96 @@ until the user clicks Add, keeping the existing "shipped guide data is
 read-only reference, `SpecSageDB` is the user's own roster" separation
 intact. Absent for a spec with no `mplusLoadout` — no placeholder text; it
 simply doesn't add the extra row.
+
+## Shipped raid loadout & structured rotation conditions (v1.3)
+
+Two extensions that go further with the same SimulationCraft source
+`mplusLoadout` (v1.2) already established, rather than opening a new one:
+
+**1. `raidLoadout`** — a second talent-string suggestion, same shape and
+same trust bar as `mplusLoadout`, for a spec where SimC publishes a
+genuinely different build for raid content than for Mythic+/dungeon content:
+
+```lua
+raidLoadout = {
+  string = "C0EAy0kSampleExportStringFromSimC",  -- Blizzard talent export format
+  source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+  patch = "12.1",
+}
+```
+
+**Only add it when that distinct source genuinely exists.** As of patch
+12.1, SimC's `midnight` branch ships exactly ONE profile per spec
+(`profiles/<tier>/<tier>_<Class>_<Spec>.simc`) — the `profiles/<tier>_Raid.simc`
+file at the top level is an aggregator that `#include`s each spec's single
+file, not a separately-talented raid build sitting alongside a
+separately-talented dungeon one. Pointing `raidLoadout` at that same file
+under a `mplusLoadout` field that also (from an earlier or later fetch)
+points at it would show a player two different-looking Codex rows —
+"Suggested Mythic+" and "Suggested Raid" — that carry no real
+differentiation the label promises, with no way for the player to know that
+from the UI alone. Confirm SimC's directory structure for the current
+tier actually branches by content type before populating both fields for a
+spec; if it does not, refresh `mplusLoadout` alone and leave `raidLoadout`
+unset, the same as any spec without SimC coverage for a field. (This
+schema and its rendering are validated with synthetic fixture data — see
+`tests/run.lua`'s "Suggested Mythic+ and Raid loadout rows" section — deliberately,
+so the mechanism is proven independently of whether real source data
+supporting it exists yet for any particular spec.)
+
+Validated identically to `mplusLoadout` (`Data/API.lua`'s
+`ValidateLoadoutSuggestion` backs both — optional; when present, `string`
+and `patch` must be non-empty strings). A guide may carry either, both, or
+neither; the two do not interact.
+
+The Codex **Loadouts** tab gains a second suggested-loadout row, "Suggested
+Raid (via SimulationCraft, patch 12.1)", with the same Copy/Add to my vault
+behaviour as the Mythic+ row (`Loadouts:Add(specID, "Suggested Raid (SimC)",
+"Raid", guide.raidLoadout.string)`). `UI/Codex.lua`'s
+`SUGGESTED_LOADOUT_KINDS` table drives both rows from one shared renderer,
+Mythic+ above Raid, each independently shown or hidden depending on which
+loadout kinds that spec's guide actually ships — a spec with only one still
+shows just the one row, not a placeholder for the other.
+
+**2. Structured `condition` on a rotation step or cooldown entry** — a rotation
+group's step (`rotation[].steps[]`) and a `cooldowns[]` entry both gain an
+optional `condition` field, alongside the existing `spellID`/`text`:
+
+```lua
+{ spellID = 163201, text = "Execute once the target drops below execute-range health",
+  condition = "Slayer hero talent: use with Rage above 40, or on a Sudden Death proc" },
+```
+
+This is an Action Priority List's `if=` logic, translated to plain English -
+never raw `actions.*` syntax - and kept structurally separate from
+hand-authored `text` rather than folded into one sentence, so a future
+refresh pass can update the condition from a newer APL without touching
+prose a person wrote, and so the two read as clearly different things in the
+Codex rather than one run-on line. Not validated by `Data/API.lua` (same
+laissez-faire treatment `rotation`/`cooldowns` steps already get - a bad
+shape renders oddly rather than being rejected, since these are free-text
+fields already, not an enumerable vocabulary like `stat` or `slot`).
+
+Rendered as its own line directly under the step it belongs to, in a
+dedicated colour (`UI/Codex.lua`'s `CONDITION_COLOR`, distinct from a
+section header's colour and from plain step text) and indented
+(`CONDITION_INDENT`) so it reads as a detail on the step above rather than a
+new item. Present only when the step actually carries a `condition` - a step
+without one costs no extra row.
+
+Applied so far to Arms Warrior's Execute step and Bladestorm cooldown (both
+Slayer-hero-talent-specific), translated from
+`actions.slayer_execute+=/execute,if=rage>40|buff.sudden_death.up` and
+`actions.slayer_st+=/bladestorm,if=debuff.colossus_smash.up` in
+`profiles/MID1/MID1_Warrior_Arms.simc`, each independently re-fetched to
+confirm an exact match before use - the same double-check bar as a shipped
+talent string, since a mistranscribed `if=` clause would be silently wrong
+rather than merely malformed. Arms's `mplusLoadout.string` was refreshed
+from the same file in the same pass (see `Data/Guides_Warrior.lua`'s header
+comment - the previous string was a stale snapshot from an earlier refresh).
+Every other spec in the repo predates this field and has none yet;
+`raidLoadout` has not been applied to any real spec's guide file yet (see
+above) - only exercised by `tests/run.lua`'s fixtures.
 
 ## Codex window (UI/Codex.lua)
 

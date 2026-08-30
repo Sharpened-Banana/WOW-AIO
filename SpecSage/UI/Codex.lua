@@ -105,6 +105,12 @@ local DEFAULT_CLASS_COLOR = { r = 0.8, g = 0.8, b = 0.8 }
 local NO_DATA_TEXT = "no guide data yet - see SpecSage/Data/Guides_<Class>.lua to add some"
 local MUTED_COLOR = { 0.55, 0.55, 0.55 }
 local HEADER_COLOR = { 0.4, 0.8, 1.0 }
+-- A rotation/cooldown step's optional `condition` (DESIGN.md's v1.3
+-- section): a distinct blue-grey so it reads as "detail on the line above"
+-- rather than MUTED_COLOR's "there is no data here" or HEADER_COLOR's
+-- "this starts a new section".
+local CONDITION_COLOR = { 0.55, 0.75, 0.95 }
+local CONDITION_INDENT = 20
 
 -- BiS tab: status-tag colours (DESIGN.md: green/yellow/grey) and the default
 -- item colour for an entry whose quality is not known yet (a plain-name
@@ -324,6 +330,10 @@ local function PlaceLine(pool, index, parent, y, width, text, opts)
         row.spellID = nil
         row:EnableMouse(false)
     end
+    -- opts.indent (a step's condition sub-line) stacks with the spellID
+    -- inset rather than replacing it, though the two are never combined in
+    -- practice today - a condition line carries no icon of its own.
+    textInset = textInset + (opts.indent or 0)
 
     row.text:ClearAllPoints()
     row.text:SetPoint("TOPLEFT", row, "TOPLEFT", textInset, 0)
@@ -477,6 +487,17 @@ function Codex:RenderRotation(guide)
             for _, step in ipairs(group.steps or {}) do
                 index = index + 1
                 y = PlaceLine(pool, index, parent, y, width, step.text or "", { spellID = step.spellID })
+                -- Optional condition (DESIGN.md's v1.3 section): the APL
+                -- if= logic a step comes from, translated to plain English
+                -- and kept structurally separate from step.text rather than
+                -- folded into one sentence, so the two can be told apart at
+                -- a glance and a refresh pass can update one without
+                -- rewriting hand-authored prose.
+                if step.condition and step.condition ~= "" then
+                    index = index + 1
+                    y = PlaceLine(pool, index, parent, y, width, step.condition,
+                        { color = CONDITION_COLOR, indent = CONDITION_INDENT })
+                end
             end
             y = y - GROUP_GAP
         end
@@ -498,6 +519,11 @@ function Codex:RenderCooldowns(guide)
         for _, entry in ipairs(cooldowns) do
             index = index + 1
             y = PlaceLine(pool, index, parent, y, width, entry.text or "", { spellID = entry.spellID })
+            if entry.condition and entry.condition ~= "" then
+                index = index + 1
+                y = PlaceLine(pool, index, parent, y, width, entry.condition,
+                    { color = CONDITION_COLOR, indent = CONDITION_INDENT })
+            end
         end
     end
 
@@ -853,15 +879,27 @@ function Codex:EnsureLoadoutWidgets()
     self:EnsureSuggestedLoadoutRow()
 end
 
--- The one shipped-guide "Suggested Mythic+" row (DESIGN.md's v1.2 section):
--- a single frame, not pooled, since a spec has at most one mplusLoadout.
--- Built alongside the saved-loadout row pool but kept separate from it, since
--- its buttons (Copy / Add to my vault) differ from a saved row's (Copy /
--- Delete) and it never participates in the delete-by-index list.
-function Codex:EnsureSuggestedLoadoutRow()
-    if self.suggestedLoadoutRow then return end
+-- The shipped-guide suggested-loadout rows (DESIGN.md's v1.2 section, and
+-- v1.3 for the raid one): one small frame per kind SimC ships a talent
+-- string for. Fixed at two kinds rather than a pool, since a spec has at
+-- most one mplusLoadout and at most one raidLoadout - there is no unbounded
+-- list to pool for. Built alongside the saved-loadout row pool but kept
+-- separate from it, since these rows' buttons (Copy / Add to my vault)
+-- differ from a saved row's (Copy / Delete) and neither participates in the
+-- delete-by-index list.
+--
+-- guideField is the guide table key SimC data lives under; addName/category
+-- are what Loadouts:Add stores when the player clicks "Add to my vault"
+-- (category must be one of Loadouts.VALID_CATEGORIES, so an unrecognised
+-- one here would silently fall back to "Other" rather than error).
+local SUGGESTED_LOADOUT_KINDS = {
+    { key = "mplus", guideField = "mplusLoadout", label = "Suggested Mythic+",
+      addName = "Suggested M+ (SimC)", category = "Mythic+" },
+    { key = "raid", guideField = "raidLoadout", label = "Suggested Raid",
+      addName = "Suggested Raid (SimC)", category = "Raid" },
+}
 
-    local parent = self.scrollChild
+local function CreateSuggestedLoadoutRow(parent)
     local row = CreateFrame("Frame", nil, parent)
 
     row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -879,23 +917,32 @@ function Codex:EnsureSuggestedLoadoutRow()
     row.copyButton:SetPoint("RIGHT", row.addButton, "LEFT", -8, 0)
 
     row:Hide()
-    self.suggestedLoadoutRow = row
+    return row
 end
 
--- Adding the shipped suggestion never writes anywhere until this click - the
--- guide's mplusLoadout stays read-only reference data (like every other
--- shipped guide field) until the player opts in, matching the existing
--- "shipped data is read-only, SpecSageDB is the user's own roster" split.
--- Confirmation is a temporary label change on the button itself (mirrors the
--- Delete row's arm/revert timer above); the newly saved loadout shows up in
--- the list below on the next render (a tab/spec switch, or the revert below)
--- rather than forcing an immediate re-render here, which would otherwise
--- stomp the "Added!" label back to its default before the player ever sees
--- it (RenderLoadouts resets this button's text every render, the same as
--- a saved row's Delete button).
-function Codex:OnAddSuggestedLoadoutClicked(button, specID, exportString)
+function Codex:EnsureSuggestedLoadoutRow()
+    if self.suggestedLoadoutRows then return end
+
+    self.suggestedLoadoutRows = {}
+    for _, kind in ipairs(SUGGESTED_LOADOUT_KINDS) do
+        self.suggestedLoadoutRows[kind.key] = CreateSuggestedLoadoutRow(self.scrollChild)
+    end
+end
+
+-- Adding a shipped suggestion never writes anywhere until this click - the
+-- guide's mplusLoadout/raidLoadout stays read-only reference data (like
+-- every other shipped guide field) until the player opts in, matching the
+-- existing "shipped data is read-only, SpecSageDB is the user's own roster"
+-- split. Confirmation is a temporary label change on the button itself
+-- (mirrors the Delete row's arm/revert timer above); the newly saved
+-- loadout shows up in the list below on the next render (a tab/spec switch,
+-- or the revert below) rather than forcing an immediate re-render here,
+-- which would otherwise stomp the "Added!" label back to its default before
+-- the player ever sees it (RenderLoadouts resets this button's text every
+-- render, the same as a saved row's Delete button).
+function Codex:OnAddSuggestedLoadoutClicked(button, specID, kind, exportString)
     local Loadouts = ns:GetModule("Loadouts")
-    local ok, err = Loadouts:Add(specID, "Suggested M+ (SimC)", "Mythic+", exportString)
+    local ok, err = Loadouts:Add(specID, kind.addName, kind.category, exportString)
     if ok then
         button:SetText("Added!")
         C_Timer.After(2, function()
@@ -946,32 +993,39 @@ function Codex:RenderLoadouts(specID, guide)
 
     y = y - 26
 
-    -- The shipped "Suggested Mythic+" row (DESIGN.md's v1.2 section): shown
-    -- above the player's own saved loadouts only when this spec's guide
-    -- ships one, with no placeholder when it does not - the row simply
-    -- doesn't exist rather than rendering empty.
-    local suggested = self.suggestedLoadoutRow
-    local mplusLoadout = guide and guide.mplusLoadout
-    if mplusLoadout then
-        suggested:ClearAllPoints()
-        suggested:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
-        suggested:SetSize(width, 18)
-        suggested.name:SetText(format("Suggested Mythic+ (via SimulationCraft, patch %s)", mplusLoadout.patch))
-        suggested.name:SetTextColor(0.9, 0.9, 0.9)
+    -- The shipped suggested-loadout rows (DESIGN.md's v1.2/v1.3 sections):
+    -- shown above the player's own saved loadouts only for the kinds this
+    -- spec's guide actually ships (mplusLoadout, raidLoadout), with no
+    -- placeholder for a kind it does not - that row simply doesn't exist
+    -- rather than rendering empty. Order follows SUGGESTED_LOADOUT_KINDS
+    -- (Mythic+ above Raid), and only a shown row spends a y-offset, so one
+    -- spec shipping just one kind does not leave a gap where the other would
+    -- have been.
+    for _, kind in ipairs(SUGGESTED_LOADOUT_KINDS) do
+        local suggested = self.suggestedLoadoutRows[kind.key]
+        local loadout = guide and guide[kind.guideField]
 
-        suggested.copyButton:Show()
-        suggested.copyButton:SetScript("OnClick", function() self:ShowCopyDialog(mplusLoadout.string) end)
+        if loadout then
+            suggested:ClearAllPoints()
+            suggested:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
+            suggested:SetSize(width, 18)
+            suggested.name:SetText(format("%s (via SimulationCraft, patch %s)", kind.label, loadout.patch))
+            suggested.name:SetTextColor(0.9, 0.9, 0.9)
 
-        suggested.addButton:SetText("Add to my vault")
-        suggested.addButton:Show()
-        suggested.addButton:SetScript("OnClick", function(btn)
-            self:OnAddSuggestedLoadoutClicked(btn, specID, mplusLoadout.string)
-        end)
+            suggested.copyButton:Show()
+            suggested.copyButton:SetScript("OnClick", function() self:ShowCopyDialog(loadout.string) end)
 
-        suggested:Show()
-        y = y - 20
-    else
-        suggested:Hide()
+            suggested.addButton:SetText("Add to my vault")
+            suggested.addButton:Show()
+            suggested.addButton:SetScript("OnClick", function(btn)
+                self:OnAddSuggestedLoadoutClicked(btn, specID, kind, loadout.string)
+            end)
+
+            suggested:Show()
+            y = y - 20
+        else
+            suggested:Hide()
+        end
     end
 
     local Loadouts = ns:GetModule("Loadouts")
@@ -1492,7 +1546,9 @@ function Codex:HideOtherTabWidgets(activeTab)
             self.loadoutButtons.add:Hide()
         end
         if self.loadoutRowPool then HidePoolFrom(self.loadoutRowPool, 1) end
-        if self.suggestedLoadoutRow then self.suggestedLoadoutRow:Hide() end
+        if self.suggestedLoadoutRows then
+            for _, row in pairs(self.suggestedLoadoutRows) do row:Hide() end
+        end
     end
 
     if activeTab ~= "Options" and self.optionPools then

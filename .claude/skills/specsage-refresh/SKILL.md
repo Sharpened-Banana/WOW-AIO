@@ -7,14 +7,32 @@ description: Refresh SpecSage's (the WoW addon in this repo) game-version metada
 
 SpecSage ships two kinds of game-content data: hand-authored guide prose
 (never sourced from any specific site) and, for most DPS/tank specs, a
-`mplusLoadout` talent string plus rotation cross-check pulled from
-SimulationCraft's public GitHub repo. Both go stale every patch. This skill
-repeats the refresh pipeline that produced the addon's first Midnight-era
-update, so it doesn't need to be re-derived from scratch each time.
+`mplusLoadout` talent string, an optional `raidLoadout` talent string, and a
+rotation cross-check pulled from SimulationCraft's public GitHub repo. All of
+it goes stale every patch. This skill repeats the refresh pipeline that
+produced the addon's first Midnight-era update, so it doesn't need to be
+re-derived from scratch each time.
 
 Read `/home/user/WOW-AIO/DESIGN.md` before starting — specifically the
-"Shipped Mythic+ talent loadout (v1.2)" section, which is the schema and the
-reasoning for why SimC (not a guide website) is the source.
+"Shipped Mythic+ talent loadout (v1.2)" and "Shipped raid loadout &
+structured rotation conditions (v1.3)" sections, which are the schema and
+the reasoning for why SimC (not a guide website) is the source.
+
+**Before touching `raidLoadout` for any spec**, confirm SimC's current
+directory layout genuinely ships a separate raid-context profile alongside
+the Mythic+/dungeon one, rather than assuming it does. The first pass to
+build this field found that, for the `midnight` branch's `MID1` tier, SimC
+publishes exactly ONE profile per spec (`profiles/MID1/MID1_<Class>_<Spec>.simc`),
+and `profiles/MID1_Raid.simc` is only an aggregator that `#include`s that
+same file — there is no separately-talented dungeon variant to source a
+second field from. Pointing `mplusLoadout` and `raidLoadout` at the same
+file (even if the strings happen to differ because they were fetched on
+different dates as SimC's own automation updated the profile) would show a
+player two Codex rows — "Suggested Mythic+" and "Suggested Raid" — that
+promise a real distinction neither string actually carries, with no way for
+the player to know that from the UI. Check the tier's directory listing
+each refresh (layouts can change); if it's still one file per spec, refresh
+`mplusLoadout` alone and leave `raidLoadout` unset for that spec.
 
 ## The one rule that can't bend: no Wowhead, Method, Archon, or any other
 guide site — ever, for anything
@@ -117,17 +135,38 @@ split. Each agent's job per spec:
    example), `patch` (short — "12.1", or "12.0 (MID1, previous tier)" for
    a fallback-tier pull; put any longer explanation in a comment, not the
    UI-rendered `patch` string itself, since it renders in a fixed-width
-   Codex row).
-4. Sanity-check `rotation` and `statPriority` prose against the fetched
+   Codex row). Re-fetch the `talents=` line a second time before using it
+   (two independent `curl`s, compare byte-for-byte) — this is the same
+   double-check the first v1.3 pass used, catching a transient truncation
+   or a copy mistake before it ships silently wrong.
+4. Only add `raidLoadout` when this tier's directory structure genuinely
+   provides a separate raid-context file for this spec (see the note near
+   the top of this skill) — don't add it just because the field exists in
+   the schema. When it does apply, same sourcing/verification standard as
+   `mplusLoadout` above, from the genuinely distinct file.
+5. Sanity-check `rotation` and `statPriority` prose against the fetched
    APL. Fix only where you're actually confident there's drift — translate
    to plain English, never paste `actions.*` syntax into guide prose, never
    invent an ability name you didn't see in the fetch.
-5. Skip a spec entirely (leave existing prose untouched, no `mplusLoadout`
+6. Where the APL's `if=` clause behind an existing rotation step or
+   cooldown entry is unambiguous and you're confident in the translation,
+   add it as that step's `condition` field (DESIGN.md's v1.3 section) —
+   plain English, never raw `actions.*` syntax, kept as its own field
+   rather than folded into `text`. Re-fetch the specific APL line a second
+   time before translating it, same standard as a talent string: a
+   mistranslated `if=` clause is silently wrong, not obviously broken.
+   This is additive, not required for every step — a step with no clearly
+   corresponding APL condition (or one you're not confident reading)
+   simply keeps no `condition` field, the same as before this schema
+   existed.
+7. Skip a spec entirely (leave existing prose untouched, no `mplusLoadout`
    field) if it has no coverage in either tier — no fabrication.
-6. Update the file's header comment honestly, at the file level, since a
+8. Update the file's header comment honestly, at the file level, since a
    file holds multiple specs and not all of them may have gotten a pass
    this round: name which specs (by having an `mplusLoadout` field) were
-   SimC-cross-checked this patch, and that the rest weren't re-verified.
+   SimC-cross-checked this patch, whether any got a `raidLoadout` and why,
+   which steps (if any) gained a `condition`, and that the rest weren't
+   re-verified.
 
 ## Step 6 — Handle specs SimC doesn't cover
 
@@ -157,10 +196,18 @@ patch-metadata refresh. Report it prominently as a follow-up instead.
 
 Dispatch an Opus-model agent, review-only (no file writes except its
 findings, no git commands), to check adversarially: no leaked APL syntax
-anywhere in the 13 guide files' prose fields; no fabricated `mplusLoadout`
-for an uncovered spec; every `mplusLoadout.string` actually decodes
-sensibly (don't just trust that it "looks like" a plausible string — this
-is exactly the class of bug that slipped through the first pass); interface
+anywhere in the 13 guide files' prose fields (including new `condition`
+fields — this is the same rule as `rotation`/`cooldowns` `text`, just now
+applying to a second field); no fabricated `mplusLoadout` or `raidLoadout`
+for an uncovered spec; every `mplusLoadout.string`/`raidLoadout.string`
+actually decodes sensibly (don't just trust that it "looks like" a
+plausible string — this is exactly the class of bug that slipped through
+the first pass); for any spec carrying `raidLoadout`, confirm from the
+data agent's report that it traced to a genuinely separate SimC file from
+`mplusLoadout`'s, not the same file fetched twice and pointed at both
+fields (see the note near the top of this skill — this exact mistake
+happened during the field's first implementation and was caught only by a
+final honesty check before shipping, not by the pipeline itself); interface
 version references fully consistent repo-wide; SimC/patch-notes attribution
 present and honest; spot-check several of the data agents' reported
 "material fixes" for spec-appropriateness. Have it write findings to a
