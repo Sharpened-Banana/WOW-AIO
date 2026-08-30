@@ -42,7 +42,7 @@ ns.GuideStore:RegisterSpec("MONK", 268, {
         { spellID = 100780, text = "Tiger Palm to spend Chi and build Blackout Combo synergy" },
         { spellID = 115181, text = "Breath of Fire to apply the Dizzying Haze debuff and refresh Stagger benefits" },
         { text = "Blackout Kick / Rising Sun Kick per talent build for extra damage" },
-        { text = "Expel Harm when Chi is capped or self-healing is needed" },
+        { spellID = 322101, text = "Expel Harm when Chi is capped or self-healing is needed" },
         { text = "Opener Notes: Brewmaster splits along the Master of Harmony and Shado-Pan hero trees — both keep Keg Smash/Breath of Fire as the core loop, they mainly change how your mitigation and cooldown windows are shaped" },
     }},
     { title = "AoE", steps = {
@@ -55,14 +55,14 @@ ns.GuideStore:RegisterSpec("MONK", 268, {
     { title = "Mitigation", steps = {
         { spellID = 119582, text = "Purifying Brew to clear staggered damage when the pool is getting high" },
         { spellID = 322507, text = "Celestial Brew to shield against an upcoming damage spike" },
-        { text = "Fortifying Brew for sustained periods of heavy damage" },
+        { spellID = 115203, text = "Fortifying Brew for sustained periods of heavy damage" },
         { text = "Diffuse Magic / Zen Meditation for magic-heavy or unavoidable burst mechanics" },
         { text = "Don't purify a near-empty stagger pool — save charges for when the pool is meaningfully full" },
     }},
   },
   cooldowns = {
     { spellID = 322507, text = "Celestial Brew — proactive shield, use before a known damage spike" },
-    { text = "Fortifying Brew — major defensive, use for sustained heavy-damage phases" },
+    { spellID = 115203, text = "Fortifying Brew — major defensive, use for sustained heavy-damage phases" },
     { spellID = 119582, text = "Purifying Brew — core mitigation tool, use to prevent stagger overflow" },
     { text = "Zen Meditation / Diffuse Magic — situational defensives for magic damage" },
     { text = "Invoke Niuzao (talent) — major cooldown for extended high-threat or high-damage windows" },
@@ -135,8 +135,8 @@ ns.GuideStore:RegisterSpec("MONK", 270, {
   rotation = {
     { title = "Priorities", steps = {
         { spellID = 115151, text = "Renewing Mist to keep it rolling on injured or about-to-be-injured allies" },
-        { spellID = 191837, text = "Essence Font on cooldown for group-wide healing and buffs" },
-        { spellID = 191840, text = "Enveloping Mist for strong single-target/spot healing on focus-fire targets" },
+        { spellID = 353937, text = "Essence Font on cooldown for group-wide healing and buffs" },
+        { spellID = 124682, text = "Enveloping Mist for strong single-target/spot healing on focus-fire targets" },
         { spellID = 116670, text = "Vivify as an efficient direct heal and Renewing Mist refresher" },
         { text = "Weave Rising Sun Kick / Blackout Kick (Fistweaving builds) to contribute damage between heals — note Spinning Crane Kick's own damage was trimmed in 12.1 in favor of Mastery-driven transfer healing" },
     }},
