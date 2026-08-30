@@ -391,7 +391,7 @@ commands folded into `/sage`, options panel gains Codex settings, and
 `Stats:GetStatValue(statKey) -> displayString` for the Codex's live stat
 integration.
 
-## Live Mythic+ meta loadout (v1.4) — schema and UI shipped, data pipeline blocked
+## Live Mythic+ meta loadout (v1.4) — schema and UI shipped, pipeline unblocked
 
 A third suggested-loadout kind, `mplusMetaLoadout`, alongside `mplusLoadout`
 (v1.2, SimC's theorycrafted default) and `raidLoadout` (v1.3): what current
@@ -432,40 +432,41 @@ rendering (three independently shown/hidden/ordered rows, correct
 per-kind attribution, Copy, Add to my vault) — proven with `tests/run.lua`
 fixtures, same as `raidLoadout` before any real spec carried one.
 
-**What is NOT yet shipped: a working pipeline that actually populates this
-field**, and the reason is a specific, unresolved technical question, not
-just "not built yet." Populating `mplusMetaLoadout.string` requires
-Blizzard's own Battle.net API to hand back a talent build in the same
-export-string format `mplusLoadout`/`raidLoadout` already use (the format
-`C_Traits.GenerateImportString` produces and the in-game import UI accepts)
-— but that format is generated client-side by
-`C_ClassTalents.GetLoadoutExportString()`, which Blizzard's own
-documentation describes as an internal/undocumented encoder, and the
-REST API's other resources (equipment, achievements) consistently expose
-structured IDs rather than an opaque client-format blob. Research strongly
-suggests (but could not directly confirm without an authenticated test call,
-which needs real Battle.net API credentials nobody had yet at research time)
-that the character-specializations endpoint's `loadouts` field is structured
-talent-node data, not a ready-to-use export string.
+**Resolved by a real authenticated test call** (2026-08-30, against a known
+character — see below): `GET /profile/wow/character/{realm}/{name}/specializations`
+returns each spec as `{ specialization, loadouts: [...] }`, and each entry in
+`loadouts` carries a `talent_loadout_code` field alongside the structured
+`selected_class_talents`/`selected_spec_talents`/`selected_hero_talents`
+node data. `talent_loadout_code` **is already the Blizzard export string** —
+same character set, same length range (~100-110 chars), same
+class-token-letter-plus-"EAA..." prefix shape as the SimC strings already
+shipped in `mplusLoadout`/`raidLoadout`. Verified against a live character
+(Holeehands-Emerald Dream, US) whose returned `talent_loadout_code` for its
+active loadout matched its actual in-game Protection Paladin / Lightsmith
+build, cross-checked against the response's own `character`/
+`active_specialization`/`active_hero_talent_tree` fields.
 
-If that's correct, shipping this field for real means the refresh pipeline
-must itself re-implement Blizzard's talent-loadout serializer — encoding
-structured node selections back into the client's bit-packed export format
-— which is a real, separate reverse-engineering project, not something to
-fold into "just pull the string" scope the way `mplusLoadout`/`raidLoadout`
-could. **Before writing that pipeline, make one real authenticated API call
-against a character with a known talent build and inspect the actual
-`loadouts` field shape** — cheap and decisive, and settles whether this is a
-one-field mapping or a serializer to build. See
+This means the earlier concern in this section — that the API might only
+expose structured node data, requiring the pipeline to build its own
+serializer to re-encode Blizzard's internal bit-packed export format — does
+**not** apply. Populating `mplusMetaLoadout.string` for a given player is a
+direct field read (`loadouts[].talent_loadout_code` for the entry where
+`is_active` is true), the same "just pull the string" scope
+`mplusLoadout`/`raidLoadout` already had.
+
+**What the pipeline still needs to do** (not yet built - the schema/UI/tests
+above are what's shipped so far): find current-season Mythic+ leaderboard
+data via `GET /data/wow/connected-realm/{id}/mythic-keystone-leaderboard/{dungeonId}/period/{period}`
+— there is no single global leaderboard, so this means enumerating many
+connected realms (mechanically simple, not structurally hard — an existing
+open-source project does exactly this) — to identify top characters per
+spec, look up each one's `specializations` (for `talent_loadout_code`) and,
+optionally, `equipment` via the separate, unaffected
+`GET /profile/wow/character/{realm}/{name}/equipment`, then aggregate
+(e.g. most-common code per spec) into `mplusMetaLoadout`. See
 `.claude/skills/specsage-refresh/SKILL.md` (or a dedicated Mythic+-meta
-refresh skill, if one exists by the time you're reading this) for the rest
-of the pipeline: enumerate current-season connected-realm Mythic+
-leaderboards (`GET /data/wow/connected-realm/{id}/mythic-keystone-leaderboard/{dungeonId}/period/{period}`
-- no single global leaderboard exists, this genuinely requires enumerating
-many realms) to identify top characters per spec, then look up each one's
-specializations (and equipment, via the separate, unaffected
-`GET /profile/wow/character/{realm}/{name}/equipment`) to build the
-aggregate.
+refresh skill, if one exists by the time you're reading this) for whatever
+pipeline shape was ultimately built.
 
 ## Tests
 
