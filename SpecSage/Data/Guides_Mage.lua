@@ -1,9 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Mage
--- Content targets The War Within. This is community-maintained, conventional
--- guidance (keep-it-simple stat priorities, long-standing rotation patterns)
--- and is NOT a claim of sim-perfect or bleeding-edge optimal play.
+-- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
+-- priorities were cross-checked against SimulationCraft's public default
+-- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
+-- consumables/overview/tips/gear guidance was not re-verified against
+-- current tuning in this pass.
+-- This is community-maintained, conventional guidance (keep-it-simple stat
+-- priorities, long-standing rotation patterns) and is NOT a claim of
+-- sim-perfect or bleeding-edge optimal play.
 -- To edit: find the RegisterSpec(...) block for the spec you want to change
 -- and edit the table in place. To add a new tip/step, insert a new entry in
 -- the relevant array. Keep this file data-only — no logic beyond the calls
@@ -32,6 +37,7 @@ ns.GuideStore:RegisterSpec("MAGE", 62, {
         { text = "Pre-cast Arcane Blast to land as combat starts" },
         { spellID = 365350, text = "Arcane Surge to open the burn phase" },
         { spellID = 44425, text = "Arcane Barrage at 4 charges to dump and reset" },
+        { text = "Opener Notes: your rotation splits along the Sunfury and Spellslinger hero trees — both still center on the Blast/Barrage/Surge loop above, just with different burst-window shaping" },
     }},
     { title = "Single Target", steps = {
         { spellID = 30451, text = "Arcane Blast to build Arcane Charges" },
@@ -72,6 +78,11 @@ ns.GuideStore:RegisterSpec("MAGE", 62, {
     { slot = "Weapon", text = "A one-hand weapon and off-hand or a two-hand staff both work — take whichever has the higher weapon damage" },
     { slot = "Off-hand", text = "If you're wielding a one-hander, match its off-hand's secondary stats to the same Critical Strike/Mastery lean" },
   },
+  mplusLoadout = {
+    string = "C4DAAAAAAAAAAAAAAAAAAAAAAYGGLzMzswMDamZGAAAGAAEwMzMLLzMxCAAwMzMjNLzMzsMjxYmZwCzYmZGAgBAAYmZBAMDAGmZG",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
+  },
   tips = {
     "Track your mana closely — running out mid-burn wastes the window; running out too early forces a weak conserve phase.",
     "Pre-cast your first Arcane Blast before the pull timer hits zero for a free head start.",
@@ -101,6 +112,7 @@ ns.GuideStore:RegisterSpec("MAGE", 63, {
         { text = "Pre-cast Pyroblast (or Scorch while moving) to enter combat with a head start" },
         { spellID = 190319, text = "Combustion once you have Heating Up or Hot Streak banked, aligned with damage cooldowns" },
         { spellID = 108853, text = "Fire Blast to convert Heating Up into Hot Streak during Combustion" },
+        { text = "Opener Notes: Fire splits along the Frostfire and Sunfury hero trees — Frostfire folds in Frostfire Bolt casts, Sunfury leans harder on Meteor-timed Combustion windows, but the Heating Up/Hot Streak loop above holds either way" },
     }},
     { title = "Single Target", steps = {
         { spellID = 133, text = "Fireball as your default filler to build Heating Up" },
@@ -142,6 +154,11 @@ ns.GuideStore:RegisterSpec("MAGE", 63, {
     { slot = "Weapon", text = "Staff or one-hand-plus-off-hand both work fine — weapon damage and item level matter far more than the weapon type" },
     { slot = "Off-hand", text = "Match a one-hander's off-hand to your Critical Strike lean rather than treating it as an afterthought slot" },
   },
+  mplusLoadout = {
+    string = "C8DAAAAAAAAAAAAAAAAAAAAAAYGGLzMzswMzIzMGAAAGAwMz0sstMDAwmZmx2MzMzYBAAAAALmZmZAAgZMmZmZMzsMAMzQGjBMDjB",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
+  },
   tips = {
     "Enter Combustion with Heating Up or Hot Streak already active so the window starts strong.",
     "Never overcap Fire Blast or Phoenix Flames charges — that's wasted proc generation.",
@@ -171,6 +188,7 @@ ns.GuideStore:RegisterSpec("MAGE", 64, {
         { text = "Pre-cast Frostbolt to enter combat with an Icicle already building" },
         { spellID = 12472, text = "Icy Veins aligned with your first burst window" },
         { text = "Use a shatter combo (Freeze/Nova) into Ice Lance on your first Fingers of Frost proc" },
+        { text = "Opener Notes: Frost splits along the Frostfire and Spellslinger hero trees — Frostfire weaves in Frostfire Bolt casts on top of the usual Frostbolt/Ice Lance/Flurry loop, Spellslinger keeps the loop closer to the description above" },
     }},
     { title = "Single Target", steps = {
         { spellID = 116, text = "Frostbolt as your default filler and Icicle builder" },
@@ -211,6 +229,11 @@ ns.GuideStore:RegisterSpec("MAGE", 64, {
     { slot = "Trinket", text = "A passive secondary-stat trinket to keep your damage strong between Icy Veins windows" },
     { slot = "Weapon", text = "Staff or one-hand-plus-off-hand both work — prioritize the higher weapon damage/item level over the type" },
     { slot = "Off-hand", text = "If dual-wielding a caster off-hand, favor one that reinforces your Critical Strike/Mastery split" },
+  },
+  mplusLoadout = {
+    string = "CAEAAAAAAAAAAAAAAAAAAAAAAYGGLzMzsMmZmYmZGjZMziZmZmZMDEAAYmZmllZm2AAAAAAgNA2WGzMzAbzYmZYBAAgZ2AmBGwADD",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Shatter your burst spells (Ice Lance, Frostbolt vs a rooted/frozen target) whenever a root or Freeze is available for guaranteed crits.",

@@ -334,6 +334,74 @@ do
     check(GuideStore:GetGuide(9007) == nil, "guide with empty gear text is not stored")
 end
 
+-- mplusLoadout is optional (DESIGN.md's "Shipped Mythic+ talent loadout
+-- (v1.2)" section) - a guide with no mplusLoadout key at all must still be
+-- accepted, the same as every guide before v1.2.
+do
+    local guide = { specName = "No Loadout Spec", role = "DAMAGER" }
+    local ok = GuideStore:RegisterSpec("MAGE", 9008, guide)
+    check(ok == true, "RegisterSpec accepts a guide with no mplusLoadout key at all")
+    check(GuideStore:GetGuide(9008).mplusLoadout == nil,
+        "a guide with no mplusLoadout key round-trips with mplusLoadout still nil")
+end
+
+-- A valid mplusLoadout is accepted and round-trips.
+do
+    local guide = {
+        specName = "Loadout Spec",
+        role = "DAMAGER",
+        mplusLoadout = {
+            string = "C0EAy0kSampleExportStringFromSimC",
+            source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+            patch = "12.1",
+        },
+    }
+    local ok = GuideStore:RegisterSpec("MAGE", 9009, guide)
+    check(ok == true, "RegisterSpec accepts a valid mplusLoadout")
+    local roundTripped = GuideStore:GetGuide(9009)
+    check(roundTripped ~= nil and roundTripped.mplusLoadout.string == "C0EAy0kSampleExportStringFromSimC",
+        "round-tripped guide keeps its mplusLoadout.string",
+        roundTripped and roundTripped.mplusLoadout and roundTripped.mplusLoadout.string)
+    check(roundTripped.mplusLoadout.patch == "12.1", "round-tripped guide keeps its mplusLoadout.patch",
+        roundTripped.mplusLoadout.patch)
+end
+
+-- A non-table mplusLoadout is rejected (guide skipped entirely), the same
+-- validate-and-skip contract as a bad gear entry.
+do
+    local badGuide = { specName = "Bad Loadout Spec A", role = "DAMAGER", mplusLoadout = "not a table" }
+    local ok, result = silently(function() return GuideStore:RegisterSpec("MAGE", 9011, badGuide) end)
+    check(ok, "RegisterSpec with a non-table mplusLoadout does not error", result)
+    check(result == false, "guide with a non-table mplusLoadout is rejected")
+    check(GuideStore:GetGuide(9011) == nil, "guide with a non-table mplusLoadout is not stored")
+end
+
+-- A missing/empty `string` field is rejected.
+do
+    local badGuide = {
+        specName = "Bad Loadout Spec B",
+        role = "DAMAGER",
+        mplusLoadout = { string = "", patch = "12.1" },
+    }
+    local ok, result = silently(function() return GuideStore:RegisterSpec("MAGE", 9012, badGuide) end)
+    check(ok, "RegisterSpec with an empty mplusLoadout.string does not error", result)
+    check(result == false, "guide with an empty mplusLoadout.string is rejected")
+    check(GuideStore:GetGuide(9012) == nil, "guide with an empty mplusLoadout.string is not stored")
+end
+
+-- A missing/empty `patch` field is rejected.
+do
+    local badGuide = {
+        specName = "Bad Loadout Spec C",
+        role = "DAMAGER",
+        mplusLoadout = { string = "C0EAy0k", patch = "" },
+    }
+    local ok, result = silently(function() return GuideStore:RegisterSpec("MAGE", 9013, badGuide) end)
+    check(ok, "RegisterSpec with an empty mplusLoadout.patch does not error", result)
+    check(result == false, "guide with an empty mplusLoadout.patch is rejected")
+    check(GuideStore:GetGuide(9013) == nil, "guide with an empty mplusLoadout.patch is not stored")
+end
+
 -- Accepts a valid guide and round-trips it through GetGuide.
 do
     local goodGuide = {
@@ -1857,6 +1925,90 @@ check(Codex.loadoutButtons.save:IsShown(), "Save current is shown while viewing 
 Codex:Open("WARRIOR", 71) -- not the player's own spec
 Codex:SelectTab("Loadouts")
 check(not Codex.loadoutButtons.save:IsShown(), "Save current is hidden while viewing another spec")
+
+--------------------------------------------------------------------------------
+section("Codex: Suggested Mythic+ loadout row (v1.2)")
+--------------------------------------------------------------------------------
+
+-- Inline fixture guides on scratch specIDs (the >=9000 convention used
+-- throughout this suite), registered here rather than relying on any real
+-- shipped Guides_*.lua content - two other agents are concurrently adding
+-- mplusLoadout data to those files, so this section must not race with them.
+GuideStore:RegisterSpec("WARRIOR", 9201, {
+    specName = "Loadout Warrior",
+    role = "DAMAGER",
+    mplusLoadout = {
+        string = "C0EAy0kSampleExportStringFromSimC",
+        source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+        patch = "12.1",
+    },
+})
+GuideStore:RegisterSpec("WARRIOR", 9202, { specName = "No Loadout Warrior", role = "DAMAGER" })
+
+-- Present: the extra row renders above the saved-loadout list, labeled per
+-- DESIGN.md, with both buttons shown.
+Codex:Open("WARRIOR", 9201)
+Codex:SelectTab("Loadouts")
+check(Codex.suggestedLoadoutRow:IsShown(), "the suggested row is shown for a spec whose guide ships mplusLoadout")
+check(Codex.suggestedLoadoutRow.name:GetText() == "Suggested Mythic+ (via SimulationCraft, patch 12.1)",
+    "the suggested row is labeled per DESIGN.md, including the guide's patch",
+    Codex.suggestedLoadoutRow.name:GetText())
+check(Codex.suggestedLoadoutRow.copyButton:IsShown(), "the suggested row's Copy button is shown")
+check(Codex.suggestedLoadoutRow.addButton:IsShown(), "the suggested row's Add to my vault button is shown")
+check(Codex.suggestedLoadoutRow.addButton:GetText() == "Add to my vault",
+    "the suggested row's Add button is labeled 'Add to my vault'", Codex.suggestedLoadoutRow.addButton:GetText())
+
+-- Absent: no placeholder text, the row simply doesn't render (per DESIGN.md).
+Codex:Open("WARRIOR", 9202)
+Codex:SelectTab("Loadouts")
+check(not Codex.suggestedLoadoutRow:IsShown(),
+    "the suggested row is hidden entirely for a spec whose guide has no mplusLoadout")
+
+-- Copy: same read-only highlighted-editbox pattern as a saved loadout's
+-- Copy, and the same Show-before-focus ordering the mock enforces via
+-- IsEffectivelyShown (see the saved-loadout Copy test above) - a reordering
+-- mistake here would error under the mock instead of silently copying
+-- nothing.
+Codex:Open("WARRIOR", 9201)
+Codex:SelectTab("Loadouts")
+local suggestedCopyOk = pcall(function() Codex.suggestedLoadoutRow.copyButton:GetScript("OnClick")() end)
+check(suggestedCopyOk, "Copy on the suggested row does not error under the mock's visibility-checked SetFocus")
+check(Codex.copyDialog:IsShown(), "Copy on the suggested row opens the copy dialog")
+check(Codex.copyBox:GetText() == "C0EAy0kSampleExportStringFromSimC",
+    "the copy dialog is populated with the suggested loadout's export string, not a saved loadout's",
+    Codex.copyBox:GetText())
+check(Codex.copyBox.focused == true, "the copy box is focused for the suggested row's string")
+check(Codex.copyBox.highlighted == true, "the copy box's text is highlighted for the suggested row's string")
+
+-- Add to my vault: calls Loadouts:Add with the exact arguments DESIGN.md
+-- specifies, never touching SpecSageDB before the click, and gives a brief
+-- confirmation via a temporary label change that reverts on its own.
+local vaultCountBefore = #LoadoutsModule:GetForSpec(9201)
+Codex.suggestedLoadoutRow.addButton:GetScript("OnClick")(Codex.suggestedLoadoutRow.addButton)
+
+local vaultAfter = LoadoutsModule:GetForSpec(9201)
+check(#vaultAfter == vaultCountBefore + 1, "Add to my vault stores exactly one new loadout", #vaultAfter)
+check(vaultAfter[#vaultAfter].name == "Suggested M+ (SimC)",
+    "the added loadout uses the exact name DESIGN.md specifies", vaultAfter[#vaultAfter].name)
+check(vaultAfter[#vaultAfter].category == "Mythic+",
+    "the added loadout uses the exact category DESIGN.md specifies", vaultAfter[#vaultAfter].category)
+check(vaultAfter[#vaultAfter].export == "C0EAy0kSampleExportStringFromSimC",
+    "the added loadout keeps the guide's mplusLoadout.string as its export", vaultAfter[#vaultAfter].export)
+check(Codex.suggestedLoadoutRow.addButton:GetText() == "Added!",
+    "clicking Add to my vault gives a brief confirmation via a temporary label change",
+    Codex.suggestedLoadoutRow.addButton:GetText())
+
+mock.RunAfter()
+check(Codex.suggestedLoadoutRow.addButton:GetText() == "Add to my vault",
+    "the confirmation label reverts to 'Add to my vault' after the timer",
+    Codex.suggestedLoadoutRow.addButton:GetText())
+
+-- Clicking Add to my vault a second time adds a second entry rather than
+-- silently no-oping - it is a plain Loadouts:Add call, not a toggle.
+Codex.suggestedLoadoutRow.addButton:GetScript("OnClick")(Codex.suggestedLoadoutRow.addButton)
+check(#LoadoutsModule:GetForSpec(9201) == vaultCountBefore + 2,
+    "clicking Add to my vault again stores a second loadout")
+mock.RunAfter()
 
 --------------------------------------------------------------------------------
 section("Codex: Notes tab")

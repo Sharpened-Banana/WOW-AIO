@@ -1,9 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Warrior (Arms 71, Fury 72, Protection 73)
--- Content targets The War Within. This is community-maintained conventional
--- guidance (stat priorities and rotations that match the spec's long-standing
--- design) — not a claim of bleeding-edge sim-perfect optimization.
+-- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
+-- priorities were cross-checked against SimulationCraft's public default
+-- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
+-- consumables/overview/tips/gear guidance was not re-verified against
+-- current tuning in this pass.
+-- This is community-maintained conventional guidance (stat priorities and
+-- rotations that match the spec's long-standing design) — not a claim of
+-- bleeding-edge sim-perfect optimization.
 -- To edit: change the strings/tables below and reload. To add a spec pack,
 -- call ns.GuideStore:RegisterSpec(classToken, specID, guideTable) from any
 -- addon that loads after SpecSage; see Data/API.lua for validation rules.
@@ -32,7 +37,8 @@ ns.GuideStore:RegisterSpec("WARRIOR", 71, {
         { spellID = 772, text = "Rend — keep the bleed active on the target" },
         { spellID = 7384, text = "Overpower when charges are available" },
         { spellID = 845, text = "Cleave / Slam to spend excess rage between cooldowns" },
-        { spellID = 163201, text = "Execute once the target drops below execute-range health" },
+        { spellID = 163201, text = "Execute once the target drops below execute-range health, or on a Sudden Death proc even outside execute range" },
+        { text = "Champion's Spear on cooldown for extra burst inside your Colossus Smash window" },
     }},
     { title = "AoE", steps = {
         { spellID = 227847, text = "Bladestorm to open on 3+ targets" },
@@ -45,12 +51,13 @@ ns.GuideStore:RegisterSpec("WARRIOR", 71, {
     { title = "Opener Notes", steps = {
         { text = "Pool rage before pulling, then open with Colossus Smash into Mortal Strike to front-load burst" },
         { text = "Line up trinkets and offensive cooldowns with the first Colossus Smash window" },
+        { text = "Your hero talent choice reshapes the burst window: Colossus leans on Demolish spenders stacked on Colossal Might inside Colossus Smash, while Slayer ties Bladestorm itself to the Colossus Smash/Avatar debuff instead of using it as a separate cleave cooldown" },
     }},
   },
   cooldowns = {
     { spellID = 107574, text = "Avatar — pair with Colossus Smash for maximum burst" },
     { spellID = 167105, text = "Colossus Smash — core damage-amp window, use on cooldown" },
-    { spellID = 227847, text = "Bladestorm — strong AoE/cleave cooldown, also usable defensively" },
+    { spellID = 227847, text = "Bladestorm — strong AoE/cleave cooldown, also usable defensively; under the Slayer hero talent it's pulled into the Colossus Smash burst window instead" },
     { spellID = 118038, text = "Die by the Sword — major defensive, use under heavy melee pressure" },
     { spellID = 97462, text = "Rallying Cry — raid-wide defensive cooldown for group survival checks" },
   },
@@ -71,6 +78,11 @@ ns.GuideStore:RegisterSpec("WARRIOR", 71, {
     { slot = "Trinket", text = "One on-use Strength or damage-proc trinket timed to pop alongside Colossus Smash and Avatar" },
     { slot = "Trinket", text = "A second, passive stat-stick trinket for consistent damage between cooldown windows" },
     { slot = "Weapon", text = "The highest item level two-hander available — weapon damage drives a large share of Arms' output" },
+  },
+  mplusLoadout = {
+    string = "CcEAAAAAAAAAAAAAAAAAAAAAAAzMzsMzMmZGAAAghphxYmxyMzMzgxMDAAAAgZWmZAhxyyALgBMDTIzgNwMjtx2ALzsMAzMAYGGA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Never let Rend fall off a target you'll be hitting for more than a few seconds.",
@@ -114,11 +126,13 @@ ns.GuideStore:RegisterSpec("WARRIOR", 72, {
     { title = "Opener Notes", steps = {
         { text = "Open with Bloodthirst to establish Enrage immediately, then weave Rampage as rage allows" },
         { text = "Save Recklessness for a moment you can chain several Enrage-consuming abilities back to back" },
+        { text = "Your hero talent choice matters for burst sequencing: Slayer strings Recklessness into Rampage, Bladestorm, and Execute together, while Mountain Thane builds its own burst list around its lightning-infused abilities — check which one your loadout uses before assuming a fixed order" },
     }},
   },
   cooldowns = {
     { spellID = 1719, text = "Recklessness — pop for a burst window, ideally with trinkets" },
-    { spellID = 46924, text = "Bladestorm — strong cleave/AoE cooldown, also a brief defensive tool" },
+    { spellID = 46924, text = "Bladestorm — strong cleave/AoE cooldown, also a brief defensive tool; under Slayer it's folded into the main Recklessness burst sequence" },
+    { text = "Odyn's Fury — hard-hitting burst cooldown, weave into the same window as Recklessness" },
     { spellID = 184364, text = "Enraged Regeneration — self-healing cooldown for sustain checks" },
     { spellID = 23920, text = "Spell Reflection — reflects the next incoming spell, use against dangerous casts" },
     { spellID = 97462, text = "Rallying Cry — raid-wide defensive utility cooldown" },
@@ -140,6 +154,11 @@ ns.GuideStore:RegisterSpec("WARRIOR", 72, {
     { slot = "Trinket", text = "One on-use Strength or damage trinket lined up with Recklessness" },
     { slot = "Trinket", text = "A passive stat-stick trinket for sustained damage between cooldowns" },
     { slot = "Weapon", text = "Two matched, high item level one-handers — both weapons contribute equally to Fury's damage" },
+  },
+  mplusLoadout = {
+    string = "CgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgGDzMmZ2MzMzMDjZmZGzMzsMzMmZmZzYmBAAixy2ALgJYGmAzwGwMDjNAAYmhxYYMYM",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Try to stay Enraged as close to 100% of the time as possible — it underpins most of Fury's damage.",
@@ -173,7 +192,7 @@ ns.GuideStore:RegisterSpec("WARRIOR", 73, {
         { spellID = 6572, text = "Revenge when free or off cooldown for rage-efficient damage" },
         { spellID = 190456, text = "Ignore Pain to smooth incoming damage, spending excess rage" },
         { spellID = 1160, text = "Demoralizing Shout for extra mitigation as needed" },
-        { text = "Fill with basic attacks between cooldowns" },
+        { text = "Devastate as a rage-neutral filler when nothing else is ready" },
     }},
     { title = "AoE", steps = {
         { spellID = 6343, text = "Thunder Clap as the primary AoE threat generator" },
@@ -189,6 +208,9 @@ ns.GuideStore:RegisterSpec("WARRIOR", 73, {
         { spellID = 12975, text = "Last Stand for a big health buffer during dangerous phases" },
         { spellID = 871, text = "Shield Wall as the strongest cooldown for the heaviest damage spikes" },
         { text = "Alternate Shield Block and Ignore Pain uptime so rage isn't wasted overcapping either" },
+    }},
+    { title = "Opener Notes", steps = {
+        { text = "Your hero talent choice changes the opener: Mountain Thane leads with Thunder Blast ahead of Shield Slam to seed its own buffs, while Colossus keeps Shield Slam first and folds Thunder Clap in as a phalanx-refresh rather than a pure filler" },
     }},
   },
   cooldowns = {
@@ -216,6 +238,11 @@ ns.GuideStore:RegisterSpec("WARRIOR", 73, {
     { slot = "Trinket", text = "One passive Stamina or avoidance trinket for a steady survivability floor" },
     { slot = "Weapon", text = "A solid one-hander — Protection's damage comes mostly from abilities, so mitigation stats outweigh weapon dps" },
     { slot = "Off-hand", text = "The highest-armor shield you can equip, since shield block value scales your core mitigation ability" },
+  },
+  mplusLoadout = {
+    string = "CkEAAAAAAAAAAAAAAAAAAAAAA02AAAzMDzMzMzMzmxsMjxYmGGDLzMzMDGzMAAAAYZAYGDAsYGDbwAzwCNmZBmxMDmNAAzMAgZgxA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Keep Shield Block active before big physical hits rather than reacting after the fact.",

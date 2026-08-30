@@ -115,6 +115,28 @@ local function ValidateGear(gear)
     return true
 end
 
+-- Optional, per DESIGN.md's "Shipped Mythic+ talent loadout (v1.2)" section:
+-- most guides have no `mplusLoadout` key at all, which must validate the
+-- same as every pre-v1.2 guide. `source` is documentary (credits SimC) and
+-- is not itself validated - only `string` and `patch`, the two fields the
+-- Codex actually reads, gate acceptance.
+local function ValidateMplusLoadout(mplusLoadout)
+    if mplusLoadout == nil then return true end
+    if type(mplusLoadout) ~= "table" then
+        return false, "mplusLoadout must be a table"
+    end
+
+    if type(mplusLoadout.string) ~= "string" or mplusLoadout.string == "" then
+        return false, "mplusLoadout.string must be a non-empty string"
+    end
+
+    if type(mplusLoadout.patch) ~= "string" or mplusLoadout.patch == "" then
+        return false, "mplusLoadout.patch must be a non-empty string"
+    end
+
+    return true
+end
+
 local function ValidateGuide(classToken, specID, guide)
     if type(classToken) ~= "string" or not CLASS_BY_TOKEN[classToken] then
         return false, format("unknown class token '%s'", tostring(classToken))
@@ -142,6 +164,11 @@ local function ValidateGuide(classToken, specID, guide)
     end
 
     ok, err = ValidateGear(guide.gear)
+    if not ok then
+        return false, "guide." .. err
+    end
+
+    ok, err = ValidateMplusLoadout(guide.mplusLoadout)
     if not ok then
         return false, "guide." .. err
     end

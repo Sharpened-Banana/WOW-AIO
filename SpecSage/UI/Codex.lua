@@ -835,6 +835,61 @@ function Codex:EnsureLoadoutWidgets()
 
     self.loadoutButtons = { save = save, add = add }
     self.loadoutRowPool = {}
+    self:EnsureSuggestedLoadoutRow()
+end
+
+-- The one shipped-guide "Suggested Mythic+" row (DESIGN.md's v1.2 section):
+-- a single frame, not pooled, since a spec has at most one mplusLoadout.
+-- Built alongside the saved-loadout row pool but kept separate from it, since
+-- its buttons (Copy / Add to my vault) differ from a saved row's (Copy /
+-- Delete) and it never participates in the delete-by-index list.
+function Codex:EnsureSuggestedLoadoutRow()
+    if self.suggestedLoadoutRow then return end
+
+    local parent = self.scrollChild
+    local row = CreateFrame("Frame", nil, parent)
+
+    row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    row.name:SetJustifyH("LEFT")
+    row.name:SetPoint("LEFT", row, "LEFT", 0, 0)
+
+    row.addButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+    row.addButton:SetSize(110, 18)
+    row.addButton:SetText("Add to my vault")
+    row.addButton:SetPoint("RIGHT", row, "RIGHT", -58, 0)
+
+    row.copyButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+    row.copyButton:SetSize(50, 18)
+    row.copyButton:SetText("Copy")
+    row.copyButton:SetPoint("RIGHT", row.addButton, "LEFT", -8, 0)
+
+    row:Hide()
+    self.suggestedLoadoutRow = row
+end
+
+-- Adding the shipped suggestion never writes anywhere until this click - the
+-- guide's mplusLoadout stays read-only reference data (like every other
+-- shipped guide field) until the player opts in, matching the existing
+-- "shipped data is read-only, SpecSageDB is the user's own roster" split.
+-- Confirmation is a temporary label change on the button itself (mirrors the
+-- Delete row's arm/revert timer above); the newly saved loadout shows up in
+-- the list below on the next render (a tab/spec switch, or the revert below)
+-- rather than forcing an immediate re-render here, which would otherwise
+-- stomp the "Added!" label back to its default before the player ever sees
+-- it (RenderLoadouts resets this button's text every render, the same as
+-- a saved row's Delete button).
+function Codex:OnAddSuggestedLoadoutClicked(button, specID, exportString)
+    local Loadouts = ns:GetModule("Loadouts")
+    local ok, err = Loadouts:Add(specID, "Suggested M+ (SimC)", "Mythic+", exportString)
+    if ok then
+        button:SetText("Added!")
+        C_Timer.After(2, function()
+            pcall(button.SetText, button, "Add to my vault")
+            if self.activeTab == "Loadouts" then self:RenderActiveTab() end
+        end)
+    else
+        ns.Print("could not add suggested loadout: " .. tostring(err))
+    end
 end
 
 -- Deleting is a two-click confirm rather than a StaticPopup (DESIGN.md offers
@@ -860,7 +915,7 @@ function Codex:OnDeleteLoadoutClicked(button, specID, index)
     end)
 end
 
-function Codex:RenderLoadouts(specID)
+function Codex:RenderLoadouts(specID, guide)
     self:EnsureLoadoutWidgets()
     local parent, width = self.scrollChild, CONTENT_WIDTH
     local y = -PADDING
@@ -875,6 +930,34 @@ function Codex:RenderLoadouts(specID)
     buttons.add:Show()
 
     y = y - 26
+
+    -- The shipped "Suggested Mythic+" row (DESIGN.md's v1.2 section): shown
+    -- above the player's own saved loadouts only when this spec's guide
+    -- ships one, with no placeholder when it does not - the row simply
+    -- doesn't exist rather than rendering empty.
+    local suggested = self.suggestedLoadoutRow
+    local mplusLoadout = guide and guide.mplusLoadout
+    if mplusLoadout then
+        suggested:ClearAllPoints()
+        suggested:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
+        suggested:SetSize(width, 18)
+        suggested.name:SetText(format("Suggested Mythic+ (via SimulationCraft, patch %s)", mplusLoadout.patch))
+        suggested.name:SetTextColor(0.9, 0.9, 0.9)
+
+        suggested.copyButton:Show()
+        suggested.copyButton:SetScript("OnClick", function() self:ShowCopyDialog(mplusLoadout.string) end)
+
+        suggested.addButton:SetText("Add to my vault")
+        suggested.addButton:Show()
+        suggested.addButton:SetScript("OnClick", function(btn)
+            self:OnAddSuggestedLoadoutClicked(btn, specID, mplusLoadout.string)
+        end)
+
+        suggested:Show()
+        y = y - 20
+    else
+        suggested:Hide()
+    end
 
     local Loadouts = ns:GetModule("Loadouts")
     local list = (Loadouts and specID) and Loadouts:GetForSpec(specID) or {}
@@ -1147,6 +1230,7 @@ function Codex:HideOtherTabWidgets(activeTab)
             self.loadoutButtons.add:Hide()
         end
         if self.loadoutRowPool then HidePoolFrom(self.loadoutRowPool, 1) end
+        if self.suggestedLoadoutRow then self.suggestedLoadoutRow:Hide() end
     end
 
     if activeTab ~= "Notes" then
@@ -1184,7 +1268,7 @@ function Codex:RenderActiveTab()
     elseif tab == "BiS" then
         self:RenderBiS(guide, specID)
     elseif tab == "Loadouts" then
-        self:RenderLoadouts(specID)
+        self:RenderLoadouts(specID, guide)
     elseif tab == "Notes" then
         self:RenderNotes(specID)
     end

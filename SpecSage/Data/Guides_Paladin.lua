@@ -1,9 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Paladin (Holy 65, Protection 66, Retribution 70)
--- Content targets The War Within. This is community-maintained conventional
--- guidance (stat priorities and rotations that match the spec's long-standing
--- design) — not a claim of bleeding-edge sim-perfect optimization.
+-- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
+-- priorities were cross-checked against SimulationCraft's public default
+-- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
+-- consumables/overview/tips/gear guidance was not re-verified against
+-- current tuning in this pass.
+-- This is community-maintained conventional guidance (stat priorities and
+-- rotations that match the spec's long-standing design) — not a claim of
+-- bleeding-edge sim-perfect optimization.
 -- To edit: change the strings/tables below and reload. To add a spec pack,
 -- call ns.GuideStore:RegisterSpec(classToken, specID, guideTable) from any
 -- addon that loads after SpecSage; see Data/API.lua for validation rules.
@@ -95,8 +100,10 @@ ns.GuideStore:RegisterSpec("PALADIN", 66, {
   rotation = {
     { title = "Single Target", steps = {
         { spellID = 53600, text = "Shield of the Righteous to keep its mitigation buff active — top priority" },
+        { spellID = 31935, text = "Avenger's Shield on cooldown — ranged pull tool, interrupt, and real Holy Power/damage contributor, not just an opener button" },
         { spellID = 20271, text = "Judgment on cooldown for Holy Power generation and debuff" },
         { spellID = 53595, text = "Hammer of the Righteous as a builder and to refresh Consecration overlap" },
+        { text = "Divine Toll on cooldown to dump a burst of extra Holy Power (line it up with Avenging Wrath when both are up)" },
         { spellID = 26573, text = "Consecration kept active under yourself" },
         { spellID = 85673, text = "Word of Glory when healing is needed and Holy Power is spare" },
         { text = "Fill with basic attacks as builders come off cooldown" },
@@ -115,6 +122,9 @@ ns.GuideStore:RegisterSpec("PALADIN", 66, {
         { spellID = 31850, text = "Ardent Defender for the heaviest incoming damage spikes" },
         { spellID = 1022, text = "Blessing of Protection on yourself or an ally for a physical-damage emergency" },
         { text = "Bank Holy Power slightly before a known burst window so Shield of the Righteous never lapses" },
+    }},
+    { title = "Opener Notes", steps = {
+        { text = "A capstone finisher, Hammer of Light, is available once its enabling buff is up — spend it promptly rather than sitting on Shield of the Righteous stacks" },
     }},
   },
   cooldowns = {
@@ -142,6 +152,11 @@ ns.GuideStore:RegisterSpec("PALADIN", 66, {
     { slot = "Trinket", text = "One passive Stamina or avoidance trinket for a steady mitigation floor" },
     { slot = "Weapon", text = "A solid one-hander — abilities carry the damage, so mitigation and Holy Power stats matter more than weapon dps" },
     { slot = "Off-hand", text = "The highest-armor shield available, since it directly backs Shield of the Righteous's mitigation value" },
+  },
+  mplusLoadout = {
+    string = "CIEAAAAAAAAAAAAAAAAAAAAAAsNzYWmZMzYmxyyALzCDDAwAAAAAAg0MDzYmZMzs1GAGYGYGsNAAwMTbzMLzAEYzyGGAGmhxAAsNDwMAjN",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Never let Shield of the Righteous's mitigation buff lapse — it's the spec's core defensive tool.",
@@ -186,6 +201,7 @@ ns.GuideStore:RegisterSpec("PALADIN", 70, {
     { title = "Opener Notes", steps = {
         { text = "Pre-pot and open with Wake of Ashes to establish Holy Power, then chain Holy Power spenders" },
         { text = "Line up Avenging Wrath / Crusade-style cooldowns with your first big burst window" },
+        { text = "Talent picks like Radiant Glory and Execution Sentence meaningfully reshape when your burst cooldowns line up — don't assume a fixed cadence without checking your own build" },
     }},
   },
   cooldowns = {
@@ -212,6 +228,11 @@ ns.GuideStore:RegisterSpec("PALADIN", 70, {
     { slot = "Trinket", text = "One on-use Strength or damage trinket lined up with Avenging Wrath or Wake of Ashes" },
     { slot = "Trinket", text = "A passive stat-stick trinket for consistent damage between cooldowns" },
     { slot = "Weapon", text = "The highest item level two-hander available — weapon damage is a large share of Retribution's output" },
+  },
+  mplusLoadout = {
+    string = "CYEAAAAAAAAAAAAAAAAAAAAAAAAAAAAQz22MzsMMzAAAAAAwoMmhZGbDz2wMbzYMmZYGbsNMAAkZm2mZ2mBAsBYAwYGmBzYMbYZGMMmxgB",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.0 (MID1 — SimC has not yet published a MID2 profile for this spec)",
   },
   tips = {
     "Don't let Holy Power sit at cap — spend it before you overflow and waste generation.",

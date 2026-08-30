@@ -1,9 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Monk
--- Content targets The War Within. This is community-maintained, conventional
--- guidance (keep-it-simple stat priorities, long-standing rotation patterns)
--- and is NOT a claim of sim-perfect or bleeding-edge optimal play.
+-- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
+-- priorities were cross-checked against SimulationCraft's public default
+-- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
+-- consumables/overview/tips/gear guidance was not re-verified against
+-- current tuning in this pass.
+-- This is community-maintained, conventional guidance (keep-it-simple stat
+-- priorities, long-standing rotation patterns) and is NOT a claim of
+-- sim-perfect or bleeding-edge optimal play.
 -- To edit: find the RegisterSpec(...) block for the spec you want to change
 -- and edit the table in place. To add a new tip/step, insert a new entry in
 -- the relevant array. Keep this file data-only — no logic beyond the calls
@@ -35,6 +40,7 @@ ns.GuideStore:RegisterSpec("MONK", 268, {
         { spellID = 115181, text = "Breath of Fire to apply the Dizzying Haze debuff and refresh Stagger benefits" },
         { text = "Blackout Kick / Rising Sun Kick per talent build for extra damage" },
         { text = "Expel Harm when Chi is capped or self-healing is needed" },
+        { text = "Opener Notes: Brewmaster splits along the Master of Harmony and Shado-Pan hero trees — both keep Keg Smash/Breath of Fire as the core loop, they mainly change how your mitigation and cooldown windows are shaped" },
     }},
     { title = "AoE", steps = {
         { spellID = 121253, text = "Keg Smash on cooldown, it's your main AoE threat generator" },
@@ -75,6 +81,11 @@ ns.GuideStore:RegisterSpec("MONK", 268, {
     { slot = "Trinket", text = "A second trinket that adds Stamina or a passive mitigation effect so you're not trading all your survivability for threat" },
     { slot = "Weapon", text = "Monks can dual-wield one-handers or wield a single two-hander — form and Stagger math don't care which, so take the highest weapon damage option" },
     { slot = "Waist", text = "An easy slot to slot in an extra gem for whichever secondary — Versatility or Mastery — your build is currently short on" },
+  },
+  mplusLoadout = {
+    string = "CwQAAAAAAAAAAAAAAAAAAAAAAAAAAgZbzYGzMWmxGmZMAAAAAAALLYmwMwMM2MDmZmZY2GzMmZBLb22GzYWAAglZZaZ2mZZAAgAMDbgZGw0YADAYA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Purify when the stagger pool is meaningfully full, not reflexively on cooldown — timing it right smooths damage better.",

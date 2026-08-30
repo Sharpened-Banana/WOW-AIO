@@ -1,9 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Warlock
--- Content targets The War Within. This is community-maintained, conventional
--- guidance (keep-it-simple stat priorities, long-standing rotation patterns)
--- and is NOT a claim of sim-perfect or bleeding-edge optimal play.
+-- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
+-- priorities were cross-checked against SimulationCraft's public default
+-- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
+-- consumables/overview/tips/gear guidance was not re-verified against
+-- current tuning in this pass.
+-- This is community-maintained, conventional guidance (keep-it-simple stat
+-- priorities, long-standing rotation patterns) and is NOT a claim of
+-- sim-perfect or bleeding-edge optimal play.
 -- To edit: find the RegisterSpec(...) block for the spec you want to change
 -- and edit the table in place. To add a new tip/step, insert a new entry in
 -- the relevant array. Keep this file data-only — no logic beyond the calls
@@ -33,6 +38,7 @@ ns.GuideStore:RegisterSpec("WARLOCK", 265, {
         { spellID = 172, text = "Corruption to add a second dot" },
         { spellID = 316099, text = "Unstable Affliction for shard generation and damage" },
         { text = "Summon Darkglare / Soul Rot once dots are rolling, for an early burst window" },
+        { text = "Opener Notes: Affliction splits along the Soul Harvester and Hellcaller hero trees — both keep the dot-then-spend loop above, Hellcaller leans further into Seed of Corruption/Haunt on cleave pulls" },
     }},
     { title = "Single Target", steps = {
         { spellID = 980, text = "Keep Agony active at all times, refresh before it falls off" },
@@ -74,6 +80,11 @@ ns.GuideStore:RegisterSpec("WARLOCK", 265, {
     { slot = "Weapon", text = "Take the highest weapon damage one-hand-plus-off-hand or staff available — type matters far less than item level for a dot-based caster" },
     { slot = "Off-hand", text = "A caster off-hand that adds Haste or Mastery keeps your dot ramp and shard generation smooth" },
   },
+  mplusLoadout = {
+    string = "CkQAAAAAAAAAAAAAAAAAAAAAAwMzMzoZhhZmZmlBAAYmZZ2mZmFzAAjllBGwEMDbBG2GAAAmBAAwMDzMjBzwMzMzMGMzMzAAGwA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
+  },
   tips = {
     "Never let Agony or Corruption fall off early — dropped dots and re-ramping cost significant damage.",
     "Don't dump Malefic Rapture with only one or two dots active; wait for a fuller board when possible.",
@@ -103,6 +114,7 @@ ns.GuideStore:RegisterSpec("WARLOCK", 266, {
         { text = "Call Dreadstalkers and Summon Vilefiend to build your demon pack" },
         { text = "Grimoire: Felguard (if talented) to add another pet before Tyrant" },
         { text = "Summon Demonic Tyrant once your demons are out, to empower the full pack" },
+        { text = "Opener Notes: Demonology splits along the Diabolist and Soul Harvester hero trees — Diabolist adds ritual-timed summons around Tyrant, Soul Harvester leans on Demonic Soul procs, but the pool-then-Tyrant loop above holds either way" },
     }},
     { title = "Single Target", steps = {
         { text = "Call Dreadstalkers on cooldown to generate shards and demons" },
@@ -143,6 +155,11 @@ ns.GuideStore:RegisterSpec("WARLOCK", 266, {
     { slot = "Weapon", text = "Take the highest weapon damage staff or one-hand-plus-off-hand you can equip — pet damage scales off your stats, not weapon type" },
     { slot = "Off-hand", text = "A caster off-hand that reinforces Haste helps you rebuild your demon pack faster between cooldowns" },
   },
+  mplusLoadout = {
+    string = "CoQAAAAAAAAAAAAAAAAAAAAAAwMzMzoZjhZmxsMAAAAAAAjtlBGwAmhtQGbmhZ2mlZmZMDAYMzMzAMzMmxMDAAwMzMzMjZYZAYA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
+  },
   tips = {
     "Pool Soul Shards and demon summons before Demonic Tyrant so the empower window has as many demons as possible.",
     "Don't let Wild Imps sit unused if running Implosion — detonate them for burst when the timing calls for it.",
@@ -174,10 +191,10 @@ ns.GuideStore:RegisterSpec("WARLOCK", 267, {
         { spellID = 116858, text = "Chaos Bolt once you have shards banked, aligned with cooldowns" },
     }},
     { title = "Single Target", steps = {
-        { spellID = 348, text = "Keep Immolate active on the target at all times" },
+        { spellID = 348, text = "Keep Immolate active on the target at all times (Hellcaller's Wither replaces it as the maintained dot on that hero tree)" },
         { spellID = 17962, text = "Conflagrate on cooldown / on Backdraft proc for shard generation" },
-        { spellID = 29722, text = "Incinerate as filler and shard generator" },
-        { spellID = 116858, text = "Chaos Bolt to spend shards for big single-target damage" },
+        { spellID = 116858, text = "Chaos Bolt to spend shards for big single-target damage — this outranks plain Incinerate casts once shards are banked" },
+        { spellID = 29722, text = "Incinerate as your lowest-priority filler, used only when nothing better is available" },
         { text = "Use Havoc on a second target during multi-target cleave windows" },
     }},
     { title = "AoE", steps = {
@@ -211,6 +228,11 @@ ns.GuideStore:RegisterSpec("WARLOCK", 267, {
     { slot = "Trinket", text = "A passive stat-stick trinket to keep Incinerate/Immolate damage solid between cooldown windows" },
     { slot = "Weapon", text = "Take the highest weapon damage staff or one-hand-plus-off-hand — item level matters far more than weapon type here" },
     { slot = "Off-hand", text = "A caster off-hand leaning Critical Strike keeps your burst windows hitting as hard as possible" },
+  },
+  mplusLoadout = {
+    string = "CsQAAAAAAAAAAAAAAAAAAAAAAwMmZGNLMzmZmZWmFzMzsYMWMDAAmZGzMziNYgZxoxMAmtYjBAAGDM2AAmZwYGzYDAAwMzMAAMGG",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Never let Immolate fall off the target — it feeds Rain of Fire and Channel Demonfire damage.",

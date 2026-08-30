@@ -1,9 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Hunter (Beast Mastery 253, Marksmanship 254, Survival 255)
--- Content targets The War Within. This is community-maintained conventional
--- guidance (stat priorities and rotations that match the spec's long-standing
--- design) — not a claim of bleeding-edge sim-perfect optimization.
+-- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
+-- priorities were cross-checked against SimulationCraft's public default
+-- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
+-- consumables/overview/tips/gear guidance was not re-verified against
+-- current tuning in this pass.
+-- This is community-maintained conventional guidance (stat priorities and
+-- rotations that match the spec's long-standing design) — not a claim of
+-- bleeding-edge sim-perfect optimization.
 -- To edit: change the strings/tables below and reload. To add a spec pack,
 -- call ns.GuideStore:RegisterSpec(classToken, specID, guideTable) from any
 -- addon that loads after SpecSage; see Data/API.lua for validation rules.
@@ -35,6 +40,7 @@ ns.GuideStore:RegisterSpec("HUNTER", 253, {
     }},
     { title = "AoE", steps = {
         { spellID = 120360, text = "Barrage or Multi-Shot to cleave Focus spenders across targets" },
+        { text = "Wild Thrash from your pet as a core AoE tool once 2+ targets are up" },
         { spellID = 217200, text = "Barbed Shot still prioritized to maintain Frenzy" },
         { spellID = 34026, text = "Kill Command on cooldown, hits cleave through pet talents" },
         { spellID = 19574, text = "Bestial Wrath for burst during add waves" },
@@ -70,6 +76,11 @@ ns.GuideStore:RegisterSpec("HUNTER", 253, {
     { slot = "Trinket", text = "One on-use Agility or damage trinket lined up with Bestial Wrath" },
     { slot = "Trinket", text = "A passive stat-stick trinket for consistent pet and Focus-spender damage" },
     { slot = "Weapon", text = "Mostly a stat stick for Hunters — take the highest item level option since it doesn't gate ability damage directly" },
+  },
+  mplusLoadout = {
+    string = "C0PAAAAAAAAAAAAAAAAAAAAAAAMmxwCsAzwwMsBAgZYMzyMDzYmxMMzYMzwMjZMziZmxMmBjpZAAAAAzAAAwYmZAmZjxGMLgtBgBA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Keep Barbed Shot's Frenzy buff active on your pet at essentially all times — this is the spec's core damage driver.",
@@ -114,6 +125,7 @@ ns.GuideStore:RegisterSpec("HUNTER", 254, {
     { title = "Opener Notes", steps = {
         { text = "Pre-pot and open with Trueshot lined up against your first Aimed Shot for a strong burst window" },
         { text = "Use Rapid Fire early to build Focus for a follow-up Aimed Shot volley" },
+        { text = "The Dark Ranger hero talent weaves in Black Arrow and Wailing Arrow around the same Aimed Shot/Precise Shots priority — it adds to the core rotation rather than replacing it" },
     }},
   },
   cooldowns = {
@@ -140,6 +152,11 @@ ns.GuideStore:RegisterSpec("HUNTER", 254, {
     { slot = "Trinket", text = "One on-use Agility or damage trinket lined up with Trueshot" },
     { slot = "Trinket", text = "A passive stat-stick trinket for consistent Aimed Shot damage" },
     { slot = "Weapon", text = "Mostly a stat stick — take the highest item level option available" },
+  },
+  mplusLoadout = {
+    string = "C4PAAAAAAAAAAAAAAAAAAAAAAwCMwMGzYZAjZwGAAAAAAAAYGzYmFzYmZMDGTzYwYbZmZmZmZmZWYmlBzAAAGzMjBwM22gBYjZ2mxAA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Don't let Precise Shots procs sit unused — they're a meaningful chunk of your damage.",
