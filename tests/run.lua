@@ -788,6 +788,86 @@ do
 end
 
 --------------------------------------------------------------------------------
+section("Stat tooltips: secret values")
+--------------------------------------------------------------------------------
+
+-- Reported bug: the physical damage reduction line vanished the moment a
+-- buff changed the player's armor. Cause: armor becomes a secret value, and
+-- the code compared the resulting effectiveness to decide whether the API
+-- returns a ratio or a percentage. Comparing a secret errors, so the guard
+-- returned nil and the line disappeared.
+--
+-- Midnight's rules, which this models: arithmetic and formatting propagate a
+-- secret, comparing one errors.
+local function SecretNumber(value)
+    local secret
+    secret = setmetatable({}, {
+        __lt = function() error("attempt to compare a secret value") end,
+        __le = function() error("attempt to compare a secret value") end,
+        __eq = function() error("attempt to compare a secret value") end,
+        __add = function(a, b) return SecretNumber(value + (type(a) == "number" and a or b)) end,
+        -- Arithmetic yields another secret; the test resolves it to the real
+        -- product so the formatted output can be asserted.
+        __mul = function(a, b) return value * (type(a) == "number" and a or b) end,
+    })
+    return secret
+end
+
+do
+    local provider = ns.UI:GetSectionProvider("stats")
+    local savedArmor = UnitArmor
+    local savedEffectiveness = C_PaperDollInfo.GetArmorEffectiveness
+
+    -- Secretness flows from the input: the probe's literal 1000/80 stay
+    -- plain, a real (buffed) armor value comes back secret.
+    C_PaperDollInfo.GetArmorEffectiveness = function(armor, attackerLevel)
+        assert(type(attackerLevel) == "number", "attacker level must stay readable")
+        if armor == 1000 then return 0.1666 end
+        return SecretNumber(0.5662)
+    end
+    UnitArmor = function()
+        local secretArmor = SecretNumber(6620)
+        return 3000, secretArmor, secretArmor, SecretNumber(1200), 0
+    end
+
+    local ok, data = pcall(provider, "armor")
+    check(ok, "a secret armor value does not break the tooltip", not ok and tostring(data) or "")
+
+    local reduction
+    for _, line in ipairs((data and data.lines) or {}) do
+        if line.left and line.left:find("Physical damage reduction", 1, true) then
+            reduction = line.right
+        end
+    end
+    check(reduction == "56.62%",
+        "the reduction line survives a secret armor value (the reported bug)",
+        tostring(reduction))
+
+    UnitArmor = savedArmor
+    C_PaperDollInfo.GetArmorEffectiveness = savedEffectiveness
+end
+
+do
+    -- The same class of bug in the stat breakdowns: a secret buff amount
+    -- must cost at most its own optional line, never the whole tooltip.
+    local provider = ns.UI:GetSectionProvider("stats")
+    local savedUnitStat = UnitStat
+    UnitStat = function(_, index)
+        return 1000, 1200, SecretNumber(200), SecretNumber(0)
+    end
+
+    local ok, data = pcall(provider, "primary")
+    check(ok, "a secret buff amount does not break the primary tooltip")
+    local hasBase = false
+    for _, line in ipairs((data and data.lines) or {}) do
+        if line.left == "Base" then hasBase = true end
+    end
+    check(hasBase, "the base line survives a secret buff amount")
+
+    UnitStat = savedUnitStat
+end
+
+--------------------------------------------------------------------------------
 section("Per-character stat visibility")
 --------------------------------------------------------------------------------
 
