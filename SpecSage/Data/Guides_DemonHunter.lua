@@ -63,7 +63,7 @@ ns.GuideStore:RegisterSpec("DEMONHUNTER", 577, {
     { spellID = 198013, text = "Eye Beam — strong AoE/cleave burst, use on cooldown and stack with Metamorphosis when possible" },
     { text = "The Hunt (talent) — gap closer with burst damage, use to open a fight or reposition into a pack" },
     { text = "Essence Break (talent) — debuffs the target for bonus Chaos Strike/Annihilation damage, use between Eye Beam casts" },
-    { spellID = 196555, text = "Blur — defensive, reduces damage taken and helps with kiting" },
+    { spellID = 198589, text = "Blur — defensive, reduces damage taken and helps with kiting" },
     { text = "Netherwalk — brief immunity/evasion, use to dodge an unavoidable burst hit" },
   },
   consumables = {
