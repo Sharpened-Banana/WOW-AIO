@@ -190,7 +190,7 @@ ns.GuideStore:RegisterSpec("PRIEST", 258, {
         { spellID = 205448, text = "Void Bolt on cooldown once available for burst damage" },
         { text = "Void Torrent during your burst window — a channeled Insanity-fueled cooldown, keep your DoTs freshly refreshed before using it" },
         { spellID = 32379, text = "Shadow Word: Death as an execute-range filler (also usable off-cooldown for its Insanity refund on a kill)" },
-        { text = "Shadow Word: Madness, a hard-hitting DoT/burst tool, has joined the kit alongside Shadow Word: Pain and Vampiric Touch — weave it into your DoT upkeep rather than treating it as optional" },
+        { spellID = 335467, text = "Shadow Word: Madness, a hard-hitting DoT/burst tool, has joined the kit alongside Shadow Word: Pain and Vampiric Touch — weave it into your DoT upkeep rather than treating it as optional" },
         { text = "Refresh DoTs before they fall off rather than letting them lapse" },
     }},
     { title = "AoE", steps = {

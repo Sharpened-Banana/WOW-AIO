@@ -40,8 +40,8 @@ ns.GuideStore:RegisterSpec("SHAMAN", 262, {
         { spellID = 8042, text = "Earth Shock to spend Maelstrom once it's built up" },
         { spellID = 188196, text = "Lightning Bolt as a Maelstrom generator and filler" },
         { spellID = 198067, text = "Fire Elemental on cooldown for a sustained burst window" },
-        { text = "Ascendance on cooldown for a burst window, ideally alongside Fire/Storm Elemental" },
-        { text = "Stormkeeper before a burst window to empower your next casts" },
+        { spellID = 114050, text = "Ascendance on cooldown for a burst window, ideally alongside Fire/Storm Elemental" },
+        { spellID = 191634, text = "Stormkeeper before a burst window to empower your next casts" },
         { text = "Never let Flame Shock fall off — it feeds Lava Surge procs" },
     }},
     { title = "AoE", steps = {

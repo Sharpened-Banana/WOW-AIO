@@ -120,21 +120,21 @@ ns.GuideStore:RegisterSpec("MAGE", 63, {
     { title = "Single Target", steps = {
         { spellID = 133, text = "Fireball as your default filler to build Heating Up" },
         { spellID = 108853, text = "Fire Blast to convert Heating Up into Hot Streak" },
-        { text = "Phoenix Flames as an additional Heating Up/Hot Streak generator" },
+        { spellID = 194466, text = "Phoenix Flames as an additional Heating Up/Hot Streak generator" },
         { spellID = 11366, text = "Pyroblast whenever Hot Streak is active" },
         { text = "Never cap Fire Blast or Phoenix Flames charges — spend before overflowing" },
     }},
     { title = "AoE", steps = {
         { spellID = 2120, text = "Flamestrike (with Hot Streak) as your primary AoE spender" },
         { text = "Fire Blast / Phoenix Flames to generate Hot Streak procs quickly" },
-        { text = "Dragon's Breath to group and daze adds when appropriate" },
+        { spellID = 31661, text = "Dragon's Breath to group and daze adds when appropriate" },
         { text = "Let Ignite spread damage across the pack rather than single-target dumping" },
         { text = "Time Combustion for when the full pack is engaged" },
     }},
   },
   cooldowns = {
     { spellID = 190319, text = "Combustion — main burst window, line up with Hot Streak/Heating Up banked and other raid cooldowns" },
-    { text = "Phoenix Flames — extra proc generation, spend charges rather than hoarding" },
+    { spellID = 194466, text = "Phoenix Flames — extra proc generation, spend charges rather than hoarding" },
     { spellID = 108853, text = "Fire Blast — instant proc conversion, weave throughout and especially during Combustion" },
     { spellID = 45438, text = "Ice Block — defensive, negates incoming damage entirely" },
     { spellID = 80353, text = "Time Warp/Bloodlust — raid utility cooldown, coordinate with your raid's lust plan" },
@@ -195,7 +195,7 @@ ns.GuideStore:RegisterSpec("MAGE", 64, {
     }},
     { title = "Single Target", steps = {
         { spellID = 116, text = "Frostbolt as your default filler and Icicle builder" },
-        { text = "Ice Lance on Fingers of Frost procs for guaranteed crits" },
+        { spellID = 30455, text = "Ice Lance on Fingers of Frost procs for guaranteed crits" },
         { spellID = 44614, text = "Flurry on Brain Freeze procs, followed by Ice Lance for the shatter" },
         { text = "Glacial Spike (if talented) once you have 5 Icicles banked" },
         { text = "Weave Frozen Orb/Comet Storm per talents to refresh Fingers of Frost" },
@@ -203,7 +203,7 @@ ns.GuideStore:RegisterSpec("MAGE", 64, {
     { title = "AoE", steps = {
         { spellID = 84714, text = "Frozen Orb to generate procs and cleave damage" },
         { text = "Blizzard to apply consistent AoE damage and chill" },
-        { text = "Ice Lance to spend Fingers of Frost across the pack" },
+        { spellID = 30455, text = "Ice Lance to spend Fingers of Frost across the pack" },
         { text = "Comet Storm (if talented) for burst AoE" },
         { text = "Use Ice Nova/Frost Nova to group and root adds before AoE lands" },
     }},
