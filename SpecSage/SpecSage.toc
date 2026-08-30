@@ -2,7 +2,7 @@
 ## Title: SpecSage
 ## Notes: All-in-one class guides, talent loadouts, stat overlay, combat metrics, and proc tracking.
 ## Author: lonezebra
-## Version: 1.0.0
+## Version: 1.0.1
 ## SavedVariables: SpecSageDB
 ## SavedVariablesPerCharacter: SpecSageCharDB
 ## IconTexture: Interface\Icons\INV_Misc_Book_09
