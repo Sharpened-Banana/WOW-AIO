@@ -18,17 +18,20 @@ local ADDON, ns = ...
 
 if not ns.GuideStore then return end
 
--- Discipline (256): revised against official Blizzard patch notes for 12.1,
--- not SimC-cross-checked (no SimC profile exists for this spec — SimC does
--- not publish healer profiles). No mplusLoadout is shipped for this spec for
+-- Discipline (256): revised for 12.1 from Blizzard patch-note content reached
+-- via search summaries, not from a directly-fetched patch-notes page, and not
+-- SimC-cross-checked (no SimC profile exists for this spec — SimC does not
+-- publish healer profiles). The specific numbers/mechanics below are
+-- UNVERIFIED against a primary source and should be treated as provisional
+-- pending direct confirmation. No mplusLoadout is shipped for this spec for
 -- the same reason; see the file header and DESIGN.md's "BiS / Gear" section.
 ns.GuideStore:RegisterSpec("PRIEST", 256, {
   specName = "Discipline",
   role = "HEALER",
   overview = {
     "Discipline Priest is a hybrid healer that converts damage into healing through Atonement — a buff applied to allies that turns your damage spells into heals on them. It plays less like a traditional reactive healer and more like a proactive damage-dealer whose output is redirected into the raid's health bars.",
-    "The core resource is Mana, spent on both direct heals and the damage spells that trigger Atonement healing, most notably Penance and Smite. The defining mechanic is Atonement uptime — keeping the buff active on as many allies as possible before damage happens, so your damage output translates directly into pre-emptive healing. Patch 12.1 rebalanced this conversion: Discipline's damage output was brought down (it had been overperforming compared to other healers) while the Atonement conversion rate itself was raised well above its previous value, so the spec still turns damage into meaningful healing, just via a smaller amount of harder-hitting damage rather than raw damage volume.",
-    "Pick a hero talent to match your fight: Oracle is the steadier, more passive option, built around Penance (extra charge, overheal protection) for reliable throughput with less setup. Voidweaver trades some of that consistency for a higher ceiling — Entropic Rift and Void Blast hit hard (Entropic Rift's damage was buffed again in 12.1) but want you planted in place to channel, so it favors lower-movement fights. Discipline brings strong damage-mitigation-as-healing through Power Word: Shield and Pain Suppression, solid raid cooldowns, and a unique playstyle that rewards good raid-damage prediction, making it a strong pick for progression content with heavy, predictable damage patterns.",
+    "The core resource is Mana, spent on both direct heals and the damage spells that trigger Atonement healing, most notably Penance and Smite. The defining mechanic is Atonement uptime — keeping the buff active on as many allies as possible before damage happens, so your damage output translates directly into pre-emptive healing. Patch 12.1 rebalanced this conversion: Discipline's damage output was brought down while the Atonement conversion rate itself was raised, so the spec still turns damage into meaningful healing, just via a smaller amount of harder-hitting damage rather than raw damage volume.",
+    "Oracle's Penance changes (extra charge, overheal protection) and Voidweaver's Entropic Rift / Void Blast are the two hero talent paths. Entropic Rift's damage was buffed in 12.1; Void Blast is channeled, so it requires standing still. Discipline brings strong damage-mitigation-as-healing through Power Word: Shield and Pain Suppression, solid raid cooldowns, and a unique playstyle that rewards good raid-damage prediction.",
   },
   statPriority = {
     { stat = "primary", note = "Intellect, passive" },
@@ -89,17 +92,20 @@ ns.GuideStore:RegisterSpec("PRIEST", 256, {
   },
 })
 
--- Holy (257): revised against official Blizzard patch notes for 12.1, not
+-- Holy (257): revised for 12.1 from Blizzard patch-note content reached via
+-- search summaries, not from a directly-fetched patch-notes page, and not
 -- SimC-cross-checked (no SimC profile exists for this spec — SimC does not
--- publish healer profiles). No mplusLoadout is shipped for this spec for the
--- same reason; see the file header and DESIGN.md's "BiS / Gear" section.
+-- publish healer profiles). The specific numbers/mechanics below are
+-- UNVERIFIED against a primary source and should be treated as provisional
+-- pending direct confirmation. No mplusLoadout is shipped for this spec for
+-- the same reason; see the file header and DESIGN.md's "BiS / Gear" section.
 ns.GuideStore:RegisterSpec("PRIEST", 257, {
   specName = "Holy",
   role = "HEALER",
   overview = {
     "Holy Priest is a versatile healer that blends strong AoE healing tools (Circle of Healing, Prayer of Healing, Holy Word: Sanctify) with solid single-target throughput from Flash Heal and Heal, all built around the Holy Word cooldown-reduction system.",
     "The core resource is Mana, spent across a wide toolkit of direct and AoE heals. The defining mechanic is the Holy Word system — casting Serenity/Sanctify/Chastise reduces the cooldown of your other Holy Words based on healing/damage done, rewarding a rotation that keeps weaving these together rather than spamming a single spell. Patch 12.1 leaned into this: the Words of the Wise talent now gives a much larger healing bonus to Holy Word: Serenity and Holy Word: Sanctify than before, so keeping both on cooldown is more valuable than ever, and Enlightenment now returns mana noticeably faster, easing the spec's traditional mana pressure over a long fight.",
-    "Pick a hero talent to match your fight: Oracle received extra healing tuning in 12.1 to keep it a real alternative to Archon — it's the steadier, more Penance/Serenity-style consistent option — while Archon builds around empowering Halo and burst windows around Mind Flay: Insanity-style casts for spikier throughput. Holy Priest brings excellent raid-wide AoE healing, strong cooldowns (Apotheosis, Divine Hymn), and useful utility (Mass Dispel, Leap of Faith), making it a strong pick for fights with heavy raid-wide damage patterns and a need for flexible throughput.",
+    "Oracle and Archon are the two hero talent paths. Oracle's healing was tuned up in 12.1. Archon builds around empowering Halo. Holy Priest brings excellent raid-wide AoE healing, strong cooldowns (Apotheosis, Divine Hymn), and useful utility (Mass Dispel, Leap of Faith).",
   },
   statPriority = {
     { stat = "primary", note = "Intellect, passive" },

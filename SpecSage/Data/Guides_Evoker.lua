@@ -99,14 +99,16 @@ ns.GuideStore:RegisterSpec("EVOKER", 1467, {
 })
 
 -- Preservation -------------------------------------------------------------
--- Revised against official Blizzard patch notes for 12.1 (Curse of Ula'tek,
--- news.blizzard.com/en-us/article/24293281): no SimC profile exists for this
--- spec, so it is NOT SimC-cross-checked — see the mplusLoadout note in the
--- header above. 12.1 buffs Preservation's single-target/triage kit in PvE:
--- Living Flame healing +20%, Verdant Embrace +25%, Dream Simulacrum's buff
--- to Verdant Embrace up to 40% (was 30%), and Consume Flame (talent) now
--- heals for 240% of the amount consumed (was 200%) with a fix so its heal
--- can crit.
+-- Revised for 12.1 (Curse of Ula'tek) from Blizzard patch-note content
+-- reached via search summaries; the official article could not be fetched
+-- directly from this environment, so the specific numbers below are
+-- UNVERIFIED against the source page and should be treated as provisional
+-- pending direct confirmation. No SimC profile exists for this spec, so it
+-- is NOT SimC-cross-checked — see the mplusLoadout note in the header above.
+-- 12.1 buffs Preservation's single-target/triage kit in PvE: Living Flame
+-- healing +20%, Verdant Embrace +25%, and Consume Flame (talent) now heals
+-- for 240% of the amount consumed (was 200%) with a fix so its heal can
+-- crit.
 ns.GuideStore:RegisterSpec("EVOKER", 1468, {
   specName = "Preservation",
   role = "HEALER",
@@ -176,14 +178,19 @@ ns.GuideStore:RegisterSpec("EVOKER", 1468, {
 })
 
 -- Augmentation ---------------------------------------------------------
--- Revised against official Blizzard patch notes for 12.1 (Curse of Ula'tek,
--- news.blizzard.com/en-us/article/24293281): no SimC profile exists for this
--- spec, so it is NOT SimC-cross-checked — see the mplusLoadout note in the
--- header above. Augmentation is a support-damage hybrid, not a pure DPS or
--- healer spec — see the overview below for how it actually plays. 12.1's
--- documented Augmentation-specific change is to the Double-time talent: the
--- bonus stats an ally gains when your Ebon Might critically strikes now last
--- a flat 15 seconds (scaled by Mastery: Timewalker) and refresh if you
+-- Revised for 12.1 (Curse of Ula'tek) from Blizzard patch-note content
+-- reached via search summaries; the official article could not be fetched
+-- directly from this environment, so the specific numbers/mechanics below
+-- are UNVERIFIED against the source page and should be treated as
+-- provisional pending direct confirmation. No mplusLoadout is shipped for
+-- this spec — Augmentation's value is in ally buffs, which SimC's default
+-- profiles model poorly, so a SimC-derived talent string would be a weak
+-- reference here; see the mplusLoadout note in the header above.
+-- Augmentation is a support-damage hybrid, not a pure DPS or healer spec —
+-- see the overview below for how it actually plays. 12.1's documented
+-- Augmentation-specific change is to the Double-time talent: the bonus
+-- stats an ally gains when your Ebon Might critically strikes now last a
+-- flat 15 seconds (scaled by Mastery: Timewalker) and refresh if you
 -- reapply Ebon Might while the buff is still active.
 ns.GuideStore:RegisterSpec("EVOKER", 1473, {
   specName = "Augmentation",

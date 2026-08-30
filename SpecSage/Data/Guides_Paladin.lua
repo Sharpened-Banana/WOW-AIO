@@ -18,17 +18,20 @@ local ADDON, ns = ...
 
 if not ns.GuideStore then return end
 
--- Holy (65): revised against official Blizzard patch notes for 12.1, not
+-- Holy (65): revised for 12.1 from Blizzard patch-note content reached via
+-- search summaries, not from a directly-fetched patch-notes page, and not
 -- SimC-cross-checked (no SimC profile exists for this spec — SimC does not
--- publish healer profiles). No mplusLoadout is shipped for this spec for the
--- same reason; see the file header and DESIGN.md's "BiS / Gear" section.
+-- publish healer profiles). The specific numbers/mechanics below are
+-- UNVERIFIED against a primary source and should be treated as provisional
+-- pending direct confirmation. No mplusLoadout is shipped for this spec for
+-- the same reason; see the file header and DESIGN.md's "BiS / Gear" section.
 ns.GuideStore:RegisterSpec("PALADIN", 65, {
   specName = "Holy",
   role = "HEALER",
   overview = {
     "Holy Paladin is a hybrid healer that blends direct single-target healing (Holy Shock, Holy Light) with strong smart-heal utility from Beacon of Light/Faith spreading a portion of your healing to bonded targets. It rewards good beacon placement and Holy Power management as much as raw cast timing.",
-    "The core resource is Holy Power, generated from Holy Shock and Crusader Strike and spent on Word of Glory / Eternal Flame / Light of Dawn, alongside mana as the overarching limiting resource across a fight. The defining mechanic is the Beacon system — healing the beacon target's bonded ally also heals them, so positioning beacons on tanks or high-damage targets multiplies your throughput. Patch 12.1 buffed Holy Power spender healing across the board and narrowed the long-standing gap between Light of Dawn and the single-target spenders, so it's worth re-checking your spender choice against your current build rather than defaulting to habit.",
-    "Choose a hero talent path to match your build: Herald of the Sun leans into sustained, cooldown-smoothed healing (it boosts Avenging Wrath's healing and adds passive throughput via Dawnlight), while Lightsmith leans on Judgment procs (Hammer and Anvil) and pairs naturally with Avenging Crusader-style burst builds. Holy Paladin brings strong raid cooldowns (Avenging Wrath, Aura Mastery), solid AoE healing through Light of Dawn and Beacon of Virtue-style tools, and reliable tank healing via beacon uptime — a strong pick whenever consistent, cooldown-supported healing is valued over pure burst throughput. Patch 12.1's universal 25% health/damage increase also means incoming spikes are bigger in absolute terms, so lean a bit more on proactive shielding and Beacon uptime rather than pure reactive top-offs.",
+    "The core resource is Holy Power, generated from Holy Shock and Crusader Strike and spent on Word of Glory / Eternal Flame / Light of Dawn, alongside mana as the overarching limiting resource across a fight. The defining mechanic is the Beacon system — healing the beacon target's bonded ally also heals them, so positioning beacons on tanks or high-damage targets multiplies your throughput. Patch 12.1 increased Holy Power spender healing.",
+    "Herald of the Sun and Lightsmith are the two hero talent paths. Herald of the Sun boosts Avenging Wrath's healing and adds passive throughput via Dawnlight; Lightsmith's Hammer and Anvil triggers from Judgment. Holy Paladin brings strong raid cooldowns (Avenging Wrath, Aura Mastery), solid AoE healing through Light of Dawn and Holy Prism-style tools, and reliable tank healing via beacon uptime.",
   },
   statPriority = {
     { stat = "primary", note = "Intellect, passive" },
@@ -44,7 +47,7 @@ ns.GuideStore:RegisterSpec("PALADIN", 65, {
         { spellID = 85222, text = "Light of Dawn to spend Holy Power on grouped-up allies" },
         { spellID = 82326, text = "Holy Light as a strong single-target heal when mana allows" },
         { spellID = 19750, text = "Flash of Light for fast reactive healing on a spiking target" },
-        { text = "Word of Glory / Eternal Flame both got a 12.1 healing buff — check your talents, since either can now be a stronger single-target spender than Light of Dawn depending on your build and group shape" },
+        { text = "Word of Glory and Eternal Flame both had their healing increased in 12.1" },
         { text = "Weave Judgment/Crusader Strike when healing demand is low to keep Holy Power flowing" },
     }},
     { title = "Cooldown Usage", steps = {
@@ -86,7 +89,7 @@ ns.GuideStore:RegisterSpec("PALADIN", 65, {
     "Don't let Holy Power sit capped — spend it on Light of Dawn, Word of Glory, or Eternal Flame before overflow.",
     "Save your strongest cooldowns for known heavy-damage phases rather than reacting after the raid is already low.",
     "Holy Shock's cooldown is short — using it on cooldown even for small top-ups is rarely wrong.",
-    "Patch 12.1 buffed the supporting talents around Beacon of Virtue, making it a real alternative to Beacon of Light/Faith in dungeon content if your build leans that way.",
+    "Patch 12.1 buffed talents that support Beacon of Virtue.",
   },
 })
 

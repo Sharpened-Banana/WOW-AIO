@@ -175,17 +175,21 @@ ns.GuideStore:RegisterSpec("SHAMAN", 263, {
   },
 })
 
--- Restoration (264): revised against official Blizzard patch notes for 12.1,
--- not SimC-cross-checked (no SimC profile exists for this spec — SimC does
--- not publish healer profiles). No mplusLoadout is shipped for this spec for
--- the same reason; see the file header and DESIGN.md's "BiS / Gear" section.
+-- Restoration (264): revised for 12.1 from Blizzard patch-note content
+-- reached via search summaries, not from a directly-fetched patch-notes
+-- page, and not SimC-cross-checked (no SimC profile exists for this spec —
+-- SimC does not publish healer profiles). The specific numbers/mechanics
+-- below are UNVERIFIED against a primary source and should be treated as
+-- provisional pending direct confirmation. No mplusLoadout is shipped for
+-- this spec for the same reason; see the file header and DESIGN.md's
+-- "BiS / Gear" section.
 ns.GuideStore:RegisterSpec("SHAMAN", 264, {
   specName = "Restoration",
   role = "HEALER",
   overview = {
     "Restoration Shaman is a versatile healer that blends strong HoT-based throughput (Riptide, Healing Rain) with impactful burst heals (Healing Surge, Unleash Life) and totem-based utility, all supported by a mana-driven toolkit rather than a hard resource bar.",
-    "The core resource is Mana, spent across a wide toolkit of direct heals, HoTs, and AoE healing zones like Healing Rain and Chain Heal. The defining mechanic is Riptide's HoT-and-heal-amplifying interaction with other spells, encouraging efficient weaving of Riptide onto multiple targets to smooth ongoing damage. Restoration Shaman got a substantial pass of buffs in patch 12.1 after underperforming in Midnight Season 1: Riptide's direct heal and periodic healing were both increased significantly, Healing Rain's cooldown was shortened while it now covers more targets, and Unleash Life's healing was doubled — the throughput floor of the whole kit moved up noticeably.",
-    "Pick a hero talent to match your playstyle: Totemic is the stronger default for both raid and Mythic+ in 12.1 — it turns your totems into a second stream of Chain Heals and gives near-endless (if mana-hungry) AoE healing via Surging Totem's instant-cast Healing Rain effect. Farseer, built around summoning Ancestors for extra cast-time healing, is weaker overall but received compensating buffs to its Ancestors' Chain Heal in 12.1 and remains a reasonable pick for cast-heavy, lower-movement fights. Restoration brings strong AoE healing through Healing Rain and Chain Heal, useful raid utility (Bloodlust, Tremor Totem), and solid single-target throughput, making it a strong pick for fights with frequent raid-wide damage and a need for efficient mana management over long encounters.",
+    "The core resource is Mana, spent across a wide toolkit of direct heals, HoTs, and AoE healing zones like Healing Rain and Chain Heal. The defining mechanic is Riptide's HoT-and-heal-amplifying interaction with other spells, encouraging efficient weaving of Riptide onto multiple targets to smooth ongoing damage. Patch 12.1 increased Riptide's direct heal and periodic healing, shortened Healing Rain's cooldown while widening its coverage, and roughly doubled Unleash Life's healing.",
+    "The two hero talent trees play differently: Totemic routes healing through your totems, with Surging Totem producing a Healing Rain effect without a cast; Farseer summons Ancestors that add extra cast-time healing. In 12.1 Farseer's Ancestors' Chain Heal was buffed. Restoration brings strong AoE healing through Healing Rain and Chain Heal, useful raid utility (Bloodlust, Tremor Totem), and solid single-target throughput.",
   },
   statPriority = {
     { stat = "primary", note = "Intellect, passive" },
@@ -196,23 +200,24 @@ ns.GuideStore:RegisterSpec("SHAMAN", 264, {
   },
   rotation = {
     { title = "Priorities", steps = {
-        { spellID = 61295, text = "Riptide on cooldown, cycled across multiple targets for HoT uptime — both its direct and periodic healing were buffed significantly in 12.1, so it's an even stronger default action than before" },
+        { spellID = 61295, text = "Riptide on cooldown, cycled across multiple targets for HoT uptime — both its direct and periodic healing were increased in 12.1" },
         { spellID = 1064, text = "Chain Heal for efficient grouped-up raid healing" },
         { spellID = 73920, text = "Healing Rain placed on top of the raid before or during damage — shorter cooldown and wider coverage as of 12.1, so use it more freely" },
-        { spellID = 73685, text = "Unleash Life before a big heal — its healing was roughly doubled in 12.1, making it a much stronger cooldown-amplifier than in prior tiers" },
+        { spellID = 73685, text = "Unleash Life before a big heal — its healing was roughly doubled in 12.1" },
         { spellID = 8004, text = "Healing Surge for fast reactive single-target healing" },
         { text = "Pre-position Healing Rain and Riptide before predictable raid damage lands" },
     }},
     { title = "Cooldown Usage", steps = {
         { spellID = 108280, text = "Healing Tide Totem during a sustained heavy raid-damage phase" },
+        { spellID = 114052, text = "Ascendance to extend a heavy sustained healing phase — as of 12.1 it shares a choice node with Healing Tide Totem, so pick whichever fits the fight rather than assuming both are available" },
         { spellID = 98008, text = "Spirit Link Totem to redistribute health during a spread-damage burst" },
         { spellID = 16191, text = "Mana Tide Totem to recover mana during a lull in damage" },
         { text = "Stack your strongest raid cooldown with the fight's known heaviest damage window" },
-        { spellID = 114052, text = "Ascendance to extend a heavy sustained healing phase — as of 12.1 it shares a choice node with Healing Tide Totem, so pick whichever fits the fight rather than assuming both are available" },
     }},
   },
   cooldowns = {
     { spellID = 108280, text = "Healing Tide Totem — strong raid-wide healing cooldown; now on a choice node with Ascendance, so only one is available per build" },
+    { spellID = 114052, text = "Ascendance — sustained raid healing cooldown; shares a choice node with Healing Tide Totem" },
     { spellID = 98008, text = "Spirit Link Totem — redistributes raid health, use for spread burst damage" },
     { spellID = 16191, text = "Mana Tide Totem — mana recovery cooldown for the raid" },
     { spellID = 108271, text = "Astral Shift — personal defensive cooldown" },
@@ -242,6 +247,6 @@ ns.GuideStore:RegisterSpec("SHAMAN", 264, {
     "Pre-place Healing Rain ahead of predictable raid-wide damage rather than reacting after it lands — its shorter 12.1 cooldown means you can afford to use it more often.",
     "Save Spirit Link Totem for the fight's known heaviest spread-damage windows, and Healing Tide Totem or Ascendance (whichever your build has, since 12.1 put them on a shared choice node) for sustained heavy phases.",
     "Use Mana Tide Totem during lulls to stay ahead of mana problems in longer fights.",
-    "Don't sleep on Unleash Life before a big cast — its healing bonus was roughly doubled in patch 12.1, making it one of the best-value buttons in the kit.",
+    "Unleash Life's healing bonus was roughly doubled in patch 12.1 — use it before a big cast.",
   },
 })

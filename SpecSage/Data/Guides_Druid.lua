@@ -259,22 +259,24 @@ ns.GuideStore:RegisterSpec("DRUID", 104, {
 })
 
 -- Restoration --------------------------------------------------------------
--- Revised against official Blizzard patch notes for 12.1 (Curse of Ula'tek,
--- news.blizzard.com/en-us/article/24293281): no SimC profile exists for this
+-- Revised for 12.1 (Curse of Ula'tek) from Blizzard patch-note content
+-- reached via search summaries; the official article could not be fetched
+-- directly from this environment, so the specific numbers/mechanics below
+-- are UNVERIFIED against the source page and should be treated as
+-- provisional pending direct confirmation. No SimC profile exists for this
 -- spec, so it is NOT SimC-cross-checked — see the mplusLoadout note in the
--- header above. 12.1 is a usability-focused pass on Tranquility, Nature's
--- Swiftness, and Incarnation: Tree of Life; Innervate is redesigned (now a
--- flat mana-regen effect instead of making spells free); Abundance gets a
--- clearer Regrowth-efficiency threshold and Swiftmend is restored to a
--- punchier single-target emergency heal; new talents Overgrowth and Flash
--- of Clarity were added.
+-- header above. Innervate is redesigned (now a flat mana-regen effect
+-- instead of making spells free); Abundance gets a clearer Regrowth-
+-- efficiency threshold and Swiftmend is restored to a punchier single-target
+-- emergency heal; Overgrowth's interaction with Nature's Swiftness was
+-- changed.
 ns.GuideStore:RegisterSpec("DRUID", 105, {
   specName = "Restoration",
   role = "HEALER",
   overview = {
     "Restoration Druid heals primarily through layered heal-over-time effects (Rejuvenation, Lifebloom, Wild Growth) that cover the whole raid, supplemented by direct heals like Regrowth for spot healing and Swiftmend for instant emergency top-ups.",
     "The core mechanic is HoT uptime and Efflorescence/Wild Growth-style group coverage: keeping Rejuvenation rolling on multiple targets and Lifebloom on the tank builds a strong passive healing floor, while Abundance rewards casting Regrowth once a target's active HoT count drops below its threshold with a cheaper, higher-crit direct heal.",
-    "Patch 12.1 is mostly a usability pass rather than a rework: Innervate no longer makes your spells free, instead restoring a flat 25% of the target's maximum mana over 8 seconds; Swiftmend hits harder as an emergency single-target tool again; and a new Overgrowth talent lets Nature's Swiftness apply Lifebloom, Rejuvenation, and Wild Growth's HoT to your next Regrowth target in one cast.",
+    "Patch 12.1 is mostly a usability pass rather than a rework: Innervate no longer makes your spells free, instead restoring a flat 25% of the target's maximum mana over 8 seconds; Swiftmend hits harder as an emergency single-target tool again; and Overgrowth's interaction with Nature's Swiftness was changed so that it lets Nature's Swiftness apply Lifebloom, Rejuvenation, and Wild Growth's HoT to your next Regrowth target in one cast.",
     "Bring Restoration when you want a mobile healer with strong raid-wide HoT coverage, good mana efficiency at moderate haste, and useful utility (Innervate, combat rebirth, roots/CC) beyond pure healing throughput.",
   },
   statPriority = {

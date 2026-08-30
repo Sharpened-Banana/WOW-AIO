@@ -99,14 +99,23 @@ ns.GuideStore:RegisterSpec("MONK", 268, {
 })
 
 -- Mistweaver -------------------------------------------------------------
--- Revised against official Blizzard patch notes for 12.1 (Curse of Ula'tek,
--- news.blizzard.com/en-us/article/24293281): no SimC profile exists for this
--- spec, so it is NOT SimC-cross-checked — see the mplusLoadout note in the
--- header above. 12.1 shifts throughput out of Spinning Crane Kick (-7%) and
--- into Mastery: Gust of Mist (+50%) and the Ancient Teachings/Way of the
--- Crane transfer, explicitly to make Mastery a more viable secondary stat;
--- it also adds a new Vital Expenditure talent (Soothing Mist healing +300%,
--- mana cost +200%, a choice node against Dancing Mists).
+-- Revised for 12.1 (Curse of Ula'tek) from Blizzard patch-note content
+-- reached via search summaries; the official article could not be fetched
+-- directly from this environment, so the specific numbers below are
+-- UNVERIFIED against the source page and should be treated as provisional
+-- pending direct confirmation. No SimC profile exists for this spec, so it
+-- is NOT SimC-cross-checked — see the mplusLoadout note in the header above.
+-- 12.1 shifts throughput out of Spinning Crane Kick (-7%) and into Mastery:
+-- Gust of Mist (+50%) and the Ancient Teachings/Way of the Crane transfer,
+-- explicitly to make Mastery a more viable secondary stat; it also adds a
+-- new Vital Expenditure talent (Soothing Mist healing +300%, mana cost
+-- +200%, a choice node against Dancing Mists). NOTE: the statPriority order
+-- below has deliberately been left as Haste-before-Mastery rather than
+-- reordered to match the buff — a stat-priority reorder is a derived
+-- analytical conclusion (it requires modelling the spec's full scaling),
+-- not a fact relayed from a patch note, and the buff alone does not
+-- establish the new ranking. See the Mastery stat note below for the bare
+-- fact instead.
 ns.GuideStore:RegisterSpec("MONK", 270, {
   specName = "Mistweaver",
   role = "HEALER",
@@ -118,8 +127,8 @@ ns.GuideStore:RegisterSpec("MONK", 270, {
   },
   statPriority = {
     { stat = "primary" },
-    { stat = "mastery", note = "buffed in 12.1 (Gust of Mist +50%) — a stronger pick than in past tiers" },
     { stat = "haste", note = "smooths cast times and HoT ticks" },
+    { stat = "mastery", note = "Gust of Mist healing was increased in 12.1" },
     { stat = "crit" },
     { stat = "versatility" },
   },
@@ -157,20 +166,19 @@ ns.GuideStore:RegisterSpec("MONK", 270, {
   },
   gear = {
     { slot = "Head", text = "One of your tier-set slots — the four-piece bonus adds real throughput to your Renewing Mist/Vivify loop, worth prioritizing" },
-    { slot = "Chest", text = "A large stat budget and often your other tier piece — Mastery is a stronger pick than in past tiers after its 12.1 buff, so weigh it against Haste rather than defaulting to Haste first" },
-    { slot = "Neck", text = "Usually carries a socket — favor Mastery or Haste, then whichever of the two your gear is lighter on" },
-    { slot = "Ring", text = "No set bonus attached — use rings to round out Mastery and Haste" },
+    { slot = "Chest", text = "A large stat budget and often your other tier piece — favor Haste, then Mastery" },
+    { slot = "Neck", text = "Usually carries a socket — favor Haste or Mastery, then whichever of the two your gear is lighter on" },
+    { slot = "Ring", text = "No set bonus attached — use rings to round out Haste and Mastery" },
     { slot = "Trinket", text = "One mana-efficiency or passive-throughput trinket to stretch your healing across a long fight" },
     { slot = "Trinket", text = "A second trinket built around a burst-healing proc or on-use effect you can align with Revival/Thunder Focus Tea" },
     { slot = "Weapon", text = "Monks can dual-wield one-handers or wield a two-hander — take the highest weapon damage option since it feeds both Fistweaving damage and healing" },
-    { slot = "Off-hand", text = "If dual-wielding, an off-hand that leans Mastery or Haste keeps your cast-heavy healing loop smooth" },
+    { slot = "Off-hand", text = "If dual-wielding, an off-hand that leans Haste or Mastery keeps your cast-heavy healing loop smooth" },
   },
   tips = {
     "Keep Renewing Mist bouncing across as many raid members as reasonable — it's efficient passive throughput.",
     "Save Thunder Focus Tea for your highest-value cast rather than spending it on cooldown by default.",
-    "If Fistweaving, don't neglect direct healing when damage spikes — melee damage is a bonus, not a replacement for healing; Spinning Crane Kick's own damage was trimmed in 12.1 so lean on it less as a damage source.",
+    "If Fistweaving, don't neglect direct healing when damage spikes — melee damage is a bonus, not a replacement for healing; Spinning Crane Kick's own damage was trimmed in 12.1.",
     "Pre-position Life Cocoon or Revival ahead of known scripted damage rather than reacting after the fact.",
-    "Mastery: Gust of Mist got a 50% buff in 12.1 — don't sleep on it as a secondary stat the way older-tier guidance might suggest.",
   },
 })
 
