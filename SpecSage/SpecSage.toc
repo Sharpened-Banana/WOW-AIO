@@ -1,4 +1,4 @@
-## Interface: 110200
+## Interface: 120100
 ## Title: SpecSage
 ## Notes: All-in-one class guides, talent loadouts, stat overlay, combat metrics, and proc tracking.
 ## Author: lonezebra

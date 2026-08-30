@@ -1,7 +1,7 @@
 # SpecSage — Design Document
 
-SpecSage is an all-in-one World of Warcraft addon for Retail (The War Within,
-Interface 110200). It combines:
+SpecSage is an all-in-one World of Warcraft addon for Retail (Midnight,
+Interface 120100). It combines:
 
 1. **The Codex** — a browsable guide window for every class and spec: overview,
    stat priority, rotation priorities, cooldowns, consumables/enchants, tips.
@@ -214,6 +214,47 @@ it with a small margin.)
 
 `/sage reset all` leaves `SpecSageDB.bis` alone (curated data, like
 loadouts and notes).
+
+## Shipped Mythic+ talent loadout (v1.2)
+
+A talent build string is thin: it is Blizzard's own export-format encoding of
+a specific set of choices from a fixed, enumerable rule set (the talent
+tree), closer to a configuration than to creative prose. That makes it a
+meaningfully lower-risk thing to ship a default for than guide prose or an
+Action Priority List's conditional logic would be — so unlike the guide text
+(hand-authored, never sourced from a specific site) and unlike BiS (no
+shipped items at all), SpecSage ships ONE reference value here, sourced from
+SimulationCraft's public GitHub repository (github.com/simulationcraft/simc,
+GPLv3, credited) rather than from any guide website:
+
+```lua
+mplusLoadout = {
+  string = "C0EAy0kSampleExportStringFromSimC...",  -- Blizzard talent export format
+  source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+  patch = "12.1",                                    -- the game patch it was pulled for
+}
+```
+
+Validated by `Data/API.lua` like `gear`: optional; when present, `string` and
+`patch` must be non-empty strings (bad shape -> warn + skip the whole guide,
+consistent with every other validation in this file).
+
+This is a *reference starting point*, not a claim of "the" Mythic+ build —
+SimC's bundled profiles are commonly patchwerk/raid-simmed rather than
+M+-labeled, and talent trees get retuned every patch. Guide files note this
+per spec where the SimC profile's fight style is not clearly M+-oriented,
+rather than presenting it as more authoritative than it is.
+
+The Codex **Loadouts** tab, when `guide.mplusLoadout` is present, shows one
+extra row above the user's own saved loadouts: "Suggested Mythic+ (via
+SimulationCraft, patch 12.1)" with a **Copy** button (same read-only
+highlighted-editbox pattern as a saved loadout) and an **Add to my vault**
+button that calls `Loadouts:Add(specID, "Suggested M+ (SimC)", "Mythic+",
+guide.mplusLoadout.string)` — it never writes into `SpecSageDB.loadouts`
+until the user clicks Add, keeping the existing "shipped guide data is
+read-only reference, `SpecSageDB` is the user's own roster" separation
+intact. Absent for a spec with no `mplusLoadout` — no placeholder text; it
+simply doesn't add the extra row.
 
 ## Codex window (UI/Codex.lua)
 

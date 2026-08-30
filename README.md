@@ -1,6 +1,6 @@
 # SpecSage
 
-An all-in-one World of Warcraft addon for **Retail (The War Within)** that puts
+An all-in-one World of Warcraft addon for **Retail (Midnight, patch 12.1)** that puts
 class guides, talent loadouts, and live character tracking in one place:
 
 - **The Codex** — a browsable guide window for every class and spec: overview,
@@ -129,7 +129,7 @@ find SpecSage -name '*.lua' -exec luac5.1 -p {} +
 
 ## Game version
 
-`## Interface: 110200` in the `.toc` targets The War Within. When a patch
+`## Interface: 120100` in the `.toc` targets Midnight patch 12.1. When a patch
 bumps the interface number, update that line or the addon shows as out of
 date. The current value is shown by `/dump select(4, GetBuildInfo())` in game.
 
