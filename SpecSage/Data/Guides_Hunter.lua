@@ -42,8 +42,8 @@ ns.GuideStore:RegisterSpec("HUNTER", 253, {
         { text = "Never let Barbed Shot's Frenzy buff fall off your pet" },
     }},
     { title = "AoE", steps = {
-        { spellID = 120360, text = "Barrage or Multi-Shot to cleave Focus spenders across targets" },
-        { text = "Wild Thrash from your pet as a core AoE tool once 2+ targets are up" },
+        { text = "Barrage or Multi-Shot to cleave Focus spenders across targets" },
+        { spellID = 1264359, text = "Wild Thrash from your pet as a core AoE tool once 2+ targets are up" },
         { spellID = 217200, text = "Barbed Shot still prioritized to maintain Frenzy" },
         { spellID = 34026, text = "Kill Command on cooldown, hits cleave through pet talents" },
         { spellID = 19574, text = "Bestial Wrath for burst during add waves" },
@@ -57,7 +57,7 @@ ns.GuideStore:RegisterSpec("HUNTER", 253, {
   },
   cooldowns = {
     { spellID = 19574, text = "Bestial Wrath — core offensive cooldown, use on cooldown" },
-    { spellID = 193530, text = "Aspect of the Wild — stack with Bestial Wrath for burst" },
+    { text = "Aspect of the Wild — stack with Bestial Wrath for burst" },
     { spellID = 186265, text = "Aspect of the Turtle — major defensive, absorbs most damage briefly" },
     { spellID = 109304, text = "Exhilaration — self-healing cooldown for sustain checks" },
     { spellID = 5384, text = "Feign Death — drop threat/aggro or avoid certain mechanics" },
@@ -195,7 +195,7 @@ ns.GuideStore:RegisterSpec("HUNTER", 255, {
     }},
     { title = "AoE", steps = {
         { spellID = 259495, text = "Wildfire Bomb as the primary AoE cooldown, hits and DoTs multiple targets" },
-        { text = "Butchery to cleave nearby targets with melee swings" },
+        { spellID = 212436, text = "Butchery to cleave nearby targets with melee swings" },
         { spellID = 34026, text = "Kill Command on cooldown across the pull" },
         { spellID = 186270, text = "Raptor Strike as filler when other cooldowns are down" },
         { text = "Prioritize Butchery over single-target fillers while 2+ targets are in melee range" },
@@ -208,7 +208,7 @@ ns.GuideStore:RegisterSpec("HUNTER", 255, {
     }},
   },
   cooldowns = {
-    { spellID = 360966, text = "Coordinated Assault — core offensive cooldown, use on cooldown" },
+    { text = "Coordinated Assault — core offensive cooldown, use on cooldown" },
     { spellID = 259495, text = "Wildfire Bomb — frequent damage cooldown, weave in on cooldown" },
     { spellID = 186265, text = "Aspect of the Turtle — major defensive, absorbs most damage briefly" },
     { spellID = 109304, text = "Exhilaration — self-healing cooldown for sustain checks" },

@@ -199,12 +199,12 @@ ns.GuideStore:RegisterSpec("PALADIN", 70, {
         { spellID = 184575, text = "Blade of Justice on cooldown for Holy Power generation" },
         { spellID = 20271, text = "Judgment on cooldown for generation and its debuff" },
         { spellID = 35395, text = "Crusader Strike as a filler builder" },
-        { spellID = 231895, text = "Wake of Ashes to refill Holy Power and open burst windows" },
+        { spellID = 255937, text = "Wake of Ashes to refill Holy Power and open burst windows" },
         { text = "Avoid overcapping Holy Power — spend before it caps" },
     }},
     { title = "AoE", steps = {
         { spellID = 53385, text = "Divine Storm as the primary AoE Holy Power spender" },
-        { spellID = 231895, text = "Wake of Ashes to generate Holy Power and hit multiple targets" },
+        { spellID = 255937, text = "Wake of Ashes to generate Holy Power and hit multiple targets" },
         { spellID = 184575, text = "Blade of Justice on cooldown across the pull" },
         { spellID = 20271, text = "Judgment on cooldown for generation" },
         { spellID = 35395, text = "Crusader Strike as filler when builders are down" },
@@ -218,7 +218,7 @@ ns.GuideStore:RegisterSpec("PALADIN", 70, {
   },
   cooldowns = {
     { spellID = 31884, text = "Avenging Wrath — core offensive cooldown, use on cooldown" },
-    { spellID = 231895, text = "Wake of Ashes — Holy Power reset and burst tool, weave into cooldown windows" },
+    { spellID = 255937, text = "Wake of Ashes — Holy Power reset and burst tool, weave into cooldown windows" },
     { text = "A talent-granted burst cooldown (varies by build) — use alongside your main cooldown window" },
     { spellID = 642, text = "Divine Shield — emergency defensive, breaks most damage" },
     { spellID = 1022, text = "Blessing of Protection — utility defensive cooldown for yourself or an ally" },

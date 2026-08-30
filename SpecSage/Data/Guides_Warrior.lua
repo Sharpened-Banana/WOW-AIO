@@ -41,7 +41,7 @@ ns.GuideStore:RegisterSpec("WARRIOR", 71, {
         { spellID = 7384, text = "Overpower when charges are available" },
         { spellID = 845, text = "Cleave / Slam to spend excess rage between cooldowns" },
         { spellID = 163201, text = "Execute once the target drops below execute-range health, or on a Sudden Death proc even outside execute range" },
-        { text = "Champion's Spear on cooldown for extra burst inside your Colossus Smash window" },
+        { spellID = 376079, text = "Champion's Spear on cooldown for extra burst inside your Colossus Smash window" },
     }},
     { title = "AoE", steps = {
         { spellID = 227847, text = "Bladestorm to open on 3+ targets" },
@@ -134,8 +134,8 @@ ns.GuideStore:RegisterSpec("WARRIOR", 72, {
   },
   cooldowns = {
     { spellID = 1719, text = "Recklessness — pop for a burst window, ideally with trinkets" },
-    { spellID = 46924, text = "Bladestorm — strong cleave/AoE cooldown, also a brief defensive tool; under Slayer it's folded into the main Recklessness burst sequence" },
-    { text = "Odyn's Fury — hard-hitting burst cooldown, weave into the same window as Recklessness" },
+    { spellID = 227847, text = "Bladestorm — strong cleave/AoE cooldown, also a brief defensive tool; under Slayer it's folded into the main Recklessness burst sequence" },
+    { spellID = 205545, text = "Odyn's Fury — hard-hitting burst cooldown, weave into the same window as Recklessness" },
     { spellID = 184364, text = "Enraged Regeneration — self-healing cooldown for sustain checks" },
     { spellID = 23920, text = "Spell Reflection — reflects the next incoming spell, use against dangerous casts" },
     { spellID = 97462, text = "Rallying Cry — raid-wide defensive utility cooldown" },
@@ -195,7 +195,7 @@ ns.GuideStore:RegisterSpec("WARRIOR", 73, {
         { spellID = 6572, text = "Revenge when free or off cooldown for rage-efficient damage" },
         { spellID = 190456, text = "Ignore Pain to smooth incoming damage, spending excess rage" },
         { spellID = 1160, text = "Demoralizing Shout for extra mitigation as needed" },
-        { text = "Devastate as a rage-neutral filler when nothing else is ready" },
+        { spellID = 20243, text = "Devastate as a rage-neutral filler when nothing else is ready" },
     }},
     { title = "AoE", steps = {
         { spellID = 6343, text = "Thunder Clap as the primary AoE threat generator" },

@@ -43,7 +43,7 @@ ns.GuideStore:RegisterSpec("ROGUE", 259, {
         { text = "Refresh poisons before they expire — lost uptime is a real DPS loss" },
     }},
     { title = "AoE", steps = {
-        { spellID = 1830, text = "Fan of Knives as the primary combo point builder against 3+ targets" },
+        { spellID = 51723, text = "Fan of Knives as the primary combo point builder against 3+ targets" },
         { text = "Deadly Poison spread to all engaged targets" },
         { spellID = 1943, text = "Rupture on priority targets once poisons are spread" },
         { spellID = 360194, text = "Deathmark on cooldown for burst during add waves" },
@@ -112,7 +112,7 @@ ns.GuideStore:RegisterSpec("ROGUE", 260, {
   rotation = {
     { title = "Single Target", steps = {
         { spellID = 193315, text = "Sinister Strike on cooldown — primary combo point builder" },
-        { spellID = 315508, text = "Roll the Bones to apply buffs, re-roll when few are active" },
+        { spellID = 1214909, text = "Roll the Bones to apply buffs, re-roll when few are active" },
         { spellID = 2098, text = "Dispatch to spend combo points at low target health" },
         { spellID = 315341, text = "Between the Eyes to spend combo points and apply its debuff" },
         { spellID = 13750, text = "Adrenaline Rush on cooldown for a burst window" },
@@ -122,7 +122,7 @@ ns.GuideStore:RegisterSpec("ROGUE", 260, {
         { spellID = 13877, text = "Blade Flurry to cleave your attacks across nearby targets" },
         { spellID = 193315, text = "Sinister Strike still the primary builder while cleaving" },
         { spellID = 51690, text = "Killing Spree or equivalent burst tool during add waves" },
-        { spellID = 315508, text = "Roll the Bones for its buffs, especially cleave-relevant ones" },
+        { spellID = 1214909, text = "Roll the Bones for its buffs, especially cleave-relevant ones" },
         { spellID = 2098, text = "Dispatch/finishers to spend combo points across the pull" },
         { text = "Turn on Blade Flurry as soon as 2+ targets are engaged" },
     }},
@@ -195,7 +195,7 @@ ns.GuideStore:RegisterSpec("ROGUE", 261, {
         { text = "Keep Symbols of Death and Shadow Dance windows synced for maximum burst" },
     }},
     { title = "AoE", steps = {
-        { spellID = 199603, text = "Black Powder as the primary AoE combo point spender" },
+        { spellID = 319175, text = "Black Powder as the primary AoE combo point spender" },
         { spellID = 212283, text = "Symbols of Death on cooldown to buff AoE damage" },
         { spellID = 185313, text = "Shadow Dance for extra Shadowstrike/Black Powder access" },
         { spellID = 185438, text = "Shadowstrike still a strong builder, hits the primary target" },
