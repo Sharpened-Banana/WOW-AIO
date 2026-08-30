@@ -37,13 +37,13 @@ ns.GuideStore:RegisterSpec("EVOKER", 1467, {
   },
   rotation = {
     { title = "Opener", steps = {
-        { text = "Living Flame while closing distance to build initial Essence" },
+        { spellID = 361469, text = "Living Flame while closing distance to build initial Essence" },
         { text = "Fire Breath (empowered) to apply its damage-over-time before burst" },
-        { text = "Dragonrage once dots are applied, to open the main burst window" },
+        { spellID = 375087, text = "Dragonrage once dots are applied, to open the main burst window" },
         { text = "Opener Notes: Devastation splits along the Flameshaper and Scalecommander hero trees — Scalecommander turns Disintegrate into a multi-target hit via Mass Disintegrate, Flameshaper keeps closer to the single-target flow above" },
     }},
     { title = "Single Target", steps = {
-        { text = "Living Flame as a mobile filler and Essence generator" },
+        { spellID = 361469, text = "Living Flame as a mobile filler and Essence generator" },
         { spellID = 356995, text = "Disintegrate to spend Essence on strong single-target damage" },
         { text = "Fire Breath on cooldown, empowering to at least level 2-3 depending on the situation" },
         { text = "Eternity Surge on cooldown for additional burst" },
@@ -53,12 +53,12 @@ ns.GuideStore:RegisterSpec("EVOKER", 1467, {
         { text = "Pyre as your primary AoE Essence spender" },
         { text = "Fire Breath, empowered fully when stationary, to apply damage-over-time across the pack" },
         { text = "Eternity Surge (empowered) to hit multiple targets with strong burst damage" },
-        { text = "Living Flame to top up Essence between AoE spenders" },
-        { text = "Time Dragonrage for when the full pack is engaged" },
+        { spellID = 361469, text = "Living Flame to top up Essence between AoE spenders" },
+        { spellID = 375087, text = "Time Dragonrage for when the full pack is engaged" },
     }},
   },
   cooldowns = {
-    { text = "Dragonrage — main burst cooldown, use once dots are applied and align with raid cooldowns" },
+    { spellID = 375087, text = "Dragonrage — main burst cooldown, use once dots are applied and align with raid cooldowns" },
     { text = "Fire Breath — empowered breath, hold for a higher empower level when stationary and safe to do so" },
     { text = "Eternity Surge — empowered burst spell, similar empower-level tradeoff as Fire Breath" },
     { spellID = 363916, text = "Obsidian Scales — defensive, reduces damage taken" },
@@ -135,17 +135,17 @@ ns.GuideStore:RegisterSpec("EVOKER", 1468, {
         { spellID = 366155, text = "Reversion to maintain a rolling HoT on the tank or a focus target" },
     }},
     { title = "Cooldown usage", steps = {
-        { text = "Rewind (talent) to retroactively heal the raid after a damage spike" },
+        { spellID = 363534, text = "Rewind (talent) to retroactively heal the raid after a damage spike" },
         { text = "Dream Flight / Stasis (talent-dependent) for a big raid-wide cooldown window" },
         { spellID = 357170, text = "Time Dilation to reduce damage taken by an ally proactively" },
         { text = "Emerald Communion for sustained healing and mana regeneration on a long fight" },
         { text = "If talented into Consume Flame, weave it in after Fire Breath's dot has ticked for a while — it now converts a larger share (240%) of the remaining damage into healing" },
-        { text = "Pre-place Echo on multiple raid members before a known damage phase" },
+        { spellID = 364343, text = "Pre-place Echo on multiple raid members before a known damage phase" },
     }},
   },
   cooldowns = {
-    { text = "Dream Flight — raid-wide healing cooldown, use for a scripted heavy damage phase" },
-    { text = "Rewind (talent) — retroactive raid heal, use right after unavoidable burst damage lands" },
+    { spellID = 359816, text = "Dream Flight — raid-wide healing cooldown, use for a scripted heavy damage phase" },
+    { spellID = 363534, text = "Rewind (talent) — retroactive raid heal, use right after unavoidable burst damage lands" },
     { text = "Emerald Communion — channel for strong sustained self/group healing and mana return" },
     { spellID = 363916, text = "Obsidian Scales — personal defensive, reduces damage taken" },
     { spellID = 357170, text = "Time Dilation — proactive damage reduction for an ally about to take a hit" },
@@ -211,11 +211,11 @@ ns.GuideStore:RegisterSpec("EVOKER", 1473, {
   rotation = {
     { title = "Priorities", steps = {
         { spellID = 395152, text = "Ebon Might on yourself and key allies, timed to line up with their damage cooldowns" },
-        { text = "Prescience on two allies (typically high-damage or cooldown-heavy players), keep it refreshed" },
+        { spellID = 409311, text = "Prescience on two allies (typically high-damage or cooldown-heavy players), keep it refreshed" },
         { spellID = 361469, text = "Living Flame as filler direct damage and Essence generation" },
         { text = "Upheaval / Eruption on cooldown for direct damage and utility" },
         { text = "Breath of Eons / Black Attunement-style major cooldowns aligned with raid burst windows" },
-        { text = "If talented into Double-time, time your Ebon Might refresh to land while the previous crit's stat buff is still active — it extends cleanly instead of resetting" },
+        { spellID = 395152, text = "If talented into Double-time, time your Ebon Might refresh to land while the previous crit's stat buff is still active — it extends cleanly instead of resetting" },
     }},
     { title = "AoE / Cooldown usage", steps = {
         { text = "Prioritize applying Ebon Might/Prescience to the group before your own direct damage in AoE" },
@@ -228,7 +228,7 @@ ns.GuideStore:RegisterSpec("EVOKER", 1473, {
   cooldowns = {
     { spellID = 395152, text = "Ebon Might — core damage-sharing buff, refresh on cooldown and time with allies' burst windows" },
     { text = "Breath of Eons (talent) — major raid-wide burst cooldown, coordinate with the raid's cooldown plan" },
-    { text = "Prescience — crit buff for two allies, prioritize players with strong burst cooldowns of their own" },
+    { spellID = 409311, text = "Prescience — crit buff for two allies, prioritize players with strong burst cooldowns of their own" },
     { spellID = 363916, text = "Obsidian Scales — personal defensive, reduces damage taken" },
   },
   consumables = {
