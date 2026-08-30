@@ -201,6 +201,7 @@ ns.GuideStore:RegisterSpec("HUNTER", 255, {
     { title = "Opener Notes", steps = {
         { text = "Open with Wildfire Bomb and Kill Command to establish damage before committing to Mongoose Bite stacking" },
         { text = "Line up Coordinated Assault (or your burst cooldown) with your first full Mongoose Fury stack window" },
+        { text = "Your hero talent choice splits the rotation in two: Pack Leader leans on its pet-summon procs alongside the core builders, while Sentinel runs its own separate priority list — check which one your loadout uses" },
     }},
   },
   cooldowns = {
@@ -227,6 +228,11 @@ ns.GuideStore:RegisterSpec("HUNTER", 255, {
     { slot = "Trinket", text = "One on-use Agility or damage trinket lined up with Coordinated Assault" },
     { slot = "Trinket", text = "A passive stat-stick trinket for consistent melee and Kill Command damage" },
     { slot = "Weapon", text = "A melee weapon this time, since Survival fights in melee — take the highest item level option with useful secondary stats" },
+  },
+  mplusLoadout = {
+    string = "C8PAAAAAAAAAAAAAAAAAAAAAAMWgBmxoxyAYmgtZMzMGzyAAAAAAwMmxMLmxYGzgx0MAAAADAmxyyMzsYMzMjZmBAzYZDGDjNDAA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Keep Mongoose Fury stacked as high as possible before spending your last Mongoose Bite charge window.",

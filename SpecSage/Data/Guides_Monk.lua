@@ -181,6 +181,7 @@ ns.GuideStore:RegisterSpec("MONK", 269, {
         { text = "Invoke Xuen the White Tiger (or Serenity, per build) to open with a strong window" },
         { spellID = 107428, text = "Rising Sun Kick to open with a big hit and debuff" },
         { spellID = 113656, text = "Fists of Fury once Chi is available for a strong channel" },
+        { text = "Opener Notes: if talented, Zenith and Celestial Conduit's channel jump ahead of your normal single-target flow — fit them into the opener/burst window rather than treating them as regular fillers" },
     }},
     { title = "Single Target", steps = {
         { spellID = 100780, text = "Tiger Palm to build Chi and maintain the Mark of the Crane debuff" },
