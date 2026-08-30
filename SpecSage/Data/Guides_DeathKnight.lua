@@ -1,9 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Death Knight (Blood 250, Frost 251, Unholy 252)
--- Content targets The War Within. This is community-maintained conventional
--- guidance (stat priorities and rotations that match the spec's long-standing
--- design) — not a claim of bleeding-edge sim-perfect optimization.
+-- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
+-- priorities were cross-checked against SimulationCraft's public default
+-- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
+-- consumables/overview/tips/gear guidance was not re-verified against
+-- current tuning in this pass.
+-- This is community-maintained conventional guidance (stat priorities and
+-- rotations that match the spec's long-standing design) — not a claim of
+-- bleeding-edge sim-perfect optimization.
 -- To edit: change the strings/tables below and reload. To add a spec pack,
 -- call ns.GuideStore:RegisterSpec(classToken, specID, guideTable) from any
 -- addon that loads after SpecSage; see Data/API.lua for validation rules.
@@ -50,6 +55,9 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 250, {
         { spellID = 55233, text = "Vampiric Blood to amplify healing and effective health during a burst window" },
         { text = "Pool Runic Power slightly before a known damage spike so Death Strike lands at its strongest" },
     }},
+    { title = "Opener Notes", steps = {
+        { text = "Your hero talent choice changes what backs up Death Strike: Deathbringer layers on its own execute-adjacent debuff damage, while San'layn adds a Vampiric-themed burst window (Gift of the San'layn) that briefly boosts your generators — check your build rather than assuming a fixed extra step" },
+    }},
   },
   cooldowns = {
     { spellID = 55233, text = "Vampiric Blood — boosts healing received and max health, use for sustained damage" },
@@ -75,6 +83,11 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 250, {
     { slot = "Trinket", text = "One defensive on-use trinket saved for the fight's heaviest predicted damage window" },
     { slot = "Trinket", text = "One passive Stamina or avoidance trinket for a steady survivability floor" },
     { slot = "Weapon", text = "High item level weapons still carry meaningful damage for Blood — don't sacrifice too much Stamina chasing pure dps stats" },
+  },
+  mplusLoadout = {
+    string = "CoPAAAAAAAAAAAAAAAAAAAAAAwYWmZmxMmZmhZZmZmmZxMjxMAAAAAmZZGmZGzMjZAgZmZGAAADMwMW0YZDklBsBYGzAAAmZwgB",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Keep Bone Shield charges above zero at all times — a lapsed Bone Shield is a big mitigation loss.",
@@ -105,11 +118,12 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 251, {
         { spellID = 49143, text = "Frost Strike to spend Runic Power, prioritized under Killing Machine" },
         { spellID = 47568, text = "Empower Rune Weapon on cooldown for extra resources" },
         { spellID = 51271, text = "Pillar of Frost on cooldown for a burst damage window" },
-        { spellID = 49184, text = "Howling Blast to keep its Frost Fever debuff active" },
+        { spellID = 49184, text = "Howling Blast to keep its Frost Fever debuff active, and take it free whenever Rime procs" },
         { text = "Don't let Killing Machine procs go unused — spend them before they're overwritten" },
     }},
     { title = "AoE", steps = {
         { spellID = 49184, text = "Howling Blast as the primary AoE opener, spreading Frost Fever" },
+        { text = "Frostscythe as a core AoE weapon strike once several targets are up, especially with Killing Machine active" },
         { spellID = 49020, text = "Obliterate still strong single-target priority within the pull" },
         { spellID = 51271, text = "Pillar of Frost on cooldown during add waves" },
         { spellID = 49143, text = "Frost Strike to spend Runic Power across the pull" },
@@ -146,8 +160,14 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 251, {
     { slot = "Trinket", text = "A passive stat-stick trinket for consistent damage between cooldowns" },
     { slot = "Weapon", text = "Two matched one-handers for dual-wield, or the highest item level two-hander if running that build — check your talents before gearing" },
   },
+  mplusLoadout = {
+    string = "CsPAAAAAAAAAAAAAAAAAAAAAAMAGAADYYYMiBjhZGDmZmZmZmZmBAAAAAAAAgxYgBAsMMhMWwMjhBGAGmBAwA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
+  },
   tips = {
     "Spend Killing Machine procs promptly rather than banking multiple and risking an overwrite.",
+    "Rime procs make your next Howling Blast free and instant — don't let a Rime proc sit unused.",
     "Keep Frost Fever active on any target you'll be attacking for more than a few seconds.",
     "Line up Empower Rune Weapon and Pillar of Frost together whenever possible.",
     "Howling Blast is a strong AoE opener even on cooldown-limited pulls — don't save it exclusively for big packs.",
@@ -173,8 +193,9 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 252, {
     { title = "Single Target", steps = {
         { spellID = 191587, text = "Virulent Plague kept active on the target" },
         { spellID = 85948, text = "Festering Strike to build Festering Wounds" },
-        { spellID = 55090, text = "Scourge Strike to burst open Festering Wounds" },
+        { spellID = 55090, text = "Scourge Strike to burst open Festering Wounds — while Dark Transformation is active this becomes the empowered Putrefy instead" },
         { spellID = 47541, text = "Death Coil to spend Runic Power, empowered further while your pet is out" },
+        { text = "Soul Reaper on a target you can finish off soon — it detonates for extra damage once that target drops low" },
         { spellID = 42650, text = "Army of the Dead / Apocalypse-style cooldown on a scheduled burst window" },
         { text = "Don't let Festering Wounds overcap — burst them open before they stack too high" },
     }},
@@ -216,8 +237,14 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 252, {
     { slot = "Trinket", text = "A passive stat-stick trinket, ideally one that also benefits pet damage" },
     { slot = "Weapon", text = "The highest item level two-hander available — weapon damage still matters for Scourge Strike swings" },
   },
+  mplusLoadout = {
+    string = "CwPAAAAAAAAAAAAAAAAAAAAAAAwMjZMDDz2MzMTzmZmZMjBAAAAAAAgZGmZAwyMmZ2mZGjZAbmFDDZgZjhGLAYGAGzMjZAmZmxYA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
+  },
   tips = {
     "Never let Virulent Plague fall off a target you'll keep attacking.",
+    "Soul Reaper is worth applying early on a target you expect to kill soon — its bonus damage triggers once that target's health drops low, not on cast.",
     "Don't overcap Festering Wounds — burst them before you lose value from excess stacks.",
     "Dark Transformation is worth using on cooldown rather than saving for a 'perfect' moment in most fights.",
     "Line up your big summon-based cooldown with a known burst or add phase for maximum value.",

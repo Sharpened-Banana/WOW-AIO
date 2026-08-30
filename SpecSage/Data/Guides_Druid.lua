@@ -1,9 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Druid
--- Content targets The War Within. This is community-maintained, conventional
--- guidance (keep-it-simple stat priorities, long-standing rotation patterns)
--- and is NOT a claim of sim-perfect or bleeding-edge optimal play.
+-- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
+-- priorities were cross-checked against SimulationCraft's public default
+-- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
+-- consumables/overview/tips/gear guidance was not re-verified against
+-- current tuning in this pass.
+-- This is community-maintained, conventional guidance (keep-it-simple stat
+-- priorities, long-standing rotation patterns) and is NOT a claim of
+-- sim-perfect or bleeding-edge optimal play.
 -- To edit: find the RegisterSpec(...) block for the spec you want to change
 -- and edit the table in place. To add a new tip/step, insert a new entry in
 -- the relevant array. Keep this file data-only — no logic beyond the calls
@@ -33,6 +38,7 @@ ns.GuideStore:RegisterSpec("DRUID", 102, {
         { text = "Sunfire and Moonfire to apply dots to the target before committing to burst" },
         { spellID = 194223, text = "Celestial Alignment once dots are up, to open a strong burst window" },
         { spellID = 78674, text = "Starsurge to spend Astral Power during the burst window" },
+        { text = "Opener Notes: Balance splits along the Elune's Chosen and Keeper of the Grove hero trees — Elune's Chosen leans on Starfire even outside AoE, Keeper of the Grove keeps closer to the Eclipse-cycle flow above" },
     }},
     { title = "Single Target", steps = {
         { text = "Keep Sunfire and Moonfire active on the target at all times" },
@@ -74,6 +80,11 @@ ns.GuideStore:RegisterSpec("DRUID", 102, {
     { slot = "Weapon", text = "Take the highest weapon damage staff or one-hand-plus-off-hand — Balance's damage scales off spellpower and stats, not weapon type" },
     { slot = "Off-hand", text = "A caster off-hand leaning Haste keeps your Eclipse cycling and Astral Power flowing" },
   },
+  mplusLoadout = {
+    string = "CYGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWoMbNjxMDwsYmZmZhBjZZmlZYmZswyMLzMGzshhBYstMzgxsNCMBAAAYxMzMzgNDjxAAwMDMA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.0 (MID1 — SimC has not yet published a MID2 profile for this spec)",
+  },
   tips = {
     "Never let Sunfire or Moonfire fall off — dot uptime is a large share of Balance's total damage.",
     "Don't sit at capped Astral Power; spend it on Starsurge/Starfall before it overflows.",
@@ -104,6 +115,7 @@ ns.GuideStore:RegisterSpec("DRUID", 103, {
         { spellID = 1822, text = "Rake from stealth for a strong bleed and combo point" },
         { spellID = 5217, text = "Tiger's Fury to open a burst window with extra Energy" },
         { spellID = 1079, text = "Rip once you have 5 combo points to start the primary bleed" },
+        { text = "Opener Notes: some current builds carry a talented finisher called Chomp alongside Ferocious Bite — check your talent row and use whichever finisher your build points at" },
     }},
     { title = "Single Target", steps = {
         { spellID = 1822, text = "Rake to apply and refresh its bleed, especially from behind" },
@@ -143,6 +155,11 @@ ns.GuideStore:RegisterSpec("DRUID", 103, {
     { slot = "Trinket", text = "A passive Agility stat-stick trinket to keep bleed damage strong between cooldowns" },
     { slot = "Weapon", text = "Cat Form normalizes weapon speed, so simply take the highest weapon damage item — type doesn't matter for your attacks" },
     { slot = "Feet", text = "Look for an itemization roll that keeps Critical Strike or Mastery flowing since Feral has few other stat-heavy accessory options" },
+  },
+  mplusLoadout = {
+    string = "CcGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjZwMzMzMmtFPwyMbzYGzMDAAAALBzGMmZUzYWYmZGjZmZAAAAAAAGAAAABAz2MLNbzssBmZAWMDGAAzMAYA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.0 (MID1 — SimC has not yet published a MID2 profile for this spec)",
   },
   tips = {
     "Never let Rip or Rake fall off the target — refreshing dropped bleeds costs far more than early refreshes.",
@@ -215,6 +232,11 @@ ns.GuideStore:RegisterSpec("DRUID", 104, {
     { slot = "Trinket", text = "A second trinket that adds Stamina or a passive mitigation effect so survivability doesn't get sacrificed entirely for threat" },
     { slot = "Weapon", text = "Bear Form normalizes weapon speed, so take the highest weapon damage item available regardless of type" },
     { slot = "Waist", text = "An easy slot to fill in an extra gem toward whichever secondary — Versatility or Mastery — your build is short on" },
+  },
+  mplusLoadout = {
+    string = "CgGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgZmxsYmZMzmZZgZbZgxMMaimZmFzMzMLjZeADAAAAgZYGLzAAAAQNzysMzMDAgFMDgFzgBsYZbAwMbwA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.0 (MID1 — SimC has not yet published a MID2 profile for this spec)",
   },
   tips = {
     "Keep Ironfur stacked proactively rather than reactively — mitigation applied before the hit lands is what matters.",

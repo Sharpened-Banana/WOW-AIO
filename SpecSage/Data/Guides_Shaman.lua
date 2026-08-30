@@ -1,9 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Shaman (Elemental 262, Enhancement 263, Restoration 264)
--- Content targets The War Within. This is community-maintained conventional
--- guidance (stat priorities and rotations that match the spec's long-standing
--- design) — not a claim of bleeding-edge sim-perfect optimization.
+-- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
+-- priorities were cross-checked against SimulationCraft's public default
+-- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
+-- consumables/overview/tips/gear guidance was not re-verified against
+-- current tuning in this pass.
+-- This is community-maintained conventional guidance (stat priorities and
+-- rotations that match the spec's long-standing design) — not a claim of
+-- bleeding-edge sim-perfect optimization.
 -- To edit: change the strings/tables below and reload. To add a spec pack,
 -- call ns.GuideStore:RegisterSpec(classToken, specID, guideTable) from any
 -- addon that loads after SpecSage; see Data/API.lua for validation rules.
@@ -32,6 +37,8 @@ ns.GuideStore:RegisterSpec("SHAMAN", 262, {
         { spellID = 8042, text = "Earth Shock to spend Maelstrom once it's built up" },
         { spellID = 188196, text = "Lightning Bolt as a Maelstrom generator and filler" },
         { spellID = 198067, text = "Fire Elemental on cooldown for a sustained burst window" },
+        { text = "Ascendance on cooldown for a burst window, ideally alongside Fire/Storm Elemental" },
+        { text = "Stormkeeper before a burst window to empower your next casts" },
         { text = "Never let Flame Shock fall off — it feeds Lava Surge procs" },
     }},
     { title = "AoE", steps = {
@@ -50,6 +57,8 @@ ns.GuideStore:RegisterSpec("SHAMAN", 262, {
   cooldowns = {
     { spellID = 198067, text = "Fire Elemental — core offensive cooldown, use on cooldown" },
     { spellID = 192249, text = "Storm Elemental — alternative burst cooldown depending on talents" },
+    { spellID = 114050, text = "Ascendance — burst cooldown, line it up with your elemental and Stormkeeper" },
+    { spellID = 191634, text = "Stormkeeper — empowers your next Lightning Bolt/Chain Lightning casts, use before a burst window" },
     { spellID = 108271, text = "Astral Shift — defensive damage-reduction cooldown" },
     { spellID = 2825, text = "Bloodlust — raid-wide haste cooldown, coordinate timing with the raid" },
     { spellID = 51514, text = "Hex — crowd control utility for dangerous adds" },
@@ -72,6 +81,11 @@ ns.GuideStore:RegisterSpec("SHAMAN", 262, {
     { slot = "Trinket", text = "A passive stat-stick trinket for consistent Lava Burst and Earth Shock damage" },
     { slot = "Weapon", text = "A one-hander with strong Intellect and secondary stats" },
     { slot = "Off-hand", text = "An off-hand caster stat stick for extra Intellect and secondary stats" },
+  },
+  mplusLoadout = {
+    string = "CYQAAAAAAAAAAAAAAAAAAAAAAAAAAAzMbbzMmZmZZbZMMjBAAAAsYmNYADY2YCZWAgZbmZGjtFTYmxYxMzMmZWsMjFzMMzyAAGGAzMGGGA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Keep Flame Shock active on the target at all times — it's the engine behind Lava Surge procs.",
@@ -103,6 +117,7 @@ ns.GuideStore:RegisterSpec("SHAMAN", 263, {
         { spellID = 187874, text = "Crash Lightning to apply its buff even in single target if talented" },
         { spellID = 188196, text = "Lightning Bolt to spend Maelstrom Weapon stacks at high value" },
         { spellID = 51533, text = "Feral Spirit on cooldown for a burst window" },
+        { text = "Primordial Storm (Stormbringer hero talent) once Maelstrom Weapon is stacked high — a strong Maelstrom-fueled finisher" },
         { text = "Spend Maelstrom Weapon stacks before they overcap and waste generation" },
     }},
     { title = "AoE", steps = {
@@ -121,6 +136,7 @@ ns.GuideStore:RegisterSpec("SHAMAN", 263, {
   cooldowns = {
     { spellID = 51533, text = "Feral Spirit — core offensive cooldown, use on cooldown" },
     { spellID = 384352, text = "Doom Winds — burst melee cooldown if talented, use with Feral Spirit" },
+    { spellID = 114051, text = "Ascendance — burst cooldown, line up with Feral Spirit and Doom Winds" },
     { spellID = 108271, text = "Astral Shift — defensive damage-reduction cooldown" },
     { spellID = 2825, text = "Bloodlust — raid-wide haste cooldown, coordinate timing with the raid" },
     { spellID = 51514, text = "Hex — crowd control utility for dangerous adds" },

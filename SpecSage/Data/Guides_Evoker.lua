@@ -1,9 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Evoker
--- Content targets The War Within. This is community-maintained, conventional
--- guidance (keep-it-simple stat priorities, long-standing rotation patterns)
--- and is NOT a claim of sim-perfect or bleeding-edge optimal play.
+-- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
+-- priorities were cross-checked against SimulationCraft's public default
+-- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
+-- consumables/overview/tips/gear guidance was not re-verified against
+-- current tuning in this pass.
+-- This is community-maintained, conventional guidance (keep-it-simple stat
+-- priorities, long-standing rotation patterns) and is NOT a claim of
+-- sim-perfect or bleeding-edge optimal play.
 -- To edit: find the RegisterSpec(...) block for the spec you want to change
 -- and edit the table in place. To add a new tip/step, insert a new entry in
 -- the relevant array. Keep this file data-only — no logic beyond the calls
@@ -32,6 +37,7 @@ ns.GuideStore:RegisterSpec("EVOKER", 1467, {
         { text = "Living Flame while closing distance to build initial Essence" },
         { text = "Fire Breath (empowered) to apply its damage-over-time before burst" },
         { text = "Dragonrage once dots are applied, to open the main burst window" },
+        { text = "Opener Notes: Devastation splits along the Flameshaper and Scalecommander hero trees — Scalecommander turns Disintegrate into a multi-target hit via Mass Disintegrate, Flameshaper keeps closer to the single-target flow above" },
     }},
     { title = "Single Target", steps = {
         { text = "Living Flame as a mobile filler and Essence generator" },
@@ -72,6 +78,11 @@ ns.GuideStore:RegisterSpec("EVOKER", 1467, {
     { slot = "Trinket", text = "A passive secondary-stat trinket to hold sustained damage between Dragonrage windows" },
     { slot = "Weapon", text = "Evokers wield ranged caster weapons — take the highest item level available, since it functions as a stat stick rather than a melee weapon" },
     { slot = "Off-hand", text = "A caster off-hand leaning Critical Strike or Haste keeps your empower spells and Essence spenders hitting hard" },
+  },
+  mplusLoadout = {
+    string = "CsbBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAzMDMDzgBmZGjZaYmpZMWmxMzMz8AzMzAmxMGzMLzMDMwYwCsMGN2GQmBBbYGMzghB",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.0 (MID1 — SimC has not yet published a MID2 profile for this spec)",
   },
   tips = {
     "Only hold an empowered cast to a higher level when it's safe to stand still that long — a lower, on-time empower often beats a perfect one that gets interrupted by movement.",

@@ -1,9 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Rogue (Assassination 259, Outlaw 260, Subtlety 261)
--- Content targets The War Within. This is community-maintained conventional
--- guidance (stat priorities and rotations that match the spec's long-standing
--- design) — not a claim of bleeding-edge sim-perfect optimization.
+-- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
+-- priorities were cross-checked against SimulationCraft's public default
+-- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
+-- consumables/overview/tips/gear guidance was not re-verified against
+-- current tuning in this pass.
+-- This is community-maintained conventional guidance (stat priorities and
+-- rotations that match the spec's long-standing design) — not a claim of
+-- bleeding-edge sim-perfect optimization.
 -- To edit: change the strings/tables below and reload. To add a spec pack,
 -- call ns.GuideStore:RegisterSpec(classToken, specID, guideTable) from any
 -- addon that loads after SpecSage; see Data/API.lua for validation rules.
@@ -45,6 +50,7 @@ ns.GuideStore:RegisterSpec("ROGUE", 259, {
     { title = "Opener Notes", steps = {
         { text = "Open from Stealth with Garrote for its bonus damage, then build toward Rupture" },
         { text = "Line up Deathmark with your first full combo point Envenom for maximum burst" },
+        { text = "Deathmark hits hardest once both Garrote and Rupture are already ticking — don't fire it before your bleeds are established" },
     }},
   },
   cooldowns = {
@@ -71,6 +77,11 @@ ns.GuideStore:RegisterSpec("ROGUE", 259, {
     { slot = "Trinket", text = "One on-use Agility or damage trinket lined up with Deathmark" },
     { slot = "Trinket", text = "A passive stat-stick trinket for consistent bleed and poison damage" },
     { slot = "Weapon", text = "Two matched, high item level daggers or one-handers — both weapons carry Assassination's bleed and poison damage equally" },
+  },
+  mplusLoadout = {
+    string = "CMQAAAAAAAAAAAAAAAAAAAAAAYmlxsNDGAAAAAYWGsNDAAAAAIbzMzMzMjxyMzMbzsMzMzYGzYMmZMMAbmlBGwSwywEYYxgZGgxYA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Never let Rupture or Garrote fall off a target you'll be attacking for more than a few seconds.",
@@ -115,6 +126,7 @@ ns.GuideStore:RegisterSpec("ROGUE", 260, {
     { title = "Opener Notes", steps = {
         { text = "Open with Roll the Bones to establish buffs before committing to your main cooldowns" },
         { text = "Line up Adrenaline Rush with a strong Roll the Bones result for maximum burst" },
+        { text = "If you're talented into Fan the Hammer, Pistol Shot chains take over as your main combo point builder instead of Sinister Strike — check your build before assuming a fixed generator" },
     }},
   },
   cooldowns = {
@@ -141,6 +153,11 @@ ns.GuideStore:RegisterSpec("ROGUE", 260, {
     { slot = "Trinket", text = "One on-use Agility or damage trinket lined up with Adrenaline Rush" },
     { slot = "Trinket", text = "A passive stat-stick trinket for consistent damage between cooldowns" },
     { slot = "Weapon", text = "Two matched, high item level one-handers, since Sinister Strike and your finishers scale off both weapons" },
+  },
+  mplusLoadout = {
+    string = "CQQAAAAAAAAAAAAAAAAAAAAAAAgx2MMzMmZmtZmZmZMmF4BmZbaZw2MAAAAAALLzMzwMzMziZmZbAAAAYmBAjZxwQGYWYhWYjBYmBDMA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Don't re-roll Roll the Bones just because it feels weak — check whether it's actually below the keep threshold first.",
@@ -185,6 +202,7 @@ ns.GuideStore:RegisterSpec("ROGUE", 261, {
     { title = "Opener Notes", steps = {
         { text = "Open from Stealth with Shadowstrike, then use Symbols of Death to chain into Shadow Dance" },
         { text = "Save a second Shadow Dance charge if possible to extend your opening burst window" },
+        { text = "Your hero talent choice colors the finisher priority — Deathstalker weaves its mark debuff into the builder/finisher cycle, while Trickster stacks its own resource on top of combo points — but the core Shadow Dance/Symbols of Death cadence stays the same either way" },
     }},
   },
   cooldowns = {
@@ -211,6 +229,11 @@ ns.GuideStore:RegisterSpec("ROGUE", 261, {
     { slot = "Trinket", text = "One on-use Agility or damage trinket lined up with Shadow Dance or Shadow Blades windows" },
     { slot = "Trinket", text = "A passive stat-stick trinket for consistent damage between burst windows" },
     { slot = "Weapon", text = "Two matched, high item level daggers, since Subtlety's damage scales off both weapons" },
+  },
+  mplusLoadout = {
+    string = "CUQAAAAAAAAAAAAAAAAAAAAAAAgx2MAAAAAwsMGLTMbbjxMDDzMzMzw8AbzYGbbzMzMzMjBjZ2GAAAAGMmFzyADYBsMMhMLYGmZAmxA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Sync Symbols of Death with Shadow Dance whenever possible for the strongest burst windows.",

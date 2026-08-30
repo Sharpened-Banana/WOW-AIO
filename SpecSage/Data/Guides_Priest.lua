@@ -1,9 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Priest (Discipline 256, Holy 257, Shadow 258)
--- Content targets The War Within. This is community-maintained conventional
--- guidance (stat priorities and rotations that match the spec's long-standing
--- design) — not a claim of bleeding-edge sim-perfect optimization.
+-- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
+-- priorities were cross-checked against SimulationCraft's public default
+-- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
+-- consumables/overview/tips/gear guidance was not re-verified against
+-- current tuning in this pass.
+-- This is community-maintained conventional guidance (stat priorities and
+-- rotations that match the spec's long-standing design) — not a claim of
+-- bleeding-edge sim-perfect optimization.
 -- To edit: change the strings/tables below and reload. To add a spec pack,
 -- call ns.GuideStore:RegisterSpec(classToken, specID, guideTable) from any
 -- addon that loads after SpecSage; see Data/API.lua for validation rules.
@@ -164,6 +169,9 @@ ns.GuideStore:RegisterSpec("PRIEST", 258, {
         { spellID = 8092, text = "Mind Blast on cooldown — strong Insanity generator" },
         { spellID = 15407, text = "Mind Flay as your primary Insanity-neutral filler" },
         { spellID = 205448, text = "Void Bolt on cooldown once available for burst damage" },
+        { text = "Void Torrent during your burst window — a channeled Insanity-fueled cooldown, keep your DoTs freshly refreshed before using it" },
+        { spellID = 32379, text = "Shadow Word: Death as an execute-range filler (also usable off-cooldown for its Insanity refund on a kill)" },
+        { text = "Shadow Word: Madness, a hard-hitting DoT/burst tool, has joined the kit alongside Shadow Word: Pain and Vampiric Touch — weave it into your DoT upkeep rather than treating it as optional" },
         { text = "Refresh DoTs before they fall off rather than letting them lapse" },
     }},
     { title = "AoE", steps = {
@@ -177,10 +185,12 @@ ns.GuideStore:RegisterSpec("PRIEST", 258, {
     { title = "Opener Notes", steps = {
         { text = "Apply Shadow Word: Pain and Vampiric Touch immediately, then build toward your burst window" },
         { text = "Line up your Insanity-spending burst cooldown with trinkets and other offensive cooldowns" },
+        { text = "The Voidweaver hero talent path leans on Void Torrent and your Void-empowered casts inside the burst window; the Archon path instead ramps a stacking buff into Void Eruption — check which one your loadout uses before assuming a fixed cooldown cadence" },
     }},
   },
   cooldowns = {
     { spellID = 228260, text = "Void Eruption or your spec's burst-window cooldown — use on cooldown" },
+    { text = "Void Torrent — channeled Insanity dump, line up with your DoTs freshly applied" },
     { spellID = 47585, text = "Dispersion — damage reduction and mana/Insanity recovery cooldown" },
     { spellID = 586, text = "Fade to drop threat or avoid certain mechanics" },
     { spellID = 15487, text = "Silence — interrupt/utility cooldown, use on dangerous casts" },
@@ -203,6 +213,11 @@ ns.GuideStore:RegisterSpec("PRIEST", 258, {
     { slot = "Trinket", text = "A passive stat-stick trinket for consistent DoT damage" },
     { slot = "Weapon", text = "A one-hander or staff with strong Intellect and secondary stats" },
     { slot = "Off-hand", text = "An off-hand caster stat stick for extra Intellect and secondary stats" },
+  },
+  mplusLoadout = {
+    string = "CIQAAAAAAAAAAAAAAAAAAAAAAMMjZGAAAAAAAAAAAAMLmxMbzMMz2MzYG2mZGzMzYDZGLmpBYmZGAIAz2stEMbMAwgxMzMmtxMYmBzgB",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Never let Shadow Word: Pain or Vampiric Touch fall off a target you'll keep attacking.",

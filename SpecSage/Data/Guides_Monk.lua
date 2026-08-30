@@ -223,6 +223,11 @@ ns.GuideStore:RegisterSpec("MONK", 269, {
     { slot = "Weapon", text = "Fast one-handers (fist weapons or similar) are the natural fit for Windwalker's attack-speed-driven combo strikes" },
     { slot = "Off-hand", text = "Match your off-hand's secondary stats to your main-hand's Critical Strike lean rather than treating it as filler" },
   },
+  mplusLoadout = {
+    string = "C0QAAAAAAAAAAAAAAAAAAAAAAMzYw2MmhlZGbzAAAAAAAAAAAAsMMaGzAGwMGmZmZY2GmhZZmAAWMz2MDzMzMAA2AQzys0MzMLAYgZGAGLDgB8B",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
+  },
   tips = {
     "Never repeat the same ability twice in a row when possible — combo strikes are core to Windwalker's damage and mastery.",
     "Line up Invoke Xuen/Serenity with your other cooldowns and, where possible, boss burst phases.",

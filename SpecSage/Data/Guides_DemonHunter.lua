@@ -1,9 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Demon Hunter
--- Content targets The War Within. This is community-maintained, conventional
--- guidance (keep-it-simple stat priorities, long-standing rotation patterns)
--- and is NOT a claim of sim-perfect or bleeding-edge optimal play.
+-- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
+-- priorities were cross-checked against SimulationCraft's public default
+-- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
+-- consumables/overview/tips/gear guidance was not re-verified against
+-- current tuning in this pass.
+-- This is community-maintained, conventional guidance (keep-it-simple stat
+-- priorities, long-standing rotation patterns) and is NOT a claim of
+-- sim-perfect or bleeding-edge optimal play.
 -- To edit: find the RegisterSpec(...) block for the spec you want to change
 -- and edit the table in place. To add a new tip/step, insert a new entry in
 -- the relevant array. Keep this file data-only — no logic beyond the calls
@@ -32,12 +37,14 @@ ns.GuideStore:RegisterSpec("DEMONHUNTER", 577, {
         { text = "Vengeful Retreat into Fel Rush (Momentum builds) to open with mobility and Fury" },
         { spellID = 198013, text = "Eye Beam early to line up with cooldowns and start building Momentum-style buffs" },
         { text = "Metamorphosis once Fury and cooldowns are ready for the main burst window" },
+        { text = "Opener Notes: Havoc splits along the Aldrachi Reaver and Fel-Scarred hero trees — both keep this opener shape, some builds also weave a pre-Meta Immolation Aura in right before the cooldown window" },
     }},
     { title = "Single Target", steps = {
         { text = "Demon's Bite / Fel Rush to build Fury" },
         { text = "Blade Dance / Death Sweep on cooldown for cleave-capable damage and defense" },
         { spellID = 162794, text = "Chaos Strike (or Annihilate in Metamorphosis) to spend Fury on your hardest-hitting attack" },
         { spellID = 198013, text = "Eye Beam on cooldown, ideally lined up with other cooldowns" },
+        { text = "Essence Break (talent) between Eye Beam casts to debuff the target for extra Chaos Strike/Annihilation damage" },
         { text = "Don't cap Fury — spend before it overflows" },
     }},
     { title = "AoE", steps = {
@@ -52,6 +59,7 @@ ns.GuideStore:RegisterSpec("DEMONHUNTER", 577, {
     { text = "Metamorphosis — major burst cooldown with extra mobility, use aligned with Eye Beam and raid cooldowns" },
     { spellID = 198013, text = "Eye Beam — strong AoE/cleave burst, use on cooldown and stack with Metamorphosis when possible" },
     { text = "The Hunt (talent) — gap closer with burst damage, use to open a fight or reposition into a pack" },
+    { text = "Essence Break (talent) — debuffs the target for bonus Chaos Strike/Annihilation damage, use between Eye Beam casts" },
     { spellID = 196555, text = "Blur — defensive, reduces damage taken and helps with kiting" },
     { text = "Netherwalk — brief immunity/evasion, use to dodge an unavoidable burst hit" },
   },
@@ -72,6 +80,11 @@ ns.GuideStore:RegisterSpec("DEMONHUNTER", 577, {
     { slot = "Trinket", text = "A passive Agility stat-stick trinket to keep pressure up between cooldowns" },
     { slot = "Weapon", text = "Warglaives (fast one-handers) fit Havoc's dual-wield Fury generation — take the pair with the highest weapon damage" },
     { slot = "Off-hand", text = "Match your off-hand glaive's secondary stats to your main-hand's Critical Strike lean" },
+  },
+  mplusLoadout = {
+    string = "CEkAAAAAAAAAAAAAAAAAAAAAAYAzMzmxMzMmZmMmZAAAAAAAzyDMmtZYmxyMzYZm5BmZWmZWGjBWmFzYY200wMjhNAAAAAAAAmZwAAAAwA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Don't let Fury sit capped — that's wasted generation from Demon's Bite/Fel Rush.",
@@ -105,6 +118,7 @@ ns.GuideStore:RegisterSpec("DEMONHUNTER", 581, {
         { text = "Immolation Aura on cooldown for passive AoE damage and Pain generation" },
         { text = "Fel Devastation for burst damage and healing when available" },
         { text = "Sigil of Flame to debuff the target and generate extra Pain" },
+        { text = "Opener Notes: Vengeance splits along the Aldrachi Reaver and Annihilator hero trees — both keep this Shear/Fracture-into-Soul-Cleave loop, Sigil of Flame or Sigil of Spite make a good precombat opener depending on your build" },
     }},
     { title = "AoE", steps = {
         { text = "Immolation Aura on cooldown, it hits everything nearby passively" },
@@ -144,6 +158,11 @@ ns.GuideStore:RegisterSpec("DEMONHUNTER", 581, {
     { slot = "Trinket", text = "A second trinket that adds Stamina or a passive mitigation effect so Soul Cleave healing isn't your only cushion" },
     { slot = "Weapon", text = "Warglaives fit Vengeance's dual-wield Pain generation — take the pair with the highest weapon damage" },
     { slot = "Waist", text = "An easy slot to fill in an extra gem toward whichever secondary — Versatility or Mastery — your build is short on" },
+  },
+  mplusLoadout = {
+    string = "CUkAAAAAAAAAAAAAAAAAAAAAAAAYMzMjZmZkZmZY2MzMjBjZGzYmZGDzYmx2YmtxAAAAAAAABMzM2AAAAwgxMzMzSbzMzAgBAAAgB",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
   },
   tips = {
     "Use Demon Spikes proactively before damage lands — its charges regenerate, so don't hoard them.",
