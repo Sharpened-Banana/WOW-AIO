@@ -148,12 +148,6 @@ local function AddButton(layout, name, buttonText, onClick, tooltip)
     pcall(layout.AddInitializer, layout, CreateSettingsButtonInitializer(name, buttonText, onClick, tooltip))
 end
 
--- Builds get/set closures for a boolean living at db[...path].
-local function Accessors(getTable, key)
-    return function() return getTable()[key] end,
-           function(value) getTable()[key] = value end
-end
-
 --------------------------------------------------------------------------------
 -- Panel
 --------------------------------------------------------------------------------
@@ -167,136 +161,34 @@ local function BuildPanel()
     local category, layout = Settings.RegisterVerticalLayoutCategory("SpecSage")
     if not category then return nil end
 
-    local db = function() return ns.db end
-    local statsTable = function() return ns.db.stats end
-    local combatTable = function() return ns.db.combat end
-    local procsTable = function() return ns.db.procs end
-    local showTable = function() return ns.StatsShown() end
+    -- Driven entirely by ns.OPTION_GROUPS (Core/Config.lua), which the
+    -- Codex's own Options tab renders from as well - the two surfaces show
+    -- the same settings because they read the same table, not because two
+    -- lists were kept in step by hand.
+    for _, group in ipairs(ns.OPTION_GROUPS) do
+        AddHeader(layout, group.title)
 
-    ------------------------------------------------------------------ Display
-    AddHeader(layout, "Display")
+        for _, entry in ipairs(group.options) do
+            if entry.kind == "check" then
+                AddCheckbox(category, entry.variable, entry.label, entry.tooltip,
+                    function() return ns.GetOptionValue(entry) end,
+                    function(value) ns.SetOptionValue(entry, value) end)
 
-    do
-        local get, set = Accessors(db, "locked")
-        AddCheckbox(category, "SpecSage_locked", "Lock overlay",
-            "Stops the overlay from being dragged and lets clicks pass through it.", get, set)
-    end
+            elseif entry.kind == "range" then
+                AddSlider(category, entry.variable, entry.label, entry.tooltip,
+                    entry.min, entry.max, entry.step, entry.formatter,
+                    function() return ns.GetOptionValue(entry) end,
+                    function(value) ns.SetOptionValue(entry, value) end)
 
-    do
-        local get, set = Accessors(db, "hideOutOfCombat")
-        AddCheckbox(category, "SpecSage_hideOOC", "Hide out of combat",
-            "Only show the overlay while you are in combat.", get, set)
-    end
-
-    do
-        local get, set = Accessors(db, "showHeaders")
-        AddCheckbox(category, "SpecSage_headers", "Show section headers",
-            "Show the Stats / Combat / Procs labels.", get, set)
-    end
-
-    do
-        local get, set = Accessors(db, "tooltips")
-        AddCheckbox(category, "SpecSage_tooltips", "Show tooltips on hover",
-            "Explain each stat and show the rating behind it when you hover a row. "
-            .. "Clicks still pass through to whatever is underneath.", get, set)
-    end
-
-    do
-        local get, set = Accessors(db, "scale")
-        AddSlider(category, "SpecSage_scale", "Scale", "Overall size of the overlay.",
-            0.5, 2.0, 0.05, function(value) return format("%.2f", value) end, get, set)
-    end
-
-    do
-        local get, set = Accessors(db, "opacity")
-        AddSlider(category, "SpecSage_opacity", "Background opacity", "Transparency of the overlay background.",
-            0, 1, 0.05, function(value) return format("%d%%", value * 100) end, get, set)
-    end
-
-    do
-        local get, set = Accessors(db, "width")
-        AddSlider(category, "SpecSage_width", "Width", "Overlay width in pixels.",
-            120, 320, 10, function(value) return format("%d", value) end, get, set)
-    end
-
-    do
-        local get, set = Accessors(db, "fontSize")
-        AddSlider(category, "SpecSage_fontSize", "Font size", "Text size used for rows.",
-            8, 20, 1, function(value) return format("%d", value) end, get, set)
-    end
-
-    AddButton(layout, "Position", "Reset position", function()
-        ns.UI:ResetPosition()
-    end, "Move the overlay back to its default spot.")
-
-    ------------------------------------------------------------------- Stats
-    AddHeader(layout, "Stats (this character)")
-
-    do
-        local get, set = Accessors(statsTable, "enabled")
-        AddCheckbox(category, "SpecSage_stats", "Show stats section", nil, get, set)
-    end
-
-    for _, entry in ipairs(ns.STAT_LIST) do
-        local get, set = Accessors(showTable, entry.key)
-        AddCheckbox(category, "SpecSage_stat_" .. entry.key, entry.label,
-            "Shown on this character only.", get, set)
-    end
-
-    ------------------------------------------------------------------ Combat
-    AddHeader(layout, "Combat")
-
-    local combatOptions = {
-        { key = "enabled", label = "Show combat section" },
-        { key = "showDPS", label = "Damage per second" },
-        { key = "showHPS", label = "Healing per second" },
-        { key = "showDamageTaken", label = "Damage taken per second" },
-        { key = "showCombatTime", label = "Fight duration" },
-        { key = "showSessionTotals", label = "Session totals" },
-        { key = "includePets", label = "Count pet damage" },
-    }
-
-    for _, entry in ipairs(combatOptions) do
-        local get, set = Accessors(combatTable, entry.key)
-        AddCheckbox(category, "SpecSage_combat_" .. entry.key, entry.label, nil, get, set)
-    end
-
-    AddButton(layout, "Meters", "Reset session", function()
-        ns:GetModule("Combat"):ResetSession()
-    end, "Clear accumulated damage, healing and time.")
-
-    ------------------------------------------------------------------- Procs
-    AddHeader(layout, "Procs")
-
-    do
-        local get, set = Accessors(procsTable, "enabled")
-        AddCheckbox(category, "SpecSage_procs", "Show procs section", nil, get, set)
-    end
-
-    do
-        local get, set = Accessors(procsTable, "autoDetect")
-        AddCheckbox(category, "SpecSage_procs_auto", "Auto-detect procs",
-            "Automatically show short buffs on you, such as trinket and talent procs.", get, set)
-    end
-
-    do
-        local get, set = Accessors(procsTable, "showInactiveWatched")
-        AddCheckbox(category, "SpecSage_procs_inactive", "Show watched spells when ready",
-            "Keep watched spells on the list even when they are not active.", get, set)
-    end
-
-    do
-        local get, set = Accessors(procsTable, "maxAuto")
-        AddSlider(category, "SpecSage_procs_maxAuto", "Max auto-detected procs",
-            "How many auto-detected procs to show at once.",
-            1, 10, 1, function(value) return format("%d", value) end, get, set)
-    end
-
-    do
-        local get, set = Accessors(procsTable, "maxDuration")
-        AddSlider(category, "SpecSage_procs_maxDuration", "Max proc duration",
-            "Ignore buffs longer than this, so flasks and food do not show up.",
-            5, 120, 5, function(value) return format("%ds", value) end, get, set)
+            elseif entry.kind == "action" then
+                local action = ns.OPTION_ACTIONS[entry.action]
+                if action then
+                    AddButton(layout, entry.label, entry.buttonText, function()
+                        pcall(action)
+                    end, entry.tooltip)
+                end
+            end
+        end
     end
 
     Settings.RegisterAddOnCategory(category)

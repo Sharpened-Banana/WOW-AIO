@@ -18,7 +18,7 @@ local HELP = {
     "  |cffffff00/sage overlay|r - toggle the stat overlay",
     "  |cffffff00/sage guide <class> [spec]|r - open the Codex at a class/spec (fuzzy match)",
     "  |cffffff00/sage lock|r / |cffffff00unlock|r - lock or unlock overlay dragging",
-    "  |cffffff00/sage config|r - open the options panel",
+    "  |cffffff00/sage config|r - open the Options tab (add |cffffff00blizzard|r for the Settings panel)",
     "  |cffffff00/sage scale <0.5-2>|r - set overlay scale",
     "  |cffffff00/sage width <120-320>|r - set overlay width",
     "  |cffffff00/sage font <8-20>|r - set font size",
@@ -195,8 +195,27 @@ handlers.unlock = function()
     ns.Print("overlay unlocked - drag it to move.")
 end
 
-handlers.config = function()
-    ns.OpenOptions()
+-- Opens the Codex's own Options tab rather than Blizzard's Settings panel.
+-- The in-addon tab is the more dependable of the two surfaces (it is built
+-- from primitives this addon controls, not from Settings widget templates
+-- that move between game versions), and both render the same
+-- ns.OPTION_GROUPS schema, so nothing is lost by preferring it. The Settings
+-- panel is still registered and reachable from the game's own options list,
+-- and "/sage config blizzard" still opens it directly.
+handlers.config = function(argument)
+    argument = (argument or ""):lower()
+
+    if argument == "blizzard" or argument == "settings" then
+        ns.OpenOptions()
+        return
+    end
+
+    if ns.Codex and ns.Codex.Open then
+        ns.Codex:Open()
+        ns.Codex:SelectTab("Options")
+    else
+        ns.OpenOptions()
+    end
 end
 
 handlers.scale = function(argument)

@@ -64,6 +64,11 @@ local function NewRegion(kind)
 
     function region:SetPoint(...) table.insert(self.points, { ... }) end
     function region:ClearAllPoints() self.points = {} end
+    -- Anchors all four corners to `relativeTo`; recorded as a point so
+    -- ClearAllPoints still clears it, matching the real API.
+    function region:SetAllPoints(relativeTo)
+        table.insert(self.points, { "ALL", relativeTo })
+    end
     function region:GetPoint() return "CENTER", nil, "CENTER", 0, 0 end
     function region:SetSize(w, h) self.width, self.height = w, h end
     function region:SetWidth(w) self.width = w end
@@ -289,6 +294,7 @@ function CreateFrame(frameType, name, parent, template)
         function frame:SetHitRectInsets() end
         function frame:Enable() self.enabled = true end
         function frame:Disable() self.enabled = false end
+        function frame:SetEnabled(value) self.enabled = value and true or false end
         function frame:IsEnabled() return self.enabled ~= false end
 
         -- A label FontString exists only when a text-capable template

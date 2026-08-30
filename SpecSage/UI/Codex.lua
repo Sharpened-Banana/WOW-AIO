@@ -63,20 +63,35 @@ local GetSpecializationInfoByID = (C_SpecializationInfo and C_SpecializationInfo
 -- last tab past the frame's right edge. +84 (900->984) covers the tab
 -- strip's real requirement with a small margin; CONTENT_WIDTH grows by the
 -- same 84px to keep its own invariant (frame width minus 310px of chrome).
-local FRAME_WIDTH, FRAME_HEIGHT = 984, 520
+-- Widened again (984 -> 1070) for the 9th tab, Options. The tab strip's own
+-- geometry is what forces this: it spans from the spec rail's right edge
+-- (x=282) to 8px inside the frame's right edge, i.e. FRAME_WIDTH - 290, and
+-- 9 tabs at the existing 84/86 need 8*86 + 84 = 772px. 1070 leaves 780px, a
+-- small margin over that, with tab width/stride untouched so "Consumables"
+-- still fits its button. CONTENT_WIDTH grows by the same 86 to keep its own
+-- invariant (frame width minus 310px of chrome).
+local FRAME_WIDTH, FRAME_HEIGHT = 1070, 520
 local CLASS_RAIL_WIDTH = 120
 local SPEC_RAIL_WIDTH = 150
 local TITLE_HEIGHT = 26
 local TAB_HEIGHT = 24
 local TAB_BUTTON_WIDTH = 84
 local TAB_BUTTON_STRIDE = 86
-local CONTENT_WIDTH = 674
+local CONTENT_WIDTH = 760
 local PADDING = 10
 local LINE_GAP = 3
 local PARAGRAPH_GAP = 6
 local GROUP_GAP = 10
 
-local TABS = { "Overview", "Stats", "Rotation", "Cooldowns", "Consumables", "BiS", "Loadouts", "Notes" }
+-- Options is last, and is the one tab whose content ignores the class/spec
+-- rails entirely: settings are global (or per-character), not per-spec.
+local TABS = { "Overview", "Stats", "Rotation", "Cooldowns", "Consumables", "BiS", "Loadouts", "Notes", "Options" }
+
+-- Options tab row metrics.
+local OPTION_ROW_HEIGHT = 22
+local OPTION_CHECK_SIZE = 20
+local OPTION_STEP_BUTTON_WIDTH = 24
+local OPTION_VALUE_WIDTH = 58
 
 local CLASS_ICON_TEXTURE = "Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES"
 local DEFAULT_CLASS_COLOR = { r = 0.8, g = 0.8, b = 0.8 }
@@ -1193,13 +1208,260 @@ function Codex:RenderNotes(specID)
 end
 
 --------------------------------------------------------------------------------
+-- Options tab
+--
+-- Renders ns.OPTION_GROUPS (Core/Config.lua) - the same schema Core/
+-- Options.lua feeds to Blizzard's Settings panel, so the two surfaces cannot
+-- show different settings.
+--
+-- Every widget here is built from primitives this file already relies on
+-- (a bare Button plus textures, UIPanelButtonTemplate, FontStrings) rather
+-- than from checkbox/slider templates. Blizzard's widget templates move
+-- between versions - MinimalSliderWithSteppersMixin going missing is what
+-- broke the Settings panel in the first place - and this tab exists partly
+-- as the fallback for when that panel will not build, so it must not depend
+-- on the same shifting surface. A "range" option is therefore a pair of
+-- -/+ steppers rather than a slider, which also lets a player land on an
+-- exact value instead of dragging for it.
+--------------------------------------------------------------------------------
+
+local CHECK_BACKDROP_TEXTURE = "Interface\\Buttons\\UI-CheckBox-Up"
+local CHECK_MARK_TEXTURE = "Interface\\Buttons\\UI-CheckBox-Check"
+local CHECK_HIGHLIGHT_TEXTURE = "Interface\\Buttons\\UI-CheckBox-Highlight"
+
+-- Shared hover tooltip for an option row; `entry.tooltip` is the same text
+-- the Settings panel shows for that option.
+local function SetOptionTooltip(frame, entry)
+    frame.optionLabel = entry.label
+    frame.optionTooltip = entry.tooltip
+end
+
+local function OnOptionRowEnter(self)
+    if not self.optionTooltip and not self.optionLabel then return end
+    pcall(function()
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:AddLine(self.optionLabel or "")
+        if self.optionTooltip then
+            GameTooltip:AddLine(self.optionTooltip, 0.8, 0.8, 0.8, true)
+        end
+        GameTooltip:Show()
+    end)
+end
+
+local function OnOptionRowLeave()
+    pcall(function() GameTooltip:Hide() end)
+end
+
+local function AcquireOptionCheckRow(pool, index, parent)
+    local row = pool[index]
+    if not row then
+        row = CreateFrame("Frame", nil, parent)
+        row:EnableMouse(true)
+        row:SetScript("OnEnter", OnOptionRowEnter)
+        row:SetScript("OnLeave", OnOptionRowLeave)
+
+        -- Deliberately untemplated: this button never calls SetText (its
+        -- caption is the separate FontString below), so it needs no
+        -- text-capable template, and the check itself is drawn with the
+        -- long-standing UI-CheckBox textures.
+        local box = CreateFrame("Button", nil, row)
+        box:SetSize(OPTION_CHECK_SIZE, OPTION_CHECK_SIZE)
+        box:SetPoint("LEFT", row, "LEFT", 0, 0)
+
+        local bg = box:CreateTexture(nil, "ARTWORK")
+        bg:SetAllPoints(box)
+        bg:SetTexture(CHECK_BACKDROP_TEXTURE)
+
+        local mark = box:CreateTexture(nil, "OVERLAY")
+        mark:SetAllPoints(box)
+        mark:SetTexture(CHECK_MARK_TEXTURE)
+        mark:Hide()
+
+        pcall(box.SetHighlightTexture, box, CHECK_HIGHLIGHT_TEXTURE)
+
+        box:SetScript("OnEnter", function() OnOptionRowEnter(row) end)
+        box:SetScript("OnLeave", OnOptionRowLeave)
+
+        row.box, row.mark = box, mark
+
+        row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        row.label:SetJustifyH("LEFT")
+        row.label:SetPoint("LEFT", box, "RIGHT", 6, 0)
+
+        pool[index] = row
+    end
+    return row
+end
+
+local function AcquireOptionRangeRow(pool, index, parent)
+    local row = pool[index]
+    if not row then
+        row = CreateFrame("Frame", nil, parent)
+        row:EnableMouse(true)
+        row:SetScript("OnEnter", OnOptionRowEnter)
+        row:SetScript("OnLeave", OnOptionRowLeave)
+
+        row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        row.label:SetJustifyH("LEFT")
+        row.label:SetPoint("LEFT", row, "LEFT", 0, 0)
+
+        row.minusButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+        row.minusButton:SetSize(OPTION_STEP_BUTTON_WIDTH, 18)
+        row.minusButton:SetText("-")
+
+        row.value = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        row.value:SetJustifyH("CENTER")
+
+        row.plusButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+        row.plusButton:SetSize(OPTION_STEP_BUTTON_WIDTH, 18)
+        row.plusButton:SetText("+")
+
+        -- Anchored right-to-left so the trio keeps its shape at any row
+        -- width: [+] sits at the right edge, the value left of it, [-] left
+        -- of that.
+        row.plusButton:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+        row.value:SetPoint("RIGHT", row.plusButton, "LEFT", -4, 0)
+        row.value:SetWidth(OPTION_VALUE_WIDTH)
+        row.minusButton:SetPoint("RIGHT", row.value, "LEFT", -4, 0)
+
+        pool[index] = row
+    end
+    return row
+end
+
+local function AcquireOptionActionRow(pool, index, parent)
+    local row = pool[index]
+    if not row then
+        row = CreateFrame("Frame", nil, parent)
+        row:EnableMouse(true)
+        row:SetScript("OnEnter", OnOptionRowEnter)
+        row:SetScript("OnLeave", OnOptionRowLeave)
+
+        row.button = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+        row.button:SetSize(140, 20)
+        row.button:SetPoint("LEFT", row, "LEFT", 0, 0)
+
+        pool[index] = row
+    end
+    return row
+end
+
+function Codex:EnsureOptionWidgets()
+    if self.optionPools then return end
+    self.optionPools = { check = {}, range = {}, action = {} }
+end
+
+-- Applies a changed option and refreshes both the overlay (so the change is
+-- visible immediately) and this tab (so the widget reflects the stored
+-- value, including a clamp that refused to move).
+function Codex:OnOptionChanged()
+    ns.RefreshAll()
+    if self.activeTab == "Options" then self:RenderActiveTab() end
+end
+
+function Codex:ToggleOption(entry)
+    ns.SetOptionValue(entry, not ns.GetOptionValue(entry))
+    self:OnOptionChanged()
+end
+
+function Codex:StepOption(entry, direction)
+    local current = tonumber(ns.GetOptionValue(entry)) or entry.min
+    ns.SetOptionValue(entry, ns.ClampOptionValue(entry, current + direction * entry.step))
+    self:OnOptionChanged()
+end
+
+function Codex:RenderOptions()
+    self:EnsureOptionWidgets()
+
+    local parent, width = self.scrollChild, CONTENT_WIDTH
+    local pool = self.pools.options
+    local pools = self.optionPools
+    local y = -PADDING
+    local textIndex = 0
+    local used = { check = 0, range = 0, action = 0 }
+
+    for groupIndex, group in ipairs(ns.OPTION_GROUPS) do
+        if groupIndex > 1 then y = y - GROUP_GAP end
+
+        textIndex = textIndex + 1
+        y = PlaceLine(pool, textIndex, parent, y, width, group.title, { color = HEADER_COLOR })
+
+        for _, entry in ipairs(group.options) do
+            if entry.kind == "check" then
+                used.check = used.check + 1
+                local row = AcquireOptionCheckRow(pools.check, used.check, parent)
+                row:ClearAllPoints()
+                row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
+                row:SetSize(width, OPTION_ROW_HEIGHT)
+                row.label:SetText(entry.label or "")
+                row.label:SetTextColor(0.85, 0.85, 0.85)
+                row.mark:SetShown(ns.GetOptionValue(entry) and true or false)
+                SetOptionTooltip(row, entry)
+                row.box:SetScript("OnClick", function() self:ToggleOption(entry) end)
+                row:Show()
+                y = y - OPTION_ROW_HEIGHT
+
+            elseif entry.kind == "range" then
+                used.range = used.range + 1
+                local row = AcquireOptionRangeRow(pools.range, used.range, parent)
+                row:ClearAllPoints()
+                row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
+                row:SetSize(width, OPTION_ROW_HEIGHT)
+                row.label:SetText(entry.label or "")
+                row.label:SetTextColor(0.85, 0.85, 0.85)
+
+                local value = tonumber(ns.GetOptionValue(entry)) or entry.min
+                local formatter = entry.formatter
+                row.value:SetText(formatter and formatter(value) or tostring(value))
+                row.value:SetTextColor(1, 1, 1)
+
+                -- A stepper at the end of its range is disabled rather than
+                -- silently doing nothing when clicked.
+                row.minusButton:SetEnabled(value > entry.min)
+                row.plusButton:SetEnabled(value < entry.max)
+                row.minusButton:SetScript("OnClick", function() self:StepOption(entry, -1) end)
+                row.plusButton:SetScript("OnClick", function() self:StepOption(entry, 1) end)
+
+                SetOptionTooltip(row, entry)
+                row:Show()
+                y = y - OPTION_ROW_HEIGHT
+
+            elseif entry.kind == "action" then
+                local action = ns.OPTION_ACTIONS[entry.action]
+                if action then
+                    used.action = used.action + 1
+                    local row = AcquireOptionActionRow(pools.action, used.action, parent)
+                    row:ClearAllPoints()
+                    row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
+                    row:SetSize(width, OPTION_ROW_HEIGHT)
+                    row.button:SetText(entry.buttonText or entry.label or "")
+                    row.button:SetScript("OnClick", function()
+                        pcall(action)
+                        self:OnOptionChanged()
+                    end)
+                    SetOptionTooltip(row, entry)
+                    row:Show()
+                    y = y - OPTION_ROW_HEIGHT
+                end
+            end
+        end
+    end
+
+    HidePoolFrom(pools.check, used.check + 1)
+    HidePoolFrom(pools.range, used.range + 1)
+    HidePoolFrom(pools.action, used.action + 1)
+
+    self:FinishPool(pool, textIndex, y)
+end
+
+--------------------------------------------------------------------------------
 -- Tab dispatch
 --------------------------------------------------------------------------------
 
 -- Every simple-text pool, plus the Loadouts row pool and the Notes box, are
 -- hidden before rendering the newly active tab; only one tab's widgets are
 -- ever visible at a time, all sharing the same scroll child.
-local POOL_BY_TAB = { Overview = "overview", Stats = "stats", Rotation = "rotation", Cooldowns = "cooldowns", Consumables = "consumables", BiS = "bis" }
+local POOL_BY_TAB = { Overview = "overview", Stats = "stats", Rotation = "rotation", Cooldowns = "cooldowns", Consumables = "consumables", BiS = "bis", Options = "options" }
 
 function Codex:HideOtherTabWidgets(activeTab)
     for tabName, poolName in pairs(POOL_BY_TAB) do
@@ -1231,6 +1493,12 @@ function Codex:HideOtherTabWidgets(activeTab)
         end
         if self.loadoutRowPool then HidePoolFrom(self.loadoutRowPool, 1) end
         if self.suggestedLoadoutRow then self.suggestedLoadoutRow:Hide() end
+    end
+
+    if activeTab ~= "Options" and self.optionPools then
+        HidePoolFrom(self.optionPools.check, 1)
+        HidePoolFrom(self.optionPools.range, 1)
+        HidePoolFrom(self.optionPools.action, 1)
     end
 
     if activeTab ~= "Notes" then
@@ -1271,6 +1539,8 @@ function Codex:RenderActiveTab()
         self:RenderLoadouts(specID, guide)
     elseif tab == "Notes" then
         self:RenderNotes(specID)
+    elseif tab == "Options" then
+        self:RenderOptions()
     end
 
     self:UpdateTabHighlight()
@@ -1528,7 +1798,7 @@ function Codex:BuildContentArea()
 
     self.scrollFrame = scrollFrame
     self.scrollChild = scrollChild
-    self.pools = { overview = {}, stats = {}, rotation = {}, cooldowns = {}, consumables = {}, bis = {} }
+    self.pools = { overview = {}, stats = {}, rotation = {}, cooldowns = {}, consumables = {}, bis = {}, options = {} }
 end
 
 function Codex:BuildFrame()

@@ -23,6 +23,173 @@ ns.STAT_LIST = {
     { key = "block",   label = "Block" },
 }
 
+--------------------------------------------------------------------------------
+-- Option schema
+--
+-- One description of every setting, consumed by BOTH surfaces that present
+-- them: Core/Options.lua (Blizzard's Settings panel) and UI/Codex.lua's
+-- Options tab. It lives here, in the file that already owns DEFAULTS and
+-- STAT_LIST, so adding an option is a single edit and the two surfaces
+-- cannot drift apart.
+--
+-- Entry kinds:
+--   check  - boolean toggle
+--   range  - number with min/max/step (a slider in the Settings panel, -/+
+--            steppers in the Codex, which has no slider widget of its own)
+--   action - a button that runs a named side effect
+--------------------------------------------------------------------------------
+
+-- Where an option's value lives. Resolved at call time, never at load time:
+-- ns.db and ns.chardb do not exist until InitConfig has run.
+ns.OPTION_SCOPES = {
+    db = function() return ns.db end,
+    stats = function() return ns.db.stats end,
+    combat = function() return ns.db.combat end,
+    procs = function() return ns.db.procs end,
+    statsShow = function() return ns.StatsShown() end,
+}
+
+-- Named side effects, kept out of the schema itself so it stays plain data.
+ns.OPTION_ACTIONS = {
+    resetPosition = function() ns.UI:ResetPosition() end,
+    resetSession = function() ns:GetModule("Combat"):ResetSession() end,
+}
+
+function ns.GetOptionValue(entry)
+    local scope = ns.OPTION_SCOPES[entry.scope]
+    local target = scope and scope()
+    if not target then return nil end
+    return target[entry.key]
+end
+
+function ns.SetOptionValue(entry, value)
+    local scope = ns.OPTION_SCOPES[entry.scope]
+    local target = scope and scope()
+    if not target then return false end
+    target[entry.key] = value
+    return true
+end
+
+-- Snaps `value` onto the entry's step grid and clamps it to range. Stepping
+-- by a fractional step (opacity's 0.05) accumulates float error otherwise,
+-- so the value is rebuilt from a whole number of steps above min rather than
+-- repeatedly added to.
+function ns.ClampOptionValue(entry, value)
+    value = tonumber(value) or entry.min
+    local steps = math.floor((value - entry.min) / entry.step + 0.5)
+    value = entry.min + steps * entry.step
+    if value < entry.min then return entry.min end
+    if value > entry.max then return entry.max end
+    return value
+end
+
+-- %d is handed a rounded value rather than a raw float. Scaling a stepped
+-- fraction reintroduces float error (0.05 * 100 is 5.000000000000001, and
+-- 0.35 * 100 is 34.99999999999999), which %d truncates - so an opacity of
+-- 35% would render as "34%". Rounding first also keeps these safe on a Lua
+-- 5.3+ interpreter, where %d on a non-integer float is an error rather than
+-- a silent truncation.
+local function Round(value) return math.floor((value or 0) + 0.5) end
+
+local function Percent(value) return format("%d%%", Round((value or 0) * 100)) end
+local function Two(value) return format("%.2f", value or 0) end
+local function Whole(value) return format("%d", Round(value)) end
+local function Seconds(value) return format("%ds", Round(value)) end
+
+local function BuildOptionGroups()
+    local display = {
+        { kind = "check", scope = "db", key = "locked",
+          variable = "SpecSage_locked", label = "Lock overlay",
+          tooltip = "Stops the overlay from being dragged and lets clicks pass through it." },
+        { kind = "check", scope = "db", key = "hideOutOfCombat",
+          variable = "SpecSage_hideOOC", label = "Hide out of combat",
+          tooltip = "Only show the overlay while you are in combat." },
+        { kind = "check", scope = "db", key = "showHeaders",
+          variable = "SpecSage_headers", label = "Show section headers",
+          tooltip = "Show the Stats / Combat / Procs labels." },
+        { kind = "check", scope = "db", key = "tooltips",
+          variable = "SpecSage_tooltips", label = "Show tooltips on hover",
+          tooltip = "Explain each stat and show the rating behind it when you hover a row. "
+              .. "Clicks still pass through to whatever is underneath." },
+        { kind = "range", scope = "db", key = "scale",
+          variable = "SpecSage_scale", label = "Scale", tooltip = "Overall size of the overlay.",
+          min = 0.5, max = 2.0, step = 0.05, formatter = Two },
+        { kind = "range", scope = "db", key = "opacity",
+          variable = "SpecSage_opacity", label = "Background opacity",
+          tooltip = "Transparency of the overlay background.",
+          min = 0, max = 1, step = 0.05, formatter = Percent },
+        { kind = "range", scope = "db", key = "width",
+          variable = "SpecSage_width", label = "Width", tooltip = "Overlay width in pixels.",
+          min = 120, max = 320, step = 10, formatter = Whole },
+        { kind = "range", scope = "db", key = "fontSize",
+          variable = "SpecSage_fontSize", label = "Font size", tooltip = "Text size used for rows.",
+          min = 8, max = 20, step = 1, formatter = Whole },
+        { kind = "action", action = "resetPosition", label = "Position",
+          buttonText = "Reset position", tooltip = "Move the overlay back to its default spot." },
+    }
+
+    local stats = {
+        { kind = "check", scope = "stats", key = "enabled",
+          variable = "SpecSage_stats", label = "Show stats section" },
+    }
+    -- Generated from STAT_LIST so a stat added there reaches both surfaces
+    -- without a second edit.
+    for _, entry in ipairs(ns.STAT_LIST) do
+        stats[#stats + 1] = {
+            kind = "check", scope = "statsShow", key = entry.key,
+            variable = "SpecSage_stat_" .. entry.key, label = entry.label,
+            tooltip = "Shown on this character only.",
+        }
+    end
+
+    local combatOptions = {
+        { key = "enabled", label = "Show combat section" },
+        { key = "showDPS", label = "Damage per second" },
+        { key = "showHPS", label = "Healing per second" },
+        { key = "showDamageTaken", label = "Damage taken per second" },
+        { key = "showCombatTime", label = "Fight duration" },
+        { key = "showSessionTotals", label = "Session totals" },
+        { key = "includePets", label = "Count pet damage" },
+    }
+    local combat = {}
+    for _, entry in ipairs(combatOptions) do
+        combat[#combat + 1] = {
+            kind = "check", scope = "combat", key = entry.key,
+            variable = "SpecSage_combat_" .. entry.key, label = entry.label,
+        }
+    end
+    combat[#combat + 1] = { kind = "action", action = "resetSession", label = "Meters",
+        buttonText = "Reset session", tooltip = "Clear accumulated damage, healing and time." }
+
+    local procs = {
+        { kind = "check", scope = "procs", key = "enabled",
+          variable = "SpecSage_procs", label = "Show procs section" },
+        { kind = "check", scope = "procs", key = "autoDetect",
+          variable = "SpecSage_procs_auto", label = "Auto-detect procs",
+          tooltip = "Automatically show short buffs on you, such as trinket and talent procs." },
+        { kind = "check", scope = "procs", key = "showInactiveWatched",
+          variable = "SpecSage_procs_inactive", label = "Show watched spells when ready",
+          tooltip = "Keep watched spells on the list even when they are not active." },
+        { kind = "range", scope = "procs", key = "maxAuto",
+          variable = "SpecSage_procs_maxAuto", label = "Max auto-detected procs",
+          tooltip = "How many auto-detected procs to show at once.",
+          min = 1, max = 10, step = 1, formatter = Whole },
+        { kind = "range", scope = "procs", key = "maxDuration",
+          variable = "SpecSage_procs_maxDuration", label = "Max proc duration",
+          tooltip = "Ignore buffs longer than this, so flasks and food do not show up.",
+          min = 5, max = 120, step = 5, formatter = Seconds },
+    }
+
+    return {
+        { title = "Display", options = display },
+        { title = "Stats (this character)", options = stats },
+        { title = "Combat", options = combat },
+        { title = "Procs", options = procs },
+    }
+end
+
+ns.OPTION_GROUPS = BuildOptionGroups()
+
 local DEFAULTS = {
     hidden = false,
     locked = false,

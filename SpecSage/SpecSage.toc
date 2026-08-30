@@ -35,4 +35,11 @@ Modules\BiS.lua
 Modules\Notes.lua
 Core\Options.lua
 Core\Commands.lua
-Bindings.xml
+
+# Bindings.xml is deliberately NOT listed here. The client loads it
+# automatically from the addon root, matching it by name - which is why it
+# must be called exactly that. Listing it sends it through the general UI XML
+# loader as well, and that loader has no <Binding> element in its schema, so
+# every attribute logs a warning ("Unrecognized XML: Binding", "Unrecognized
+# XML attribute: name/header") while the real, automatic load still supplies
+# the keybinding.

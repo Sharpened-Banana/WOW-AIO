@@ -1641,22 +1641,31 @@ end
 section("Codex: BiS tab")
 --------------------------------------------------------------------------------
 
-check(Codex.frame:GetWidth() == 984, "the widened Codex frame is 984px wide, to fit all 8 tabs without clipping",
-    Codex.frame:GetWidth())
-check(Codex.scrollChild:GetWidth() == 674, "CONTENT_WIDTH grew by the same 84px as FRAME_WIDTH",
-    Codex.scrollChild:GetWidth())
+-- CONTENT_WIDTH's documented invariant: the scroll area is the frame minus
+-- 310px of chrome (both rails, their gaps, and the scrollbar). Asserted as a
+-- relationship rather than a second magic number, so widening the frame for
+-- another tab cannot leave the content area behind.
+check(Codex.scrollChild:GetWidth() == Codex.frame:GetWidth() - 310,
+    "CONTENT_WIDTH stays FRAME_WIDTH minus 310px of chrome",
+    format("frame=%d content=%d", Codex.frame:GetWidth(), Codex.scrollChild:GetWidth()))
 
 do
     -- The bug this guards: DESIGN.md's original +60 sizing left the tab
-    -- strip 16px narrower than 8 tabs at the existing 84/86 width/stride
-    -- actually need, so the last tab (Notes) rendered past the frame's own
-    -- right edge. Assert the strip's real available width fits all 8 tabs.
-    local needed = 7 * 86 + 84
+    -- strip narrower than the tabs at the existing 84/86 width/stride
+    -- actually need, so the last tab rendered past the frame's own right
+    -- edge. Derived from the live tab count rather than a hardcoded 8, so
+    -- adding a tab without widening the frame fails here instead of
+    -- silently clipping in the client.
+    local tabCount = 0
+    for _ in pairs(Codex.tabButtons) do tabCount = tabCount + 1 end
+
+    local needed = (tabCount - 1) * 86 + 84
     local specRailRight = 120 + 4 + 150
     local stripLeft = specRailRight + 8
     local stripRight = Codex.frame:GetWidth() - 8
     local available = stripRight - stripLeft
-    check(available >= needed, "tab strip has enough width for all 8 tabs without clipping",
+    check(available >= needed,
+        format("tab strip has enough width for all %d tabs without clipping", tabCount),
         format("available=%d needed=%d", available, needed))
 end
 
@@ -2047,6 +2056,131 @@ Codex.suggestedLoadoutRow.addButton:GetScript("OnClick")(Codex.suggestedLoadoutR
 check(#LoadoutsModule:GetForSpec(9201) == vaultCountBefore + 2,
     "clicking Add to my vault again stores a second loadout")
 mock.RunAfter()
+
+--------------------------------------------------------------------------------
+section("Codex: Options tab")
+--------------------------------------------------------------------------------
+
+Codex:SelectTab("Options")
+check(Codex.activeTab == "Options", "the Options tab can be selected")
+
+local function CountShownOptionRows(pool)
+    local shown = 0
+    for _, row in ipairs(pool or {}) do
+        if row:IsShown() then shown = shown + 1 end
+    end
+    return shown
+end
+
+do
+    -- Every schema entry must reach a widget; a group silently skipped
+    -- would leave settings reachable only through the Blizzard panel that
+    -- this tab exists to back up.
+    local expected = { check = 0, range = 0, action = 0 }
+    for _, group in ipairs(ns.OPTION_GROUPS) do
+        for _, entry in ipairs(group.options) do
+            expected[entry.kind] = (expected[entry.kind] or 0) + 1
+        end
+    end
+
+    check(CountShownOptionRows(Codex.optionPools.check) == expected.check,
+        "every check option renders a row",
+        format("shown=%d expected=%d", CountShownOptionRows(Codex.optionPools.check), expected.check))
+    check(CountShownOptionRows(Codex.optionPools.range) == expected.range,
+        "every range option renders a row",
+        format("shown=%d expected=%d", CountShownOptionRows(Codex.optionPools.range), expected.range))
+    check(CountShownOptionRows(Codex.optionPools.action) == expected.action,
+        "every action option renders a row",
+        format("shown=%d expected=%d", CountShownOptionRows(Codex.optionPools.action), expected.action))
+end
+
+do
+    -- Clicking a checkbox must write through to the same saved variable the
+    -- Settings panel writes, not to a copy.
+    local entry
+    for _, group in ipairs(ns.OPTION_GROUPS) do
+        for _, candidate in ipairs(group.options) do
+            if candidate.kind == "check" and candidate.scope == "db" and candidate.key == "locked" then
+                entry = candidate
+            end
+        end
+    end
+    check(entry ~= nil, "the Lock overlay checkbox is in the schema")
+
+    local before = ns.db.locked
+    Codex:ToggleOption(entry)
+    check(ns.db.locked ~= before, "toggling a check option flips the stored value")
+    Codex:ToggleOption(entry)
+    check(ns.db.locked == before, "toggling it back restores the original value")
+end
+
+do
+    -- Steppers move by exactly one step and refuse to leave the range.
+    local entry
+    for _, group in ipairs(ns.OPTION_GROUPS) do
+        for _, candidate in ipairs(group.options) do
+            if candidate.kind == "range" and candidate.key == "fontSize" then entry = candidate end
+        end
+    end
+    check(entry ~= nil, "the Font size range option is in the schema")
+
+    ns.db.fontSize = 12
+    Codex:StepOption(entry, 1)
+    check(ns.db.fontSize == 13, "stepping up moves one step", ns.db.fontSize)
+    Codex:StepOption(entry, -1)
+    check(ns.db.fontSize == 12, "stepping down moves one step back", ns.db.fontSize)
+
+    ns.db.fontSize = entry.max
+    Codex:StepOption(entry, 1)
+    check(ns.db.fontSize == entry.max, "stepping past the maximum clamps", ns.db.fontSize)
+
+    ns.db.fontSize = entry.min
+    Codex:StepOption(entry, -1)
+    check(ns.db.fontSize == entry.min, "stepping below the minimum clamps", ns.db.fontSize)
+    ns.db.fontSize = 12
+end
+
+do
+    -- A fractional step accumulates float error if the value is repeatedly
+    -- added to; ClampOptionValue rebuilds it from a whole number of steps.
+    local entry
+    for _, group in ipairs(ns.OPTION_GROUPS) do
+        for _, candidate in ipairs(group.options) do
+            if candidate.kind == "range" and candidate.key == "opacity" then entry = candidate end
+        end
+    end
+
+    ns.db.opacity = 0
+    for _ = 1, 10 do Codex:StepOption(entry, 1) end
+    check(math.abs(ns.db.opacity - 0.5) < 1e-9,
+        "ten 0.05 steps land exactly on 0.5 with no float drift", ns.db.opacity)
+    ns.db.opacity = 0.75
+end
+
+do
+    -- /sage config must land on the Options tab: that is the surface this
+    -- feature exists to provide, and it works even when Blizzard's Settings
+    -- panel refuses to build.
+    Codex:SelectTab("Overview")
+    Codex.frame:Hide()
+    SlashCmdList.SPECSAGE("config")
+    check(Codex.activeTab == "Options", "/sage config opens the Options tab", tostring(Codex.activeTab))
+    check(Codex.frame:IsShown(), "/sage config shows the Codex")
+end
+
+do
+    -- Leaving the tab hides its widgets, the same contract every other tab
+    -- honours; a stale checkbox drawn over the Rotation tab would be a
+    -- visible bug.
+    Codex:SelectTab("Rotation")
+    check(CountShownOptionRows(Codex.optionPools.check) == 0,
+        "leaving Options hides its check rows")
+    check(CountShownOptionRows(Codex.optionPools.range) == 0,
+        "leaving Options hides its range rows")
+    check(CountShownOptionRows(Codex.optionPools.action) == 0,
+        "leaving Options hides its action rows")
+    Codex:SelectTab("Options")
+end
 
 --------------------------------------------------------------------------------
 section("Codex: Notes tab")
