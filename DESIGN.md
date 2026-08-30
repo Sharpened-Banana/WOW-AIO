@@ -391,7 +391,7 @@ commands folded into `/sage`, options panel gains Codex settings, and
 `Stats:GetStatValue(statKey) -> displayString` for the Codex's live stat
 integration.
 
-## Live Mythic+ meta loadout (v1.4) — schema and UI shipped, pipeline unblocked
+## Live Mythic+ meta loadout (v1.4) — schema, UI, and pipeline all shipped
 
 A third suggested-loadout kind, `mplusMetaLoadout`, alongside `mplusLoadout`
 (v1.2, SimC's theorycrafted default) and `raidLoadout` (v1.3): what current
@@ -454,19 +454,30 @@ direct field read (`loadouts[].talent_loadout_code` for the entry where
 `is_active` is true), the same "just pull the string" scope
 `mplusLoadout`/`raidLoadout` already had.
 
-**What the pipeline still needs to do** (not yet built - the schema/UI/tests
-above are what's shipped so far): find current-season Mythic+ leaderboard
-data via `GET /data/wow/connected-realm/{id}/mythic-keystone-leaderboard/{dungeonId}/period/{period}`
-— there is no single global leaderboard, so this means enumerating many
-connected realms (mechanically simple, not structurally hard — an existing
-open-source project does exactly this) — to identify top characters per
-spec, look up each one's `specializations` (for `talent_loadout_code`) and,
-optionally, `equipment` via the separate, unaffected
-`GET /profile/wow/character/{realm}/{name}/equipment`, then aggregate
-(e.g. most-common code per spec) into `mplusMetaLoadout`. See
-`.claude/skills/specsage-refresh/SKILL.md` (or a dedicated Mythic+-meta
-refresh skill, if one exists by the time you're reading this) for whatever
-pipeline shape was ultimately built.
+**The pipeline is built and has produced one real, shipped result.** For
+Protection Paladin (specID 66), the full pipeline ran end-to-end on
+2026-08-30: `GET /data/wow/connected-realm/{id}/mythic-leaderboard/{dungeonId}/period/{period}`
+(the confirmed live path — note `mythic-leaderboard`, not
+`mythic-keystone-leaderboard`) scanned across all 83 US connected realms ×
+the current season's 8-dungeon pool (no single global leaderboard exists,
+so this genuinely means enumerating every realm — 664 calls for one spec,
+mechanically simple and fast, not structurally hard), filtering
+`leading_groups[].members[].specialization.id` for Protection Paladin
+directly from the leaderboard response (no extra lookup needed just to
+identify a member's spec). The top 50 distinct characters by best observed
+keystone level had their `specializations` looked up for their active
+Protection loadout's `talent_loadout_code`; the plurality exact build (4/50,
+8%) shipped as `mplusMetaLoadout.string`, with the far stronger 94%
+Lightsmith-hero-talent consensus called out in `source` for the fuller
+picture a single percentage on the literal string would undersell. See
+`Guides_Paladin.lua`'s Protection entry (and its file header) for exactly
+what shipped, and `.claude/skills/specsage-mplus-meta-refresh/SKILL.md` for
+the generalized, repeatable pipeline (per-spec, run separately from
+`/specsage-refresh`'s full-repo SimC pass) - the query path, the
+`is_active`-within-a-spec's-own-loadouts nuance, the URL-encoding pitfall
+hit once already (non-ASCII character names), and the "report thin
+consensus honestly, don't inflate it" rule the worked example's own
+`source` string follows.
 
 ## Tests
 

@@ -8,7 +8,18 @@ local ADDON, ns = ...
 -- Rotation/overview/tips/gear prose throughout this file is hand-authored
 -- and was reviewed for Midnight ability changes, not derived from or
 -- checked against SimC's APLs, and was not re-verified against current
--- tuning this pass.
+-- tuning this pass — EXCEPT Protection (66), which gained an
+-- `mplusMetaLoadout` (DESIGN.md's v1.4 section) this pass: pulled live from
+-- Blizzard's own Battle.net Game Data API (client-credentials OAuth, US
+-- region) rather than SimC, on 2026-08-30. Methodology: every current-season
+-- Mythic+ leaderboard (8-dungeon pool, period 1078) across all 83 US
+-- connected realms was scanned (top 20 groups per realm/dungeon) for
+-- Protection Paladin group members; the 50 distinct characters with the
+-- highest observed keystone level had their live `specializations` looked
+-- up for their active Protection loadout's `talent_loadout_code` (confirmed
+-- via a prior test call to be Blizzard's real export-string format, not
+-- structured data needing a custom encoder). See the field's own `source`
+-- comment below for the resulting distribution.
 -- This is community-maintained conventional guidance (stat priorities and
 -- rotations that match the spec's long-standing design) — not a claim of
 -- bleeding-edge sim-perfect optimization.
@@ -169,6 +180,20 @@ ns.GuideStore:RegisterSpec("PALADIN", 66, {
     string = "CIEAAAAAAAAAAAAAAAAAAAAAAsNzYWmZMzYmxyyALzCDDAwAAAAAAg0MDzYmZMzs1GAGYGYGsNAAwMTbzMLzAEYzyGGAGmhxAAsNDwMAjN",
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
+  },
+  -- Live top-players pull (DESIGN.md's v1.4 section), NOT SimC - see this
+  -- file's header for the full methodology. The plurality build among the
+  -- sample: only 4/50 (8%) ran this exact code, since flex-point choices
+  -- vary - but the bigger signal is the hero talent behind it: 47/50 (94%)
+  -- of the sample chose Lightsmith over Templar, a real, strong consensus
+  -- this loadout reflects even though the literal byte-for-byte string does
+  -- not command anything close to majority agreement on its own. Reported
+  -- honestly rather than dressed up as more decisive than it is.
+  mplusMetaLoadout = {
+    string = "CIEAzbn3egSOtoSwvPw1U1vTLsZYWGzYmZmZW2GjZZWmlZMAADAAAAAAaamZZmxMDDbtBgBGwMYDAAgAMzsst0yMjFLLMDgBzshBAzMAYmBMWA",
+    source = "Blizzard Battle.net API, US region, 2026-08-30: top 50 current-season Mythic+ Protection Paladins by best keystone level, sampled across all 83 US connected realms' leaderboards. This exact build was the plurality pick (4/50, 8%); 94% of the sample (47/50) ran the Lightsmith hero talent overall.",
+    patch = "12.1",
+    sampleSize = 50,
   },
   tips = {
     "Never let Shield of the Righteous's mitigation buff lapse — it's the spec's core defensive tool.",
