@@ -1,11 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Demon Hunter
--- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
--- priorities were cross-checked against SimulationCraft's public default
--- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
--- consumables/overview/tips/gear guidance was not re-verified against
--- current tuning in this pass.
+-- Content targets Midnight (patch 12.1). Specs below with an `mplusLoadout`
+-- field have that talent string (only) cross-checked against
+-- SimulationCraft's public profiles (github.com/simulationcraft/simc,
+-- GPLv3) as of patch 12.1; specs without one have no such reference.
+-- Rotation/overview/tips/gear prose throughout this file is hand-authored
+-- and was reviewed for Midnight ability changes, not derived from or
+-- checked against SimC's APLs, and was not re-verified against current
+-- tuning this pass.
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.

@@ -137,3 +137,9 @@ date. The current value is shown by `/dump select(4, GetBuildInfo())` in game.
 
 The overlay half of SpecSage grew out of the author's earlier StatOverlay
 addon, folded in here so the guides and the live tracking ship as one addon.
+
+The shipped Mythic+ talent loadout strings (`mplusLoadout` in the guide data)
+are sourced from SimulationCraft's public default profiles
+(github.com/simulationcraft/simc, GPLv3) — credit, not an endorsement of
+"best". They are a reference starting point, not a scraped or generated
+recommendation.

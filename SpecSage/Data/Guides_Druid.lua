@@ -1,11 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Druid
--- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
--- priorities were cross-checked against SimulationCraft's public default
--- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
--- consumables/overview/tips/gear guidance was not re-verified against
--- current tuning in this pass.
+-- Content targets Midnight (patch 12.1). Specs below with an `mplusLoadout`
+-- field have that talent string (only) cross-checked against
+-- SimulationCraft's public profiles (github.com/simulationcraft/simc,
+-- GPLv3) as of patch 12.1; specs without one have no such reference.
+-- Rotation/overview/tips/gear prose throughout this file is hand-authored
+-- and was reviewed for Midnight ability changes, not derived from or
+-- checked against SimC's APLs, and was not re-verified against current
+-- tuning this pass.
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -80,10 +83,13 @@ ns.GuideStore:RegisterSpec("DRUID", 102, {
     { slot = "Weapon", text = "Take the highest weapon damage staff or one-hand-plus-off-hand — Balance's damage scales off spellpower and stats, not weapon type" },
     { slot = "Off-hand", text = "A caster off-hand leaning Haste keeps your Eclipse cycling and Astral Power flowing" },
   },
+  -- MID1 fallback: SimC has not yet published a MID2 (12.1) default profile
+  -- for Balance, so this loadout is pulled from the MID1 (12.0) profile set
+  -- instead. Swap to a MID2 profile once SimC publishes one.
   mplusLoadout = {
     string = "CYGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWoMbNjxMDwsYmZmZhBjZZmlZYmZswyMLzMGzshhBYstMzgxsNCMBAAAYxMzMzgNDjxAAwMDMA",
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
-    patch = "12.0 (MID1 — SimC has not yet published a MID2 profile for this spec)",
+    patch = "12.0 (MID1, previous tier)",
   },
   tips = {
     "Never let Sunfire or Moonfire fall off — dot uptime is a large share of Balance's total damage.",
@@ -156,10 +162,13 @@ ns.GuideStore:RegisterSpec("DRUID", 103, {
     { slot = "Weapon", text = "Cat Form normalizes weapon speed, so simply take the highest weapon damage item — type doesn't matter for your attacks" },
     { slot = "Feet", text = "Look for an itemization roll that keeps Critical Strike or Mastery flowing since Feral has few other stat-heavy accessory options" },
   },
+  -- MID1 fallback: SimC has not yet published a MID2 (12.1) default profile
+  -- for Feral, so this loadout is pulled from the MID1 (12.0) profile set
+  -- instead. Swap to a MID2 profile once SimC publishes one.
   mplusLoadout = {
     string = "CcGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjZwMzMzMmtFPwyMbzYGzMDAAAALBzGMmZUzYWYmZGjZmZAAAAAAAGAAAABAz2MLNbzssBmZAWMDGAAzMAYA",
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
-    patch = "12.0 (MID1 — SimC has not yet published a MID2 profile for this spec)",
+    patch = "12.0 (MID1, previous tier)",
   },
   tips = {
     "Never let Rip or Rake fall off the target — refreshing dropped bleeds costs far more than early refreshes.",
@@ -233,10 +242,13 @@ ns.GuideStore:RegisterSpec("DRUID", 104, {
     { slot = "Weapon", text = "Bear Form normalizes weapon speed, so take the highest weapon damage item available regardless of type" },
     { slot = "Waist", text = "An easy slot to fill in an extra gem toward whichever secondary — Versatility or Mastery — your build is short on" },
   },
+  -- MID1 fallback: SimC has not yet published a MID2 (12.1) default profile
+  -- for Guardian, so this loadout is pulled from the MID1 (12.0) profile set
+  -- instead. Swap to a MID2 profile once SimC publishes one.
   mplusLoadout = {
     string = "CgGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgZmxsYmZMzmZZgZbZgxMMaimZmFzMzMLjZeADAAAAgZYGLzAAAAQNzysMzMDAgFMDgFzgBsYZbAwMbwA",
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
-    patch = "12.0 (MID1 — SimC has not yet published a MID2 profile for this spec)",
+    patch = "12.0 (MID1, previous tier)",
   },
   tips = {
     "Keep Ironfur stacked proactively rather than reactively — mitigation applied before the hit lands is what matters.",

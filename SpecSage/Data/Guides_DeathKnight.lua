@@ -1,11 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Death Knight (Blood 250, Frost 251, Unholy 252)
--- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
--- priorities were cross-checked against SimulationCraft's public default
--- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
--- consumables/overview/tips/gear guidance was not re-verified against
--- current tuning in this pass.
+-- Content targets Midnight (patch 12.1). Specs below with an `mplusLoadout`
+-- field have that talent string (only) cross-checked against
+-- SimulationCraft's public profiles (github.com/simulationcraft/simc,
+-- GPLv3) as of patch 12.1; specs without one have no such reference.
+-- Rotation/overview/tips/gear prose throughout this file is hand-authored
+-- and was reviewed for Midnight ability changes, not derived from or
+-- checked against SimC's APLs, and was not re-verified against current
+-- tuning this pass.
 -- This is community-maintained conventional guidance (stat priorities and
 -- rotations that match the spec's long-standing design) — not a claim of
 -- bleeding-edge sim-perfect optimization.
@@ -85,7 +88,7 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 250, {
     { slot = "Weapon", text = "High item level weapons still carry meaningful damage for Blood — don't sacrifice too much Stamina chasing pure dps stats" },
   },
   mplusLoadout = {
-    string = "CoPAAAAAAAAAAAAAAAAAAAAAAwYWmZmxMmZmhZZmZmmZxMjxMAAAAAmZZGmZGzMjZAgZmZGAAADMwMW0YZDklBsBYGzAAAmZwgB",
+    string = "CoPAAAAAAAAAAAAAAAAAAAAAAwYWmZmxMmZmhZZmZmmZxMjxMAAAAAmZmZGmZGzMjZAgZmZGAAADMwMW0YZDklBsBYGzAAAmZwgB",
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
     patch = "12.1",
   },

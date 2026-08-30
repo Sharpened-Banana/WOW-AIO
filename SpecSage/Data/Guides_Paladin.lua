@@ -1,11 +1,14 @@
 local ADDON, ns = ...
 
 -- SpecSage guide data: Paladin (Holy 65, Protection 66, Retribution 70)
--- Content targets Midnight (patch 12.1). Mythic+ talent loadouts and rotation
--- priorities were cross-checked against SimulationCraft's public default
--- profiles (github.com/simulationcraft/simc, GPLv3) as of patch 12.1;
--- consumables/overview/tips/gear guidance was not re-verified against
--- current tuning in this pass.
+-- Content targets Midnight (patch 12.1). Specs below with an `mplusLoadout`
+-- field have that talent string (only) cross-checked against
+-- SimulationCraft's public profiles (github.com/simulationcraft/simc,
+-- GPLv3) as of patch 12.1; specs without one have no such reference.
+-- Rotation/overview/tips/gear prose throughout this file is hand-authored
+-- and was reviewed for Midnight ability changes, not derived from or
+-- checked against SimC's APLs, and was not re-verified against current
+-- tuning this pass.
 -- This is community-maintained conventional guidance (stat priorities and
 -- rotations that match the spec's long-standing design) — not a claim of
 -- bleeding-edge sim-perfect optimization.
@@ -229,10 +232,13 @@ ns.GuideStore:RegisterSpec("PALADIN", 70, {
     { slot = "Trinket", text = "A passive stat-stick trinket for consistent damage between cooldowns" },
     { slot = "Weapon", text = "The highest item level two-hander available — weapon damage is a large share of Retribution's output" },
   },
+  -- MID1 fallback: SimC has not yet published a MID2 (12.1) default profile
+  -- for Retribution, so this loadout is pulled from the MID1 (12.0) profile
+  -- set instead. Swap to a MID2 profile once SimC publishes one.
   mplusLoadout = {
     string = "CYEAAAAAAAAAAAAAAAAAAAAAAAAAAAAQz22MzsMMzAAAAAAwoMmhZGbDz2wMbzYMmZYGbsNMAAkZm2mZ2mBAsBYAwYGmBzYMbYZGMMmxgB",
     source = "SimulationCraft default profile (credit, not endorsement of 'best')",
-    patch = "12.0 (MID1 — SimC has not yet published a MID2 profile for this spec)",
+    patch = "12.0 (MID1, previous tier)",
   },
   tips = {
     "Don't let Holy Power sit at cap — spend it before you overflow and waste generation.",
