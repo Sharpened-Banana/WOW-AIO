@@ -391,6 +391,82 @@ commands folded into `/sage`, options panel gains Codex settings, and
 `Stats:GetStatValue(statKey) -> displayString` for the Codex's live stat
 integration.
 
+## Live Mythic+ meta loadout (v1.4) — schema and UI shipped, data pipeline blocked
+
+A third suggested-loadout kind, `mplusMetaLoadout`, alongside `mplusLoadout`
+(v1.2, SimC's theorycrafted default) and `raidLoadout` (v1.3): what current
+top Mythic+ players are actually running, sourced from Blizzard's own
+Battle.net Game Data API rather than SimC. This is not the same
+"is this genuinely distinct" question `raidLoadout` ran into — an empirical
+aggregate of real players' choices is categorically different data from a
+simulated recommendation, by construction, regardless of source freshness.
+
+```lua
+mplusMetaLoadout = {
+  string = "C0EAy0kSampleLiveMetaExportString",  -- Blizzard talent export format
+  source = "Blizzard Battle.net API, aggregated from top current-season Mythic+ players",
+  patch = "12.1",
+  sampleSize = 50,  -- optional: how many players this was aggregated from
+}
+```
+
+Validated by the same `Data/API.lua` `ValidateLoadoutSuggestion` that backs
+`mplusLoadout`/`raidLoadout`, extended with an optional `sampleSize` (must be
+a positive number when present — the only field of the three loadout kinds
+that isn't just `string`/`source`/`patch`, since an empirical aggregate has a
+sample size and a single curated profile does not).
+
+`UI/Codex.lua`'s `SUGGESTED_LOADOUT_KINDS` gained a third entry and an
+`attribution` field per kind ("via SimulationCraft" for the first two, "via
+Blizzard's API" for this one) — the row label is no longer a hardcoded "via
+SimulationCraft" phrase reused across every kind, which would have
+mislabeled this one. When `loadout.sampleSize` is present it's folded into
+the label too: "Top Players' Mythic+ Build (via Blizzard's API, top 50,
+patch 12.1)". Same Copy / Add to my vault behaviour as the other two rows
+(`Loadouts:Add(specID, "Top M+ Build (Live)", "Mythic+", ...)` — category
+`"Mythic+"`, the same category the SimC mplus row uses, since it is also a
+Mythic+ build; only the source and name differ).
+
+**What is shipped and tested:** the schema, validation, and full Codex
+rendering (three independently shown/hidden/ordered rows, correct
+per-kind attribution, Copy, Add to my vault) — proven with `tests/run.lua`
+fixtures, same as `raidLoadout` before any real spec carried one.
+
+**What is NOT yet shipped: a working pipeline that actually populates this
+field**, and the reason is a specific, unresolved technical question, not
+just "not built yet." Populating `mplusMetaLoadout.string` requires
+Blizzard's own Battle.net API to hand back a talent build in the same
+export-string format `mplusLoadout`/`raidLoadout` already use (the format
+`C_Traits.GenerateImportString` produces and the in-game import UI accepts)
+— but that format is generated client-side by
+`C_ClassTalents.GetLoadoutExportString()`, which Blizzard's own
+documentation describes as an internal/undocumented encoder, and the
+REST API's other resources (equipment, achievements) consistently expose
+structured IDs rather than an opaque client-format blob. Research strongly
+suggests (but could not directly confirm without an authenticated test call,
+which needs real Battle.net API credentials nobody had yet at research time)
+that the character-specializations endpoint's `loadouts` field is structured
+talent-node data, not a ready-to-use export string.
+
+If that's correct, shipping this field for real means the refresh pipeline
+must itself re-implement Blizzard's talent-loadout serializer — encoding
+structured node selections back into the client's bit-packed export format
+— which is a real, separate reverse-engineering project, not something to
+fold into "just pull the string" scope the way `mplusLoadout`/`raidLoadout`
+could. **Before writing that pipeline, make one real authenticated API call
+against a character with a known talent build and inspect the actual
+`loadouts` field shape** — cheap and decisive, and settles whether this is a
+one-field mapping or a serializer to build. See
+`.claude/skills/specsage-refresh/SKILL.md` (or a dedicated Mythic+-meta
+refresh skill, if one exists by the time you're reading this) for the rest
+of the pipeline: enumerate current-season connected-realm Mythic+
+leaderboards (`GET /data/wow/connected-realm/{id}/mythic-keystone-leaderboard/{dungeonId}/period/{period}`
+- no single global leaderboard exists, this genuinely requires enumerating
+many realms) to identify top characters per spec, then look up each one's
+specializations (and equipment, via the separate, unaffected
+`GET /profile/wow/character/{realm}/{name}/equipment`) to build the
+aggregate.
+
 ## Tests
 
 Port the strict mock and driver from stat-overlay; extend the mock with the

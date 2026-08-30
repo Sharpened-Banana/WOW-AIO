@@ -467,6 +467,76 @@ do
     check(GuideStore:GetGuide(9018) == nil, "guide with an empty raidLoadout.patch is not stored")
 end
 
+-- mplusMetaLoadout (DESIGN.md's v1.4 section) shares the same validated
+-- shape, plus an optional numeric `sampleSize` no other loadout kind
+-- carries - an empirical top-players aggregate has a sample size, a single
+-- curated SimC profile does not.
+do
+    local guide = { specName = "No Meta Loadout Spec", role = "DAMAGER" }
+    local ok = GuideStore:RegisterSpec("MAGE", 9019, guide)
+    check(ok == true, "RegisterSpec accepts a guide with no mplusMetaLoadout key at all")
+    check(GuideStore:GetGuide(9019).mplusMetaLoadout == nil,
+        "a guide with no mplusMetaLoadout key round-trips with mplusMetaLoadout still nil")
+end
+
+do
+    local guide = {
+        specName = "Meta Loadout Spec",
+        role = "DAMAGER",
+        mplusMetaLoadout = {
+            string = "C0EAy0kSampleLiveMetaExportString",
+            source = "Blizzard Battle.net API, aggregated from top current-season Mythic+ players",
+            patch = "12.1",
+            sampleSize = 50,
+        },
+    }
+    local ok = GuideStore:RegisterSpec("MAGE", 9020, guide)
+    check(ok == true, "RegisterSpec accepts a valid mplusMetaLoadout with a sampleSize")
+    local roundTripped = GuideStore:GetGuide(9020)
+    check(roundTripped.mplusMetaLoadout.string == "C0EAy0kSampleLiveMetaExportString",
+        "round-tripped guide keeps its mplusMetaLoadout.string")
+    check(roundTripped.mplusMetaLoadout.sampleSize == 50,
+        "round-tripped guide keeps its mplusMetaLoadout.sampleSize", roundTripped.mplusMetaLoadout.sampleSize)
+end
+
+do
+    -- sampleSize is optional - a guide can omit it and still validate, the
+    -- same as mplusLoadout/raidLoadout never having had the field at all.
+    local guide = {
+        specName = "Meta Loadout No Sample Spec",
+        role = "DAMAGER",
+        mplusMetaLoadout = { string = "C0EAy0kNoSampleSize", patch = "12.1" },
+    }
+    local ok = GuideStore:RegisterSpec("MAGE", 9021, guide)
+    check(ok == true, "RegisterSpec accepts a valid mplusMetaLoadout with no sampleSize")
+    check(GuideStore:GetGuide(9021).mplusMetaLoadout.sampleSize == nil,
+        "sampleSize stays nil when the guide never set one")
+end
+
+do
+    local badGuide = {
+        specName = "Bad Meta Loadout Spec A",
+        role = "DAMAGER",
+        mplusMetaLoadout = { string = "C0EAy0k", patch = "12.1", sampleSize = 0 },
+    }
+    local ok, result = silently(function() return GuideStore:RegisterSpec("MAGE", 9022, badGuide) end)
+    check(ok, "RegisterSpec with sampleSize = 0 does not error", result)
+    check(result == false, "a zero sampleSize is rejected")
+    check(GuideStore:GetGuide(9022) == nil, "guide with a zero sampleSize is not stored")
+end
+
+do
+    local badGuide = {
+        specName = "Bad Meta Loadout Spec B",
+        role = "DAMAGER",
+        mplusMetaLoadout = { string = "C0EAy0k", patch = "12.1", sampleSize = "fifty" },
+    }
+    local ok, result = silently(function() return GuideStore:RegisterSpec("MAGE", 9023, badGuide) end)
+    check(ok, "RegisterSpec with a non-number sampleSize does not error", result)
+    check(result == false, "a string sampleSize is rejected")
+    check(GuideStore:GetGuide(9023) == nil, "guide with a non-number sampleSize is not stored")
+end
+
 -- Accepts a valid guide and round-trips it through GetGuide.
 do
     local goodGuide = {
@@ -2240,14 +2310,14 @@ Codex:SelectTab("Loadouts")
 check(not Codex.loadoutButtons.save:IsShown(), "Save current is hidden while viewing another spec")
 
 --------------------------------------------------------------------------------
-section("Codex: Suggested Mythic+ and Raid loadout rows (v1.2 / v1.3)")
+section("Codex: Suggested Mythic+, Raid, and live-meta loadout rows (v1.2 / v1.3 / v1.4)")
 --------------------------------------------------------------------------------
 
 -- Inline fixture guides on scratch specIDs (the >=9000 convention used
 -- throughout this suite), registered here rather than relying on any real
 -- shipped Guides_*.lua content - two other agents are concurrently adding
--- mplusLoadout/raidLoadout data to those files, so this section must not
--- race with them.
+-- mplusLoadout/raidLoadout/mplusMetaLoadout data to those files, so this
+-- section must not race with them.
 GuideStore:RegisterSpec("WARRIOR", 9201, {
     specName = "Loadout Warrior",
     role = "DAMAGER",
@@ -2261,6 +2331,12 @@ GuideStore:RegisterSpec("WARRIOR", 9201, {
         source = "SimulationCraft default profile (credit, not endorsement of 'best')",
         patch = "12.1",
     },
+    mplusMetaLoadout = {
+        string = "C0EAy0kSampleLiveMetaExportString",
+        source = "Blizzard Battle.net API, aggregated from top current-season Mythic+ players",
+        patch = "12.1",
+        sampleSize = 50,
+    },
 })
 GuideStore:RegisterSpec("WARRIOR", 9203, {
     specName = "Mplus Only Warrior",
@@ -2273,13 +2349,18 @@ GuideStore:RegisterSpec("WARRIOR", 9203, {
 })
 GuideStore:RegisterSpec("WARRIOR", 9202, { specName = "No Loadout Warrior", role = "DAMAGER" })
 
--- Both present: two rows render above the saved-loadout list, Mythic+ above
--- Raid (SUGGESTED_LOADOUT_KINDS order), each independently labeled, and
--- neither one's content bleeds into the other's.
+-- All three present: three rows render above the saved-loadout list, in
+-- SUGGESTED_LOADOUT_KINDS order (Mythic+, then Raid, then the live-meta
+-- one), each independently labeled with its own real source - not one
+-- hardcoded "via SimulationCraft" phrase across all three, which is exactly
+-- what an earlier version of this rendering did (it would have mislabeled
+-- the Blizzard-API-sourced row as SimC's) - and none of the three rows'
+-- content bleeds into another's.
 Codex:Open("WARRIOR", 9201)
 Codex:SelectTab("Loadouts")
 local mplusRow = Codex.suggestedLoadoutRows.mplus
 local raidRow = Codex.suggestedLoadoutRows.raid
+local metaRow = Codex.suggestedLoadoutRows.mplusMeta
 
 check(mplusRow:IsShown(), "the Mythic+ row is shown for a spec whose guide ships mplusLoadout")
 check(mplusRow.name:GetText() == "Suggested Mythic+ (via SimulationCraft, patch 12.1)",
@@ -2295,40 +2376,54 @@ check(raidRow.name:GetText() == "Suggested Raid (via SimulationCraft, patch 12.1
 check(raidRow.copyButton:IsShown(), "the Raid row's Copy button is shown")
 check(raidRow.addButton:IsShown(), "the Raid row's Add to my vault button is shown")
 
+check(metaRow:IsShown(), "the live-meta row is shown for a spec whose guide ships mplusMetaLoadout")
+check(metaRow.name:GetText() == "Top Players' Mythic+ Build (via Blizzard's API, top 50, patch 12.1)",
+    "the live-meta row is attributed to Blizzard's API (not SimC) and shows its sample size",
+    metaRow.name:GetText())
+check(metaRow.copyButton:IsShown(), "the live-meta row's Copy button is shown")
+check(metaRow.addButton:IsShown(), "the live-meta row's Add to my vault button is shown")
+
 -- The mock's GetPoint() is a fixed stub (it does not track real SetPoint
 -- calls), so ordering is checked against the recorded .points table instead
 -- - row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y) after a ClearAllPoints
 -- leaves exactly one recorded point, whose 5th element is the y offset.
 -- Higher on screen means a less negative y (SetPoint uses UIParent's
--- bottom-up coordinate space), so the Mythic+ row is above the Raid row
--- when its y is greater.
+-- bottom-up coordinate space).
 local mplusTop = mplusRow.points[#mplusRow.points][5]
 local raidTop = raidRow.points[#raidRow.points][5]
+local metaTop = metaRow.points[#metaRow.points][5]
 check(type(mplusTop) == "number" and type(raidTop) == "number" and mplusTop > raidTop,
     "the Mythic+ row sits above the Raid row", format("mplus y=%s raid y=%s", tostring(mplusTop), tostring(raidTop)))
+check(type(metaTop) == "number" and raidTop > metaTop,
+    "the Raid row sits above the live-meta row", format("raid y=%s meta y=%s", tostring(raidTop), tostring(metaTop)))
 
--- Only one kind present: that row shows, the other stays hidden, and no gap
--- is left where the missing one would have gone.
+-- Only one kind present: that row shows, the others stay hidden, and no gap
+-- is left where a missing one would have gone.
 Codex:Open("WARRIOR", 9203)
 Codex:SelectTab("Loadouts")
 check(Codex.suggestedLoadoutRows.mplus:IsShown(), "the Mythic+ row shows on a spec with only mplusLoadout")
 check(not Codex.suggestedLoadoutRows.raid:IsShown(), "the Raid row stays hidden on a spec with no raidLoadout")
+check(not Codex.suggestedLoadoutRows.mplusMeta:IsShown(),
+    "the live-meta row stays hidden on a spec with no mplusMetaLoadout")
 
--- Neither present: no placeholder text, both rows simply don't render (per
--- DESIGN.md).
+-- None present: no placeholder text, all three rows simply don't render
+-- (per DESIGN.md).
 Codex:Open("WARRIOR", 9202)
 Codex:SelectTab("Loadouts")
 check(not Codex.suggestedLoadoutRows.mplus:IsShown(),
     "the Mythic+ row is hidden entirely for a spec whose guide has no mplusLoadout")
 check(not Codex.suggestedLoadoutRows.raid:IsShown(),
     "the Raid row is hidden entirely for a spec whose guide has no raidLoadout")
+check(not Codex.suggestedLoadoutRows.mplusMeta:IsShown(),
+    "the live-meta row is hidden entirely for a spec whose guide has no mplusMetaLoadout")
 
 -- Copy: same read-only highlighted-editbox pattern as a saved loadout's
 -- Copy, and the same Show-before-focus ordering the mock enforces via
 -- IsEffectivelyShown (see the saved-loadout Copy test above) - a reordering
 -- mistake here would error under the mock instead of silently copying
--- nothing. Checked for both kinds, so a shared-helper bug that only shows up
--- on the second row built is not masked by testing just the first.
+-- nothing. Checked for all three kinds, so a shared-helper bug that only
+-- shows up on the second or third row built is not masked by testing just
+-- the first.
 Codex:Open("WARRIOR", 9201)
 Codex:SelectTab("Loadouts")
 
@@ -2342,6 +2437,12 @@ local raidCopyOk = pcall(function() raidRow.copyButton:GetScript("OnClick")() en
 check(raidCopyOk, "Copy on the Raid row does not error under the mock's visibility-checked SetFocus")
 check(Codex.copyBox:GetText() == "C0EAy0kSampleRaidExportStringFromSimC",
     "the copy dialog is populated with the Raid loadout's export string, not the Mythic+ one",
+    Codex.copyBox:GetText())
+
+local metaCopyOk = pcall(function() metaRow.copyButton:GetScript("OnClick")() end)
+check(metaCopyOk, "Copy on the live-meta row does not error under the mock's visibility-checked SetFocus")
+check(Codex.copyBox:GetText() == "C0EAy0kSampleLiveMetaExportString",
+    "the copy dialog is populated with the live-meta loadout's export string, not either SimC one",
     Codex.copyBox:GetText())
 
 -- Add to my vault: calls Loadouts:Add with the exact arguments DESIGN.md
@@ -2383,10 +2484,26 @@ check(vaultAfterRaid[1].name == "Suggested M+ (SimC)",
     "the earlier Mythic+ entry is untouched by adding the Raid one")
 mock.RunAfter()
 
--- Clicking Add to my vault a second time adds a third entry rather than
+-- The live-meta row's Add is likewise independent, and its category is
+-- "Mythic+" (same category as the SimC mplus row, since it is also a
+-- Mythic+ build - only the source and name differ) rather than a category
+-- of its own.
+metaRow.addButton:GetScript("OnClick")(metaRow.addButton)
+local vaultAfterMeta = LoadoutsModule:GetForSpec(9201)
+check(#vaultAfterMeta == vaultCountBefore + 3, "Add to my vault on the live-meta row stores a third loadout")
+check(vaultAfterMeta[#vaultAfterMeta].name == "Top M+ Build (Live)",
+    "the added live-meta loadout uses its own name", vaultAfterMeta[#vaultAfterMeta].name)
+check(vaultAfterMeta[#vaultAfterMeta].category == "Mythic+",
+    "the added live-meta loadout uses the Mythic+ category", vaultAfterMeta[#vaultAfterMeta].category)
+check(vaultAfterMeta[#vaultAfterMeta].export == "C0EAy0kSampleLiveMetaExportString",
+    "the added live-meta loadout keeps the guide's mplusMetaLoadout.string as its export",
+    vaultAfterMeta[#vaultAfterMeta].export)
+mock.RunAfter()
+
+-- Clicking Add to my vault a second time adds a fourth entry rather than
 -- silently no-oping - it is a plain Loadouts:Add call, not a toggle.
 mplusRow.addButton:GetScript("OnClick")(mplusRow.addButton)
-check(#LoadoutsModule:GetForSpec(9201) == vaultCountBefore + 3,
+check(#LoadoutsModule:GetForSpec(9201) == vaultCountBefore + 4,
     "clicking Add to my vault again stores another loadout")
 mock.RunAfter()
 

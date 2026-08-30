@@ -879,24 +879,29 @@ function Codex:EnsureLoadoutWidgets()
     self:EnsureSuggestedLoadoutRow()
 end
 
--- The shipped-guide suggested-loadout rows (DESIGN.md's v1.2 section, and
--- v1.3 for the raid one): one small frame per kind SimC ships a talent
--- string for. Fixed at two kinds rather than a pool, since a spec has at
--- most one mplusLoadout and at most one raidLoadout - there is no unbounded
--- list to pool for. Built alongside the saved-loadout row pool but kept
--- separate from it, since these rows' buttons (Copy / Add to my vault)
--- differ from a saved row's (Copy / Delete) and neither participates in the
+-- The shipped-guide suggested-loadout rows (DESIGN.md's v1.2 section, v1.3
+-- for the raid one, v1.4 for the live-meta one): one small frame per kind a
+-- guide can ship a talent string for. A fixed small list rather than a pool,
+-- since a spec has at most one loadout per kind - there is no unbounded list
+-- to pool for. Built alongside the saved-loadout row pool but kept separate
+-- from it, since these rows' buttons (Copy / Add to my vault) differ from a
+-- saved row's (Copy / Delete) and none of them participate in the
 -- delete-by-index list.
 --
--- guideField is the guide table key SimC data lives under; addName/category
+-- guideField is the guide table key the data lives under; addName/category
 -- are what Loadouts:Add stores when the player clicks "Add to my vault"
 -- (category must be one of Loadouts.VALID_CATEGORIES, so an unrecognised
 -- one here would silently fall back to "Other" rather than error).
+-- attribution names the source in the row's own label - kinds are NOT all
+-- SimC-sourced (mplusMeta is Blizzard's own API), so this must not be
+-- hardcoded at render time the way an earlier version of this table did.
 local SUGGESTED_LOADOUT_KINDS = {
     { key = "mplus", guideField = "mplusLoadout", label = "Suggested Mythic+",
-      addName = "Suggested M+ (SimC)", category = "Mythic+" },
+      addName = "Suggested M+ (SimC)", category = "Mythic+", attribution = "via SimulationCraft" },
     { key = "raid", guideField = "raidLoadout", label = "Suggested Raid",
-      addName = "Suggested Raid (SimC)", category = "Raid" },
+      addName = "Suggested Raid (SimC)", category = "Raid", attribution = "via SimulationCraft" },
+    { key = "mplusMeta", guideField = "mplusMetaLoadout", label = "Top Players' Mythic+ Build",
+      addName = "Top M+ Build (Live)", category = "Mythic+", attribution = "via Blizzard's API" },
 }
 
 local function CreateSuggestedLoadoutRow(parent)
@@ -993,14 +998,14 @@ function Codex:RenderLoadouts(specID, guide)
 
     y = y - 26
 
-    -- The shipped suggested-loadout rows (DESIGN.md's v1.2/v1.3 sections):
-    -- shown above the player's own saved loadouts only for the kinds this
-    -- spec's guide actually ships (mplusLoadout, raidLoadout), with no
-    -- placeholder for a kind it does not - that row simply doesn't exist
-    -- rather than rendering empty. Order follows SUGGESTED_LOADOUT_KINDS
-    -- (Mythic+ above Raid), and only a shown row spends a y-offset, so one
-    -- spec shipping just one kind does not leave a gap where the other would
-    -- have been.
+    -- The shipped suggested-loadout rows (DESIGN.md's v1.2/v1.3/v1.4
+    -- sections): shown above the player's own saved loadouts only for the
+    -- kinds this spec's guide actually ships (mplusLoadout, raidLoadout,
+    -- mplusMetaLoadout), with no placeholder for a kind it does not - that
+    -- row simply doesn't exist rather than rendering empty. Order follows
+    -- SUGGESTED_LOADOUT_KINDS, and only a shown row spends a y-offset, so a
+    -- spec shipping fewer than all kinds does not leave a gap where a
+    -- missing one would have been.
     for _, kind in ipairs(SUGGESTED_LOADOUT_KINDS) do
         local suggested = self.suggestedLoadoutRows[kind.key]
         local loadout = guide and guide[kind.guideField]
@@ -1009,7 +1014,20 @@ function Codex:RenderLoadouts(specID, guide)
             suggested:ClearAllPoints()
             suggested:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
             suggested:SetSize(width, 18)
-            suggested.name:SetText(format("%s (via SimulationCraft, patch %s)", kind.label, loadout.patch))
+
+            -- kind.attribution names the real source (SimC vs Blizzard's
+            -- own API) rather than a hardcoded phrase - see
+            -- SUGGESTED_LOADOUT_KINDS's own comment on why. loadout.sampleSize
+            -- is optional (only the empirical, API-sourced kind has one) and
+            -- is folded in when present, so a live-meta row can say how many
+            -- players it was aggregated from without a curated one needing
+            -- to carry a meaningless sample size of its own.
+            local detail = kind.attribution
+            if loadout.sampleSize then
+                detail = format("%s, top %d", detail, loadout.sampleSize)
+            end
+            detail = format("%s, patch %s", detail, loadout.patch)
+            suggested.name:SetText(format("%s (%s)", kind.label, detail))
             suggested.name:SetTextColor(0.9, 0.9, 0.9)
 
             suggested.copyButton:Show()

@@ -115,11 +115,17 @@ local function ValidateGear(gear)
     return true
 end
 
--- Shared shape for `mplusLoadout` (v1.2) and `raidLoadout` (v1.3): most
--- guides have neither key at all, which must validate the same as a
--- pre-v1.2 guide. `source` is documentary (credits SimC) and is not itself
--- validated - only `string` and `patch`, the two fields the Codex actually
--- reads, gate acceptance. `fieldName` is only used to word the error.
+-- Shared shape for `mplusLoadout` (v1.2), `raidLoadout` (v1.3), and
+-- `mplusMetaLoadout` (v1.4): most guides have none of these keys at all,
+-- which must validate the same as a pre-v1.2 guide. `source` is documentary
+-- (credits SimC or Blizzard's API) and is not itself validated - only
+-- `string` and `patch` gate acceptance, the two fields the Codex actually
+-- reads to render and Add-to-vault a row. `sampleSize`, when present (only
+-- mplusMetaLoadout carries one - an empirical aggregate has a sample size,
+-- a single curated SimC profile does not), must be a positive number: the
+-- Codex renders it directly into the row label ("top 50"), so a bad value
+-- there would show garbage to the player rather than merely failing to
+-- validate. `fieldName` is only used to word the error.
 local function ValidateLoadoutSuggestion(loadout, fieldName)
     if loadout == nil then return true end
     if type(loadout) ~= "table" then
@@ -132,6 +138,10 @@ local function ValidateLoadoutSuggestion(loadout, fieldName)
 
     if type(loadout.patch) ~= "string" or loadout.patch == "" then
         return false, fieldName .. ".patch must be a non-empty string"
+    end
+
+    if loadout.sampleSize ~= nil and (type(loadout.sampleSize) ~= "number" or loadout.sampleSize <= 0) then
+        return false, fieldName .. ".sampleSize must be a positive number when present"
     end
 
     return true
@@ -174,6 +184,11 @@ local function ValidateGuide(classToken, specID, guide)
     end
 
     ok, err = ValidateLoadoutSuggestion(guide.raidLoadout, "raidLoadout")
+    if not ok then
+        return false, "guide." .. err
+    end
+
+    ok, err = ValidateLoadoutSuggestion(guide.mplusMetaLoadout, "mplusMetaLoadout")
     if not ok then
         return false, "guide." .. err
     end
