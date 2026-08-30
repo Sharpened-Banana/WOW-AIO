@@ -145,7 +145,7 @@ ns.GuideStore:RegisterSpec("MONK", 270, {
         { spellID = 116680, text = "Thunder Focus Tea to empower your next Enveloping Mist or Essence Font" },
         { spellID = 116849, text = "Life Cocoon on the target about to take heavy predictable damage" },
         { text = "Chi-Ji / Yu'lon (talent-dependent major cooldown) for extended raid-healing windows" },
-        { text = "If talented into Vital Expenditure, lean into longer Soothing Mist channels during low-movement phases for its heavily amplified (but mana-hungry) healing" },
+        { spellID = 209525, text = "If talented into Vital Expenditure, lean into longer Soothing Mist channels during low-movement phases for its heavily amplified (but mana-hungry) healing" },
         { text = "Pool Thunder Focus Tea charges for high-value moments rather than using them immediately" },
     }},
   },
@@ -154,7 +154,7 @@ ns.GuideStore:RegisterSpec("MONK", 270, {
     { spellID = 116849, text = "Life Cocoon — single-target damage absorb, save for a tank swap or known burst target" },
     { spellID = 116680, text = "Thunder Focus Tea — empowers the next cast, use on Enveloping Mist or Essence Font for max value" },
     { text = "Invoke Yu'lon / Chi-Ji (talent) — major raid-cooldown, line up with heavy damage phases" },
-    { spellID = 122783, text = "Diffuse Magic — personal defensive against magic damage" },
+    { spellID = 1243287, text = "Diffuse Magic — personal defensive against magic damage" },
   },
   consumables = {
     { slot = "Flask", text = "Flask of Alchemical Chaos (Intellect)" },
@@ -215,7 +215,7 @@ ns.GuideStore:RegisterSpec("MONK", 269, {
     { title = "AoE", steps = {
         { text = "Spinning Crane Kick to hit all nearby targets and spread Mark of the Crane" },
         { spellID = 107428, text = "Rising Sun Kick to apply its debuff across engaged targets (per talents)" },
-        { text = "Whirling Dragon Punch (talent) when both Rising Sun Kick and Fists of Fury are ready" },
+        { spellID = 152175, text = "Whirling Dragon Punch (talent) when both Rising Sun Kick and Fists of Fury are ready" },
         { text = "Storm, Earth, and Fire (talent) to split damage across multiple targets" },
         { text = "Keep combo strikes going while prioritizing AoE-focused abilities" },
     }},
@@ -225,7 +225,7 @@ ns.GuideStore:RegisterSpec("MONK", 269, {
     { text = "Serenity (talent, mutually exclusive with Xuen build) — short, high-value burst window" },
     { text = "Storm, Earth, and Fire — splits your damage to extra targets, use for cleave/multi-target windows" },
     { spellID = 122470, text = "Touch of Karma — defensive that reflects damage back as healing/damage" },
-    { spellID = 122783, text = "Diffuse Magic — personal defensive against magic damage" },
+    { spellID = 1243287, text = "Diffuse Magic — personal defensive against magic damage" },
   },
   consumables = {
     { slot = "Flask", text = "Flask of Alchemical Chaos (Agility)" },
