@@ -220,9 +220,12 @@ local function RestackPins()
             else
                 pin:SetPoint("TOPLEFT", ns.UI.frame, "TOPRIGHT", PIN_GAP, 0)
             end
+            -- Only pins actually in the stack chain anchor the next one; a
+            -- custom-dragged pin sitting between two stacked pins would
+            -- otherwise pull the rest of the stack to wherever it was
+            -- dropped instead of leaving them on the overlay's edge.
+            previous = pin
         end
-
-        if pin then previous = pin end
     end
 end
 

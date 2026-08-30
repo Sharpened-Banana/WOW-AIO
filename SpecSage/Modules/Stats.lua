@@ -24,6 +24,9 @@ local RATING = {
     lifesteal = CR_LIFESTEAL or 17,
     avoidance = CR_AVOIDANCE or 21,
     speed = CR_SPEED or 14,
+    dodge = CR_DODGE or 12,
+    parry = CR_PARRY or 13,
+    block = CR_BLOCK or 15,
 }
 
 local STAT_NAMES = {
@@ -162,6 +165,46 @@ readers.armor = function()
     return "Armor", ns.FormatNumber(effectiveArmor)
 end
 
+-- Effective attack power (base plus buffs/debuffs); mirrors StatBreakdown's
+-- own summation of UnitAttackPower's three return values.
+local function GetAttackPower()
+    local base, posBuff, negBuff = UnitAttackPower("player")
+    return (base or 0) + (posBuff or 0) + (negBuff or 0), base, posBuff, negBuff
+end
+
+-- Casters care about spell power, everyone else about attack power. Best
+-- school follows the same pattern as GetBestSpellCrit above.
+local function GetBestSpellPower()
+    local best = 0
+    for school = 2, 7 do
+        local power = GetSpellBonusDamage(school) or 0
+        if power > best then best = power end
+    end
+    return best
+end
+
+readers.power = function(primaryStat)
+    if primaryStat == STAT_INTELLECT then
+        return "Spell Power", ns.FormatNumber(GetBestSpellPower())
+    end
+    return "Attack Power", ns.FormatNumber(GetAttackPower())
+end
+
+readers.dodge = function()
+    return "Dodge", ns.FormatPercent(GetDodgeChance() or 0)
+end
+
+readers.parry = function()
+    return "Parry", ns.FormatPercent(GetParryChance() or 0)
+end
+
+-- Only meaningful with a shield equipped, but shown unconditionally like
+-- every other stat: 0% for a caster is as informative as the row being
+-- absent, and the player controls visibility via the Stats options anyway.
+readers.block = function()
+    return "Block", ns.FormatPercent(GetBlockChance() or 0)
+end
+
 --------------------------------------------------------------------------------
 -- Shared computation
 --
@@ -209,6 +252,10 @@ local DESCRIPTIONS = {
     avoid = "Reduces damage taken from area-of-effect attacks.",
     speed = "Increases your movement speed.",
     armor = "Reduces the physical damage you take.",
+    power = "Increases the damage of your attacks or spells, depending on which one your specialisation scales with.",
+    dodge = "Chance to completely avoid a melee or ranged attack.",
+    parry = "Chance to deflect a melee attack and reduce the attacker's next swing timer. Requires a melee weapon.",
+    block = "Chance for your shield to block part of an incoming melee hit. Requires a shield.",
 }
 
 local tooltipBuilders = {}
@@ -301,6 +348,28 @@ tooltipBuilders.armor = function()
     end
     return { lines = lines }
 end
+
+tooltipBuilders.power = function(primaryStat)
+    if primaryStat == STAT_INTELLECT then
+        return { lines = { { left = "Spell power", right = ns.FormatNumber(GetBestSpellPower()) } } }
+    end
+
+    local _, base, posBuff, negBuff = GetAttackPower()
+    local lines = {
+        { left = "Base", right = ns.FormatNumber(base) },
+    }
+    if (posBuff or 0) > 0 then
+        lines[#lines + 1] = { left = "From gear and buffs", right = "+" .. ns.FormatNumber(posBuff) }
+    end
+    if (negBuff or 0) < 0 then
+        lines[#lines + 1] = { left = "Reduced by", right = ns.FormatNumber(negBuff) }
+    end
+    return { lines = lines }
+end
+
+tooltipBuilders.dodge = function() return { lines = RatingLines(RATING.dodge) } end
+tooltipBuilders.parry = function() return { lines = RatingLines(RATING.parry) } end
+tooltipBuilders.block = function() return { lines = RatingLines(RATING.block) } end
 
 -- Called by the UI when the mouse enters a stat row.
 local function TooltipProvider(key)

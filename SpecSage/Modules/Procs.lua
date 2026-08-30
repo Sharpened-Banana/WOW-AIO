@@ -34,7 +34,20 @@ local function GetSpellIcon(spellID)
     return select(3, GetSpellInfo(spellID))
 end
 
--- Returns remaining cooldown in seconds, or 0 when ready.
+-- Runs fn under pcall and hands back its result, or nil when it errored.
+-- Cooldown starts, aura durations and expiration times are all secret values
+-- in Midnight's restricted content (see Core/Init.lua's format helpers), and
+-- comparing or doing arithmetic on one errors - on this module's 0.1s ticker
+-- that would mean an error per tick, hundreds deep within one fight.
+local function SafeCall(fn)
+    local ok, result = pcall(fn)
+    if ok then return result end
+    return nil
+end
+
+-- Returns remaining cooldown in seconds, or 0 when ready. Protected cooldown
+-- data reads as ready rather than erroring: better to underreport a state we
+-- are not allowed to inspect than to spam.
 local function GetCooldownRemaining(spellID)
     local start, duration
     if C_Spell and C_Spell.GetSpellCooldown then
@@ -45,13 +58,15 @@ local function GetCooldownRemaining(spellID)
         start, duration = GetSpellCooldown(spellID)
     end
 
-    if not start or not duration or duration <= 0 then return 0 end
+    return SafeCall(function()
+        if not start or not duration or duration <= 0 then return 0 end
 
-    -- The 1.5s global cooldown is not worth reporting as "on cooldown".
-    if duration <= 1.5 then return 0 end
+        -- The 1.5s global cooldown is not worth reporting as "on cooldown".
+        if duration <= 1.5 then return 0 end
 
-    local remaining = start + duration - GetTime()
-    return remaining > 0 and remaining or 0
+        local remaining = start + duration - GetTime()
+        return remaining > 0 and remaining or 0
+    end) or 0
 end
 
 local function GetPlayerAura(spellID)
@@ -76,8 +91,13 @@ local function CollectAutoProcs(watchedSet, maxDuration)
         if not aura or not aura.spellId then return end
         if watchedSet[aura.spellId] then return end
 
-        local duration = aura.duration or 0
-        if duration <= 0 or duration > maxDuration then return end
+        -- An aura whose duration is secret cannot be classified as "short"
+        -- at all; skip it rather than error (see SafeCall above).
+        local keep = SafeCall(function()
+            local duration = aura.duration or 0
+            return duration > 0 and duration <= maxDuration
+        end)
+        if not keep then return end
 
         found[#found + 1] = {
             spellID = aura.spellId,
@@ -89,7 +109,11 @@ local function CollectAutoProcs(watchedSet, maxDuration)
     end, true)
 
     -- Shortest remaining first, so the thing about to fall off is on top.
-    table.sort(found, function(a, b) return a.expirationTime < b.expirationTime end)
+    -- Sorted under pcall as one unit: a comparator that errors partway
+    -- through (a secret expirationTime) would otherwise take the whole
+    -- Update down, and pcalling inside the comparator instead would feed
+    -- sort an inconsistent order. Unsorted is a fine fallback.
+    pcall(table.sort, found, function(a, b) return a.expirationTime < b.expirationTime end)
 
     return found
 end
@@ -123,14 +147,22 @@ local function BuildWatchedRow(spellID)
     local aura = GetPlayerAura(spellID)
 
     if aura then
-        local remaining = (aura.expirationTime or 0) - GetTime()
         local label = name
-        if (aura.applications or 0) > 1 then
+        if SafeCall(function() return (aura.applications or 0) > 1 end) then
             label = format("%s (%d)", name, aura.applications)
         end
+
+        -- A secret duration/expiration renders as a plain "on" - active is
+        -- the one thing we still know for sure.
+        local value = "on"
+        if SafeCall(function() return (aura.duration or 0) > 0 end) then
+            local remaining = SafeCall(function() return (aura.expirationTime or 0) - GetTime() end)
+            if remaining then value = ns.FormatTime(remaining) end
+        end
+
         return {
             label = label,
-            value = (aura.duration or 0) > 0 and ns.FormatTime(remaining) or "on",
+            value = value,
             icon = icon,
             valueColor = COLOR_ACTIVE,
             tooltipKey = spellID,
@@ -186,14 +218,14 @@ function Procs:Update()
         local limit = math.min(#auto, db.procs.maxAuto)
         for index = 1, limit do
             local proc = auto[index]
-            local remaining = proc.expirationTime - GetTime()
+            local remaining = SafeCall(function() return proc.expirationTime - GetTime() end)
             local label = proc.name
-            if proc.count > 1 then
+            if SafeCall(function() return proc.count > 1 end) then
                 label = format("%s (%d)", proc.name, proc.count)
             end
             rows[#rows + 1] = {
                 label = label,
-                value = ns.FormatTime(remaining),
+                value = remaining and ns.FormatTime(remaining) or "on",
                 icon = proc.icon,
                 valueColor = COLOR_ACTIVE,
                 tooltipKey = proc.spellID,

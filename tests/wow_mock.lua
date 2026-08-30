@@ -25,6 +25,9 @@ end
 -- Lua globals WoW provides
 --------------------------------------------------------------------------------
 
+-- WoW runs Lua 5.1 where unpack is a global; on 5.2+ it lives in table.
+unpack = unpack or table.unpack
+
 format = string.format
 strjoin = function(sep, ...) return table.concat({ ... }, sep) end
 tinsert = table.insert

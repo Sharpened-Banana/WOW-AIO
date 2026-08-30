@@ -125,6 +125,18 @@ end
 -- Public API
 --------------------------------------------------------------------------------
 
+local function RawEqual(a, b) return a == b end
+
+-- Some unit-stat APIs (UnitStat, UnitArmor, UnitHealthMax, ...) return opaque
+-- "secret" values in certain content, and formatting one taints the resulting
+-- string as secret too. Comparing two secret values with == errors instead of
+-- returning a boolean, so this falls back to "not equal" (forcing a
+-- relayout) rather than propagating that error.
+local function SafeEqual(a, b)
+    local ok, result = pcall(RawEqual, a, b)
+    return ok and result
+end
+
 -- True when two row sets would draw identically. Only the fields LayoutSection
 -- actually reads into the visible label/value/icon are compared: alpha and
 -- colour churn (e.g. a proc's colour flipping between ready/active) always
@@ -134,7 +146,7 @@ local function RowsEqual(a, b)
     if #a ~= #b then return false end
     for i = 1, #a do
         local ra, rb = a[i], b[i]
-        if ra.label ~= rb.label or ra.value ~= rb.value or ra.icon ~= rb.icon then
+        if not SafeEqual(ra.label, rb.label) or not SafeEqual(ra.value, rb.value) or not SafeEqual(ra.icon, rb.icon) then
             return false
         end
     end

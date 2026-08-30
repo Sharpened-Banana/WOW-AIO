@@ -7,6 +7,7 @@ local ADDON, ns = ...
 ns.STAT_LIST = {
     { key = "ilvl",    label = "Item Level" },
     { key = "primary", label = "Primary" },
+    { key = "power",   label = "Attack/Spell Power" },
     { key = "stamina", label = "Stamina" },
     { key = "health",  label = "Health" },
     { key = "crit",    label = "Crit" },
@@ -17,6 +18,9 @@ ns.STAT_LIST = {
     { key = "avoid",   label = "Avoidance" },
     { key = "speed",   label = "Speed" },
     { key = "armor",   label = "Armor" },
+    { key = "dodge",   label = "Dodge" },
+    { key = "parry",   label = "Parry" },
+    { key = "block",   label = "Block" },
 }
 
 local DEFAULTS = {
@@ -87,6 +91,7 @@ local CHAR_DEFAULTS = {
     statsShow = {
         ilvl = true,
         primary = true,
+        power = false,
         stamina = false,
         health = false,
         crit = true,
@@ -97,6 +102,9 @@ local CHAR_DEFAULTS = {
         avoid = false,
         speed = false,
         armor = false,
+        dodge = false,
+        parry = false,
+        block = false,
     },
 }
 
