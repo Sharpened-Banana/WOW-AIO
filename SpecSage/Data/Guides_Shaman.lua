@@ -159,6 +159,11 @@ ns.GuideStore:RegisterSpec("SHAMAN", 263, {
     { slot = "Trinket", text = "A passive stat-stick trinket for consistent Stormstrike and Lava Lash damage" },
     { slot = "Weapon", text = "Two matched, high item level one-handers, kept imbued — both weapons carry Enhancement's melee damage" },
   },
+  mplusLoadout = {
+    string = "CcQAAAAAAAAAAAAAAAAAAAAAAMzMzgZmZmZmhZmZAAAAAAAAA2AsZGDLkFYGGawCAzyMmxYZZGYmZbsMzMzMGGzAAMDjZGGBmZwgxA",
+    source = "SimulationCraft default profile (credit, not endorsement of 'best')",
+    patch = "12.1",
+  },
   tips = {
     "Don't let Maelstrom Weapon stacks sit at cap — spend them before generation is wasted.",
     "Keep Crash Lightning's buff active whenever it benefits your current target count.",
