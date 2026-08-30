@@ -99,18 +99,27 @@ ns.GuideStore:RegisterSpec("MONK", 268, {
 })
 
 -- Mistweaver -------------------------------------------------------------
+-- Revised against official Blizzard patch notes for 12.1 (Curse of Ula'tek,
+-- news.blizzard.com/en-us/article/24293281): no SimC profile exists for this
+-- spec, so it is NOT SimC-cross-checked — see the mplusLoadout note in the
+-- header above. 12.1 shifts throughput out of Spinning Crane Kick (-7%) and
+-- into Mastery: Gust of Mist (+50%) and the Ancient Teachings/Way of the
+-- Crane transfer, explicitly to make Mastery a more viable secondary stat;
+-- it also adds a new Vital Expenditure talent (Soothing Mist healing +300%,
+-- mana cost +200%, a choice node against Dancing Mists).
 ns.GuideStore:RegisterSpec("MONK", 270, {
   specName = "Mistweaver",
   role = "HEALER",
   overview = {
     "Mistweaver Monk heals through a mix of direct healing spells, the Renewing Mist heal-over-time that bounces between injured allies, and periodic burst-healing windows via Revival and Thunder Focus Tea. Many builds can flex between a melee 'Fistweaving' playstyle and a pure caster playstyle.",
     "The core mechanic is Soothing Mist and Renewing Mist uptime: keeping Renewing Mist spread across the raid provides steady passive healing, while Enveloping Mist and Vivify handle spot healing, and Thunder Focus Tea empowers your next cast for extra value.",
-    "Bring Mistweaver when you want a mobile healer with strong raid-wide throughput via Revival and Mana Tea-style efficiency tools, plus meaningful damage contribution when played in a Fistweaving style.",
+    "Patch 12.1 leans the spec harder into Mastery: Gust of Mist (buffed 50%) and the Ancient Teachings/Way of the Crane damage-to-healing transfer, while trimming Spinning Crane Kick's own damage — a deliberate push to make Mastery a real secondary stat instead of an afterthought. A new Vital Expenditure talent offers a channel-heavy alternative to Dancing Mists: hugely amplified Soothing Mist healing at triple the mana cost.",
+    "Bring Mistweaver when you want a mobile healer with strong raid-wide throughput via Revival and Thunder Focus Tea, plus meaningful damage contribution when played in a Fistweaving style.",
   },
   statPriority = {
     { stat = "primary" },
+    { stat = "mastery", note = "buffed in 12.1 (Gust of Mist +50%) — a stronger pick than in past tiers" },
     { stat = "haste", note = "smooths cast times and HoT ticks" },
-    { stat = "mastery" },
     { stat = "crit" },
     { stat = "versatility" },
   },
@@ -120,19 +129,20 @@ ns.GuideStore:RegisterSpec("MONK", 270, {
         { spellID = 191837, text = "Essence Font on cooldown for group-wide healing and buffs" },
         { spellID = 191840, text = "Enveloping Mist for strong single-target/spot healing on focus-fire targets" },
         { spellID = 116670, text = "Vivify as an efficient direct heal and Renewing Mist refresher" },
-        { text = "Weave Rising Sun Kick / Blackout Kick (Fistweaving builds) to contribute damage between heals" },
+        { text = "Weave Rising Sun Kick / Blackout Kick (Fistweaving builds) to contribute damage between heals — note Spinning Crane Kick's own damage was trimmed in 12.1 in favor of Mastery-driven transfer healing" },
     }},
     { title = "Cooldown usage", steps = {
         { spellID = 115310, text = "Revival for raid-wide healing and cooldown-window damage phases" },
         { spellID = 116680, text = "Thunder Focus Tea to empower your next Enveloping Mist or Essence Font" },
-        { text = "Life Cocoon on the target about to take heavy predictable damage" },
+        { spellID = 116849, text = "Life Cocoon on the target about to take heavy predictable damage" },
         { text = "Chi-Ji / Yu'lon (talent-dependent major cooldown) for extended raid-healing windows" },
+        { text = "If talented into Vital Expenditure, lean into longer Soothing Mist channels during low-movement phases for its heavily amplified (but mana-hungry) healing" },
         { text = "Pool Thunder Focus Tea charges for high-value moments rather than using them immediately" },
     }},
   },
   cooldowns = {
     { spellID = 115310, text = "Revival — raid-wide heal + cleanse, use for a big incoming damage wave" },
-    { text = "Life Cocoon — single-target damage absorb, save for a tank swap or known burst target" },
+    { spellID = 116849, text = "Life Cocoon — single-target damage absorb, save for a tank swap or known burst target" },
     { spellID = 116680, text = "Thunder Focus Tea — empowers the next cast, use on Enveloping Mist or Essence Font for max value" },
     { text = "Invoke Yu'lon / Chi-Ji (talent) — major raid-cooldown, line up with heavy damage phases" },
     { spellID = 122783, text = "Diffuse Magic — personal defensive against magic damage" },
@@ -147,19 +157,20 @@ ns.GuideStore:RegisterSpec("MONK", 270, {
   },
   gear = {
     { slot = "Head", text = "One of your tier-set slots — the four-piece bonus adds real throughput to your Renewing Mist/Vivify loop, worth prioritizing" },
-    { slot = "Chest", text = "A large stat budget and often your other tier piece — lean Haste first to smooth cast times and Renewing Mist ticks" },
-    { slot = "Neck", text = "Usually carries a socket — favor Haste, then Mastery" },
-    { slot = "Ring", text = "No set bonus attached — use rings to round out Haste and Mastery" },
+    { slot = "Chest", text = "A large stat budget and often your other tier piece — Mastery is a stronger pick than in past tiers after its 12.1 buff, so weigh it against Haste rather than defaulting to Haste first" },
+    { slot = "Neck", text = "Usually carries a socket — favor Mastery or Haste, then whichever of the two your gear is lighter on" },
+    { slot = "Ring", text = "No set bonus attached — use rings to round out Mastery and Haste" },
     { slot = "Trinket", text = "One mana-efficiency or passive-throughput trinket to stretch your healing across a long fight" },
     { slot = "Trinket", text = "A second trinket built around a burst-healing proc or on-use effect you can align with Revival/Thunder Focus Tea" },
     { slot = "Weapon", text = "Monks can dual-wield one-handers or wield a two-hander — take the highest weapon damage option since it feeds both Fistweaving damage and healing" },
-    { slot = "Off-hand", text = "If dual-wielding, an off-hand that leans Haste keeps your cast-heavy healing loop smooth" },
+    { slot = "Off-hand", text = "If dual-wielding, an off-hand that leans Mastery or Haste keeps your cast-heavy healing loop smooth" },
   },
   tips = {
     "Keep Renewing Mist bouncing across as many raid members as reasonable — it's efficient passive throughput.",
     "Save Thunder Focus Tea for your highest-value cast rather than spending it on cooldown by default.",
-    "If Fistweaving, don't neglect direct healing when damage spikes — melee damage is a bonus, not a replacement for healing.",
+    "If Fistweaving, don't neglect direct healing when damage spikes — melee damage is a bonus, not a replacement for healing; Spinning Crane Kick's own damage was trimmed in 12.1 so lean on it less as a damage source.",
     "Pre-position Life Cocoon or Revival ahead of known scripted damage rather than reacting after the fact.",
+    "Mastery: Gust of Mist got a 50% buff in 12.1 — don't sleep on it as a secondary stat the way older-tier guidance might suggest.",
   },
 })
 

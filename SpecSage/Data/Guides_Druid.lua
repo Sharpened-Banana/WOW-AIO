@@ -259,12 +259,22 @@ ns.GuideStore:RegisterSpec("DRUID", 104, {
 })
 
 -- Restoration --------------------------------------------------------------
+-- Revised against official Blizzard patch notes for 12.1 (Curse of Ula'tek,
+-- news.blizzard.com/en-us/article/24293281): no SimC profile exists for this
+-- spec, so it is NOT SimC-cross-checked — see the mplusLoadout note in the
+-- header above. 12.1 is a usability-focused pass on Tranquility, Nature's
+-- Swiftness, and Incarnation: Tree of Life; Innervate is redesigned (now a
+-- flat mana-regen effect instead of making spells free); Abundance gets a
+-- clearer Regrowth-efficiency threshold and Swiftmend is restored to a
+-- punchier single-target emergency heal; new talents Overgrowth and Flash
+-- of Clarity were added.
 ns.GuideStore:RegisterSpec("DRUID", 105, {
   specName = "Restoration",
   role = "HEALER",
   overview = {
     "Restoration Druid heals primarily through layered heal-over-time effects (Rejuvenation, Lifebloom, Wild Growth) that cover the whole raid, supplemented by direct heals like Regrowth for spot healing and Swiftmend for instant emergency top-ups.",
-    "The core mechanic is HoT uptime and Efflorescence/Wild Growth-style group coverage: keeping Rejuvenation rolling on multiple targets and Lifebloom on the tank builds a strong passive healing floor, while Clearcasting procs from Overgrowth/other passives enable free, efficient direct heals.",
+    "The core mechanic is HoT uptime and Efflorescence/Wild Growth-style group coverage: keeping Rejuvenation rolling on multiple targets and Lifebloom on the tank builds a strong passive healing floor, while Abundance rewards casting Regrowth once a target's active HoT count drops below its threshold with a cheaper, higher-crit direct heal.",
+    "Patch 12.1 is mostly a usability pass rather than a rework: Innervate no longer makes your spells free, instead restoring a flat 25% of the target's maximum mana over 8 seconds; Swiftmend hits harder as an emergency single-target tool again; and a new Overgrowth talent lets Nature's Swiftness apply Lifebloom, Rejuvenation, and Wild Growth's HoT to your next Regrowth target in one cast.",
     "Bring Restoration when you want a mobile healer with strong raid-wide HoT coverage, good mana efficiency at moderate haste, and useful utility (Innervate, combat rebirth, roots/CC) beyond pure healing throughput.",
   },
   statPriority = {
@@ -277,24 +287,25 @@ ns.GuideStore:RegisterSpec("DRUID", 105, {
   rotation = {
     { title = "Priorities", steps = {
         { spellID = 774, text = "Rejuvenation to keep it rolling on injured or soon-to-be-injured targets" },
-        { text = "Lifebloom on the tank (or primary target) to maintain its stack and bloom value" },
+        { spellID = 33763, text = "Lifebloom on the tank (or primary target) to maintain its stack and bloom value" },
         { spellID = 48438, text = "Wild Growth on cooldown for burst group-wide healing" },
-        { spellID = 8936, text = "Regrowth for efficient spot healing, especially on Clearcasting procs" },
-        { text = "Swiftmend for instant emergency healing, consuming a HoT on the target" },
+        { spellID = 8936, text = "Regrowth for efficient spot healing — Abundance now gives a clear signal (a HoT-count threshold on the target) for when it's the efficient choice, rather than a fuzzy one" },
+        { spellID = 18562, text = "Swiftmend for instant emergency healing, consuming a HoT on the target — 12.1 restored some of its punch as a single-target tool" },
     }},
     { title = "Cooldown usage", steps = {
         { spellID = 740, text = "Tranquility for a strong raid-wide healing burst during heavy damage" },
-        { text = "Incarnation: Tree of Life (talent) to extend and empower your HoT-based healing" },
-        { text = "Flourish (talent) to extend all active HoTs during a big damage phase" },
-        { text = "Innervate on yourself or another mana-hungry healer during a long fight" },
+        { spellID = 33891, text = "Incarnation: Tree of Life (talent) to extend and empower your HoT-based healing" },
+        { spellID = 197721, text = "Flourish (talent) to extend all active HoTs during a big damage phase" },
+        { spellID = 29166, text = "Innervate on yourself or another mana-hungry healer during a long fight — redesigned in 12.1 to a flat mana-regen effect rather than free casts, so use it for sustained mana pressure rather than to enable a burst of spam-casting" },
+        { text = "If talented into Overgrowth, use Nature's Swiftness on Regrowth when you want one cast to also apply Lifebloom, Rejuvenation, and Wild Growth to the target" },
         { text = "Pre-HoT the raid ahead of known damage rather than reacting purely after it lands" },
     }},
   },
   cooldowns = {
     { spellID = 740, text = "Tranquility — raid-wide burst heal, use for a scripted heavy damage phase" },
-    { text = "Incarnation: Tree of Life (talent) — major cooldown, amplifies HoT output for its duration" },
-    { text = "Flourish (talent) — extends active HoTs, pairs well with Tranquility/Incarnation" },
-    { text = "Nature's Swiftness — makes your next heal instant, use for an emergency or to weave in while moving" },
+    { spellID = 33891, text = "Incarnation: Tree of Life (talent) — major cooldown, amplifies HoT output for its duration" },
+    { spellID = 197721, text = "Flourish (talent) — extends active HoTs, pairs well with Tranquility/Incarnation" },
+    { spellID = 132158, text = "Nature's Swiftness — makes your next heal instant, use for an emergency or to weave in while moving; with the Overgrowth talent, pair it with Regrowth to spread three HoTs in one global" },
     { spellID = 22812, text = "Barkskin — personal defensive, reduces damage taken" },
   },
   consumables = {
@@ -319,6 +330,7 @@ ns.GuideStore:RegisterSpec("DRUID", 105, {
     "Keep Rejuvenation spread across as many raid members as you can sustainably maintain — it's your mana-efficient floor.",
     "Don't let Lifebloom fall off the tank; refreshing before it blooms preserves its passive healing bonus.",
     "Pre-HoT the raid before known damage windows so Wild Growth/Tranquility land on top of existing coverage.",
-    "Use Swiftmend on cooldown-permitting emergencies rather than saving it indefinitely — it's meant to be used regularly.",
+    "Use Swiftmend on cooldown-permitting emergencies rather than saving it indefinitely — 12.1 made it hit harder again, so it's worth using regularly.",
+    "Innervate no longer frees your casts in 12.1 — it's now a straightforward 25%-of-max-mana-over-8-seconds regen effect, so treat it as sustained mana relief rather than a burst-casting cooldown.",
   },
 })

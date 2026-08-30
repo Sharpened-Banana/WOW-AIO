@@ -99,12 +99,21 @@ ns.GuideStore:RegisterSpec("EVOKER", 1467, {
 })
 
 -- Preservation -------------------------------------------------------------
+-- Revised against official Blizzard patch notes for 12.1 (Curse of Ula'tek,
+-- news.blizzard.com/en-us/article/24293281): no SimC profile exists for this
+-- spec, so it is NOT SimC-cross-checked — see the mplusLoadout note in the
+-- header above. 12.1 buffs Preservation's single-target/triage kit in PvE:
+-- Living Flame healing +20%, Verdant Embrace +25%, Dream Simulacrum's buff
+-- to Verdant Embrace up to 40% (was 30%), and Consume Flame (talent) now
+-- heals for 240% of the amount consumed (was 200%) with a fix so its heal
+-- can crit.
 ns.GuideStore:RegisterSpec("EVOKER", 1468, {
   specName = "Preservation",
   role = "HEALER",
   overview = {
     "Preservation Evoker heals through a mix of direct heals, the Echo mechanic (which doubles a future heal on the same target), and strong cooldown-driven raid healing via Dream Breath and Rewind/Time Dilation-style talents.",
     "The core mechanic is Essence for spending on abilities like Living Flame and Dream Breath, plus Echo — placing a marker on a target so your next heal on them heals for extra, rewarding pre-planning rather than purely reactive healing.",
+    "Patch 12.1 pushed extra healing into Preservation's single-target/triage tools rather than its group cooldowns: Living Flame and Verdant Embrace both hit noticeably harder, and Consume Flame (if talented) converts more of Fire Breath's damage-over-time into healing. That makes spot-healing between Dream Breath windows meaningfully stronger than in prior tiers.",
     "Bring Preservation when you want a healer with excellent raid cooldown throughput (Dream Breath, Rewind), useful damage-mitigation utility like Blessing of the Bronze and Time Dilation, and a rotation that rewards proactive Echo placement.",
   },
   statPriority = {
@@ -116,17 +125,19 @@ ns.GuideStore:RegisterSpec("EVOKER", 1468, {
   },
   rotation = {
     { title = "Priorities", steps = {
-        { text = "Echo on tanks or high-priority targets ahead of expected damage" },
-        { text = "Dream Breath (empowered) on cooldown for strong group-wide healing" },
-        { text = "Living Flame for efficient single-target healing (or damage when topped off)" },
-        { text = "Spiritbloom for strong burst healing on a cluster of injured allies" },
-        { text = "Reversion to maintain a rolling HoT on the tank or a focus target" },
+        { spellID = 364343, text = "Echo on tanks or high-priority targets ahead of expected damage" },
+        { spellID = 355936, text = "Dream Breath (empowered) on cooldown for strong group-wide healing" },
+        { spellID = 361469, text = "Living Flame for efficient single-target healing (or damage when topped off) — buffed 20% in 12.1, a stronger filler than before" },
+        { spellID = 360995, text = "Verdant Embrace to reposition to and top off an ally at range — buffed 25% in 12.1" },
+        { spellID = 367226, text = "Spiritbloom for strong burst healing on a cluster of injured allies" },
+        { spellID = 366155, text = "Reversion to maintain a rolling HoT on the tank or a focus target" },
     }},
     { title = "Cooldown usage", steps = {
         { text = "Rewind (talent) to retroactively heal the raid after a damage spike" },
         { text = "Dream Flight / Stasis (talent-dependent) for a big raid-wide cooldown window" },
-        { text = "Time Dilation to reduce damage taken by an ally proactively" },
+        { spellID = 357170, text = "Time Dilation to reduce damage taken by an ally proactively" },
         { text = "Emerald Communion for sustained healing and mana regeneration on a long fight" },
+        { text = "If talented into Consume Flame, weave it in after Fire Breath's dot has ticked for a while — it now converts a larger share (240%) of the remaining damage into healing" },
         { text = "Pre-place Echo on multiple raid members before a known damage phase" },
     }},
   },
@@ -135,7 +146,7 @@ ns.GuideStore:RegisterSpec("EVOKER", 1468, {
     { text = "Rewind (talent) — retroactive raid heal, use right after unavoidable burst damage lands" },
     { text = "Emerald Communion — channel for strong sustained self/group healing and mana return" },
     { spellID = 363916, text = "Obsidian Scales — personal defensive, reduces damage taken" },
-    { text = "Time Dilation — proactive damage reduction for an ally about to take a hit" },
+    { spellID = 357170, text = "Time Dilation — proactive damage reduction for an ally about to take a hit" },
   },
   consumables = {
     { slot = "Flask", text = "Flask of Alchemical Chaos (Intellect)" },
@@ -160,43 +171,55 @@ ns.GuideStore:RegisterSpec("EVOKER", 1468, {
     "Use empowered Dream Breath at a higher level when it's safe to hold the cast, for stronger group healing.",
     "Save Rewind for right after a big, already-landed damage spike since it heals retroactively.",
     "Blessing of the Bronze and similar buffs are raid utility — keep them refreshed on the group.",
+    "Living Flame and Verdant Embrace both got real healing buffs in 12.1 — use them more freely for single-target/triage healing between Dream Breath windows rather than treating them as pure filler.",
   },
 })
 
 -- Augmentation ---------------------------------------------------------
+-- Revised against official Blizzard patch notes for 12.1 (Curse of Ula'tek,
+-- news.blizzard.com/en-us/article/24293281): no SimC profile exists for this
+-- spec, so it is NOT SimC-cross-checked — see the mplusLoadout note in the
+-- header above. Augmentation is a support-damage hybrid, not a pure DPS or
+-- healer spec — see the overview below for how it actually plays. 12.1's
+-- documented Augmentation-specific change is to the Double-time talent: the
+-- bonus stats an ally gains when your Ebon Might critically strikes now last
+-- a flat 15 seconds (scaled by Mastery: Timewalker) and refresh if you
+-- reapply Ebon Might while the buff is still active.
 ns.GuideStore:RegisterSpec("EVOKER", 1473, {
   specName = "Augmentation",
   role = "DAMAGER",
   overview = {
-    "Augmentation Evoker is a support-damage hybrid: it deals moderate direct damage itself while its main value comes from empowering allies' damage through Ebon Might, Prescience, and other buffs, making the whole group hit harder.",
-    "The core mechanic is applying and refreshing Ebon Might (a damage buff shared with allies) and Prescience (a crit-chance buff placed on specific allies), timed around when those allies' own cooldowns are active for maximum value, alongside Essence-based direct damage like Living Flame and Upheaval.",
+    "Augmentation Evoker is a support-damage hybrid, not a conventional DPS spec: most of its value doesn't come from its own damage meter position, it comes from making everyone else's damage bigger. It casts a moderate amount of direct damage itself, but its actual job is buffing allies through Ebon Might and Prescience.",
+    "The core mechanic is applying and refreshing Ebon Might — a damage-and-versatility buff shared with you and nearby allies — and placing Prescience — a crit-chance buff — on specific allies, both timed around when those allies' own cooldowns are active so the buff amplifies a bigger number. Direct damage from Living Flame, Upheaval, and Eruption fills the gaps and generates Essence, but it is secondary to buff uptime.",
+    "Patch 12.1's one documented change specific to this spec touches the Double-time talent: the bonus stats an ally gains when your Ebon Might crits now last a flat 15 seconds and refresh if you reapply Ebon Might while that buff is still active, so a well-timed refresh keeps the bonus rolling continuously instead of needing to be re-triggered by a fresh crit.",
     "Bring Augmentation when your group wants a force-multiplier spec that boosts the whole raid's damage output, especially in coordinated cooldown-stacking compositions, rather than pure personal damage.",
   },
   statPriority = {
     { stat = "primary" },
     { stat = "crit" },
     { stat = "haste" },
-    { stat = "mastery" },
+    { stat = "mastery", note = "Mastery: Timewalker extends and retroactively applies your buffs — don't undervalue it versus a DPS spec's usual priorities" },
     { stat = "versatility" },
   },
   rotation = {
     { title = "Priorities", steps = {
-        { text = "Ebon Might on yourself and key allies, timed to line up with their damage cooldowns" },
+        { spellID = 395152, text = "Ebon Might on yourself and key allies, timed to line up with their damage cooldowns" },
         { text = "Prescience on two allies (typically high-damage or cooldown-heavy players), keep it refreshed" },
-        { text = "Living Flame as filler direct damage and Essence generation" },
+        { spellID = 361469, text = "Living Flame as filler direct damage and Essence generation" },
         { text = "Upheaval / Eruption on cooldown for direct damage and utility" },
         { text = "Breath of Eons / Black Attunement-style major cooldowns aligned with raid burst windows" },
+        { text = "If talented into Double-time, time your Ebon Might refresh to land while the previous crit's stat buff is still active — it extends cleanly instead of resetting" },
     }},
     { title = "AoE / Cooldown usage", steps = {
         { text = "Prioritize applying Ebon Might/Prescience to the group before your own direct damage in AoE" },
-        { text = "Time Might/Prescience with allies' cooldown windows rather than a fixed rotation" },
+        { text = "Time Ebon Might/Prescience with allies' cooldown windows rather than a fixed rotation — this is the spec's actual damage output, not a buff bolted onto a DPS rotation" },
         { text = "Use your empower spells (Upheaval) on cooldown for both damage and utility knockback control" },
         { text = "Coordinate Breath of Eons-style major cooldowns with the raid's planned burst window" },
         { text = "Keep moving to reposition buffs efficiently across a spread-out raid" },
     }},
   },
   cooldowns = {
-    { text = "Ebon Might — core damage-sharing buff, refresh on cooldown and time with allies' burst windows" },
+    { spellID = 395152, text = "Ebon Might — core damage-sharing buff, refresh on cooldown and time with allies' burst windows" },
     { text = "Breath of Eons (talent) — major raid-wide burst cooldown, coordinate with the raid's cooldown plan" },
     { text = "Prescience — crit buff for two allies, prioritize players with strong burst cooldowns of their own" },
     { spellID = 363916, text = "Obsidian Scales — personal defensive, reduces damage taken" },
@@ -224,5 +247,6 @@ ns.GuideStore:RegisterSpec("EVOKER", 1473, {
     "Don't treat this as a pure personal-damage spec — your buff uptime on the raid matters more than your own damage meter position.",
     "Reapply Prescience before it expires, and consider swapping targets if a different ally's cooldown window is coming up.",
     "Coordinate your major cooldowns with the raid's overall burst plan rather than using them purely on cooldown.",
+    "If you've talented Double-time, refresh Ebon Might while its crit-triggered stat buff is still active rather than letting it lapse — since 12.1 the refresh extends the buff cleanly instead of forcing a new crit to restart it.",
   },
 })
