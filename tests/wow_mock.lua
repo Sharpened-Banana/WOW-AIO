@@ -880,6 +880,9 @@ SlashCmdList = {}
 
 MinimalSliderWithSteppersMixin = { Label = { Right = 1 } }
 
+-- Variable names passed to RegisterProxySetting, in order.
+mock.settingsRegistered = {}
+
 local function NewSettingsCategory(name)
     local category = { name = name, id = name }
     function category:GetID() return self.id end
@@ -898,11 +901,18 @@ Settings = {
     end,
 
     -- Current signature: (category, variable, variableType, name, default, get, set)
-    RegisterProxySetting = function(_, variable, variableType, name, _, get, set)
+    RegisterProxySetting = function(_, variable, variableType, name, default, get, set)
         assert(type(variableType) == "string",
             "RegisterProxySetting called with the legacy signature for " .. tostring(variable))
         assert(type(get) == "function", "missing getter for " .. tostring(variable))
         assert(type(set) == "function", "missing setter for " .. tostring(variable))
+        -- The live client rejects a default whose type disagrees with the
+        -- declared variableType; catching that here rather than in the game.
+        assert(type(default) == variableType,
+            ("default for %s is %s, declared %s"):format(tostring(variable), type(default), variableType))
+        -- Recorded so tests can assert the panel actually registered every
+        -- widget, not merely that building it did not error.
+        mock.settingsRegistered[#mock.settingsRegistered + 1] = variable
         return { variable = variable, name = name, get = get, set = set }
     end,
 

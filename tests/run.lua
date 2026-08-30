@@ -1113,6 +1113,44 @@ local options = ns:GetModule("Options")
 check(options.category ~= nil, "settings category registered")
 check(pcall(ns.OpenOptions), "opening options does not error")
 
+-- Every stat in STAT_LIST must be reachable from the panel, or a stat can
+-- only ever be toggled through /sage stat.
+do
+    local registeredVars = {}
+    for _, variable in ipairs(mock.settingsRegistered or {}) do
+        registeredVars[variable] = true
+    end
+    local missing = {}
+    for _, entry in ipairs(ns.STAT_LIST) do
+        if not registeredVars["SpecSage_stat_" .. entry.key] then
+            missing[#missing + 1] = entry.key
+        end
+    end
+    check(#missing == 0, "every STAT_LIST entry has an options checkbox"
+        .. (#missing > 0 and (" (missing: " .. table.concat(missing, ", ") .. ")") or ""))
+end
+
+-- The panel used to be built by code that indexed
+-- MinimalSliderWithSteppersMixin.Label.Right outside the pcall meant to
+-- protect it, so a client without that global lost the entire panel (and
+-- /sage config reported "options panel unavailable") after only the handful
+-- of checkboxes that precede the first slider. Rebuilding without the global
+-- must still produce a full panel.
+do
+    local savedMixin = MinimalSliderWithSteppersMixin
+    MinimalSliderWithSteppersMixin = nil
+
+    local before = #(mock.settingsRegistered or {})
+    local ok = pcall(function() options:OnEnable() end)
+    local after = #(mock.settingsRegistered or {})
+
+    MinimalSliderWithSteppersMixin = savedMixin
+
+    check(ok, "rebuilding the panel without MinimalSliderWithSteppersMixin does not error")
+    check(options.category ~= nil, "the category survives a missing slider mixin")
+    check(after - before >= #ns.STAT_LIST, "sliders do not abort the panel when the mixin is missing")
+end
+
 --------------------------------------------------------------------------------
 section("Ticker safety")
 --------------------------------------------------------------------------------
