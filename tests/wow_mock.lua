@@ -465,6 +465,34 @@ mock.armor = { base = 3000, effective = 4500, posBuff = 0 }
 function UnitArmor()
     return mock.armor.base, mock.armor.effective, mock.armor.effective, mock.armor.posBuff, 0
 end
+function UnitLevel() return 80 end
+function UnitEffectiveLevel() return 80 end
+
+-- Main-hand / off-hand swing times, as the character sheet's Attack Speed.
+mock.attackSpeed = { main = 1.99, off = 2.60 }
+function UnitAttackSpeed() return mock.attackSpeed.main, mock.attackSpeed.off end
+
+mock.attackPower = { base = 3000, posBuff = 819, negBuff = 0 }
+function UnitAttackPower()
+    return mock.attackPower.base, mock.attackPower.posBuff, mock.attackPower.negBuff
+end
+function GetSpellBonusDamage(school) return 3700 + school * 10 end
+
+function GetDodgeChance() return 3.00 end
+function GetParryChance() return 24.88 end
+function GetBlockChance() return 33.66 end
+
+-- Returns an effectiveness RATIO (0-1), the way the live API does; the
+-- character sheet multiplies it by 100 for display. Deliberately not the old
+-- armor/((85*level)+400) curve, which no longer matches the client.
+C_PaperDollInfo = {
+    GetArmorEffectiveness = function(armor, attackerLevel)
+        assert(type(attackerLevel) == "number", "GetArmorEffectiveness needs an attacker level")
+        local value = (armor or 0) / ((armor or 0) + 5000)
+        return value
+    end,
+}
+
 function GetAverageItemLevel() return 639.5, 636.2, 0 end
 function GetCritChance() return 21.34 end
 function GetSpellCritChance(school) return 18 + school end

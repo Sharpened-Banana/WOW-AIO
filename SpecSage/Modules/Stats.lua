@@ -10,6 +10,9 @@ local Stats = ns:NewModule("Stats")
 local GetSpecialization = (C_SpecializationInfo and C_SpecializationInfo.GetSpecialization) or GetSpecialization
 local GetSpecializationInfo = (C_SpecializationInfo and C_SpecializationInfo.GetSpecializationInfo) or GetSpecializationInfo
 
+-- Shared guard for expressions that may touch secret values (Core/Init.lua).
+local SafeCall = ns.SafeCall
+
 local STAT_STRENGTH, STAT_AGILITY, STAT_STAMINA, STAT_INTELLECT = 1, 2, 3, 4
 
 -- Combat rating indices, with numeric fallbacks in case a global is missing.
@@ -190,6 +193,27 @@ readers.power = function(primaryStat)
     return "Attack Power", ns.FormatNumber(GetAttackPower())
 end
 
+-- format() on a secret value propagates the secret into a displayable
+-- string, but a bad value would otherwise error; same contract as
+-- ns.FormatNumber's fallback.
+local function SafeFormat(pattern, value)
+    local ok, result = pcall(format, pattern, value or 0)
+    if ok then return result end
+    return "-"
+end
+
+-- Main-hand and off-hand swing times, as the character sheet's Attack Speed.
+local function GetAttackSpeeds()
+    if not UnitAttackSpeed then return nil, nil end
+    local main, off = UnitAttackSpeed("player")
+    return main, off
+end
+
+readers.attackspeed = function()
+    local main = GetAttackSpeeds()
+    return "Attack Speed", SafeFormat("%.2f", main)
+end
+
 readers.dodge = function()
     return "Dodge", ns.FormatPercent(GetDodgeChance() or 0)
 end
@@ -232,6 +256,43 @@ local function Rating(index)
     return GetCombatRating and GetCombatRating(index) or 0
 end
 
+-- What the armor actually does, the way Blizzard's own character sheet puts
+-- it ("Physical damage reduction: 56.62%"), rather than only the rating.
+--
+-- The number comes from C_PaperDollInfo.GetArmorEffectiveness against an
+-- attacker of the player's own level - "an evenly matched enemy" in
+-- Blizzard's wording. There is deliberately no formula fallback: the old
+-- armor/((85*level)+400) curve is obsolete (it reports ~48% where the live
+-- client shows 56.62% for the same armor), so a client without the API omits
+-- the line rather than printing a confidently wrong one.
+local function GetArmorReductionPercent(effectiveArmor)
+    if not (C_PaperDollInfo and C_PaperDollInfo.GetArmorEffectiveness) then return nil end
+
+    local level
+    if UnitEffectiveLevel then
+        level = SafeCall(function() return UnitEffectiveLevel("player") end)
+    end
+    if not level and UnitLevel then
+        level = SafeCall(function() return UnitLevel("player") end)
+    end
+    if not level then return nil end
+
+    local ok, effectiveness = pcall(C_PaperDollInfo.GetArmorEffectiveness, effectiveArmor, level)
+    if not ok then return nil end
+
+    -- Documented as an effectiveness ratio (0-1). A value above 1 can only
+    -- be an already-scaled percentage, since reduction cannot exceed 100%.
+    -- Comparing is itself guarded: effectiveArmor can be a secret value in
+    -- restricted content, and a secret in makes a secret out.
+    return SafeCall(function()
+        if type(effectiveness) ~= "number" then return nil end
+        local percent = effectiveness <= 1 and effectiveness * 100 or effectiveness
+        if percent < 0 then return 0 end
+        if percent > 100 then return 100 end
+        return percent
+    end)
+end
+
 local function RatingLines(index, ratingLabel)
     return {
         { left = ratingLabel or "Rating", right = ns.FormatNumber(Rating(index)) },
@@ -253,6 +314,7 @@ local DESCRIPTIONS = {
     speed = "Increases your movement speed.",
     armor = "Reduces the physical damage you take.",
     power = "Increases the damage of your attacks or spells, depending on which one your specialisation scales with.",
+    attackspeed = "How long each of your weapon swings takes. Haste lowers it.",
     dodge = "Chance to completely avoid a melee or ranged attack.",
     parry = "Chance to deflect a melee attack and reduce the attacker's next swing timer. Requires a melee weapon.",
     block = "Chance for your shield to block part of an incoming melee hit. Requires a shield.",
@@ -343,9 +405,32 @@ tooltipBuilders.armor = function()
         { left = "Base", right = ns.FormatNumber(base) },
         { left = "Effective", right = ns.FormatNumber(effective) },
     }
-    if (posBuff or 0) > 0 then
+    if SafeCall(function() return (posBuff or 0) > 0 end) then
         lines[#lines + 1] = { left = "From buffs", right = "+" .. ns.FormatNumber(posBuff) }
     end
+
+    -- What the armor is actually worth, the way the character sheet shows it.
+    local reduction = GetArmorReductionPercent(effective)
+    if reduction then
+        lines[#lines + 1] = { left = "Physical damage reduction", right = ns.FormatPercent(reduction) }
+        lines[#lines + 1] = { left = "|cff808080Against an evenly matched enemy|r", right = "" }
+    end
+
+    return { lines = lines }
+end
+
+tooltipBuilders.attackspeed = function()
+    local main, off = GetAttackSpeeds()
+    local lines = {
+        { left = "Main hand", right = SafeFormat("%.2f sec", main) },
+    }
+    if SafeCall(function() return off and off > 0 end) then
+        lines[#lines + 1] = { left = "Off hand", right = SafeFormat("%.2f sec", off) }
+    end
+
+    -- Haste is what moves this number, so name the connection rather than
+    -- leaving the player to infer it.
+    lines[#lines + 1] = { left = "Haste", right = ns.FormatPercent(GetHaste() or 0) }
     return { lines = lines }
 end
 
@@ -441,7 +526,11 @@ end
 function Stats:OnEnable()
     local function OnStatEvent(event, unit)
         -- Unit-scoped events fire for every unit in range; only ours matters.
-        if unit and unit ~= "player" then return end
+        -- UNIT_AURA's payload is fully secret while auras are secret, and
+        -- comparing a secret value errors, so an unreadable unit falls
+        -- through to updating rather than taking the handler down.
+        local ok, other = pcall(function() return unit and unit ~= "player" end)
+        if ok and other then return end
         self:Update()
     end
 

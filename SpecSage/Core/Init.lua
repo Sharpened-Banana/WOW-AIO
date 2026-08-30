@@ -68,6 +68,22 @@ eventFrame:SetScript("OnEvent", function(_, event, ...)
 end)
 
 --------------------------------------------------------------------------------
+-- Secret-value helpers
+--
+-- Midnight's secret values error on comparison, arithmetic and string
+-- formatting rather than returning something useless, so any expression that
+-- touches unit/aura/combat data has to be able to fail without taking its
+-- caller down. ns.SafeCall runs one such expression and reports "could not
+-- read that" as nil.
+--------------------------------------------------------------------------------
+
+function ns.SafeCall(fn)
+    local ok, result = pcall(fn)
+    if ok then return result end
+    return nil
+end
+
+--------------------------------------------------------------------------------
 -- Number / text helpers
 --
 -- Midnight's secret values (see UI/Overlay.lua's SafeEqual) reach these

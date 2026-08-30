@@ -667,6 +667,127 @@ local badWatch, reason = ns:GetModule("Procs"):Watch(999999)
 check(not badWatch, "watching an unknown spell ID is rejected", reason)
 
 --------------------------------------------------------------------------------
+section("Procs: auras refused by the client")
+--------------------------------------------------------------------------------
+
+-- In Midnight's restricted content the aura APIs refuse addon access
+-- outright rather than returning secrets: AuraUtil.ForEachAura throws from
+-- inside GetAuraSlots, before our callback runs. On a 0.1s ticker that
+-- produced 25k+ errors in a single session.
+do
+    local ProcsModule = ns:GetModule("Procs")
+    local savedForEach = AuraUtil.ForEachAura
+    local savedByID = C_UnitAuras.GetPlayerAuraBySpellID
+    local savedWatch = ns.chardb.watch
+
+    local attempts, blocking = 0, true
+    AuraUtil.ForEachAura = function(unit, filter, _, callback)
+        attempts = attempts + 1
+        if blocking then
+            error("GetAuraSlots(): Auras cannot be accessed when secret while tainted by 'SpecSage'")
+        end
+        callback({ spellId = 4321, name = "Recovered Proc", icon = 1, duration = 10,
+            expirationTime = GetTime() + 5, applications = 1 })
+    end
+    C_UnitAuras.GetPlayerAuraBySpellID = function()
+        error("Auras cannot be accessed when secret while tainted by 'SpecSage'")
+    end
+
+    ns.chardb.watch = {}
+    ns.db.procs.enabled, ns.db.procs.autoDetect = true, true
+
+    local escaped = 0
+    for _ = 1, 200 do
+        if not pcall(function() ProcsModule:Update() end) then escaped = escaped + 1 end
+        mock.Advance(0.1)
+    end
+
+    check(escaped == 0, "a refusing aura API never lets an error escape Update", escaped)
+    check(attempts < 20, "refusals back off instead of retrying every tick",
+        format("%d attempts across 200 ticks", attempts))
+    check(ProcsModule:AurasBlocked(), "the module reports auras as blocked")
+
+    -- /sage scan must say why it is empty rather than claim there are no buffs.
+    local scanned, blocked = ProcsModule:ScanAuras()
+    check(#scanned == 0 and blocked, "ScanAuras reports the refusal instead of an empty buff list")
+
+    -- A fully secret UNIT_AURA payload: even comparing the unit token errors.
+    local secretUnit = setmetatable({}, {
+        __eq = function() error("secret value") end,
+        __index = function() error("secret value") end,
+    })
+    check(pcall(function() mock.Fire("UNIT_AURA", secretUnit) end),
+        "a secret UNIT_AURA payload does not take the handler down")
+
+    -- Leaving restricted content restores proc tracking on its own.
+    blocking = false
+    mock.Advance(10)
+    ProcsModule:Update()
+    check(not ProcsModule:AurasBlocked(), "proc tracking recovers once auras are readable again")
+    check(findRow("procs", "Recovered Proc") ~= nil, "auto-detected procs come back after recovery")
+
+    AuraUtil.ForEachAura = savedForEach
+    C_UnitAuras.GetPlayerAuraBySpellID = savedByID
+    ns.chardb.watch = savedWatch
+    ProcsModule:Update()
+end
+
+--------------------------------------------------------------------------------
+section("Stat tooltips: derived values")
+--------------------------------------------------------------------------------
+
+-- Blizzard's own character sheet explains what a stat is worth, not just its
+-- rating ("Physical damage reduction: 56.62%"). These assert SpecSage's
+-- tooltips carry the same derived numbers.
+do
+    local provider = ns.UI:GetSectionProvider("stats")
+    check(provider ~= nil, "the stats section publishes a tooltip provider")
+
+    local function lineValue(data, leftPattern)
+        for _, line in ipairs((data and data.lines) or {}) do
+            if line.left and line.left:find(leftPattern, 1, true) then return line.right end
+        end
+        return nil
+    end
+
+    local armor = provider("armor")
+    check(armor ~= nil, "the armor tooltip resolves")
+    -- The mock's effectiveness curve: 4500 / (4500 + 5000) = 0.47368...
+    local reduction = lineValue(armor, "Physical damage reduction")
+    check(reduction == "47.37%", "armor tooltip shows physical damage reduction", tostring(reduction))
+    check(lineValue(armor, "evenly matched") ~= nil,
+        "armor tooltip notes the reduction is against an evenly matched enemy")
+    check(lineValue(armor, "Effective") ~= nil, "armor tooltip still shows effective armor")
+
+    -- A client without the API must omit the line rather than guess with the
+    -- obsolete formula.
+    local savedPaperDoll = C_PaperDollInfo
+    C_PaperDollInfo = nil
+    local armorNoAPI = provider("armor")
+    check(lineValue(armorNoAPI, "Physical damage reduction") == nil,
+        "without GetArmorEffectiveness the reduction line is omitted, not guessed")
+    check(lineValue(armorNoAPI, "Effective") ~= nil, "the rest of the armor tooltip survives")
+    C_PaperDollInfo = savedPaperDoll
+
+    -- Attack Speed, the other derived stat from the character sheet.
+    ns.StatsShown().attackspeed = true
+    ns.RefreshAll()
+    local speedRow = findRow("stats", "Attack Speed")
+    check(speedRow ~= nil, "Attack Speed renders a stat row")
+    check(speedRow and speedRow.value == "1.99", "Attack Speed shows the main-hand swing time",
+        speedRow and speedRow.value)
+
+    local speedTip = provider("attackspeed")
+    check(lineValue(speedTip, "Main hand") == "1.99 sec", "attack speed tooltip shows the main hand",
+        tostring(lineValue(speedTip, "Main hand")))
+    check(lineValue(speedTip, "Off hand") == "2.60 sec", "attack speed tooltip shows the off hand",
+        tostring(lineValue(speedTip, "Off hand")))
+    check(lineValue(speedTip, "Haste") ~= nil, "attack speed tooltip names haste as the driver")
+    ns.StatsShown().attackspeed = false
+    ns.RefreshAll()
+end
+
+--------------------------------------------------------------------------------
 section("Per-character stat visibility")
 --------------------------------------------------------------------------------
 

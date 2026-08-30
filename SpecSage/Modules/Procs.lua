@@ -34,16 +34,12 @@ local function GetSpellIcon(spellID)
     return select(3, GetSpellInfo(spellID))
 end
 
--- Runs fn under pcall and hands back its result, or nil when it errored.
 -- Cooldown starts, aura durations and expiration times are all secret values
--- in Midnight's restricted content (see Core/Init.lua's format helpers), and
--- comparing or doing arithmetic on one errors - on this module's 0.1s ticker
--- that would mean an error per tick, hundreds deep within one fight.
-local function SafeCall(fn)
-    local ok, result = pcall(fn)
-    if ok then return result end
-    return nil
-end
+-- in Midnight's restricted content, and comparing or doing arithmetic on one
+-- errors - on this module's 0.1s ticker that would mean an error per tick,
+-- thousands deep within one fight. ns.SafeCall (Core/Init.lua) is the shared
+-- guard for those expressions.
+local SafeCall = ns.SafeCall
 
 -- Returns remaining cooldown in seconds, or 0 when ready. Protected cooldown
 -- data reads as ready rather than erroring: better to underreport a state we
@@ -69,11 +65,60 @@ local function GetCooldownRemaining(spellID)
     end) or 0
 end
 
-local function GetPlayerAura(spellID)
-    if C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID then
-        return C_UnitAuras.GetPlayerAuraBySpellID(spellID)
+--------------------------------------------------------------------------------
+-- Aura availability
+--
+-- In Midnight's restricted content the aura APIs do not merely return secret
+-- values, they refuse addon access outright: AuraUtil.ForEachAura throws
+-- "Auras cannot be accessed when secret while tainted by 'SpecSage'" from
+-- inside GetAuraSlots, before our callback ever runs. Guarding the values a
+-- callback receives is therefore not enough - the call itself has to be
+-- wrapped.
+--
+-- It also has to stop being retried. This module updates on a 0.1s ticker
+-- and on every UNIT_AURA, so a call that is guaranteed to fail for the
+-- duration of an encounter fails thousands of times (25k+ in one session
+-- before this guard existed). Once a refusal is seen, aura reads are parked
+-- for a few seconds before being tried again - long enough to cost nothing,
+-- short enough that leaving restricted content restores procs promptly.
+--------------------------------------------------------------------------------
+
+local AURA_RETRY_INTERVAL = 5
+local auraBlockedUntil = 0
+local auraNoticeShown = false
+
+local function AurasReadable()
+    return GetTime() >= auraBlockedUntil
+end
+
+local function NoteAurasBlocked()
+    auraBlockedUntil = GetTime() + AURA_RETRY_INTERVAL
+
+    -- Said once per session, not once per refusal: the player should know
+    -- why the Procs section emptied out, but this is a game restriction, not
+    -- an addon fault, and it must never become its own spam.
+    if not auraNoticeShown then
+        auraNoticeShown = true
+        ns.Print("this content hides aura information from addons, so proc tracking is paused here.")
     end
-    return nil
+end
+
+-- True when aura access is currently being refused. Lets callers (the slash
+-- commands) explain an empty result rather than implying there are no buffs.
+function Procs:AurasBlocked()
+    return not AurasReadable()
+end
+
+local function GetPlayerAura(spellID)
+    if not (C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID) then return nil end
+    if not AurasReadable() then return nil end
+
+    local ok, aura = pcall(C_UnitAuras.GetPlayerAuraBySpellID, spellID)
+    if not ok then
+        NoteAurasBlocked()
+        return nil
+    end
+    return aura
 end
 
 --------------------------------------------------------------------------------
@@ -86,8 +131,12 @@ local function CollectAutoProcs(watchedSet, maxDuration)
     local found = {}
 
     if not AuraUtil or not AuraUtil.ForEachAura then return found end
+    if not AurasReadable() then return found end
 
-    AuraUtil.ForEachAura("player", "HELPFUL", nil, function(aura)
+    -- The whole iteration is wrapped, not just the per-aura work: the
+    -- refusal comes from GetAuraSlots inside ForEachAura, so it throws
+    -- before the callback below is ever reached.
+    local ok = pcall(AuraUtil.ForEachAura, "player", "HELPFUL", nil, function(aura)
         if not aura or not aura.spellId then return end
         if watchedSet[aura.spellId] then return end
 
@@ -107,6 +156,14 @@ local function CollectAutoProcs(watchedSet, maxDuration)
             count = aura.applications or 0,
         }
     end, true)
+
+    if not ok then
+        NoteAurasBlocked()
+        -- Whatever the iteration managed before it was refused is a partial
+        -- view of the player's buffs; showing half a proc list is worse than
+        -- showing none.
+        return {}
+    end
 
     -- Shortest remaining first, so the thing about to fall off is on top.
     -- Sorted under pcall as one unit: a comparator that errors partway
@@ -277,17 +334,26 @@ function Procs:ListWatched()
 end
 
 -- Dumps current player buffs so the player can find the spell ID to watch.
+-- Returns the list plus a `blocked` flag, so /sage scan can say "this
+-- content hides auras" instead of the misleading "no buffs on you right now".
 function Procs:ScanAuras()
     local results = {}
-    if not AuraUtil or not AuraUtil.ForEachAura then return results end
+    if not AuraUtil or not AuraUtil.ForEachAura then return results, false end
 
-    AuraUtil.ForEachAura("player", "HELPFUL", nil, function(aura)
+    -- Player-invoked, so it retries immediately rather than waiting out the
+    -- back-off a ticker refusal may have started.
+    local ok = pcall(AuraUtil.ForEachAura, "player", "HELPFUL", nil, function(aura)
         if aura and aura.spellId then
             results[#results + 1] = format("%s |cff888888(%d)|r", aura.name or "?", aura.spellId)
         end
     end, true)
 
-    return results
+    if not ok then
+        NoteAurasBlocked()
+        return {}, true
+    end
+
+    return results, false
 end
 
 --------------------------------------------------------------------------------
@@ -296,8 +362,14 @@ end
 
 function Procs:OnEnable()
     -- Aura events drive correctness; the ticker only keeps the timers ticking.
+    --
+    -- UNIT_AURA now delivers a fully secret payload while auras are secret,
+    -- so even the unit token can be a secret value - comparing one errors.
+    -- An unreadable unit is treated as "might be us" and updates anyway;
+    -- Update itself is cheap and fully guarded.
     ns:RegisterEvent("UNIT_AURA", function(_, unit)
-        if unit == "player" then
+        local isPlayer = SafeCall(function() return unit == "player" end)
+        if isPlayer ~= false then
             Procs:Update()
         end
     end)
