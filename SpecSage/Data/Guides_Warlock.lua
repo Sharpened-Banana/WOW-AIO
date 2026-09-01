@@ -18,6 +18,18 @@ local ADDON, ns = ...
 -- characters (up to 50 per spec) had their live `specializations` looked up
 -- for their active loadout's `talent_loadout_code`. See each field's own
 -- `source` comment for the resulting distribution.
+-- This pass also added an "Opener Notes" rotation entry naming each spec's
+-- two hero talent trees, for the one spec that didn't already have one
+-- inline (Destruction). Affliction already carried a correct hero-tree
+-- note and was left as-is; Demonology's existing note named the wrong pair
+-- (Diabolist/Soul Harvester instead of Diabolist/Hellcaller - Soul Harvester
+-- pairs with Affliction and Destruction, not Demonology) and was corrected
+-- in place. These new/corrected notes ARE cross-checked against SimC's
+-- current `midnight` branch profiles (github.com/simulationcraft/simc)
+-- where a real action-list branch exists per hero tree; where SimC's
+-- profile set has no branch (an identical actions= list either way, or no
+-- profile for the spec at all), the note says so honestly instead of
+-- inventing a rotation change.
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -137,7 +149,7 @@ ns.GuideStore:RegisterSpec("WARLOCK", 266, {
         { text = "Call Dreadstalkers and Summon Vilefiend to build your demon pack" },
         { spellID = 111898, text = "Grimoire: Felguard (if talented) to add another pet before Tyrant" },
         { spellID = 265187, text = "Summon Demonic Tyrant once your demons are out, to empower the full pack" },
-        { text = "Opener Notes: Demonology splits along the Diabolist and Soul Harvester hero trees — Diabolist adds ritual-timed summons around Tyrant, Soul Harvester leans on Demonic Soul procs, but the pool-then-Tyrant loop above holds either way" },
+        { text = "Opener Notes: Demonology splits along the Diabolist and Hellcaller hero trees (not Soul Harvester, which pairs with Affliction and Destruction instead) — check which one your loadout uses. SimC's current profile does not branch its priority list by hero tree, so the difference shows up in your passive/capstone kit rather than a different sequence to play" },
     }},
     { title = "Single Target", steps = {
         { spellID = 104316, text = "Call Dreadstalkers on cooldown to generate shards and demons" },
@@ -237,6 +249,9 @@ ns.GuideStore:RegisterSpec("WARLOCK", 267, {
         { spellID = 17962, text = "Conflagrate to generate shards quickly for more Rain of Fire casts" },
         { spellID = 80240, text = "Use Havoc to cleave Chaos Bolt/Incinerate damage onto a second target when only 2 targets are present" },
         { spellID = 196447, text = "Channel Demonfire (talent) to spend Immolate uptime into extra AoE damage" },
+    }},
+    { title = "Opener Notes", steps = {
+        { text = "Destruction's two hero talent trees are Diabolist (SimC's default; also Demonology's) and Hellcaller (also Affliction's) — check which one your loadout uses. SimC runs the same core Chaos Bolt/Incinerate priority list for both, so the difference shows up in your passive/capstone kit rather than a different sequence to play" },
     }},
   },
   cooldowns = {

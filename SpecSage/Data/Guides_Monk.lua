@@ -18,6 +18,15 @@ local ADDON, ns = ...
 -- characters (up to 50 per spec) had their live `specializations` looked up
 -- for their active loadout's `talent_loadout_code`. See each field's own
 -- `source` comment for the resulting distribution.
+-- This pass also added an "Opener Notes" rotation entry naming each spec's
+-- two hero talent trees, for the two specs that didn't already have one
+-- inline (Mistweaver, Windwalker - Brewmaster already carried a hero-tree
+-- note and was left as-is). Unlike the hand-authored prose above, these new
+-- notes ARE cross-checked against SimC's current `midnight` branch profiles
+-- (github.com/simulationcraft/simc) where a real action-list branch exists
+-- per hero tree; where SimC's profile set has no branch (an identical
+-- actions= list either way, or no profile for the spec at all), the note
+-- says so honestly instead of inventing a rotation change.
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -168,6 +177,9 @@ ns.GuideStore:RegisterSpec("MONK", 270, {
         { spellID = 209525, text = "If talented into Vital Expenditure, lean into longer Soothing Mist channels during low-movement phases for its heavily amplified (but mana-hungry) healing" },
         { text = "Pool Thunder Focus Tea charges for high-value moments rather than using them immediately" },
     }},
+    { title = "Opener Notes", steps = {
+        { text = "Mistweaver's two hero talent trees are Conduit of the Celestials (also Windwalker's) and Master of Harmony (also Brewmaster's) — check which one your loadout uses; SimC does not yet publish a Mistweaver profile to source specific rotation branching from, so this note names the trees without claiming a specific rotation change for either" },
+    }},
   },
   cooldowns = {
     { spellID = 115310, text = "Revival — raid-wide heal + cleanse, use for a big incoming damage wave" },
@@ -250,6 +262,9 @@ ns.GuideStore:RegisterSpec("MONK", 269, {
         { spellID = 152175, text = "Whirling Dragon Punch (talent) when both Rising Sun Kick and Fists of Fury are ready" },
         { text = "Storm, Earth, and Fire (talent) to split damage across multiple targets" },
         { text = "Keep combo strikes going while prioritizing AoE-focused abilities" },
+    }},
+    { title = "Opener Notes", steps = {
+        { text = "Windwalker's two hero talent trees are Conduit of the Celestials and Shado-Pan — check which one your loadout uses. SimC runs the same core combo-strike priority list for both, so the difference shows up in your passive/capstone kit rather than a different sequence to play" },
     }},
   },
   cooldowns = {

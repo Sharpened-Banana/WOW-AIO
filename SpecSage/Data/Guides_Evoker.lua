@@ -18,6 +18,18 @@ local ADDON, ns = ...
 -- characters (up to 50 per spec) had their live `specializations` looked up
 -- for their active loadout's `talent_loadout_code`. See each field's own
 -- `source` comment for the resulting distribution.
+-- This pass also added an "Opener Notes" rotation entry naming each spec's
+-- two hero talent trees, for the two specs that didn't already have one
+-- inline (Preservation, Augmentation). Devastation already carried a
+-- hero-tree note, but its specific claim (Scalecommander turning
+-- Disintegrate into a multi-target "Mass Disintegrate") does not match
+-- SimC's current profiles - both hero trees run an identical actions= list -
+-- so that note was corrected in place rather than left standing. These new/
+-- corrected notes ARE cross-checked against SimC's current `midnight` branch
+-- profiles (github.com/simulationcraft/simc) where a real action-list branch
+-- exists per hero tree; where SimC's profile set has no branch (an identical
+-- actions= list either way, or no profile for the spec at all), the note
+-- says so honestly instead of inventing a rotation change.
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -49,7 +61,7 @@ ns.GuideStore:RegisterSpec("EVOKER", 1467, {
         { spellID = 361469, text = "Living Flame while closing distance to build initial Essence" },
         { text = "Fire Breath (empowered) to apply its damage-over-time before burst" },
         { spellID = 375087, text = "Dragonrage once dots are applied, to open the main burst window" },
-        { text = "Opener Notes: Devastation splits along the Flameshaper and Scalecommander hero trees — Scalecommander turns Disintegrate into a multi-target hit via Mass Disintegrate, Flameshaper keeps closer to the single-target flow above" },
+        { text = "Opener Notes: Devastation splits along the Flameshaper and Scalecommander hero trees — check which one your loadout uses. SimC's current profiles run the same core priority list for both, so the difference shows up in your passive/capstone kit rather than a different sequence to play" },
     }},
     { title = "Single Target", steps = {
         { spellID = 361469, text = "Living Flame as a mobile filler and Essence generator" },
@@ -162,6 +174,9 @@ ns.GuideStore:RegisterSpec("EVOKER", 1468, {
         { text = "If talented into Consume Flame, weave it in after Fire Breath's dot has ticked for a while — it now converts a larger share (240%) of the remaining damage into healing" },
         { spellID = 364343, text = "Pre-place Echo on multiple raid members before a known damage phase" },
     }},
+    { title = "Opener Notes", steps = {
+        { text = "Preservation's two hero talent trees are Flameshaper (also Devastation's) and Chronowarden (also Augmentation's) — check which one your loadout uses; SimC does not yet publish a Preservation profile to source specific rotation branching from, so this note names the trees without claiming a specific rotation change for either" },
+    }},
   },
   cooldowns = {
     { spellID = 359816, text = "Dream Flight — raid-wide healing cooldown, use for a scripted heavy damage phase" },
@@ -254,6 +269,9 @@ ns.GuideStore:RegisterSpec("EVOKER", 1473, {
         { text = "Use your empower spells (Upheaval) on cooldown for both damage and utility knockback control" },
         { text = "Coordinate Breath of Eons-style major cooldowns with the raid's planned burst window" },
         { text = "Keep moving to reposition buffs efficiently across a spread-out raid" },
+    }},
+    { title = "Opener Notes", steps = {
+        { text = "Augmentation's two hero talent trees are Chronowarden (also Preservation's) and Scalecommander (also Devastation's) — check which one your loadout uses; SimC does not yet publish an Augmentation profile to source specific rotation branching from, so this note names the trees without claiming a specific rotation change for either" },
     }},
   },
   cooldowns = {

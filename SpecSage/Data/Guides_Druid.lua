@@ -18,6 +18,15 @@ local ADDON, ns = ...
 -- characters (up to 50 per spec) had their live `specializations` looked up
 -- for their active loadout's `talent_loadout_code`. See each field's own
 -- `source` comment for the resulting distribution.
+-- This pass also added an "Opener Notes" rotation entry naming each spec's
+-- two hero talent trees, for the three specs that didn't already have one
+-- inline (Feral, Guardian, Restoration - Balance already carried a hero-tree
+-- note and was left as-is). Unlike the hand-authored prose above, these new
+-- notes ARE cross-checked against SimC's current `midnight` branch profiles
+-- (github.com/simulationcraft/simc) where a real action-list branch exists
+-- per hero tree; where SimC's profile set has no branch (an identical
+-- actions= list either way, or no profile for the spec at all), the note
+-- says so honestly instead of inventing a rotation change.
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -157,6 +166,9 @@ ns.GuideStore:RegisterSpec("DRUID", 103, {
         { text = "Keep Rake up on a high-value target while cleaving with Thrash/Swipe" },
         { text = "Use Tiger's Fury and Berserk/Incarnation to power through burst AoE windows" },
     }},
+    { title = "Opener Notes", steps = {
+        { text = "Your hero talent choice changes your AoE builder priority: Wildstalker leans on tighter Rake uptime across targets and a lower Swipe threshold, while Druid of the Claw times Swipe and Shred around your Berserk/Incarnation buff and Sudden Ambush procs instead — check which one your loadout uses" },
+    }},
   },
   cooldowns = {
     { spellID = 5217, text = "Tiger's Fury — Energy refund and damage buff, use to open burst windows" },
@@ -247,6 +259,9 @@ ns.GuideStore:RegisterSpec("DRUID", 104, {
         { spellID = 22812, text = "Barkskin for a flat damage reduction window" },
         { spellID = 61336, text = "Survival Instincts for the heaviest damage spikes" },
         { text = "Don't let Rage sit unused — convert it into Ironfur before big hits rather than after" },
+    }},
+    { title = "Opener Notes", steps = {
+        { text = "Guardian shares its two hero talent trees with the specs next to it in the web: Elune's Chosen (also Balance's) and Druid of the Claw (also Feral's) — check which one your loadout uses, since SimC's current profile for Guardian does not yet branch its action list on this the way it does for Balance and Feral" },
     }},
   },
   cooldowns = {
@@ -343,6 +358,9 @@ ns.GuideStore:RegisterSpec("DRUID", 105, {
         { spellID = 29166, text = "Innervate on yourself or another mana-hungry healer during a long fight — redesigned in 12.1 to a flat mana-regen effect rather than free casts, so use it for sustained mana pressure rather than to enable a burst of spam-casting" },
         { spellID = 132158, text = "If talented into Overgrowth, use Nature's Swiftness on Regrowth when you want one cast to also apply Lifebloom, Rejuvenation, and Wild Growth to the target" },
         { text = "Pre-HoT the raid ahead of known damage rather than reacting purely after it lands" },
+    }},
+    { title = "Opener Notes", steps = {
+        { text = "Restoration's two hero talent trees are Wildstalker (also Feral's) and Keeper of the Grove (also Balance's) — check which one your loadout uses; SimC does not yet publish a Restoration profile to source specific rotation branching from, so this note names the trees without claiming a specific rotation change for either" },
     }},
   },
   cooldowns = {
