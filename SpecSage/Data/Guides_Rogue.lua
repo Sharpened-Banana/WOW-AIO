@@ -18,6 +18,12 @@ local ADDON, ns = ...
 -- characters (up to 50 per spec) had their live `specializations` looked up
 -- for their active loadout's `talent_loadout_code`. See each field's own
 -- `source` comment for the resulting distribution.
+-- Subtlety's overview/rotation/tips were also corrected this pass: Symbols
+-- of Death has zero references in SimC's current `midnight` branch
+-- profile, confirmed via a Blizzard forum thread on the ability's removal
+-- ("It got removed this patch!") — its energy refund and combo-point boost
+-- were folded directly into Shadow Dance, which now carries that role
+-- alone.
 -- This is community-maintained conventional guidance (stat priorities and
 -- rotations that match the spec's long-standing design) — not a claim of
 -- bleeding-edge sim-perfect optimization.
@@ -205,7 +211,7 @@ ns.GuideStore:RegisterSpec("ROGUE", 261, {
   specName = "Subtlety",
   role = "DAMAGER",
   overview = {
-    "Subtlety Rogue is a Shadow-infused melee spec built around Shadow Dance windows and Symbols of Death, spending combo points on Eviscerate while weaving in Shadowstrike from stealth. It plays as a burst-window spec, dealing much of its damage inside timed cooldown windows rather than a flat sustained rotation.",
+    "Subtlety Rogue is a Shadow-infused melee spec built around Shadow Dance windows, spending combo points on Eviscerate while weaving in Shadowstrike from stealth. Symbols of Death was removed and its energy/combo-point boost folded directly into Shadow Dance itself, so Shadow Dance alone now carries that role. It plays as a burst-window spec, dealing much of its damage inside timed cooldown windows rather than a flat sustained rotation.",
     "The core resource is Energy, spent to build combo points with Shadowstrike and Backstab, then spent on Eviscerate and Black Powder. The defining mechanic is Shadow Dance, which grants stealth-like access to Shadowstrike outside of true stealth, making burst windows repeatable throughout a fight rather than limited to the opener.",
     "Subtlety brings strong burst damage inside cooldown windows, good AoE through Black Powder, and useful utility (Shroud of Concealment, Distract), making it a good pick for fights with clear burst phases or add windows to dump cooldowns into.",
   },
@@ -218,25 +224,25 @@ ns.GuideStore:RegisterSpec("ROGUE", 261, {
   },
   rotation = {
     { title = "Single Target", steps = {
-        { spellID = 212283, text = "Symbols of Death on cooldown to buff damage and enable Shadow Dance uptime" },
+        { text = "Shadow Dance on cooldown — it now carries the energy refund and combo-point boost that used to come from the separate Symbols of Death button" },
         { spellID = 185313, text = "Shadow Dance to access Shadowstrike outside of stealth" },
         { spellID = 185438, text = "Shadowstrike as your primary combo point builder during Dance windows" },
         { spellID = 53, text = "Backstab to build combo points outside of Dance windows" },
         { spellID = 196819, text = "Eviscerate to spend combo points" },
-        { text = "Keep Symbols of Death and Shadow Dance windows synced for maximum burst" },
+        { text = "Keep Shadow Dance on cooldown for maximum burst" },
     }},
     { title = "AoE", steps = {
         { spellID = 319175, text = "Black Powder as the primary AoE combo point spender" },
-        { spellID = 212283, text = "Symbols of Death on cooldown to buff AoE damage" },
+        { text = "Shadow Dance on cooldown to buff AoE damage" },
         { spellID = 185313, text = "Shadow Dance for extra Shadowstrike/Black Powder access" },
         { spellID = 185438, text = "Shadowstrike still a strong builder, hits the primary target" },
         { spellID = 53, text = "Backstab as filler builder when Dance is down" },
         { text = "Prioritize Black Powder over Eviscerate once 2+ targets are engaged" },
     }},
     { title = "Opener Notes", steps = {
-        { text = "Open from Stealth with Shadowstrike, then use Symbols of Death to chain into Shadow Dance" },
+        { text = "Open from Stealth with Shadowstrike, then chain into Shadow Dance" },
         { text = "Save a second Shadow Dance charge if possible to extend your opening burst window" },
-        { text = "Your hero talent choice colors the finisher priority — Deathstalker weaves its mark debuff into the builder/finisher cycle, while Trickster stacks its own resource on top of combo points — but the core Shadow Dance/Symbols of Death cadence stays the same either way" },
+        { text = "Your hero talent choice colors the finisher priority — Deathstalker weaves its mark debuff into the builder/finisher cycle, while Trickster stacks its own resource on top of combo points — but the core Shadow Dance cadence stays the same either way" },
     }},
   },
   cooldowns = {
@@ -281,7 +287,7 @@ ns.GuideStore:RegisterSpec("ROGUE", 261, {
     sampleSize = 50,
   },
   tips = {
-    "Sync Symbols of Death with Shadow Dance whenever possible for the strongest burst windows.",
+    "Keep Shadow Dance on cooldown whenever possible for the strongest burst windows.",
     "Don't waste Shadow Dance charges outside of a real damage window if you can help it.",
     "Black Powder overtakes Eviscerate quickly once a second target is in range.",
     "Vanish can be used offensively to re-enter stealth for another Shadowstrike, not just defensively.",

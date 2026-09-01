@@ -18,6 +18,14 @@ local ADDON, ns = ...
 -- characters (up to 50 per spec) had their live `specializations` looked up
 -- for their active loadout's `talent_loadout_code`. See each field's own
 -- `source` comment for the resulting distribution.
+-- Shadow's overview/rotation/tips were also corrected this pass, confirmed
+-- against SimC's current `midnight` branch profile: Shadow Crash has zero
+-- references (replaced by Tentacle Slam, confirmed via a Blizzard forum
+-- thread titled "Replacing One of the Worst Spells Ever Designed (Shadow
+-- Crash) With Something Worse (Tentacle Slam)"), and Void Bolt/Void
+-- Eruption both have zero references (Voidform is now a directly-cast
+-- burst-window cooldown, with Void Volley as the limited-use Insanity
+-- spender inside it, per Blizzard's Curse of Ula'tek Content Update Notes).
 -- This is community-maintained conventional guidance (stat priorities and
 -- rotations that match the spec's long-standing design) — not a claim of
 -- bleeding-edge sim-perfect optimization.
@@ -201,9 +209,9 @@ ns.GuideStore:RegisterSpec("PRIEST", 258, {
   specName = "Shadow",
   role = "DAMAGER",
   overview = {
-    "Shadow Priest is a DoT-focused caster spec built around maintaining Shadow Word: Pain and Vampiric Touch on the target while spending Insanity on Mind Blast and Void Eruption/Void Bolt-style casts. It plays as a sustained-pressure spec with an escape-into-Voidform rhythm that rewards good DoT and Insanity management.",
-    "The core resource is Insanity, generated from Mind Blast, Mind Flay/Mind Spike, and DoT ticks, and spent on Void Bolt and Void Eruption-related abilities. The defining mechanic is DoT uptime combined with the Insanity-fueled Voidform-style burst window, where damage output is meaningfully higher and must be timed with cooldowns and add windows.",
-    "Shadow Priest brings strong DoT-based cleave and AoE through Shadow Crash and Mind Sear, useful raid utility (Mass Dispel, Fade), and solid execute-independent scaling, making it a good pick for fights with multiple DoT-friendly targets or sustained add phases.",
+    "Shadow Priest is a DoT-focused caster spec built around maintaining Shadow Word: Pain and Vampiric Touch on the target while spending Insanity on Mind Blast, entering Voidform (a directly-cast burst-window cooldown) to unlock a handful of Void Volley casts. It plays as a sustained-pressure spec with an escape-into-Voidform rhythm that rewards good DoT and Insanity management.",
+    "The core resource is Insanity, generated from Mind Blast, Mind Flay, and DoT ticks, and spent on Void Volley once you're in Voidform. The defining mechanic is DoT uptime combined with the Insanity-fueled Voidform burst window, where damage output is meaningfully higher and must be timed with cooldowns and add windows.",
+    "Shadow Priest brings strong DoT-based cleave and AoE through Tentacle Slam, useful raid utility (Mass Dispel, Fade), and solid execute-independent scaling, making it a good pick for fights with multiple DoT-friendly targets or sustained add phases.",
   },
   statPriority = {
     { stat = "primary", note = "Intellect, passive" },
@@ -218,28 +226,28 @@ ns.GuideStore:RegisterSpec("PRIEST", 258, {
         { spellID = 34914, text = "Vampiric Touch kept active on the target" },
         { spellID = 8092, text = "Mind Blast on cooldown — strong Insanity generator" },
         { spellID = 15407, text = "Mind Flay as your primary Insanity-neutral filler" },
-        { spellID = 205448, text = "Void Bolt on cooldown once available for burst damage" },
+        { text = "Once in Voidform, spend your limited Void Volley casts before it ends" },
         { text = "Void Torrent during your burst window — a channeled Insanity-fueled cooldown, keep your DoTs freshly refreshed before using it" },
         { spellID = 32379, text = "Shadow Word: Death as an execute-range filler (also usable off-cooldown for its Insanity refund on a kill)" },
         { spellID = 335467, text = "Shadow Word: Madness, a hard-hitting DoT/burst tool, has joined the kit alongside Shadow Word: Pain and Vampiric Touch — weave it into your DoT upkeep rather than treating it as optional" },
         { text = "Refresh DoTs before they fall off rather than letting them lapse" },
     }},
     { title = "AoE", steps = {
-        { spellID = 205385, text = "Shadow Crash to spread DoTs to multiple targets at once" },
-        { text = "Multi-dot with Mind Blast/Void Bolt and let Shadow Word: Pain/Vampiric Touch carry the AoE damage — Mind Sear was removed and Shadow has no dedicated AoE filler" },
+        { text = "Tentacle Slam to spread DoTs to multiple targets instantly, with no travel time (replaced Shadow Crash)" },
+        { text = "Multi-dot with Mind Blast and let Shadow Word: Pain/Vampiric Touch carry the AoE damage — Mind Sear was removed and Shadow has no dedicated AoE filler" },
         { spellID = 589, text = "Shadow Word: Pain maintained on priority targets" },
         { spellID = 8092, text = "Mind Blast on cooldown, still strong even while cleaving" },
-        { spellID = 205448, text = "Void Bolt on cooldown for burst during add waves" },
+        { text = "Spend Void Volley casts during Voidform for burst during add waves" },
         { text = "Keep DoTs rolling on as many targets as your Insanity budget allows" },
     }},
     { title = "Opener Notes", steps = {
         { text = "Apply Shadow Word: Pain and Vampiric Touch immediately, then build toward your burst window" },
         { text = "Line up your Insanity-spending burst cooldown with trinkets and other offensive cooldowns" },
-        { text = "The Voidweaver hero talent path leans on Void Torrent and your Void-empowered casts inside the burst window; the Archon path instead ramps a stacking buff into Void Eruption — check which one your loadout uses before assuming a fixed cooldown cadence" },
+        { text = "The Voidweaver hero talent path leans on Void Torrent and your Void-empowered casts inside the burst window; the Archon path instead ramps a stacking buff into Voidform — check which one your loadout uses before assuming a fixed cooldown cadence" },
     }},
   },
   cooldowns = {
-    { spellID = 228260, text = "Void Eruption or your spec's burst-window cooldown — use on cooldown" },
+    { text = "Voidform — your burst-window cooldown, use on cooldown" },
     { text = "Void Torrent — channeled Insanity dump, line up with your DoTs freshly applied" },
     { spellID = 47585, text = "Dispersion — damage reduction and mana/Insanity recovery cooldown" },
     { spellID = 586, text = "Fade to drop threat or avoid certain mechanics" },
@@ -282,7 +290,7 @@ ns.GuideStore:RegisterSpec("PRIEST", 258, {
   },
   tips = {
     "Never let Shadow Word: Pain or Vampiric Touch fall off a target you'll keep attacking.",
-    "Shadow Crash is a strong opener tool for seeding DoTs across a whole pull.",
+    "Tentacle Slam is a strong opener tool for seeding DoTs across a whole pull, with no travel time to wait out.",
     "Don't dump Insanity haphazardly — plan your burst window around your strongest cooldowns.",
     "Fade is useful for both threat management and dodging certain mechanics — don't save it purely for emergencies.",
   },

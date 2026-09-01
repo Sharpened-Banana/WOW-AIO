@@ -18,6 +18,13 @@ local ADDON, ns = ...
 -- characters (up to 50 per spec) had their live `specializations` looked up
 -- for their active loadout's `talent_loadout_code`. See each field's own
 -- `source` comment for the resulting distribution.
+-- Elemental's overview/rotation/tips were also corrected this pass: they
+-- described Earth Shock as the Maelstrom spender, but in SimC's current
+-- `midnight` branch profile it appears once, well behind Elemental Blast
+-- and Tempest (10 references) - a free, automatically-triggered empowered
+-- Lightning Bolt/Chain Lightning the guide never mentioned at all, despite
+-- it now carrying a large share of the spec's damage baseline (no talent
+-- gate on it in the APL).
 -- This is community-maintained conventional guidance (stat priorities and
 -- rotations that match the spec's long-standing design) — not a claim of
 -- bleeding-edge sim-perfect optimization.
@@ -31,8 +38,8 @@ ns.GuideStore:RegisterSpec("SHAMAN", 262, {
   specName = "Elemental",
   role = "DAMAGER",
   overview = {
-    "Elemental Shaman is a ranged caster spec that blends instant-cast Lava Burst and Lightning Bolt spam with Maelstrom-fueled Earth Shock casts, all while maintaining Flame Shock on the target as a bridge between Lava Burst casts. It plays with a mix of instant and hard-cast spells that reward positioning discipline during movement-heavy fights.",
-    "The core resource is Maelstrom, generated from spells like Lightning Bolt and Earth Shock's associated generators, and spent on Earth Shock. The defining mechanic is Lava Surge, a proc that makes Lava Burst instant and resets its cooldown — chaining these procs with Flame Shock uptime is central to sustained damage.",
+    "Elemental Shaman is a ranged caster spec that blends instant-cast Lava Burst and Lightning Bolt spam with Maelstrom-fueled Earth Shock and Elemental Blast casts, plus a free empowered Lightning Bolt/Chain Lightning (Tempest) that fires once enough Maelstrom is built, all while maintaining Flame Shock on the target as a bridge between Lava Burst casts. It plays with a mix of instant and hard-cast spells that reward positioning discipline during movement-heavy fights.",
+    "The core resource is Maelstrom, generated from spells like Lightning Bolt, and spent on Earth Shock and Elemental Blast — with Tempest now carrying a large share of the spec's damage as a free, automatically-triggered empowered cast. The defining mechanic is Lava Surge, a proc that makes Lava Burst instant and resets its cooldown — chaining these procs with Flame Shock uptime is central to sustained damage.",
     "Elemental brings strong burst through Storm Elemental/Fire Elemental-style cooldowns, solid AoE via Earthquake and Chain Lightning, and useful raid utility (Bloodlust, Hex), making it a flexible pick for both single-target progression fights and add-heavy Mythic+ content.",
   },
   statPriority = {
@@ -46,7 +53,8 @@ ns.GuideStore:RegisterSpec("SHAMAN", 262, {
     { title = "Single Target", steps = {
         { spellID = 188389, text = "Flame Shock kept active on the target" },
         { spellID = 51505, text = "Lava Burst on cooldown, prioritized when Lava Surge procs" },
-        { spellID = 8042, text = "Earth Shock to spend Maelstrom once it's built up" },
+        { text = "Elemental Blast and Tempest ahead of Earth Shock as your priority Maelstrom spenders" },
+        { spellID = 8042, text = "Earth Shock to spend remaining Maelstrom once it's built up" },
         { spellID = 188196, text = "Lightning Bolt as a Maelstrom generator and filler" },
         { spellID = 198067, text = "Fire Elemental on cooldown for a sustained burst window" },
         { spellID = 114050, text = "Ascendance on cooldown for a burst window, ideally alongside Fire/Storm Elemental" },
@@ -62,7 +70,7 @@ ns.GuideStore:RegisterSpec("SHAMAN", 262, {
         { text = "Prioritize Earthquake/Chain Lightning over single-target casts once 3+ targets are engaged" },
     }},
     { title = "Opener Notes", steps = {
-        { text = "Apply Flame Shock immediately and build Maelstrom before your first Earth Shock" },
+        { text = "Apply Flame Shock immediately and build Maelstrom before your first Elemental Blast/Earth Shock" },
         { text = "Line up Fire Elemental/Storm Elemental with trinkets for maximum burst" },
     }},
   },
@@ -90,7 +98,7 @@ ns.GuideStore:RegisterSpec("SHAMAN", 262, {
     { slot = "Legs", text = "Another tier slot when possible; otherwise the highest item level piece leaning Haste and Mastery" },
     { slot = "Ring", text = "Haste or Mastery rings depending on your current stat weights" },
     { slot = "Trinket", text = "One on-use Intellect or damage trinket lined up with Fire Elemental or Storm Elemental" },
-    { slot = "Trinket", text = "A passive stat-stick trinket for consistent Lava Burst and Earth Shock damage" },
+    { slot = "Trinket", text = "A passive stat-stick trinket for consistent Lava Burst and Elemental Blast/Earth Shock damage" },
     { slot = "Weapon", text = "A one-hander with strong Intellect and secondary stats" },
     { slot = "Off-hand", text = "An off-hand caster stat stick for extra Intellect and secondary stats" },
   },
@@ -112,7 +120,7 @@ ns.GuideStore:RegisterSpec("SHAMAN", 262, {
   },
   tips = {
     "Keep Flame Shock active on the target at all times — it's the engine behind Lava Surge procs.",
-    "Don't cap Maelstrom — spend it on Earth Shock before it overflows.",
+    "Don't cap Maelstrom — spend it on Elemental Blast/Earth Shock before it overflows.",
     "Coordinate Bloodlust timing with your raid rather than using it purely on your own cooldowns.",
     "Switch fully to Earthquake/Chain Lightning once three or more targets are engaged.",
   },
