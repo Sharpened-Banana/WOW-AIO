@@ -18,6 +18,13 @@ local ADDON, ns = ...
 -- characters (up to 50 per spec) had their live `specializations` looked up
 -- for their active loadout's `talent_loadout_code`. See each field's own
 -- `source` comment for the resulting distribution.
+-- Unholy's overview/rotation/tips were also corrected this pass: they
+-- described the old Festering Wound stacking debuff, which SimC's current
+-- `midnight` branch profile and Blizzard's own Midnight Pre-Expansion
+-- Content Update Notes both confirm is gone - Festering Strike now sets up
+-- a player-side buff that makes the next 2-3 Scourge Strikes each summon a
+-- Lesser Ghoul instead (SimC: buff.lesser_ghoul_ready gating Scourge
+-- Strike; patch notes: "Festering Strike has been redesigned").
 -- This is community-maintained conventional guidance (stat priorities and
 -- rotations that match the spec's long-standing design) — not a claim of
 -- bleeding-edge sim-perfect optimization.
@@ -212,8 +219,8 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 252, {
   specName = "Unholy",
   role = "DAMAGER",
   overview = {
-    "Unholy Death Knight is a pet- and disease-focused melee spec built around maintaining Virulent Plague on the target and spending Runes on Festering Strike to build Festering Wounds, which are then burst open with Scourge Strike/Death Coil-fueled cooldowns alongside your permanent ghoul pet.",
-    "The core resources are Runes, spent on Festering Strike and Death and Decay, and Runic Power, spent on Death Coil. The defining mechanic is Festering Wounds — stacking them on the target with Festering Strike, then bursting them open with Scourge Strike or Clawing Shadows for damage and Runic Power, timed around Army of the Dead/Apocalypse-style cooldowns for burst windows.",
+    "Unholy Death Knight is a pet- and disease-focused melee spec built around maintaining Virulent Plague on the target and using Festering Strike to corrupt your weapon so your next 2-3 Scourge Strikes each summon a Lesser Ghoul, alongside your permanent ghoul pet.",
+    "The core resources are Runes, spent on Festering Strike and Death and Decay, and Runic Power, spent on Death Coil (free and instant on a Sudden Doom proc). Festering Strike's Lesser Ghoul setup replaced the older stacking Festering Wound mechanic — this is now a set-up-then-spend loop on your own buff rather than a debuff you build on the target, timed around Army of the Dead/Apocalypse-style cooldowns for burst windows.",
     "Unholy brings strong burst damage through cooldown windows, excellent sustained AoE via diseases and Death and Decay, and useful pet-based utility, making it a strong pick for fights with add phases or sustained multi-target damage requirements.",
   },
   statPriority = {
@@ -226,24 +233,24 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 252, {
   rotation = {
     { title = "Single Target", steps = {
         { spellID = 191587, text = "Virulent Plague kept active on the target" },
-        { spellID = 85948, text = "Festering Strike to build Festering Wounds" },
-        { spellID = 55090, text = "Scourge Strike to burst open Festering Wounds — while Dark Transformation is active this becomes the empowered Putrefy instead" },
-        { spellID = 47541, text = "Death Coil to spend Runic Power, empowered further while your pet is out" },
+        { spellID = 85948, text = "Festering Strike to set up your next 2-3 Scourge Strikes to each summon a Lesser Ghoul" },
+        { spellID = 55090, text = "Scourge Strike to spend a Lesser Ghoul charge and summon one — while Dark Transformation is active this becomes the empowered Putrefy instead" },
+        { spellID = 47541, text = "Death Coil to spend Runic Power (free and instant on a Sudden Doom proc), empowered further while your pet is out" },
         { text = "Soul Reaper on a target you can finish off soon — it detonates for extra damage once that target drops low" },
         { spellID = 42650, text = "Army of the Dead / Apocalypse-style cooldown on a scheduled burst window" },
-        { text = "Don't let Festering Wounds overcap — burst them open before they stack too high" },
+        { text = "Don't let a Sudden Doom proc go unused — Death Coil it away before it's overwritten" },
     }},
     { title = "AoE", steps = {
         { spellID = 43265, text = "Death and Decay as a core AoE damage and Rune-efficiency tool" },
-        { spellID = 85948, text = "Festering Strike to seed Festering Wounds across the pull" },
-        { spellID = 55090, text = "Scourge Strike / Clawing Shadows to burst wounds across multiple targets" },
+        { spellID = 85948, text = "Festering Strike to set up Lesser Ghoul summons across the pull" },
+        { spellID = 55090, text = "Scourge Strike / Clawing Shadows to spend Lesser Ghoul charges across multiple targets" },
         { spellID = 191587, text = "Virulent Plague spread to as many targets as possible" },
         { spellID = 63560, text = "Dark Transformation to empower your pet during add waves" },
         { text = "Prioritize keeping diseases up across the whole pull over single-target spam" },
     }},
     { title = "Opener Notes", steps = {
-        { text = "Apply Virulent Plague immediately, then build Festering Wounds before your first burst window" },
-        { text = "Time Army of the Dead / Apocalypse-style cooldowns with trinkets for maximum pet-and-wound burst" },
+        { text = "Apply Virulent Plague immediately, then Festering Strike to line up Lesser Ghoul summons before your first burst window" },
+        { text = "Time Army of the Dead / Apocalypse-style cooldowns with trinkets for maximum pet burst" },
     }},
   },
   cooldowns = {
@@ -263,7 +270,7 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 252, {
   },
   gear = {
     { slot = "Head", text = "Tier set piece — the set bonus usually matters more than a small item-level gap" },
-    { slot = "Neck", text = "Favor Haste to speed up Festering Strike stacking and Runic Power flow" },
+    { slot = "Neck", text = "Favor Haste to speed up Rune regeneration and Runic Power flow" },
     { slot = "Back", text = "Secondary stats matching Haste and Mastery outweigh a pure item-level chase" },
     { slot = "Legs", text = "Another tier slot when possible; otherwise the highest item level piece leaning Haste and Mastery" },
     { slot = "Ring", text = "Haste or Mastery rings depending on your current stat weights" },
@@ -290,7 +297,7 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 252, {
   tips = {
     "Never let Virulent Plague fall off a target you'll keep attacking.",
     "Soul Reaper is worth applying early on a target you expect to kill soon — its bonus damage triggers once that target's health drops low, not on cast.",
-    "Don't overcap Festering Wounds — burst them before you lose value from excess stacks.",
+    "Spend Lesser Ghoul charges from Festering Strike with Scourge Strike promptly rather than sitting on them.",
     "Dark Transformation is worth using on cooldown rather than saving for a 'perfect' moment in most fights.",
     "Line up your big summon-based cooldown with a known burst or add phase for maximum value.",
   },

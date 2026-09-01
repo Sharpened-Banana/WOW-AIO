@@ -18,6 +18,12 @@ local ADDON, ns = ...
 -- characters (up to 50 per spec) had their live `specializations` looked up
 -- for their active loadout's `talent_loadout_code`. See each field's own
 -- `source` comment for the resulting distribution.
+-- Frost's overview/rotation were also corrected this pass: they described
+-- Brain Freeze's Flurry applying "Winter's Chill" for an immediate shatter.
+-- SimC's current `midnight` branch profile shows no `winters_chill`
+-- reference at all - Brain Freeze's Flurry now builds a stacking `Freezing`
+-- debuff (debuff.freezing.stack, spent by Ice Lance at 10 stacks), a
+-- genuinely different shape (accumulate-then-spend, not a single proc).
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -207,7 +213,7 @@ ns.GuideStore:RegisterSpec("MAGE", 64, {
   role = "DAMAGER",
   overview = {
     "Frost Mage combines a steady Icicle/Frostbolt builder rotation with burst windows from Icy Veins and shatter combos (Frost Nova/Freeze into a guaranteed crit on Frostbolt/Ice Lance). Brain Freeze procs let you weave in free, empowered Flurry casts.",
-    "The core mechanic is generating Fingers of Frost and Brain Freeze procs: Fingers of Frost grants guaranteed-crit Ice Lances, and Brain Freeze grants a free, instant Flurry that also applies Winter's Chill for a shatter follow-up. Icicles stack from Frostbolt and launch automatically or on Ice Lance.",
+    "The core mechanic is generating Fingers of Frost and Brain Freeze procs: Fingers of Frost grants guaranteed-crit Ice Lances, and Brain Freeze grants a free, instant Flurry that builds a stacking Freezing debuff on the target — Ice Lance then spends a fully-stacked Freezing debuff for bonus value, replacing the older single-shot Winter's Chill proc. Icicles stack from Frostbolt and launch automatically or on Ice Lance.",
     "Bring Frost when you want a spec with strong burst windows, good cleave via Glacial Spike/Comet Storm-style talents, and reliable ranged utility (roots/slows) for mechanics-heavy fights.",
   },
   statPriority = {
@@ -227,7 +233,7 @@ ns.GuideStore:RegisterSpec("MAGE", 64, {
     { title = "Single Target", steps = {
         { spellID = 116, text = "Frostbolt as your default filler and Icicle builder" },
         { spellID = 30455, text = "Ice Lance on Fingers of Frost procs for guaranteed crits" },
-        { spellID = 44614, text = "Flurry on Brain Freeze procs, followed by Ice Lance for the shatter" },
+        { spellID = 44614, text = "Flurry on Brain Freeze procs to build Freezing stacks on the target, followed by Ice Lance once it's stacked up" },
         { text = "Glacial Spike (if talented) once you have 5 Icicles banked" },
         { text = "Weave Frozen Orb/Comet Storm per talents to refresh Fingers of Frost" },
     }},
