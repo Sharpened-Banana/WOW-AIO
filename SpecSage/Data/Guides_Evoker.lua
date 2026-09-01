@@ -21,15 +21,21 @@ local ADDON, ns = ...
 -- This pass also added an "Opener Notes" rotation entry naming each spec's
 -- two hero talent trees, for the two specs that didn't already have one
 -- inline (Preservation, Augmentation). Devastation already carried a
--- hero-tree note, but its specific claim (Scalecommander turning
--- Disintegrate into a multi-target "Mass Disintegrate") does not match
--- SimC's current profiles - both hero trees run an identical actions= list -
--- so that note was corrected in place rather than left standing. These new/
--- corrected notes ARE cross-checked against SimC's current `midnight` branch
--- profiles (github.com/simulationcraft/simc) where a real action-list branch
--- exists per hero tree; where SimC's profile set has no branch (an identical
--- actions= list either way, or no profile for the spec at all), the note
--- says so honestly instead of inventing a rotation change.
+-- hero-tree note; a same-session earlier pass incorrectly "corrected" its
+-- Mass Disintegrate claim away, on the mistaken belief that Scalecommander
+-- and Flameshaper ran an identical actions= list - textually true (both
+-- names point at the same file), but the file's own action list dispatches
+-- on `talent.mass_disintegrate` internally, a real behavioral branch a
+-- flat text diff between two files' output can't see. Re-confirmed
+-- directly (grep for `run_action_list,name=sc,if=talent.mass_disintegrate`
+-- in MID1_Evoker_Devastation.simc) and restored the original claim.
+-- These notes ARE cross-checked against SimC's current `midnight` branch
+-- profiles (github.com/simulationcraft/simc) where a real action-list
+-- branch exists per hero tree - whether that branch lives across two
+-- separate files or as a `talent.X`/`hero_tree.X` conditional inside one -
+-- and where SimC's profile set truly has no such branch, or ships no
+-- profile for the spec at all, the note says so honestly instead of
+-- inventing a rotation change.
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -61,7 +67,7 @@ ns.GuideStore:RegisterSpec("EVOKER", 1467, {
         { spellID = 361469, text = "Living Flame while closing distance to build initial Essence" },
         { text = "Fire Breath (empowered) to apply its damage-over-time before burst" },
         { spellID = 375087, text = "Dragonrage once dots are applied, to open the main burst window" },
-        { text = "Opener Notes: Devastation splits along the Flameshaper and Scalecommander hero trees — check which one your loadout uses. SimC's current profiles run the same core priority list for both, so the difference shows up in your passive/capstone kit rather than a different sequence to play" },
+        { text = "Opener Notes: Devastation splits along the Flameshaper and Scalecommander hero trees — Scalecommander's Mass Disintegrate talent turns your next Disintegrate into a multi-target strike, giving it a genuinely different priority list from Flameshaper, so check which one your loadout uses" },
     }},
     { title = "Single Target", steps = {
         { spellID = 361469, text = "Living Flame as a mobile filler and Essence generator" },

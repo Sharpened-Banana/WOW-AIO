@@ -24,6 +24,12 @@ local ADDON, ns = ...
 -- reference at all - Brain Freeze's Flurry now builds a stacking `Freezing`
 -- debuff (debuff.freezing.stack, spent by Ice Lance at 10 stacks), a
 -- genuinely different shape (accumulate-then-spend, not a single proc).
+-- Arcane and Fire were also corrected this pass, confirmed against SimC's
+-- current `midnight` branch profiles: Nether Tempest has zero references
+-- in either Arcane profile (removed from the tree) so Arcane's AoE step
+-- now names Arcane Orb alone; Phoenix Flames has zero references in either
+-- Fire profile (removed from Fire's kit) so every mention was dropped,
+-- leaving Fire Blast as the sole instant Heating Up/Hot Streak generator.
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -67,7 +73,7 @@ ns.GuideStore:RegisterSpec("MAGE", 62, {
     { title = "AoE", steps = {
         { text = "Arcane Explosion to build charges while enemies are stacked" },
         { spellID = 44425, text = "Arcane Barrage to spread damage and reset charges" },
-        { text = "Use Nether Tempest / Arcane Orb (if talented) to cleave charge generation" },
+        { text = "Use Arcane Orb (if talented) to cleave charge generation — Nether Tempest was removed from the talent tree" },
         { text = "Prioritize Clearcasting procs into AoE spenders" },
         { text = "Line up burn cooldowns with add waves for maximum value" },
     }},
@@ -127,7 +133,7 @@ ns.GuideStore:RegisterSpec("MAGE", 63, {
   overview = {
     "Fire Mage is a crit-and-execute spec centered on stacking Heating Up and Hot Streak procs to fire off instant, guaranteed-crit Pyroblasts. Damage is spiky, with big cooldown-aligned burst windows via Combustion.",
     "The core loop is: Fire Blast and Fireball/Scorch build Heating Up, two crits in a row (or a Fire Blast consuming Heating Up) grant Hot Streak, and Hot Streak is spent on a free, instant Pyroblast. Ignite (a damage-over-time spread from crits) rewards keeping crit up and hitting multiple targets.",
-    "Bring Fire when you want a spec that shines in short, well-timed burst windows and cleave/AoE fights, and you're willing to manage Fire Blast/Phoenix Flames charges tightly around Combustion.",
+    "Bring Fire when you want a spec that shines in short, well-timed burst windows and cleave/AoE fights, and you're willing to manage Fire Blast charges tightly around Combustion.",
   },
   statPriority = {
     { stat = "crit" },
@@ -146,13 +152,12 @@ ns.GuideStore:RegisterSpec("MAGE", 63, {
     { title = "Single Target", steps = {
         { spellID = 133, text = "Fireball as your default filler to build Heating Up" },
         { spellID = 108853, text = "Fire Blast to convert Heating Up into Hot Streak" },
-        { spellID = 194466, text = "Phoenix Flames as an additional Heating Up/Hot Streak generator" },
         { spellID = 11366, text = "Pyroblast whenever Hot Streak is active" },
-        { text = "Never cap Fire Blast or Phoenix Flames charges — spend before overflowing" },
+        { text = "Never cap Fire Blast charges — spend before overflowing. Phoenix Flames was removed from Fire's kit in Midnight, so Fire Blast alone now carries this load" },
     }},
     { title = "AoE", steps = {
         { spellID = 2120, text = "Flamestrike (with Hot Streak) as your primary AoE spender" },
-        { text = "Fire Blast / Phoenix Flames to generate Hot Streak procs quickly" },
+        { text = "Fire Blast to generate Hot Streak procs quickly" },
         { spellID = 31661, text = "Dragon's Breath to group and daze adds when appropriate" },
         { text = "Let Ignite spread damage across the pack rather than single-target dumping" },
         { text = "Time Combustion for when the full pack is engaged" },
@@ -160,7 +165,6 @@ ns.GuideStore:RegisterSpec("MAGE", 63, {
   },
   cooldowns = {
     { spellID = 190319, text = "Combustion — main burst window, line up with Hot Streak/Heating Up banked and other raid cooldowns" },
-    { spellID = 194466, text = "Phoenix Flames — extra proc generation, spend charges rather than hoarding" },
     { spellID = 108853, text = "Fire Blast — instant proc conversion, weave throughout and especially during Combustion" },
     { spellID = 45438, text = "Ice Block — defensive, negates incoming damage entirely" },
     { spellID = 80353, text = "Time Warp/Bloodlust — raid utility cooldown, coordinate with your raid's lust plan" },
@@ -201,7 +205,7 @@ ns.GuideStore:RegisterSpec("MAGE", 63, {
   },
   tips = {
     "Enter Combustion with Heating Up or Hot Streak already active so the window starts strong.",
-    "Never overcap Fire Blast or Phoenix Flames charges — that's wasted proc generation.",
+    "Never overcap Fire Blast charges — that's wasted proc generation.",
     "Use Scorch while moving to keep building toward Heating Up instead of standing still doing nothing.",
     "Watch Ignite uptime on multi-target fights; spreading it well is a large chunk of your AoE damage.",
   },

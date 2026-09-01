@@ -27,6 +27,14 @@ local ADDON, ns = ...
 -- per hero tree; where SimC's profile set has no branch (an identical
 -- actions= list either way, or no profile for the spec at all), the note
 -- says so honestly instead of inventing a rotation change.
+-- Windwalker's overview/rotation were also corrected this pass, confirmed
+-- against SimC's current `midnight` branch profile: Storm, Earth, and Fire
+-- has zero references (replaced by Zenith, a baseline burst-window
+-- cooldown called unconditionally in the action list, not gated behind a
+-- hero talent) and Mark of the Crane has zero references either (the
+-- combo-strike/Combo Breaker mastery loop the guide already described
+-- separately is what actually drives the "don't repeat an ability" reward
+-- now).
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -231,9 +239,9 @@ ns.GuideStore:RegisterSpec("MONK", 269, {
   specName = "Windwalker",
   role = "DAMAGER",
   overview = {
-    "Windwalker Monk is a fast-paced melee spec built around generating and spending Chi to fuel a combo-point-like system through Rising Sun Kick, Fists of Fury, and the burst window granted by Storm, Earth, and Fire and Serenity/Invoke Xuen (build-dependent).",
-    "The core resource loop is Energy generating Chi via Tiger Palm/Expel Harm-style builders, spent on Chi abilities like Rising Sun Kick and Fists of Fury, with Mark of the Crane stacks and combo strikes (never repeating the same ability twice) increasing damage and enabling free casts.",
-    "Bring Windwalker when you want a highly mobile, cooldown-driven melee spec with strong burst windows and good cleave through Storm, Earth, and Fire or Whirling Dragon Punch-style AoE tools.",
+    "Windwalker Monk is a fast-paced melee spec built around generating and spending Chi to fuel a combo-point-like system through Rising Sun Kick, Fists of Fury, and the burst window granted by Zenith (which replaced Storm, Earth, and Fire) and Serenity/Invoke Xuen (build-dependent).",
+    "The core resource loop is Energy generating Chi via Tiger Palm/Expel Harm-style builders, spent on Chi abilities like Rising Sun Kick and Fists of Fury, with combo strikes (never repeating the same ability twice) triggering Combo Breaker procs that increase damage and enable free casts.",
+    "Bring Windwalker when you want a highly mobile, cooldown-driven melee spec with strong burst windows and good cleave through Zenith or Whirling Dragon Punch-style AoE tools.",
   },
   statPriority = {
     { stat = "primary" },
@@ -250,17 +258,17 @@ ns.GuideStore:RegisterSpec("MONK", 269, {
         { text = "Opener Notes: if talented, Zenith and Celestial Conduit's channel jump ahead of your normal single-target flow — fit them into the opener/burst window rather than treating them as regular fillers" },
     }},
     { title = "Single Target", steps = {
-        { spellID = 100780, text = "Tiger Palm to build Chi and maintain the Mark of the Crane debuff" },
+        { spellID = 100780, text = "Tiger Palm to build Chi and maintain combo strikes" },
         { spellID = 107428, text = "Rising Sun Kick on cooldown for strong direct damage" },
         { spellID = 113656, text = "Fists of Fury on cooldown, ideally while stationary" },
         { text = "Spinning Crane Kick as a Chi spender when talented for single-target value" },
         { text = "Maintain 'combo strikes' by never repeating the same ability back-to-back" },
     }},
     { title = "AoE", steps = {
-        { text = "Spinning Crane Kick to hit all nearby targets and spread Mark of the Crane" },
+        { text = "Spinning Crane Kick to hit all nearby targets" },
         { spellID = 107428, text = "Rising Sun Kick to apply its debuff across engaged targets (per talents)" },
         { spellID = 152175, text = "Whirling Dragon Punch (talent) when both Rising Sun Kick and Fists of Fury are ready" },
-        { text = "Storm, Earth, and Fire (talent) to split damage across multiple targets" },
+        { text = "Zenith for your main burst window, spending Chi on Zenith Stomp while it's active" },
         { text = "Keep combo strikes going while prioritizing AoE-focused abilities" },
     }},
     { title = "Opener Notes", steps = {
@@ -270,7 +278,7 @@ ns.GuideStore:RegisterSpec("MONK", 269, {
   cooldowns = {
     { text = "Invoke Xuen the White Tiger / Invoke Yu'lon (build-dependent) — major burst cooldown, use with your opener or a planned window" },
     { text = "Serenity (talent, mutually exclusive with Xuen build) — short, high-value burst window" },
-    { text = "Storm, Earth, and Fire — splits your damage to extra targets, use for cleave/multi-target windows" },
+    { text = "Zenith — main burst-window cooldown (replaced Storm, Earth, and Fire), use aligned with other cooldowns" },
     { spellID = 122470, text = "Touch of Karma — defensive that reflects damage back as healing/damage" },
     { spellID = 1243287, text = "Diffuse Magic — personal defensive against magic damage" },
   },

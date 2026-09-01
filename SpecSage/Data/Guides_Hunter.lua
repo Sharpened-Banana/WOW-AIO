@@ -18,6 +18,14 @@ local ADDON, ns = ...
 -- characters (up to 50 per spec) had their live `specializations` looked up
 -- for their active loadout's `talent_loadout_code`. See each field's own
 -- `source` comment for the resulting distribution.
+-- Survival's overview/rotation/tips were also corrected this pass: they
+-- described the old Mongoose Bite/Mongoose Fury stacking mechanic and a
+-- separate Coordinated Assault cooldown, both gone. SimC's current
+-- `midnight` branch profile has zero references to either (mongoose_bite,
+-- coordinated_assault) and is instead built entirely around Tip of the
+-- Spear stacks spent on a new Takedown finisher; a Blizzard developer post
+-- on the official forums states Takedown "combines aspects of both
+-- Coordinated Assault and Flanking Strike."
 -- This is community-maintained conventional guidance (stat priorities and
 -- rotations that match the spec's long-standing design) — not a claim of
 -- bleeding-edge sim-perfect optimization.
@@ -204,8 +212,8 @@ ns.GuideStore:RegisterSpec("HUNTER", 255, {
   specName = "Survival",
   role = "DAMAGER",
   overview = {
-    "Survival Hunter is a melee spec (uniquely among Hunter specs) that combines direct weapon attacks with pet support and DoT-style bleeds. It plays as an aggressive, mobility-heavy melee spec that still keeps a pet as a secondary damage source, blending Kill Command with Raptor Strike/Mongoose Bite combos.",
-    "The core resource is Focus, generated from auto-attacks and abilities like Raptor Strike, and spent on Kill Command, Wildfire Bomb, and Mongoose Bite. The defining mechanic is stacking Mongoose Bite's Mongoose Fury buff through repeated casts, rewarding sustained uptime on a single target during its window.",
+    "Survival Hunter is a melee spec (uniquely among Hunter specs) that combines direct weapon attacks with pet support and DoT-style bleeds. It plays as an aggressive, mobility-heavy melee spec that still keeps a pet as a secondary damage source, blending Kill Command with Raptor Strike and a Takedown-based finisher.",
+    "The core resource is Focus, generated from auto-attacks and abilities like Raptor Strike, and spent on Kill Command and Wildfire Bomb. The defining mechanic is building Tip of the Spear stacks from Kill Command and Wildfire Bomb, then spending them on Takedown — the hard-hitting finisher that replaced Mongoose Bite/Mongoose Fury (and folded in what used to be the separate Coordinated Assault cooldown) in Midnight.",
     "Survival brings strong sustained single-target damage, useful AoE via Wildfire Bomb, and melee utility (Muzzle interrupt, traps), making it a solid pick for fights where melee positioning is viable and you want pet-assisted burst.",
   },
   statPriority = {
@@ -219,7 +227,7 @@ ns.GuideStore:RegisterSpec("HUNTER", 255, {
     { title = "Single Target", steps = {
         { spellID = 259495, text = "Wildfire Bomb on cooldown — strong Focus-free damage and DoT" },
         { spellID = 34026, text = "Kill Command on cooldown for pet-assisted burst" },
-        { spellID = 259387, text = "Mongoose Bite repeatedly to stack and maintain Mongoose Fury" },
+        { text = "Takedown once Tip of the Spear stacks are up — your main single-target finisher" },
         { spellID = 186270, text = "Raptor Strike as a Focus-efficient filler and builder" },
         { spellID = 190925, text = "Harpoon to close distance and enable extra melee uptime" },
         { text = "Keep bleeds/DoTs active on the target between cooldown usage" },
@@ -233,13 +241,13 @@ ns.GuideStore:RegisterSpec("HUNTER", 255, {
         { text = "Keep Wildfire Bomb's DoT rolling across as many targets as possible" },
     }},
     { title = "Opener Notes", steps = {
-        { text = "Open with Wildfire Bomb and Kill Command to establish damage before committing to Mongoose Bite stacking" },
-        { text = "Line up Coordinated Assault (or your burst cooldown) with your first full Mongoose Fury stack window" },
+        { text = "Open with Wildfire Bomb and Kill Command to establish damage and build Tip of the Spear stacks" },
+        { text = "Line up Takedown with your other burst cooldowns once Tip of the Spear stacks are up" },
         { text = "Your hero talent choice splits the rotation in two: Pack Leader leans on its pet-summon procs alongside the core builders, while Sentinel runs its own separate priority list — check which one your loadout uses" },
     }},
   },
   cooldowns = {
-    { text = "Coordinated Assault — core offensive cooldown, use on cooldown" },
+    { text = "Takedown — core offensive cooldown (replaced Mongoose Bite and folded in the old Coordinated Assault), use once Tip of the Spear stacks are up" },
     { spellID = 259495, text = "Wildfire Bomb — frequent damage cooldown, weave in on cooldown" },
     { spellID = 186265, text = "Aspect of the Turtle — major defensive, absorbs most damage briefly" },
     { spellID = 109304, text = "Exhilaration — self-healing cooldown for sustain checks" },
@@ -248,18 +256,18 @@ ns.GuideStore:RegisterSpec("HUNTER", 255, {
   consumables = {
     { slot = "Flask", text = "Flask of Alchemical Chaos (Agility)" },
     { slot = "Food", text = "An Agility-focused feast or food buff" },
-    { slot = "Potion", text = "Tempered Potion, used inside Coordinated Assault" },
+    { slot = "Potion", text = "Tempered Potion, used inside a Takedown window" },
     { slot = "Weapon", text = "Ironclaw Whetstone or the current-tier weapon oil" },
     { slot = "Enchants", text = "Weapon enchant for Agility/Crit; ring enchants for secondary stats" },
     { slot = "Gems", text = "Agility or Agility/secondary hybrid gems in available sockets" },
   },
   gear = {
     { slot = "Head", text = "Tier set piece — the set bonus usually matters more than a small item-level gap" },
-    { slot = "Neck", text = "Favor Haste to speed up Focus generation and Mongoose Bite windows" },
+    { slot = "Neck", text = "Favor Haste to speed up Focus generation and Tip of the Spear stacking" },
     { slot = "Back", text = "Secondary stats matching Haste and Crit outweigh a pure item-level chase" },
     { slot = "Legs", text = "Another tier slot when possible; otherwise the highest item level piece leaning Haste and Crit" },
     { slot = "Ring", text = "Haste or Crit rings depending on your current stat weights" },
-    { slot = "Trinket", text = "One on-use Agility or damage trinket lined up with Coordinated Assault" },
+    { slot = "Trinket", text = "One on-use Agility or damage trinket lined up with a Takedown window" },
     { slot = "Trinket", text = "A passive stat-stick trinket for consistent melee and Kill Command damage" },
     { slot = "Weapon", text = "A melee weapon this time, since Survival fights in melee — take the highest item level option with useful secondary stats" },
   },
@@ -280,7 +288,7 @@ ns.GuideStore:RegisterSpec("HUNTER", 255, {
     sampleSize = 50,
   },
   tips = {
-    "Keep Mongoose Fury stacked as high as possible before spending your last Mongoose Bite charge window.",
+    "Build Tip of the Spear stacks before spending them on Takedown rather than using it early.",
     "Wildfire Bomb has a short cooldown — don't let it sit unused, especially in AoE.",
     "Butchery is worth prioritizing over single-target fillers as soon as a second target is in melee range.",
     "Muzzle is a strong interrupt — use it proactively on scripted casts rather than saving it indefinitely.",
