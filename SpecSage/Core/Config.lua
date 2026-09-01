@@ -192,7 +192,10 @@ end
 ns.OPTION_GROUPS = BuildOptionGroups()
 
 local DEFAULTS = {
-    hidden = false,
+    -- Off by default for a fresh install; /sage overlay or the Options tab
+    -- turns it on. Existing users' saved choice is untouched - CopyDefaults
+    -- only fills in a key that's still nil, never overwrites one already set.
+    hidden = true,
     locked = false,
     scale = 1.0,
     opacity = 0.75,
