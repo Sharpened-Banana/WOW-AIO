@@ -21,15 +21,25 @@ local ADDON, ns = ...
 -- This pass also added an "Opener Notes" rotation entry naming each spec's
 -- two hero talent trees, for the one spec that didn't already have one
 -- inline (Destruction). Affliction already carried a correct hero-tree
--- note and was left as-is; Demonology's existing note named the wrong pair
--- (Diabolist/Soul Harvester instead of Diabolist/Hellcaller - Soul Harvester
--- pairs with Affliction and Destruction, not Demonology) and was corrected
--- in place. These new/corrected notes ARE cross-checked against SimC's
--- current `midnight` branch profiles (github.com/simulationcraft/simc)
--- where a real action-list branch exists per hero tree; where SimC's
--- profile set has no branch (an identical actions= list either way, or no
--- profile for the spec at all), the note says so honestly instead of
--- inventing a rotation change.
+-- note and was left as-is. Demonology's note went through two rounds this
+-- session: it originally read Diabolist/Soul Harvester (correct - it was
+-- flagged as wrong on the assumption that Hellcaller must fill Demonology's
+-- second slot by elimination from Affliction/Destruction's confirmed
+-- pairs, and "corrected" to Diabolist/Hellcaller), then a later, more
+-- careful audit found Demonology's own SimC profile dispatches to two
+-- separate action lists - `diabolist` (talent.diabolic_ritual) and
+-- `soulharvest` (talent.demonic_soul) - with zero Hellcaller references
+-- anywhere in the file, confirming the original text was right and
+-- restoring it. Lesson: check a spec's own file for its real branch names
+-- before inferring a pairing from other specs' files.
+-- Overview/rotation/tips for Affliction and Demonology were also corrected
+-- this pass: Affliction's Malefic Rapture has zero references in SimC's
+-- current profile (replaced by Unstable Affliction + the new Dark Harvest
+-- as shard spenders, Malefic Grasp as filler); Demonology's Summon
+-- Vilefiend is gone as a separate cast (folded into Call Dreadstalkers
+-- itself - "Vilefiend added to dog cast" per a Blizzard forum post) and
+-- Grimoire: Felguard was replaced by Grimoire: Imp Lord / Grimoire: Fel
+-- Ravager.
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -45,8 +55,8 @@ ns.GuideStore:RegisterSpec("WARLOCK", 265, {
   specName = "Affliction",
   role = "DAMAGER",
   overview = {
-    "Affliction Warlock is a damage-over-time spec that ramps up over the course of a fight, layering Agony, Corruption, Unstable Affliction and Malefic Rapture into a strong sustained-damage profile with periodic burst via Soul Rot and Malefic Rapture dumps.",
-    "The core resource is Soul Shards, generated from dots ticking and spent on Malefic Rapture to deal instant damage per active dot on the target, and on Summon Darkglare/Soul Rot for burst windows. Agony's damage scales up the longer it's kept active on a target, rewarding strong dot uptime.",
+    "Affliction Warlock is a damage-over-time spec that ramps up over the course of a fight, layering Agony, Corruption, and Unstable Affliction into a strong sustained-damage profile, spending shards on Unstable Affliction and the new Dark Harvest for periodic burst.",
+    "The core resource is Soul Shards, generated from dots ticking and spent on Unstable Affliction and Dark Harvest — Malefic Rapture no longer exists, replaced by this pair as the shard-spending core. Malefic Grasp is now the channeled filler between spenders. Agony's damage scales up the longer it's kept active on a target, rewarding strong dot uptime.",
     "Bring Affliction when a fight rewards consistent damage over time, has multiple targets to dot up, or has a long fight length that lets your damage ramp — it's less ideal for very short burst-only encounters.",
   },
   statPriority = {
@@ -68,13 +78,13 @@ ns.GuideStore:RegisterSpec("WARLOCK", 265, {
         { spellID = 980, text = "Keep Agony active at all times, refresh before it falls off" },
         { spellID = 172, text = "Keep Corruption active at all times" },
         { spellID = 30108, text = "Unstable Affliction on cooldown for shard generation" },
-        { spellID = 324536, text = "Malefic Rapture to spend shards once dots are stacked, avoid overcapping shards" },
+        { text = "Unstable Affliction and Dark Harvest to spend shards once dots are stacked, avoid overcapping shards" },
         { text = "Use filler (Drain Life/Shadow Bolt) only when no better shard-generating option is available" },
     }},
     { title = "AoE", steps = {
         { spellID = 980, text = "Agony on each target, prioritizing ones that will live longest" },
         { text = "Seed of Corruption (or Corruption per talents) to spread dots across the pack" },
-        { spellID = 324536, text = "Malefic Rapture hits all dotted targets — spend shards once several targets are dotted" },
+        { text = "Unstable Affliction and Dark Harvest across dotted targets — spend shards once several targets are dotted" },
         { text = "Use Phantom Singularity/Vile Taint (talent-dependent) for extra AoE damage over time" },
         { text = "Keep re-dotting targets as they come into range rather than tunneling one target" },
     }},
@@ -95,7 +105,7 @@ ns.GuideStore:RegisterSpec("WARLOCK", 265, {
     { slot = "Gems", text = "Intellect/secondary stat gems in available sockets" },
   },
   gear = {
-    { slot = "Head", text = "One of your tier-set slots — the four-piece bonus is worth chasing since it reinforces your dot-and-Malefic-Rapture damage engine" },
+    { slot = "Head", text = "One of your tier-set slots — the four-piece bonus is worth chasing since it reinforces your dot-and-shard-spender damage engine" },
     { slot = "Chest", text = "A large stat budget and often your other tier piece — lean into Haste first to smooth dot ticks and shard generation" },
     { slot = "Neck", text = "Usually has a socket — fill it and prioritize Haste, then Mastery, over Critical Strike" },
     { slot = "Ring", text = "No set bonus tying you down — use rings to round out Haste and Mastery wherever your gear is thin" },
@@ -122,7 +132,7 @@ ns.GuideStore:RegisterSpec("WARLOCK", 265, {
   },
   tips = {
     "Never let Agony or Corruption fall off early — dropped dots and re-ramping cost significant damage.",
-    "Don't dump Malefic Rapture with only one or two dots active; wait for a fuller board when possible.",
+    "Don't dump Unstable Affliction/Dark Harvest with only one or two dots active; wait for a fuller board when possible.",
     "Pre-dot targets that are about to become active (adds spawning soon) if you can safely reach them.",
     "Plan Darkglare/Soul Rot around when your dots will be at strong uptime across the most targets.",
   },
@@ -134,7 +144,7 @@ ns.GuideStore:RegisterSpec("WARLOCK", 266, {
   role = "DAMAGER",
   overview = {
     "Demonology Warlock is a pet-and-cooldown spec built around summoning waves of demons and popping Demonic Tyrant to empower them all at once for a massive burst window, repeated on cooldown throughout the fight.",
-    "The core loop is generating Soul Shards from Demonbolt/Shadow Bolt and spending them on Call Dreadstalkers and Summon Vilefiend to build up a pack of demons, then using Grimoire: Felguard and other summons before popping Summon Demonic Tyrant, which empowers all active demons and extends their duration.",
+    "The core loop is generating Soul Shards from Demonbolt/Shadow Bolt and spending them on Call Dreadstalkers (which now also summons a Vilefiend as part of the same cast) to build up a pack of demons, then using Grimoire: Imp Lord or Grimoire: Fel Ravager (talent-dependent, replacing the old standalone Grimoire: Felguard) before popping Summon Demonic Tyrant, which empowers all active demons and extends their duration.",
     "Bring Demonology when you want a highly cooldown-driven, pet-management playstyle with big periodic burst windows and strong pad-the-numbers cleave from empowered demons.",
   },
   statPriority = {
@@ -146,21 +156,21 @@ ns.GuideStore:RegisterSpec("WARLOCK", 266, {
   },
   rotation = {
     { title = "Opener", steps = {
-        { text = "Call Dreadstalkers and Summon Vilefiend to build your demon pack" },
-        { spellID = 111898, text = "Grimoire: Felguard (if talented) to add another pet before Tyrant" },
+        { text = "Call Dreadstalkers to build your demon pack — Vilefiend is no longer a separate summon, it's folded into this same cast" },
+        { text = "Grimoire: Imp Lord or Grimoire: Fel Ravager (talent-dependent) to add another pet before Tyrant" },
         { spellID = 265187, text = "Summon Demonic Tyrant once your demons are out, to empower the full pack" },
-        { text = "Opener Notes: Demonology splits along the Diabolist and Hellcaller hero trees (not Soul Harvester, which pairs with Affliction and Destruction instead) — check which one your loadout uses. SimC's current profile does not branch its priority list by hero tree, so the difference shows up in your passive/capstone kit rather than a different sequence to play" },
+        { text = "Opener Notes: Demonology splits along the Diabolist and Soul Harvester hero trees (not Hellcaller, which pairs with Affliction and Destruction instead) — check which one your loadout uses. SimC's current profile runs a genuinely separate action list for each (gated on talent.diabolic_ritual vs talent.demonic_soul), not just a shared list with a few swapped lines" },
     }},
     { title = "Single Target", steps = {
         { spellID = 104316, text = "Call Dreadstalkers on cooldown to generate shards and demons" },
-        { text = "Summon Vilefiend on cooldown for additional demon uptime" },
+        { text = "Call Dreadstalkers on cooldown for additional demon uptime — its Vilefiend comes along automatically" },
         { spellID = 264178, text = "Demonbolt to generate Soul Shards, use Shadow Bolt only as needed filler" },
         { spellID = 105174, text = "Hand of Gul'dan to dump excess shards and apply Shadowflame damage" },
         { text = "Pool shards and demon summons for the next Demonic Tyrant window rather than using them piecemeal" },
     }},
     { title = "AoE", steps = {
         { spellID = 105174, text = "Hand of Gul'dan on cooldown for its AoE Shadowflame damage" },
-        { text = "Call Dreadstalkers and Summon Vilefiend as normal — their demons cleave naturally" },
+        { text = "Call Dreadstalkers as normal — its demons (including the folded-in Vilefiend) cleave naturally" },
         { spellID = 196277, text = "Implosion (talent) to detonate Wild Imps into a pack for burst AoE" },
         { text = "Keep pets attacking the highest-priority target so cleave lands on real threats" },
         { spellID = 265187, text = "Time Demonic Tyrant for when the full pack is engaged on the pull" },
@@ -168,7 +178,7 @@ ns.GuideStore:RegisterSpec("WARLOCK", 266, {
   },
   cooldowns = {
     { spellID = 265187, text = "Summon Demonic Tyrant — main burst window, use once your demon pack is built and pool shards for it" },
-    { spellID = 111898, text = "Grimoire: Felguard — extra pet damage, use before or during a Tyrant window per your build" },
+    { text = "Grimoire: Imp Lord or Grimoire: Fel Ravager — extra pet damage, use before or during a Tyrant window per your build" },
     { spellID = 108416, text = "Dark Pact — defensive cooldown, absorbs damage using health as a resource" },
     { spellID = 104773, text = "Unending Resolve — major defensive, use against heavy incoming damage" },
   },
@@ -209,7 +219,7 @@ ns.GuideStore:RegisterSpec("WARLOCK", 266, {
   tips = {
     "Pool Soul Shards and demon summons before Demonic Tyrant so the empower window has as many demons as possible.",
     "Don't let Wild Imps sit unused if running Implosion — detonate them for burst when the timing calls for it.",
-    "Keep track of Dreadstalker and Vilefiend cooldowns so they're ready to refill your pack before each Tyrant.",
+    "Keep track of Call Dreadstalkers' cooldown so it's ready to refill your pack (Dreadstalkers and Vilefiend together) before each Tyrant.",
     "Reposition pets onto priority adds quickly — cleave damage is wasted on a dead or low-value target.",
   },
 })
