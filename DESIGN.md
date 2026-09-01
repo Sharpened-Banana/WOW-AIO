@@ -382,6 +382,23 @@ above) - only exercised by `tests/run.lua`'s fixtures.
 - Notes tab: multi-line editbox saved to `SpecSageDB.notes[specID]` on
   focus-lost / window close.
 
+**Visual style ("Blizzard Modern", 2026-09-01):** soft dark blue-gray panels
+with a faked vertical gradient (`Texture:SetGradient`, no bundled art) and a
+1px top-edge highlight seam (`ApplyPanelChrome` in `UI/Codex.lua`), a warm
+bronze accent (`ACCENT_COLOR`) that shifts to the selected class's own color
+for the active-tab underline, and flat bordered buttons (`SkinButton`)
+replacing the stock gray 3D-bevel `UIPanelButtonTemplate` look. Body/button
+text uses bundled PT Sans (SIL OFL, `SpecSage/Fonts/PTSans-Regular.ttf` +
+`-Bold.ttf`, license in that same folder); the frame title and tab labels
+keep Blizzard's own Friz Quadrata (`GameFontNormal`) so the window still
+reads as native game chrome rather than a foreign overlay. Section headers
+(`PlaceLine(..., { isHeader = true })`) get a bold label plus a hairline
+divider instead of a bare colored line. True rounded corners and a bundled
+glow texture were scoped out of this pass — `BackdropTemplate`'s `edgeFile`
+has no radius concept, and faking either convincingly needs custom art this
+addon doesn't ship; square corners plus the gradient/seam trick were judged
+close enough to the direction without adding fragile bespoke textures.
+
 ## Overlay port
 
 Ported from `stat-overlay` (same author, code may be reused verbatim where it

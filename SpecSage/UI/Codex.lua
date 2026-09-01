@@ -103,14 +103,51 @@ local DEFAULT_CLASS_COLOR = { r = 0.8, g = 0.8, b = 0.8 }
 -- the real place to add data (a Lua data file) rather than the options
 -- panel, which has no Codex section (see Core/Options.lua).
 local NO_DATA_TEXT = "no guide data yet - see SpecSage/Data/Guides_<Class>.lua to add some"
-local MUTED_COLOR = { 0.55, 0.55, 0.55 }
-local HEADER_COLOR = { 0.4, 0.8, 1.0 }
+-- "Blizzard Modern" palette: soft dark blue-gray panels with a faked vertical
+-- gradient (real frames stay flat-color BackdropTemplate; the gradient comes
+-- from a separate overlay texture via Texture:SetGradient, see
+-- ApplyPanelChrome below) and a warm bronze accent, successor to the old flat
+-- near-black/pure-blue palette this file used before the 2026-09-01 UI pass.
+local MUTED_COLOR = { 0.392, 0.455, 0.541 } -- was { 0.55, 0.55, 0.55 }
+local HEADER_COLOR = { 0.388, 0.737, 0.902 } -- was { 0.4, 0.8, 1.0 }; #63BCE6
 -- A rotation/cooldown step's optional `condition` (DESIGN.md's v1.3
 -- section): a distinct blue-grey so it reads as "detail on the line above"
 -- rather than MUTED_COLOR's "there is no data here" or HEADER_COLOR's
 -- "this starts a new section".
 local CONDITION_COLOR = { 0.55, 0.75, 0.95 }
 local CONDITION_INDENT = 20
+
+local PANEL_BG_TOP = { 0.125, 0.164, 0.207 }    -- #202A35
+local PANEL_BG_BOTTOM = { 0.071, 0.094, 0.125 } -- #121820
+local PANEL_BACKDROP_COLOR = { 0.10, 0.13, 0.16, 0.97 }
+local PANEL_BORDER_COLOR = { 0.15, 0.18, 0.22, 1 }
+local CARD_BG_TOP = { 0.149, 0.192, 0.239 }    -- #26313D
+local CARD_BG_BOTTOM = { 0.102, 0.133, 0.169 } -- #1A222B
+local CARD_BACKDROP_COLOR = { 0.149, 0.192, 0.239, 0.92 }
+local BORDER_COLOR = { 0.216, 0.259, 0.310, 1 }        -- #37424F
+local BORDER_HIGHLIGHT_COLOR = { 0.357, 0.439, 0.525 } -- #5B7086, top-seam highlight
+local ACCENT_COLOR = { 0.776, 0.608, 0.427 }        -- #C69B6D
+local ACCENT_COLOR_BRIGHT = { 0.886, 0.741, 0.569 } -- #E2BD91
+local ACCENT_GLOW_COLOR = { 0.776, 0.608, 0.427, 0.38 }
+local TEXT_PRIMARY_COLOR = { 0.906, 0.929, 0.953 }   -- #E7EDF3
+local TEXT_SECONDARY_COLOR = { 0.651, 0.706, 0.761 } -- #A6B4C2
+
+-- Bundled PT Sans (SIL OFL, SpecSage/Fonts/) for rotation/stat/button body
+-- text; the frame title and tab labels keep Blizzard's own GameFontNormal
+-- (Friz Quadrata) so the Codex still reads as native game chrome rather than
+-- a foreign overlay. Built once at load and reused via SetFontObject rather
+-- than a fresh CreateFont per row.
+local BODY_FONT_PATH = "Interface\\AddOns\\SpecSage\\Fonts\\PTSans-Regular.ttf"
+local BODY_FONT_BOLD_PATH = "Interface\\AddOns\\SpecSage\\Fonts\\PTSans-Bold.ttf"
+local SpecSageBodyFont = CreateFont("SpecSageBodyFont")
+SpecSageBodyFont:SetFont(BODY_FONT_PATH, 12, "")
+SpecSageBodyFont:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
+local SpecSageBodyFontSmall = CreateFont("SpecSageBodyFontSmall")
+SpecSageBodyFontSmall:SetFont(BODY_FONT_PATH, 11, "")
+SpecSageBodyFontSmall:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
+local SpecSageBoldFontSmall = CreateFont("SpecSageBoldFontSmall")
+SpecSageBoldFontSmall:SetFont(BODY_FONT_BOLD_PATH, 11, "")
+SpecSageBoldFontSmall:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
 
 -- BiS tab: status-tag colours (DESIGN.md: green/yellow/grey) and the default
 -- item colour for an entry whose quality is not known yet (a plain-name
@@ -222,6 +259,83 @@ local function ItemQualityColor(quality)
     return DEFAULT_ITEM_COLOR[1], DEFAULT_ITEM_COLOR[2], DEFAULT_ITEM_COLOR[3]
 end
 
+-- Layers a soft top-to-bottom gradient and a 1px top-edge highlight seam over
+-- a flat BackdropTemplate panel - the two tricks that make a plain solid-color
+-- backdrop read as a lit "Blizzard Modern" panel instead of a flat rectangle,
+-- using only WoW's own Texture:SetGradient API (no bundled art needed, and no
+-- true rounded corners either - BackdropTemplate's edgeFile has no radius
+-- concept, so this pass keeps square corners rather than faking rounding with
+-- extra corner-mask art this addon doesn't ship).
+local function ApplyPanelChrome(frame, topColor, bottomColor)
+    if frame.specSageChromeApplied then return end
+    frame.specSageChromeApplied = true
+
+    local gradient = frame:CreateTexture(nil, "BACKGROUND", nil, 1)
+    gradient:SetAllPoints(frame)
+    gradient:SetGradient("VERTICAL",
+        CreateColor(topColor[1], topColor[2], topColor[3], 0.55),
+        CreateColor(bottomColor[1], bottomColor[2], bottomColor[3], 0))
+
+    local seam = frame:CreateTexture(nil, "BORDER")
+    seam:SetPoint("TOPLEFT", frame, "TOPLEFT", 1, -1)
+    seam:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -1, -1)
+    seam:SetHeight(1)
+    seam:SetColorTexture(unpack(BORDER_HIGHLIGHT_COLOR))
+    seam:SetAlpha(0.6)
+end
+
+local DANGER_BORDER_COLOR = { 0.700, 0.298, 0.263 }
+
+-- Re-skins a UIPanelButtonTemplate button (the gray 3D bevel look) as a flat
+-- bordered button: hides every pre-existing texture region rather than
+-- assuming a specific template internal (some templates expose a single
+-- NormalTexture, others a Left/Middle/Right 3-slice - hiding all of them
+-- works either way), then layers two textures of our own directly on the
+-- button (BACKGROUND = border color, BORDER layer inset 1px = fill color) so
+-- there is no frame-level ordering to get wrong against the button's own
+-- text. The button keeps its native click/disable/highlight behavior -
+-- only SetHighlightTexture is re-pointed at a plain additive glow.
+local function SkinButton(button, opts)
+    if not button or button.specSageSkinned then return end
+    button.specSageSkinned = true
+    opts = opts or {}
+    local isDanger = opts.variant == "danger"
+
+    for _, region in ipairs({ button:GetRegions() }) do
+        if region.IsObjectType and region:IsObjectType("Texture") then
+            region:Hide()
+        end
+    end
+
+    local border = button:CreateTexture(nil, "BACKGROUND")
+    border:SetAllPoints(button)
+    border:SetColorTexture(unpack(BORDER_COLOR))
+
+    local fill = button:CreateTexture(nil, "BORDER")
+    fill:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
+    fill:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
+    fill:SetColorTexture(unpack(CARD_BACKDROP_COLOR))
+
+    button.specSageBorder = border
+
+    if button.SetHighlightTexture then
+        button:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
+    end
+
+    button:HookScript("OnEnter", function()
+        border:SetColorTexture(unpack(isDanger and DANGER_BORDER_COLOR or ACCENT_COLOR))
+    end)
+    button:HookScript("OnLeave", function()
+        border:SetColorTexture(unpack(BORDER_COLOR))
+    end)
+
+    if button.SetNormalFontObject then
+        button:SetNormalFontObject(SpecSageBodyFontSmall)
+        button:SetHighlightFontObject(SpecSageBodyFontSmall)
+        button:SetDisabledFontObject(SpecSageBodyFontSmall)
+    end
+end
+
 -- Creates a multi-line EditBox backed by a bordered BackdropTemplate frame.
 -- A bare EditBox has no font set and no backdrop/inset of its own: in the
 -- real client that means invisible text (or a "font not set" error on
@@ -236,8 +350,9 @@ local function NewBackdropEditBox(parent, width, height)
         edgeFile = "Interface\\Buttons\\WHITE8X8",
         edgeSize = 1,
     })
-    backdrop:SetBackdropColor(0, 0, 0, 0.6)
-    backdrop:SetBackdropBorderColor(0.35, 0.35, 0.35, 1)
+    backdrop:SetBackdropColor(unpack(CARD_BACKDROP_COLOR))
+    backdrop:SetBackdropBorderColor(unpack(BORDER_COLOR))
+    ApplyPanelChrome(backdrop, CARD_BG_TOP, CARD_BG_BOTTOM)
 
     local box = CreateFrame("EditBox", nil, backdrop)
     box:SetMultiLine(true)
@@ -284,10 +399,19 @@ local function AcquireLineRow(pool, index, parent)
 
         row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         row.text:SetJustifyH("LEFT")
+        row.text:SetFontObject(SpecSageBodyFontSmall)
         -- Both guarded: not every FontString method exists in every game
         -- version (or in the test mock), and wrapping is cheap here.
         pcall(row.text.SetJustifyV, row.text, "TOP")
         pcall(row.text.SetWordWrap, row.text, true)
+
+        -- Hairline divider shown only under section headers (opts.isHeader
+        -- in PlaceLine) - the "Blizzard Modern" pass's stand-in for a real
+        -- section rule, since a bare colored line of text was the only
+        -- separator before.
+        row.divider = row:CreateTexture(nil, "ARTWORK")
+        row.divider:SetColorTexture(unpack(BORDER_COLOR))
+        row.divider:Hide()
 
         row:SetScript("OnEnter", function(self)
             if not self.spellID then return end
@@ -337,8 +461,9 @@ local function PlaceLine(pool, index, parent, y, width, text, opts)
 
     row.text:ClearAllPoints()
     row.text:SetPoint("TOPLEFT", row, "TOPLEFT", textInset, 0)
+    row.text:SetFontObject(opts.isHeader and SpecSageBoldFontSmall or SpecSageBodyFontSmall)
 
-    local color = opts.color or { 0.85, 0.85, 0.85 }
+    local color = opts.color or TEXT_PRIMARY_COLOR
     row.text:SetTextColor(color[1], color[2], color[3])
 
     local textWidth = width - textInset
@@ -352,9 +477,23 @@ local function PlaceLine(pool, index, parent, y, width, text, opts)
         height = lineCount * 14
     end
 
-    local rowHeight = math.max(height, opts.spellID and 16 or 0)
+    -- Headers reserve a little extra room below the text for the divider
+    -- rule (see AcquireLineRow), so the next line's PlaceLine call never
+    -- overlaps it.
+    local headerDividerSpace = opts.isHeader and 6 or 0
+    local rowHeight = math.max(height, opts.spellID and 16 or 0) + headerDividerSpace
     row:SetSize(width, rowHeight)
     row:Show()
+
+    if opts.isHeader then
+        row.divider:ClearAllPoints()
+        row.divider:SetPoint("TOPLEFT", row.text, "BOTTOMLEFT", 0, -3)
+        row.divider:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+        row.divider:SetHeight(1)
+        row.divider:Show()
+    else
+        row.divider:Hide()
+    end
 
     return y - rowHeight - LINE_GAP
 end
@@ -370,10 +509,12 @@ local function AcquireStatRow(pool, index, parent)
         row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         row.label:SetJustifyH("LEFT")
         row.label:SetPoint("LEFT", row, "LEFT", 0, 0)
+        row.label:SetFontObject(SpecSageBodyFontSmall)
 
         row.value = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         row.value:SetJustifyH("RIGHT")
         row.value:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+        row.value:SetFontObject(SpecSageBoldFontSmall)
 
         pool[index] = row
     end
@@ -390,11 +531,11 @@ local function PlaceStatRow(pool, index, parent, y, width, label, value, muted)
     if muted then
         row.label:SetTextColor(MUTED_COLOR[1], MUTED_COLOR[2], MUTED_COLOR[3])
     else
-        row.label:SetTextColor(0.85, 0.85, 0.85)
+        row.label:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])
     end
 
     row.value:SetText(value or "")
-    row.value:SetTextColor(1, 1, 1)
+    row.value:SetTextColor(TEXT_PRIMARY_COLOR[1], TEXT_PRIMARY_COLOR[2], TEXT_PRIMARY_COLOR[3])
 
     row:Show()
     return y - 18
@@ -435,7 +576,7 @@ function Codex:RenderOverview(guide)
 
     if guide and guide.tips and #guide.tips > 0 then
         index = index + 1
-        y = PlaceLine(pool, index, parent, y, width, "Tips", { color = HEADER_COLOR })
+        y = PlaceLine(pool, index, parent, y, width, "Tips", { color = HEADER_COLOR, isHeader = true })
         for _, tip in ipairs(guide.tips) do
             index = index + 1
             y = PlaceLine(pool, index, parent, y, width, "\226\128\162 " .. tip)
@@ -483,7 +624,7 @@ function Codex:RenderRotation(guide)
     else
         for _, group in ipairs(groups) do
             index = index + 1
-            y = PlaceLine(pool, index, parent, y, width, group.title or "", { color = HEADER_COLOR })
+            y = PlaceLine(pool, index, parent, y, width, group.title or "", { color = HEADER_COLOR, isHeader = true })
             for _, step in ipairs(group.steps or {}) do
                 index = index + 1
                 y = PlaceLine(pool, index, parent, y, width, step.text or "", { spellID = step.spellID })
@@ -567,6 +708,7 @@ local function AcquireBiSRow(pool, index, parent)
         row:EnableMouse(true)
 
         row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        row.text:SetFontObject(SpecSageBodyFontSmall)
         row.text:SetJustifyH("LEFT")
         row.text:SetPoint("LEFT", row, "LEFT", 0, 0)
         -- Bounded and non-wrapping: row.text is arbitrary user text (a
@@ -579,6 +721,7 @@ local function AcquireBiSRow(pool, index, parent)
         pcall(row.text.SetWordWrap, row.text, false)
 
         row.status = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        row.status:SetFontObject(SpecSageBodyFontSmall)
         row.status:SetJustifyH("RIGHT")
         row.status:SetPoint("RIGHT", row, "RIGHT", -58, 0)
 
@@ -586,6 +729,7 @@ local function AcquireBiSRow(pool, index, parent)
         row.deleteButton:SetSize(50, 18)
         row.deleteButton:SetText("Delete")
         row.deleteButton:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+        SkinButton(row.deleteButton, { variant = "danger" })
 
         -- Real spell tooltip on hover, the same shared-GameTooltip approach
         -- AcquireLineRow uses for rotation/cooldown spell icons ("the Codex
@@ -615,6 +759,7 @@ function Codex:EnsureBiSWidgets()
     local slotButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
     slotButton:SetSize(90, 20)
     slotButton:SetScript("OnClick", function() self:CycleBiSSlot() end)
+    SkinButton(slotButton)
 
     local itemBox = CreateFrame("EditBox", nil, parent, "InputBoxTemplate")
     itemBox:SetSize(300, 20)
@@ -630,6 +775,7 @@ function Codex:EnsureBiSWidgets()
     addButton:SetSize(60, 20)
     addButton:SetText("Add")
     addButton:SetScript("OnClick", function() self:OnBiSAddClicked() end)
+    SkinButton(addButton)
 
     self.bisButtons = { slotButton = slotButton, addButton = addButton }
     self.bisItemBox = itemBox
@@ -740,7 +886,7 @@ function Codex:RenderBiS(guide, specID)
 
     y = y - GROUP_GAP
     index = index + 1
-    y = PlaceLine(pool, index, parent, y, width, "Personal Checklist", { color = HEADER_COLOR })
+    y = PlaceLine(pool, index, parent, y, width, "Personal Checklist", { color = HEADER_COLOR, isHeader = true })
     self:FinishPool(pool, index, y)
 
     y = y - LINE_GAP
@@ -841,6 +987,7 @@ local function AcquireLoadoutRow(pool, index, parent)
         row = CreateFrame("Frame", nil, parent)
 
         row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        row.name:SetFontObject(SpecSageBodyFontSmall)
         row.name:SetJustifyH("LEFT")
         row.name:SetPoint("LEFT", row, "LEFT", 0, 0)
 
@@ -848,11 +995,13 @@ local function AcquireLoadoutRow(pool, index, parent)
         row.copyButton:SetSize(50, 18)
         row.copyButton:SetText("Copy")
         row.copyButton:SetPoint("RIGHT", row, "RIGHT", -58, 0)
+        SkinButton(row.copyButton)
 
         row.deleteButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
         row.deleteButton:SetSize(50, 18)
         row.deleteButton:SetText("Delete")
         row.deleteButton:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+        SkinButton(row.deleteButton, { variant = "danger" })
 
         pool[index] = row
     end
@@ -868,11 +1017,13 @@ function Codex:EnsureLoadoutWidgets()
     save:SetSize(110, 20)
     save:SetText("Save current")
     save:SetScript("OnClick", function() self:OnSaveCurrentClicked() end)
+    SkinButton(save)
 
     local add = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
     add:SetSize(120, 20)
     add:SetText("Add from string")
     add:SetScript("OnClick", function() self:ShowAddDialog() end)
+    SkinButton(add)
 
     self.loadoutButtons = { save = save, add = add }
     self.loadoutRowPool = {}
@@ -908,6 +1059,7 @@ local function CreateSuggestedLoadoutRow(parent)
     local row = CreateFrame("Frame", nil, parent)
 
     row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    row.name:SetFontObject(SpecSageBodyFontSmall)
     row.name:SetJustifyH("LEFT")
     row.name:SetPoint("LEFT", row, "LEFT", 0, 0)
 
@@ -915,11 +1067,13 @@ local function CreateSuggestedLoadoutRow(parent)
     row.addButton:SetSize(110, 18)
     row.addButton:SetText("Add to my vault")
     row.addButton:SetPoint("RIGHT", row, "RIGHT", -58, 0)
+    SkinButton(row.addButton)
 
     row.copyButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
     row.copyButton:SetSize(50, 18)
     row.copyButton:SetText("Copy")
     row.copyButton:SetPoint("RIGHT", row.addButton, "LEFT", -8, 0)
+    SkinButton(row.copyButton)
 
     row:Hide()
     return row
@@ -1028,7 +1182,7 @@ function Codex:RenderLoadouts(specID, guide)
             end
             detail = format("%s, patch %s", detail, loadout.patch)
             suggested.name:SetText(format("%s (%s)", kind.label, detail))
-            suggested.name:SetTextColor(0.9, 0.9, 0.9)
+            suggested.name:SetTextColor(TEXT_PRIMARY_COLOR[1], TEXT_PRIMARY_COLOR[2], TEXT_PRIMARY_COLOR[3])
 
             suggested.copyButton:Show()
             suggested.copyButton:SetScript("OnClick", function() self:ShowCopyDialog(loadout.string) end)
@@ -1070,7 +1224,7 @@ function Codex:RenderLoadouts(specID, guide)
             row:SetSize(width, 18)
 
             row.name:SetText(format("%s  |cff888888[%s]|r", loadout.name, loadout.category))
-            row.name:SetTextColor(0.9, 0.9, 0.9)
+            row.name:SetTextColor(TEXT_PRIMARY_COLOR[1], TEXT_PRIMARY_COLOR[2], TEXT_PRIMARY_COLOR[3])
             row.copyButton:Show()
             row.copyButton:SetScript("OnClick", function() self:ShowCopyDialog(loadout.export) end)
 
@@ -1129,10 +1283,13 @@ function Codex:EnsureAddDialog()
     dialog:SetPoint("CENTER", self.frame, "CENTER", 0, 0)
     dialog:SetFrameStrata("DIALOG")
     dialog:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
-    dialog:SetBackdropColor(0.05, 0.05, 0.07, 0.98)
+    dialog:SetBackdropColor(unpack(CARD_BACKDROP_COLOR))
+    dialog:SetBackdropBorderColor(unpack(BORDER_COLOR))
+    ApplyPanelChrome(dialog, CARD_BG_TOP, CARD_BG_BOTTOM)
     dialog:Hide()
 
     local nameLabel = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    nameLabel:SetFontObject(SpecSageBodyFontSmall)
     nameLabel:SetPoint("TOPLEFT", dialog, "TOPLEFT", 12, -12)
     nameLabel:SetText("Name")
 
@@ -1147,8 +1304,10 @@ function Codex:EnsureAddDialog()
     categoryButton:SetSize(120, 20)
     categoryButton:SetPoint("TOPLEFT", nameBox, "BOTTOMLEFT", 0, -10)
     categoryButton:SetScript("OnClick", function() self:CycleAddCategory() end)
+    SkinButton(categoryButton)
 
     local importLabel = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    importLabel:SetFontObject(SpecSageBodyFontSmall)
     importLabel:SetPoint("TOPLEFT", categoryButton, "BOTTOMLEFT", 0, -10)
     importLabel:SetText("Import string")
 
@@ -1160,12 +1319,14 @@ function Codex:EnsureAddDialog()
     saveButton:SetText("Save")
     saveButton:SetPoint("BOTTOMLEFT", dialog, "BOTTOMLEFT", 12, 12)
     saveButton:SetScript("OnClick", function() self:OnAddDialogSave() end)
+    SkinButton(saveButton)
 
     local cancelButton = CreateFrame("Button", nil, dialog, "UIPanelButtonTemplate")
     cancelButton:SetSize(80, 22)
     cancelButton:SetText("Cancel")
     cancelButton:SetPoint("BOTTOMRIGHT", dialog, "BOTTOMRIGHT", -12, 12)
     cancelButton:SetScript("OnClick", function() self:HideAddDialog() end)
+    SkinButton(cancelButton)
 
     self.addDialog = dialog
     self.addNameBox = nameBox
@@ -1208,10 +1369,13 @@ function Codex:EnsureCopyDialog()
     dialog:SetPoint("CENTER", self.frame, "CENTER", 0, 0)
     dialog:SetFrameStrata("DIALOG")
     dialog:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
-    dialog:SetBackdropColor(0.05, 0.05, 0.07, 0.98)
+    dialog:SetBackdropColor(unpack(CARD_BACKDROP_COLOR))
+    dialog:SetBackdropBorderColor(unpack(BORDER_COLOR))
+    ApplyPanelChrome(dialog, CARD_BG_TOP, CARD_BG_BOTTOM)
     dialog:Hide()
 
     local label = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    label:SetFontObject(SpecSageBodyFontSmall)
     label:SetPoint("TOP", dialog, "TOP", 0, -12)
     label:SetText("Ctrl+C to copy")
 
@@ -1357,6 +1521,7 @@ local function AcquireOptionCheckRow(pool, index, parent)
         row.box, row.mark = box, mark
 
         row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        row.label:SetFontObject(SpecSageBodyFontSmall)
         row.label:SetJustifyH("LEFT")
         row.label:SetPoint("LEFT", box, "RIGHT", 6, 0)
 
@@ -1374,19 +1539,23 @@ local function AcquireOptionRangeRow(pool, index, parent)
         row:SetScript("OnLeave", OnOptionRowLeave)
 
         row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        row.label:SetFontObject(SpecSageBodyFontSmall)
         row.label:SetJustifyH("LEFT")
         row.label:SetPoint("LEFT", row, "LEFT", 0, 0)
 
         row.minusButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
         row.minusButton:SetSize(OPTION_STEP_BUTTON_WIDTH, 18)
         row.minusButton:SetText("-")
+        SkinButton(row.minusButton)
 
         row.value = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        row.value:SetFontObject(SpecSageBodyFontSmall)
         row.value:SetJustifyH("CENTER")
 
         row.plusButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
         row.plusButton:SetSize(OPTION_STEP_BUTTON_WIDTH, 18)
         row.plusButton:SetText("+")
+        SkinButton(row.plusButton)
 
         -- Anchored right-to-left so the trio keeps its shape at any row
         -- width: [+] sits at the right edge, the value left of it, [-] left
@@ -1412,6 +1581,7 @@ local function AcquireOptionActionRow(pool, index, parent)
         row.button = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
         row.button:SetSize(140, 20)
         row.button:SetPoint("LEFT", row, "LEFT", 0, 0)
+        SkinButton(row.button)
 
         pool[index] = row
     end
@@ -1456,7 +1626,7 @@ function Codex:RenderOptions()
         if groupIndex > 1 then y = y - GROUP_GAP end
 
         textIndex = textIndex + 1
-        y = PlaceLine(pool, textIndex, parent, y, width, group.title, { color = HEADER_COLOR })
+        y = PlaceLine(pool, textIndex, parent, y, width, group.title, { color = HEADER_COLOR, isHeader = true })
 
         for _, entry in ipairs(group.options) do
             if entry.kind == "check" then
@@ -1466,7 +1636,7 @@ function Codex:RenderOptions()
                 row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
                 row:SetSize(width, OPTION_ROW_HEIGHT)
                 row.label:SetText(entry.label or "")
-                row.label:SetTextColor(0.85, 0.85, 0.85)
+                row.label:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])
                 row.mark:SetShown(ns.GetOptionValue(entry) and true or false)
                 SetOptionTooltip(row, entry)
                 row.box:SetScript("OnClick", function() self:ToggleOption(entry) end)
@@ -1480,12 +1650,12 @@ function Codex:RenderOptions()
                 row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
                 row:SetSize(width, OPTION_ROW_HEIGHT)
                 row.label:SetText(entry.label or "")
-                row.label:SetTextColor(0.85, 0.85, 0.85)
+                row.label:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])
 
                 local value = tonumber(ns.GetOptionValue(entry)) or entry.min
                 local formatter = entry.formatter
                 row.value:SetText(formatter and formatter(value) or tostring(value))
-                row.value:SetTextColor(1, 1, 1)
+                row.value:SetTextColor(TEXT_PRIMARY_COLOR[1], TEXT_PRIMARY_COLOR[2], TEXT_PRIMARY_COLOR[3])
 
                 -- A stepper at the end of its range is disabled rather than
                 -- silently doing nothing when clicked.
@@ -1646,15 +1816,38 @@ function Codex:UpdateSpecHighlight()
             if btn.specID == self.selectedSpecID then
                 btn.label:SetTextColor(color.r, color.g, color.b)
             else
-                btn.label:SetTextColor(0.8, 0.8, 0.8)
+                btn.label:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])
             end
         end
     end
 end
 
 function Codex:UpdateTabHighlight()
+    -- Bronze ACCENT_COLOR by default; once a real class is selected (not
+    -- DEFAULT_CLASS_COLOR's neutral gray fallback), the active-tab
+    -- underline shifts to that class's own color instead.
+    local color = self.selectedClass and ClassColor(self.selectedClass)
+    local accentR, accentG, accentB = ACCENT_COLOR[1], ACCENT_COLOR[2], ACCENT_COLOR[3]
+    if color and color ~= DEFAULT_CLASS_COLOR then
+        accentR, accentG, accentB = color.r, color.g, color.b
+    end
+
     for tabName, btn in pairs(self.tabButtons or {}) do
-        pcall(btn.SetAlpha, btn, (tabName == self.activeTab) and 1 or 0.6)
+        local isActive = (tabName == self.activeTab)
+        local fontString = btn.GetFontString and btn:GetFontString()
+        if fontString then
+            if isActive then
+                fontString:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
+            else
+                fontString:SetTextColor(unpack(TEXT_SECONDARY_COLOR))
+            end
+        end
+        if btn.tabUnderline then
+            btn.tabUnderline:SetShown(isActive)
+            if isActive then
+                btn.tabUnderline:SetColorTexture(accentR, accentG, accentB)
+            end
+        end
     end
 end
 
@@ -1674,6 +1867,7 @@ function Codex:RefreshSpecRail(classToken)
             btn.icon:SetPoint("LEFT", btn, "LEFT", 0, 0)
 
             btn.label = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+            btn.label:SetFontObject(SpecSageBodyFontSmall)
             btn.label:SetJustifyH("LEFT")
             btn.label:SetPoint("LEFT", btn.icon, "RIGHT", 4, 0)
 
@@ -1805,6 +1999,7 @@ function Codex:BuildClassRail()
         -- UpdateClassHighlight dims the whole button via alpha for
         -- whichever class is not currently selected.
         local label = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        label:SetFontObject(SpecSageBodyFontSmall)
         label:SetJustifyH("LEFT")
         label:SetPoint("LEFT", icon, "RIGHT", 4, 0)
         label:SetText(entry.name)
@@ -1851,6 +2046,18 @@ function Codex:BuildTabStrip()
         btn:SetPoint("TOPLEFT", strip, "TOPLEFT", x, 0)
         btn:SetText(tabName)
         btn:SetScript("OnClick", function() self:SelectTab(tabName) end)
+        SkinButton(btn)
+
+        -- Active-tab indicator: a 2px underline in the selected class's
+        -- color (falls back to the flat bronze ACCENT_COLOR - see
+        -- UpdateTabHighlight) instead of the old plain alpha dim/undim.
+        local underline = btn:CreateTexture(nil, "OVERLAY")
+        underline:SetPoint("BOTTOMLEFT", btn, "BOTTOMLEFT", 1, 0)
+        underline:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT", -1, 0)
+        underline:SetHeight(2)
+        underline:Hide()
+        btn.tabUnderline = underline
+
         self.tabButtons[tabName] = btn
         x = x + TAB_BUTTON_STRIDE
     end
@@ -1889,10 +2096,12 @@ function Codex:BuildFrame()
     frame:SetBackdrop({
         bgFile = "Interface\\Buttons\\WHITE8X8",
         edgeFile = "Interface\\Buttons\\WHITE8X8",
-        edgeSize = 1,
+        edgeSize = 2,
+        insets = { left = 2, right = 2, top = 2, bottom = 2 },
     })
-    frame:SetBackdropColor(0.05, 0.05, 0.07, 0.95)
-    frame:SetBackdropBorderColor(0, 0, 0, 1)
+    frame:SetBackdropColor(unpack(PANEL_BACKDROP_COLOR))
+    frame:SetBackdropBorderColor(unpack(PANEL_BORDER_COLOR))
+    ApplyPanelChrome(frame, PANEL_BG_TOP, PANEL_BG_BOTTOM)
 
     frame:SetScript("OnDragStart", function(self2) self2:StartMoving() end)
     frame:SetScript("OnDragStop", function(self2)

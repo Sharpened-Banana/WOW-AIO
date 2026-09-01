@@ -55,6 +55,26 @@ bit = {
     end,
 }
 
+-- Real CreateColor returns a ColorMixin object; SpecSage only ever hands the
+-- result straight to Texture:SetGradient (see NewTexture below), so a plain
+-- table carrying the four components is all this mock needs.
+function CreateColor(r, g, b, a)
+    return { r = r, g = g, b = b, a = a or 1 }
+end
+
+-- Reusable Font objects (UI/Codex.lua's "Blizzard Modern" pass builds a
+-- handful once at load, via SetFontObject rather than a fresh CreateFont per
+-- row/button).
+mock.fonts = {}
+function CreateFont(name)
+    local font = { name = name }
+    function font:SetFont(path, size, flags) self.font, self.fontSize, self.flags = path, size, flags end
+    function font:GetFont() return self.font, self.fontSize, self.flags end
+    function font:SetTextColor(r, g, b) self.color = { r, g, b } end
+    mock.fonts[name] = font
+    return font
+end
+
 --------------------------------------------------------------------------------
 -- Widgets
 --------------------------------------------------------------------------------
@@ -80,6 +100,11 @@ local function NewRegion(kind)
     function region:Hide() self.shown = false end
     function region:IsShown() return self.shown end
     function region:SetShown(value) self.shown = value and true or false end
+    -- Real IsObjectType also matches ancestor widget types (a Button
+    -- IsObjectType("Frame") is true); this mock only ever needs an exact
+    -- kind match (SkinButton in UI/Codex.lua asks "is this a Texture"), so
+    -- that's all it implements.
+    function region:IsObjectType(kind) return type(kind) == "string" and kind:lower() == self.kind end
 
     return region
 end
@@ -92,6 +117,7 @@ local function NewFontString()
     function fs:SetFont(path, size) self.font, self.fontSize = path, size end
     function fs:GetFont() return self.font or "Fonts\\FRIZQT__.TTF", self.fontSize or 12, "" end
     function fs:SetTextColor(r, g, b) self.color = { r, g, b } end
+    function fs:SetFontObject(obj) self.fontObject = obj end
     return fs
 end
 
@@ -100,6 +126,8 @@ local function NewTexture()
     function texture:SetTexture(value) self.texture = value end
     function texture:SetTexCoord() end
     function texture:SetDesaturated(value) self.desaturated = value end
+    function texture:SetColorTexture(r, g, b, a) self.colorTexture = { r, g, b, a } end
+    function texture:SetGradient(orientation, colorA, colorB) self.gradient = { orientation, colorA, colorB } end
     return texture
 end
 
@@ -232,6 +260,11 @@ function CreateFrame(frameType, name, parent, template)
         return texture
     end
 
+    -- Real GetRegions returns every Texture/FontString/Line region owned
+    -- directly by this frame (not child frames, which GetChildren covers
+    -- instead) - exactly what .children already tracks above.
+    function frame:GetRegions() return unpack(self.children) end
+
     -- From here on the widget surface is keyed off frameType (and, for
     -- Button's label, template): a bare "Frame" gets none of this, matching
     -- the real client where these methods simply do not exist on the wrong
@@ -317,6 +350,13 @@ function CreateFrame(frameType, name, parent, template)
                 .. "no label at all in the real client")
             label:SetText(text)
         end
+        -- Real Button:SetNormalFontObject/SetHighlightFontObject/
+        -- SetDisabledFontObject each set the font used for one interaction
+        -- state on the button's single label FontString; no-op without a
+        -- label, same as the real client (nothing to apply a font to).
+        function frame:SetNormalFontObject(obj) if label then label:SetFontObject(obj) end end
+        function frame:SetHighlightFontObject(obj) if label then label:SetFontObject(obj) end end
+        function frame:SetDisabledFontObject(obj) if label then label:SetFontObject(obj) end end
         function frame:GetText() return label and label:GetText() or nil end
     end
 
