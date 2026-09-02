@@ -164,6 +164,55 @@ function ItemRanks:Describe(link, specID)
     return lines
 end
 
+-- The client's own localized stat names, as they appear on an item's
+-- "+512 Haste" lines; English fallbacks for a client (or the test mock)
+-- without the globals.
+local STAT_NAMES = {
+    crit = STAT_CRITICAL_STRIKE or "Critical Strike",
+    haste = STAT_HASTE or "Haste",
+    mastery = STAT_MASTERY or "Mastery",
+    versatility = STAT_VERSATILITY or "Versatility",
+    leech = STAT_LIFESTEAL or "Leech",
+    avoidance = STAT_AVOIDANCE or "Avoidance",
+    speed = STAT_SPEED or "Speed",
+}
+
+-- Writes each rank onto the tooltip line that shows that stat ("+512 Haste"
+-- becomes "+512 Haste  #1"), the way the rank belongs next to the number
+-- rather than in a summary underneath. Tooltip lines are the FontStrings
+-- <tooltipName>TextLeft<i>; only lines that start with "+" are candidates,
+-- so an effect description that merely mentions Haste is left alone. Returns
+-- the lines it could not place (no matching stat line, or an unnamed
+-- tooltip), for the caller to fall back to a summary line for.
+function ItemRanks:AnnotateInline(tooltip, lines)
+    local remaining = {}
+    for _, line in ipairs(lines) do remaining[#remaining + 1] = line end
+
+    local ok, name = pcall(function() return tooltip.GetName and tooltip:GetName() end)
+    if not ok or type(name) ~= "string" or name == "" then return remaining end
+    local okN, count = pcall(function() return tooltip.NumLines and tooltip:NumLines() end)
+    if not okN or type(count) ~= "number" then return remaining end
+
+    for i = 2, count do
+        if #remaining == 0 then break end
+        local fs = _G[name .. "TextLeft" .. i]
+        local okT, text = pcall(function() return fs and fs.GetText and fs:GetText() end)
+        if okT and type(text) == "string" and text:sub(1, 1) == "+" and not text:find("#", 1, true) then
+            for index, line in ipairs(remaining) do
+                local label = STAT_NAMES[line.stat]
+                if label and text:find(label, 1, true) then
+                    local rankText = line.rank and format("#%d", line.rank) or "unranked"
+                    local okS = pcall(fs.SetText, fs,
+                        format("%s  %s%s|r", text, ColorCode({ line.r, line.g, line.b }), rankText))
+                    if okS then table.remove(remaining, index) end
+                    break
+                end
+            end
+        end
+    end
+    return remaining
+end
+
 -- Where `itemID` sits in the spec's trinket tier lists (Data/Trinkets.lua):
 -- an ordered array of { title, tier, gain } with one entry per list that
 -- ranks it, or nil when no list does. Public so the Codex or a test can ask
@@ -228,18 +277,27 @@ function ItemRanks:Annotate(tooltip, link)
         tierParts = { "not in this spec's trinket lists" }
     end
 
-    -- Stat ranks against the spec's priority.
+    -- Stat ranks against the spec's priority: written next to each stat's
+    -- own line when the tooltip lets us at its lines, and only the leftovers
+    -- (if any) summarised underneath.
     local lines = self:Describe(link, specID)
-    local statParts
+    local statParts, annotatedInline = nil, false
     if lines then
-        statParts = {}
-        for _, line in ipairs(lines) do
-            local rankText = line.rank and format("#%d of %d", line.rank, line.count) or "unranked"
-            statParts[#statParts + 1] = format("%s%s %s|r", ColorCode({ line.r, line.g, line.b }), line.label, rankText)
+        local leftovers = self:AnnotateInline(tooltip, lines)
+        annotatedInline = #leftovers < #lines
+        if #leftovers > 0 then
+            statParts = {}
+            for _, line in ipairs(leftovers) do
+                local rankText = line.rank and format("#%d of %d", line.rank, line.count) or "unranked"
+                statParts[#statParts + 1] = format("%s%s %s|r", ColorCode({ line.r, line.g, line.b }), line.label, rankText)
+            end
         end
     end
 
-    if not tierParts and not statParts then return false end
+    if not tierParts and not statParts then
+        if annotatedInline then pcall(function() if tooltip.Show then tooltip:Show() end end) end
+        return annotatedInline
+    end
 
     local ok = pcall(function()
         tooltip:AddLine(" ")

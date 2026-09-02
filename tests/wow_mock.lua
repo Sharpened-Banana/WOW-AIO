@@ -922,15 +922,55 @@ function GameTooltip:SetSpellByID(spellID)
     table.insert(self.lines, { left = spell and spell.name or ("Spell " .. spellID) })
 end
 
+-- The client renders an item's stats as their own "+512 Haste" lines; the
+-- mock does the same from the fixture's `stats` so Modules/ItemRanks.lua's
+-- inline annotation has real lines to write onto.
+local ITEM_MOD_LINE_LABELS = {
+    ITEM_MOD_CRIT_RATING_SHORT = "Critical Strike", ITEM_MOD_HASTE_RATING_SHORT = "Haste",
+    ITEM_MOD_MASTERY_RATING_SHORT = "Mastery", ITEM_MOD_VERSATILITY = "Versatility",
+    ITEM_MOD_CR_LIFESTEAL_SHORT = "Leech", ITEM_MOD_CR_AVOIDANCE_SHORT = "Avoidance",
+    ITEM_MOD_CR_SPEED_SHORT = "Speed", ITEM_MOD_STAMINA_SHORT = "Stamina",
+}
+
 function GameTooltip:SetItemByID(itemID)
     self.itemID = itemID
     local item = mock.items[itemID]
     table.insert(self.lines, { left = item and item.name or ("Item " .. tostring(itemID)) })
+    local keys = {}
+    for key in pairs((item and item.stats) or {}) do keys[#keys + 1] = key end
+    table.sort(keys)
+    for _, key in ipairs(keys) do
+        table.insert(self.lines, { left = format("+%d %s", item.stats[key], ITEM_MOD_LINE_LABELS[key] or key) })
+    end
+    mock.SyncTooltipFontStrings(self)
 end
 
 function GameTooltip:Show() self.shown = true end
 function GameTooltip:Hide() self.shown = false end
 function GameTooltip:GetName() return "GameTooltip" end
+function GameTooltip:NumLines() return #self.lines end
+
+-- The client exposes each tooltip line as a FontString named
+-- <tooltipName>TextLeft<i>; the mock mirrors its `lines` array into globals
+-- of that name (GetText/SetText read and write the same line entry) so the
+-- inline stat-rank annotation can be exercised and asserted on.
+function mock.SyncTooltipFontStrings(tooltip)
+    local name = tooltip:GetName()
+    if not name then return end -- an unnamed tooltip has no reachable lines
+    for i, line in ipairs(tooltip.lines) do
+        _G[name .. "TextLeft" .. i] = {
+            GetText = function() return line.left end,
+            SetText = function(_, text) line.left = text end,
+        }
+    end
+    -- Clear the tail so a longer previous tooltip's lines do not linger.
+    for i = #tooltip.lines + 1, 60 do
+        _G[name .. "TextLeft" .. i] = nil
+    end
+end
+
+STAT_CRITICAL_STRIKE, STAT_HASTE, STAT_MASTERY, STAT_VERSATILITY = "Critical Strike", "Haste", "Mastery", "Versatility"
+STAT_LIFESTEAL, STAT_AVOIDANCE, STAT_SPEED = "Leech", "Avoidance", "Speed"
 
 -- Modules/ItemRanks.lua reads the link a tooltip is showing through
 -- GetItem (name, link), and the OnTooltipSetItem fallback path hooks the

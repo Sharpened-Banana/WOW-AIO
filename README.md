@@ -14,9 +14,9 @@ class guides, talent loadouts, and live character tracking in one place:
   tracks live which pieces you have equipped, in your bags, or still missing.
 - **Tier and stat ranks on item tooltips** — a trinket's tooltip shows its
   tier in your current spec's trinket lists (Single Target S, Icy Veins A,
-  …), and every item tooltip gets a line ranking its secondary stats (#1,
-  #2, …) against your spec's stat priority, so you can tell at a glance
-  whether a drop in your bags is for you.
+  …), and every item tooltip gets each secondary stat's rank written next to
+  the stat itself ("+512 Haste  #1") against your spec's stat priority, so
+  you can tell at a glance whether a drop in your bags is for you.
 - **Talent Loadout Vault** — save, label, import, and export talent loadout
   strings per spec, organised by content type (Raid, Mythic+, Delves, PvP).
 - **Personal Notes** — free-text notes per spec, kept between sessions.

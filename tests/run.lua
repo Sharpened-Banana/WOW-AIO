@@ -2963,9 +2963,32 @@ do
     GameTooltip:SetOwner(nil, "ANCHOR_NONE")
     mock.FireTooltipItem(GameTooltip, 880001)
     local dump = table.concat(GameTooltip:Dump(), "\n")
-    check(dump:find("SpecSage stat ranks (Unholy):", 1, true) ~= nil, "the tooltip gains a SpecSage rank header", dump)
-    check(dump:find("Haste #1 of 4", 1, true) ~= nil, "the tooltip lists Haste as #1 of 4", dump)
-    check(dump:find("Versatility #4 of 4", 1, true) ~= nil, "the tooltip lists Versatility as #4 of 4", dump)
+    -- Ranks land on the stat's own line ("+512 Haste  #1"), not in a
+    -- summary underneath.
+    check(dump:find("+512 Haste  |cff", 1, true) ~= nil and dump:match("%+512 Haste  |cff%x+#1|r") ~= nil,
+        "the Haste line itself gains its #1 rank", dump)
+    check(dump:match("%+380 Versatility  |cff%x+#4|r") ~= nil, "the Versatility line itself gains its #4 rank", dump)
+    check(dump:find("+900 Stamina  ", 1, true) == nil, "the Stamina line is left alone", dump)
+    check(dump:find("SpecSage stat ranks", 1, true) == nil,
+        "no summary line is added when every rank was placed inline", dump)
+
+    -- A second pass over the same tooltip (the client can fire the post-call
+    -- more than once) does not double-annotate a line.
+    ItemRanks:Annotate(GameTooltip, "item:880001")
+    dump = table.concat(GameTooltip:Dump(), "\n")
+    check(select(2, dump:gsub("#1|r", "")) == 1, "re-annotating does not stack a second rank onto the line", dump)
+
+    -- A tooltip whose lines cannot be reached (no name) falls back to the
+    -- summary line.
+    local anon = setmetatable({ lines = {}, shown = false, hooks = {} }, { __index = GameTooltip })
+    anon.GetName = function() return nil end
+    anon:SetOwner(nil, "ANCHOR_NONE")
+    anon:SetItemByID(880001)
+    ItemRanks:Annotate(anon, "item:880001")
+    dump = table.concat(anon:Dump(), "\n")
+    check(dump:find("SpecSage stat ranks (Unholy):", 1, true) ~= nil, "an unnamed tooltip gets the summary header instead", dump)
+    check(dump:find("Haste #1 of 4", 1, true) ~= nil and dump:find("Versatility #4 of 4", 1, true) ~= nil,
+        "the summary lists Haste #1 of 4 and Versatility #4 of 4", dump)
 
     GameTooltip:SetOwner(nil, "ANCHOR_NONE")
     mock.FireTooltipItem(GameTooltip, 880002)
