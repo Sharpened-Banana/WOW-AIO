@@ -2786,36 +2786,53 @@ section("Trinket tier lists: shipped data (Data/Trinkets.lua)")
 
 do
     local GuideStore = ns.GuideStore
-    local withLists, unavailable, total = 0, 0, 0
-    local VALID_TIER = { S = true, A = true, B = true, C = true }
+    local withLists, withSim, withIcyVeins, withNote, unavailable, total = 0, 0, 0, 0, 0, 0
     for _, classEntry in ipairs(GuideStore:GetClasses()) do
         for _, specID in ipairs(GuideStore:GetClassSpecs(classEntry.token)) do
             if specID < 9000 then
                 total = total + 1
                 local data = GuideStore:GetTrinkets(specID)
-                check(data ~= nil, format("shipped spec %d has a trinket registration (list or unavailable reason)", specID))
+                check(data ~= nil, format("shipped spec %d has a trinket registration", specID))
                 if data and data.unavailable then
                     unavailable = unavailable + 1
                 elseif data then
                     withLists = withLists + 1
-                    local sorted = true
+                    if data.note then withNote = withNote + 1 end
+                    local sawSim, sawIcyVeins, sorted, simRowsCarrySiteTier = false, false, true, true
                     for _, listEntry in ipairs(data.lists) do
-                        for i = 2, #listEntry.list do
-                            if listEntry.list[i].gain > listEntry.list[i - 1].gain then sorted = false end
+                        local isSim = listEntry.list[1] and listEntry.list[1].gain ~= nil
+                        if isSim then sawSim = true end
+                        if listEntry.title == "Icy Veins" then sawIcyVeins = true end
+                        for i, row in ipairs(listEntry.list) do
+                            if isSim and i > 1 and row.gain > listEntry.list[i - 1].gain then sorted = false end
+                            -- A sim row either names Icy Veins' tier for the item or
+                            -- carries none (the site does not list it); never junk.
+                            if row.siteTier ~= nil and not ({ S = 1, A = 1, B = 1, C = 1, D = 1 })[row.siteTier] then
+                                simRowsCarrySiteTier = false
+                            end
                         end
-                        check(#listEntry.list > 0 and #listEntry.list <= 15,
-                            format("spec %d '%s' list has 1-15 rows", specID, listEntry.title), #listEntry.list)
+                        check(#listEntry.list > 0 and (not isSim or #listEntry.list <= 15),
+                            format("spec %d '%s' list has rows (sim lists at most 15)", specID, listEntry.title), #listEntry.list)
                         check(listEntry.list[1] and listEntry.list[1].tier == "S",
                             format("spec %d '%s' top trinket is tier S", specID, listEntry.title))
                     end
-                    check(sorted, format("spec %d trinket lists are sorted by gain, best first", specID))
+                    check(sorted, format("spec %d sim lists are sorted by gain, best first", specID))
+                    check(simRowsCarrySiteTier, format("spec %d siteTier values are valid tiers", specID))
+                    check(sawIcyVeins, format("spec %d carries an Icy Veins list", specID))
+                    if sawSim then withSim = withSim + 1 end
+                    if sawIcyVeins then withIcyVeins = withIcyVeins + 1 end
+                    -- A spec with no sim list explains why.
+                    check(sawSim or (data.note and data.note:find("No sim list", 1, true) ~= nil),
+                        format("spec %d without a sim list carries a note saying why", specID))
                 end
             end
         end
     end
     check(total == 40, "all 40 shipped specs were checked", total)
-    check(withLists == 27, "27 specs ship a bloodmallet-derived trinket list", withLists)
-    check(unavailable == 13, "13 specs (6 healers + 7 without a current SimC profile) ship an unavailable reason", unavailable)
+    check(withLists == 40 and unavailable == 0, "every shipped spec has at least one trinket list", withLists)
+    check(withSim == 27, "27 specs ship a bloodmallet-derived sim list", withSim)
+    check(withIcyVeins == 40, "all 40 specs ship an Icy Veins list", withIcyVeins)
+    check(withNote == 13, "the 13 specs without sims (6 healers + 7 without a current SimC profile) carry a note", withNote)
 end
 
 --------------------------------------------------------------------------------

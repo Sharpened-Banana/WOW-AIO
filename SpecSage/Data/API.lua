@@ -125,7 +125,8 @@ end
 -- reason) or { source, patch, lists = { { title, fightStyle, list = { row,
 -- ... } }, ... } } where every row is a concrete item: itemID, name, tier
 -- (S/A/B/C), gain (percent over baseline), and optional ilvl/source/onUse.
-local VALID_TIERS = { S = true, A = true, B = true, C = true }
+-- D is only ever an editorial (guide-site) tier; the sim buckets stop at C.
+local VALID_TIERS = { S = true, A = true, B = true, C = true, D = true }
 
 local function ValidateTrinkets(data)
     if type(data) ~= "table" then
@@ -162,12 +163,20 @@ local function ValidateTrinkets(data)
                 return false, where .. ".name must be a non-empty string"
             end
             if type(row.tier) ~= "string" or not VALID_TIERS[row.tier] then
-                return false, where .. ".tier must be S, A, B or C"
+                return false, where .. ".tier must be S, A, B, C or D"
             end
-            if type(row.gain) ~= "number" then
-                return false, where .. ".gain must be a number"
+            -- gain is a sim number; an editorial (guide-site) list has none.
+            if row.gain ~= nil and type(row.gain) ~= "number" then
+                return false, where .. ".gain must be a number when present"
+            end
+            if row.siteTier ~= nil and (type(row.siteTier) ~= "string" or not VALID_TIERS[row.siteTier]) then
+                return false, where .. ".siteTier must be S, A, B, C or D when present"
             end
         end
+    end
+
+    if data.note ~= nil and (type(data.note) ~= "string" or data.note == "") then
+        return false, "trinkets.note must be a non-empty string when present"
     end
 
     return true

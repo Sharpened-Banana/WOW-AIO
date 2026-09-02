@@ -45,13 +45,15 @@ BiS tab:
 - **Slot-by-slot guidance** in SpecSage's own words (which slots carry your
   tier set, what stats to look for on rings, what trinket styles suit the
   spec).
-- **A trinket tier list per spec**, generated from bloodmallet.com's public
-  SimulationCraft trinket sims (`tools/fetch_trinkets.py` regenerates
-  `Data/Trinkets.lua`). Each row shows the simulated DPS gain over no trinket
-  and an S/A/B/C tier relative to the best one, for single-target, 3-target
-  and 5-target fights. It is a sim ranking, not a verdict for your fight, and
-  the tab says so. Healers have no list (SimC does not simulate healing), and
-  neither do the few specs SimC has no current-patch profile for yet.
+- **A trinket tier list per spec**, from two sources side by side
+  (`tools/fetch_trinkets.py` regenerates `Data/Trinkets.lua`): bloodmallet.com's
+  public SimulationCraft trinket sims — each row shows the simulated DPS gain
+  over no trinket and an S/A/B/C tier relative to the best one, for
+  single-target, 3-target and 5-target fights — and Icy Veins' editorial
+  trinket ranking as its own list, with Icy Veins' tier also shown beside
+  every sim row. Healers and the few specs SimC has no current-patch profile
+  for yet get the Icy Veins list only, and the tab says why. Neither is a
+  verdict for your fight, and the tab says that too.
 - **A personal checklist** you fill from whichever source you trust: pick a
   slot, shift-click an item link (or paste an item ID or name) from chat, a
   guide, or the dungeon journal, and SpecSage marks each entry equipped /

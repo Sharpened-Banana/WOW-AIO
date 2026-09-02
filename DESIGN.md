@@ -276,13 +276,50 @@ best trinket's gain in the same list: S ≥ 90%, A ≥ 78%, B ≥ 62%, C below.
 Top 15 per list. It is a Patchwerk-style sim ranking, not a verdict for any
 particular fight, and the row text says so.
 
-Coverage, as of 2026-09-02: 27 of 40 specs have lists. The 13 without ship an
-`unavailable` reason instead so the tab explains itself: the 6 healers
-(SimC has no healing model, so nobody sims them) and the 7 specs SimC has not
-published a current-tier (MID2) profile for yet — Retribution, all four
-Druid specs, all three Evoker specs. Re-running the script picks those up the
-day they appear. The script needs a browser-like User-Agent (bloodmallet
-403s Python's default); it sets one.
+Coverage, as of 2026-09-02: 27 of 40 specs have sim lists. The 13 without
+are the 6 healers (SimC has no healing model, so nobody sims them) and the 7
+specs SimC has not published a current-tier (MID2) profile for yet —
+Retribution, all four Druid specs, all three Evoker specs. Re-running the
+script picks those up the day they appear. The script needs a browser-like
+User-Agent (bloodmallet 403s Python's default); it sets one.
+
+### Icy Veins cross-check (2026-09-02)
+
+The owner asked for the sim lists to be checked against Wowhead's and Icy
+Veins' trinket tier lists. Icy Veins' per-spec gear guide carries a "Trinket
+Rankings" table — an editorial S..D tier list with a wowhead item ID on
+every entry — for all 40 specs, and is parseable from its plain HTML;
+`tools/fetch_trinkets.py` now fetches it alongside bloodmallet. **Wowhead
+could not be read**: its guide pages render client-side (WebFetch gets only
+the page chrome), refuse plain HTTP clients (403), and the Chrome extension
+was not connected in that session. So the cross-check is Icy Veins only,
+and the data says so.
+
+How it is folded in, rather than picking a winner:
+
+- Every spec gets an extra **"Icy Veins"** list (the site's own tiers, in
+  its order, `tier` = its letter, no `gain`) as the last entry in the toggle.
+  For the 13 specs without sims it is the only list, and a `note` says why
+  there is no sim list; the old `unavailable` shape is still accepted by the
+  API but no shipped spec uses it now.
+- Every sim row carries `siteTier`, Icy Veins' tier for the same item, and
+  the Codex renders it in the row's detail ("Icy Veins A", or "not on Icy
+  Veins' list") so the two views are compared on the row, not by flipping.
+- Where Icy Veins rates a trinket S that is absent from the sim top 15, the
+  script writes a `note` naming it. As of this run there are none: after
+  filtering out non-trinket items the site mentions inside a trinket's
+  description (Havoc's S-tier entry names the weapon it pairs with, and the
+  first parser version swept those up), every Icy Veins S-tier trinket sits
+  inside the sim top 15 for all 27 simmed specs, and in the top 5 for nearly
+  all of them. The two sources agree far more than they differ; where the
+  tier letters differ it is mostly the sim's stricter, gain-relative
+  bucketing versus the site's coarser editorial one.
+
+Schema additions (validated in `Data/API.lua`): `gain` is now optional
+(present on sim rows only), `siteTier` is an optional S..D letter, `D` is
+accepted as a tier (editorial lists use it; sim buckets stop at C), and a
+top-level `note` is an optional non-empty string the Codex draws under the
+list.
 
 Codex BiS tab layout, top to bottom: shipped gear guidance rows (as before),
 then a **Trinket Tier List** header with a fight-style toggle button beside

@@ -1128,13 +1128,26 @@ function Codex:RenderTrinketSection(pool, index, parent, width, y, specID)
         if entry.ilvl then detail[#detail + 1] = "ilvl " .. tostring(entry.ilvl) end
         if entry.source and entry.source ~= "" then detail[#detail + 1] = entry.source end
         if entry.onUse then detail[#detail + 1] = "on-use" end
+        -- A sim row shows the guide site's tier for the same item beside it,
+        -- or says the site does not list it, so the two views are compared
+        -- on the row rather than by flipping between lists.
+        if entry.gain ~= nil then
+            if entry.siteTier then
+                local st = TIER_COLORS[entry.siteTier] or MUTED_COLOR
+                detail[#detail + 1] = format("Icy Veins |cff%02x%02x%02x%s|r|cff8a97a5",
+                    math.floor(st[1] * 255 + 0.5), math.floor(st[2] * 255 + 0.5), math.floor(st[3] * 255 + 0.5),
+                    entry.siteTier)
+            else
+                detail[#detail + 1] = "not on Icy Veins' list"
+            end
+        end
         local detailText = #detail > 0 and ("  |cff8a97a5" .. table.concat(detail, " · ") .. "|r") or ""
         row.text:SetText(format("|cff%02x%02x%02x%s|r%s",
             math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5), name, detailText))
         row.text:SetTextColor(1, 1, 1)
         row.itemID = entry.itemID
 
-        row.gain:SetText(format("+%.1f%%", entry.gain or 0))
+        row.gain:SetText(entry.gain ~= nil and format("+%.1f%%", entry.gain) or "")
         row.gain:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])
 
         row:Show()
@@ -1142,10 +1155,16 @@ function Codex:RenderTrinketSection(pool, index, parent, width, y, specID)
     end
     HidePoolFrom(rowPool, #active.list + 1)
 
+    if data.note then
+        index = index + 1
+        y = PlaceLine(pool, index, parent, y, width, data.note, { color = TEXT_SECONDARY_COLOR })
+    end
+
+    local isSim = active.list[1] and active.list[1].gain ~= nil
     index = index + 1
     y = PlaceLine(pool, index, parent, y, width,
-        format("Sim ranking (%s), not a verdict for your fight: %s. Click a trinket for its link.",
-            active.title or "", data.source or "source unknown"),
+        format("%s (%s), not a verdict for your fight. Sources: %s. Click a trinket for its link.",
+            isSim and "Sim ranking" or "Editorial ranking", active.title or "", data.source or "unknown"),
         { color = MUTED_COLOR })
 
     return index, y

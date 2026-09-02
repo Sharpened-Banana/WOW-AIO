@@ -1,86 +1,124 @@
 #!/usr/bin/env python3
-"""Regenerates SpecSage/Data/Trinkets.lua from bloodmallet.com's public sim charts.
+"""Regenerates SpecSage/Data/Trinkets.lua from two public sources.
 
-bloodmallet (github.com/Bloodmallet/bloodmallet_web_frontend, GPL-3.0) runs
-SimulationCraft trinket sims for every spec SimC has a current-tier profile
-for and exposes the result as JSON:
+1. bloodmallet.com (github.com/Bloodmallet/bloodmallet_web_frontend, GPL-3.0)
+   runs SimulationCraft trinket sims for every spec SimC has a current-tier
+   profile for and exposes the result as JSON:
 
-    https://bloodmallet.com/chart/get/trinkets/<fight style>/<class>/<spec>
+       https://bloodmallet.com/chart/get/trinkets/<fight style>/<class>/<spec>
 
-Each response carries, per trinket, the simulated DPS at every item level it
-was run at, plus the trinket's itemID, source (Raid/Dungeon/Profession/PvP)
-and whether it is an on-use ("active") trinket. This script turns that into
-one RegisterTrinkets(...) call per spec: the top TOP_N trinkets for each of
-the fight styles below, each scored as a percentage gain over the spec's
-baseline (no trinket) and bucketed into an S/A/B/C tier by how close it sits
-to the best trinket's gain.
+   Each response carries, per trinket, the simulated DPS at every item level
+   it was run at, plus the trinket's itemID, source (Raid/Dungeon/Profession/
+   PvP) and whether it is an on-use ("active") trinket. That becomes one list
+   per fight style below: the top TOP_N trinkets, each scored as a percentage
+   gain over the spec's baseline (no trinket) and bucketed into an S/A/B/C
+   tier by how close it sits to the best trinket's gain.
 
-Specs bloodmallet has no chart for get a RegisterTrinkets call with an
-`unavailable` reason instead, so the Codex can say why rather than showing
-nothing: SimC does not simulate healing at all, and it has not published a
-current-tier profile for a few DPS/tank specs yet (see the UNAVAILABLE table).
+2. icy-veins.com's per-spec gear guide, whose "Trinket Rankings" table is an
+   editorial S..D tier list with wowhead item IDs on every entry. It covers
+   all 40 specs - including the healers SimC cannot sim and the specs SimC
+   has no current-tier profile for yet - so it becomes an extra "Icy Veins"
+   list on every spec, and every sim row also carries Icy Veins' tier for the
+   same item (`siteTier`) so the two views sit side by side. Where Icy Veins
+   rates something S that the sims never ran (or ranked outside the top
+   TOP_N), the spec gets a `note` saying so rather than the disagreement
+   being smoothed over. (Wowhead's guide pages render client-side and refuse
+   plain HTTP clients, so they could not be read the same way.)
 
 Run from the repo root:  python3 tools/fetch_trinkets.py
 """
 
 import datetime
+import html
 import json
+import re
 import sys
 import time
 import urllib.request
 
 TOP_N = 15
+UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36"
 
-# (classToken, specID, bloodmallet slug)
+# (classToken, specID, bloodmallet slug, icy-veins slug, icy-veins role)
 SPECS = [
-    ("WARRIOR", 71, "warrior/arms"), ("WARRIOR", 72, "warrior/fury"), ("WARRIOR", 73, "warrior/protection"),
-    ("PALADIN", 65, "paladin/holy"), ("PALADIN", 66, "paladin/protection"), ("PALADIN", 70, "paladin/retribution"),
-    ("HUNTER", 253, "hunter/beast_mastery"), ("HUNTER", 254, "hunter/marksmanship"), ("HUNTER", 255, "hunter/survival"),
-    ("ROGUE", 259, "rogue/assassination"), ("ROGUE", 260, "rogue/outlaw"), ("ROGUE", 261, "rogue/subtlety"),
-    ("PRIEST", 256, "priest/discipline"), ("PRIEST", 257, "priest/holy"), ("PRIEST", 258, "priest/shadow"),
-    ("DEATHKNIGHT", 250, "death_knight/blood"), ("DEATHKNIGHT", 251, "death_knight/frost"), ("DEATHKNIGHT", 252, "death_knight/unholy"),
-    ("SHAMAN", 262, "shaman/elemental"), ("SHAMAN", 263, "shaman/enhancement"), ("SHAMAN", 264, "shaman/restoration"),
-    ("MAGE", 62, "mage/arcane"), ("MAGE", 63, "mage/fire"), ("MAGE", 64, "mage/frost"),
-    ("WARLOCK", 265, "warlock/affliction"), ("WARLOCK", 266, "warlock/demonology"), ("WARLOCK", 267, "warlock/destruction"),
-    ("MONK", 268, "monk/brewmaster"), ("MONK", 270, "monk/mistweaver"), ("MONK", 269, "monk/windwalker"),
-    ("DRUID", 102, "druid/balance"), ("DRUID", 103, "druid/feral"), ("DRUID", 104, "druid/guardian"), ("DRUID", 105, "druid/restoration"),
-    ("DEMONHUNTER", 577, "demon_hunter/havoc"), ("DEMONHUNTER", 581, "demon_hunter/vengeance"), ("DEMONHUNTER", 1480, "demon_hunter/devourer"),
-    ("EVOKER", 1467, "evoker/devastation"), ("EVOKER", 1468, "evoker/preservation"), ("EVOKER", 1473, "evoker/augmentation"),
+    ("WARRIOR", 71, "warrior/arms", "arms-warrior", "dps"),
+    ("WARRIOR", 72, "warrior/fury", "fury-warrior", "dps"),
+    ("WARRIOR", 73, "warrior/protection", "protection-warrior", "tank"),
+    ("PALADIN", 65, "paladin/holy", "holy-paladin", "healing"),
+    ("PALADIN", 66, "paladin/protection", "protection-paladin", "tank"),
+    ("PALADIN", 70, "paladin/retribution", "retribution-paladin", "dps"),
+    ("HUNTER", 253, "hunter/beast_mastery", "beast-mastery-hunter", "dps"),
+    ("HUNTER", 254, "hunter/marksmanship", "marksmanship-hunter", "dps"),
+    ("HUNTER", 255, "hunter/survival", "survival-hunter", "dps"),
+    ("ROGUE", 259, "rogue/assassination", "assassination-rogue", "dps"),
+    ("ROGUE", 260, "rogue/outlaw", "outlaw-rogue", "dps"),
+    ("ROGUE", 261, "rogue/subtlety", "subtlety-rogue", "dps"),
+    ("PRIEST", 256, "priest/discipline", "discipline-priest", "healing"),
+    ("PRIEST", 257, "priest/holy", "holy-priest", "healing"),
+    ("PRIEST", 258, "priest/shadow", "shadow-priest", "dps"),
+    ("DEATHKNIGHT", 250, "death_knight/blood", "blood-death-knight", "tank"),
+    ("DEATHKNIGHT", 251, "death_knight/frost", "frost-death-knight", "dps"),
+    ("DEATHKNIGHT", 252, "death_knight/unholy", "unholy-death-knight", "dps"),
+    ("SHAMAN", 262, "shaman/elemental", "elemental-shaman", "dps"),
+    ("SHAMAN", 263, "shaman/enhancement", "enhancement-shaman", "dps"),
+    ("SHAMAN", 264, "shaman/restoration", "restoration-shaman", "healing"),
+    ("MAGE", 62, "mage/arcane", "arcane-mage", "dps"),
+    ("MAGE", 63, "mage/fire", "fire-mage", "dps"),
+    ("MAGE", 64, "mage/frost", "frost-mage", "dps"),
+    ("WARLOCK", 265, "warlock/affliction", "affliction-warlock", "dps"),
+    ("WARLOCK", 266, "warlock/demonology", "demonology-warlock", "dps"),
+    ("WARLOCK", 267, "warlock/destruction", "destruction-warlock", "dps"),
+    ("MONK", 268, "monk/brewmaster", "brewmaster-monk", "tank"),
+    ("MONK", 270, "monk/mistweaver", "mistweaver-monk", "healing"),
+    ("MONK", 269, "monk/windwalker", "windwalker-monk", "dps"),
+    ("DRUID", 102, "druid/balance", "balance-druid", "dps"),
+    ("DRUID", 103, "druid/feral", "feral-druid", "dps"),
+    ("DRUID", 104, "druid/guardian", "guardian-druid", "tank"),
+    ("DRUID", 105, "druid/restoration", "restoration-druid", "healing"),
+    ("DEMONHUNTER", 577, "demon_hunter/havoc", "havoc-demon-hunter", "dps"),
+    ("DEMONHUNTER", 581, "demon_hunter/vengeance", "vengeance-demon-hunter", "tank"),
+    ("DEMONHUNTER", 1480, "demon_hunter/devourer", "devourer-demon-hunter", "dps"),
+    ("EVOKER", 1467, "evoker/devastation", "devastation-evoker", "dps"),
+    ("EVOKER", 1468, "evoker/preservation", "preservation-evoker", "healing"),
+    ("EVOKER", 1473, "evoker/augmentation", "augmentation-evoker", "dps"),
 ]
 
-# Fight styles, in the order the Codex's list toggle cycles through them.
+# Sim fight styles, in the order the Codex's list toggle cycles through them;
+# the Icy Veins list comes last.
 FIGHT_STYLES = [
     ("castingpatchwerk", "Single Target"),
     ("castingpatchwerk3", "3 Targets"),
     ("castingpatchwerk5", "5 Targets"),
 ]
 
-# Why a spec has no chart, when it has none. Healers: SimC has no healing
-# model, so nothing sims them. The rest: bloodmallet only sims specs SimC has
-# published a current-tier (MID2) profile for - re-run this script once SimC
-# catches up and they will simply appear.
 HEALERS = {65, 256, 257, 264, 270, 105, 1468}
-HEALER_REASON = ("No trinket sims exist for healing specs: SimulationCraft does not "
-                 "simulate healing, so bloodmallet has nothing to rank here.")
-NO_PROFILE_REASON = ("bloodmallet has not simulated this spec for the current patch yet "
-                     "(SimulationCraft has no current-tier profile for it). Re-run "
-                     "tools/fetch_trinkets.py once it does.")
+HEALER_NOTE = ("No sim list: SimulationCraft does not simulate healing, so bloodmallet has "
+               "nothing to rank for this spec. The Icy Veins ranking is the only list here.")
+NO_PROFILE_NOTE = ("No sim list yet: bloodmallet has not simulated this spec for the current patch "
+                   "(SimulationCraft has no current-tier profile for it). The Icy Veins ranking is "
+                   "the only list here until it does.")
 
 # S/A/B/C by share of the best trinket's gain in the same list.
 TIER_CUTOFFS = [("S", 0.90), ("A", 0.78), ("B", 0.62), ("C", 0.0)]
 
 
 def fetch(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 SpecSage-refresh/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=60) as r:
-        return json.load(r)
+        return r.read().decode("utf-8", errors="ignore")
+
+
+def fetch_json(url):
+    return json.loads(fetch(url))
 
 
 def lua_str(s):
     return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
-def build_list(chart):
+# --- bloodmallet ------------------------------------------------------------
+
+def build_sim_list(chart):
     data = chart["data"]
     baseline = max(int(v) for v in data["baseline"].values())
     rows = []
@@ -113,75 +151,190 @@ def build_list(chart):
     return rows
 
 
+# --- icy-veins --------------------------------------------------------------
+
+def parse_icy_veins(body):
+    """Returns (tiers, updated): tiers = [ { tier, items: [ {itemID, name} ] } ]."""
+    i = body.find("Trinket Rankings")
+    if i < 0:
+        m2 = re.search(r'<h2 id="trinkets?"', body)
+        i = m2.start() if m2 else -1
+    if i < 0:
+        return None, None
+    m = re.search(r'guide-header__updated-date[^>]*>([^<]+)<', body)
+    updated = m.group(1).strip() if m else None
+    seg = body[i:]
+    seg = seg[seg.find("<table>"):] if "<table>" in seg else seg
+    end = seg.find("</table>")
+    seg = seg[:end] if end > 0 else seg[:20000]
+    tiers = []
+    for row in re.findall(r"<tr>(.*?)</tr>", seg, re.S):
+        tm = re.search(r"<strong>([SABCDF])\s*Tier</strong>", row)
+        if not tm:
+            continue
+        # One trinket per entry. Entries come in two shapes on the site: a
+        # <details class="list-item"> whose <summary> names the trinket (its
+        # expanded description can mention other items - Havoc's S-tier
+        # entry names the weapon it pairs with, Unholy's names its BiS weapon
+        # - and those are not trinkets in the tier), or a bare <li> with the
+        # item link and a dash of text. Take the first item link of each
+        # <summary>, then of each <li> left once the <details> are removed.
+        link = r'data-wowhead="item=(\d+)[^"]*"[^>]*>([^<]+)<'
+        units = re.findall(r"<summary>(.*?)</summary>", row, re.S)
+        remainder = re.sub(r"<details.*?</details>", "", row, flags=re.S)
+        units += re.findall(r"<li[ >](.*?)</li>", remainder, re.S)
+        seen, items = set(), []
+        for unit in units:
+            m = re.search(link, unit)
+            if not m:
+                continue
+            iid = int(m.group(1))
+            if iid in seen:
+                continue
+            seen.add(iid)
+            items.append({"itemID": iid, "name": html.unescape(m.group(2)).strip()})
+        tiers.append({"tier": tm.group(1), "items": items})
+    return (tiers or None), updated
+
+
+# --- output -----------------------------------------------------------------
+
+def emit_row(r):
+    parts = ["itemID = %d" % r["itemID"], "name = %s" % lua_str(r["name"])]
+    if r.get("ilvl"):
+        parts.append("ilvl = %d" % r["ilvl"])
+    if r.get("gain") is not None:
+        parts.append("gain = %.2f" % r["gain"])
+    parts.append("tier = %s" % lua_str(r["tier"]))
+    if r.get("siteTier"):
+        parts.append("siteTier = %s" % lua_str(r["siteTier"]))
+    if r.get("source"):
+        parts.append("source = %s" % lua_str(r["source"]))
+    if r.get("onUse") is not None:
+        parts.append("onUse = %s" % ("true" if r["onUse"] else "false"))
+    return "      { " + ", ".join(parts) + " },"
+
+
 def main():
     out = []
     out.append("-- Data/Trinkets.lua")
     out.append("-- GENERATED by tools/fetch_trinkets.py - do not hand-edit; re-run the script.")
     out.append("--")
-    out.append("-- Per-spec trinket tier lists, from bloodmallet.com's public SimulationCraft")
-    out.append("-- trinket sims (bloodmallet is GPL-3.0; the underlying sims are SimC's).")
-    out.append("-- Each row is the trinket's simulated DPS gain over the spec's no-trinket")
-    out.append("-- baseline at the highest item level it was simulated at, and its S/A/B/C")
-    out.append("-- tier is that gain as a share of the best trinket's gain in the same list")
-    out.append("-- (S >= 90%, A >= 78%, B >= 62%, C below). A sim ranking, not a claim of")
-    out.append("-- what is 'best' for any given fight - see DESIGN.md's \"Trinket tier lists\".")
+    out.append("-- Per-spec trinket tier lists from two public sources, side by side:")
+    out.append("--  * bloodmallet.com's SimulationCraft trinket sims (bloodmallet is GPL-3.0;")
+    out.append("--    the sims are SimC's): each row is the trinket's simulated DPS gain over")
+    out.append("--    the spec's no-trinket baseline at the highest item level it was simmed")
+    out.append("--    at, tiered S/A/B/C by share of the best trinket's gain in the same list")
+    out.append("--    (S >= 90%, A >= 78%, B >= 62%, C below). `siteTier` on a sim row is Icy")
+    out.append("--    Veins' tier for the same item, when they list it.")
+    out.append("--  * icy-veins.com's per-spec \"Trinket Rankings\" table, an editorial S..D")
+    out.append("--    tier list, as its own list on every spec (the only list for healers and")
+    out.append("--    for specs SimC has no current-tier profile for yet).")
+    out.append("-- A `note` records where the two disagree. Neither is a verdict for any given")
+    out.append("-- fight - see DESIGN.md's \"Trinket tier lists\".")
     out.append("-- Generated: %s UTC" % datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M"))
     out.append("")
     out.append("local ADDON, ns = ...")
     out.append("if not ns.GuideStore then return end")
     out.append("")
 
-    counts = {"lists": 0, "unavailable": 0}
-    for classToken, specID, slug in SPECS:
+    counts = {"sim": 0, "iv": 0, "notes": 0}
+    for classToken, specID, bmSlug, ivSlug, ivRole in SPECS:
         charts = {}
         for style, _ in FIGHT_STYLES:
-            url = "https://bloodmallet.com/chart/get/trinkets/%s/%s" % (style, slug)
+            url = "https://bloodmallet.com/chart/get/trinkets/%s/%s" % (style, bmSlug)
             try:
-                chart = fetch(url)
-            except Exception as exc:  # network hiccup: report and move on
-                print("  %s %s: %s" % (slug, style, exc), file=sys.stderr)
+                chart = fetch_json(url)
+            except Exception as exc:
+                print("  %s %s: %s" % (bmSlug, style, exc), file=sys.stderr)
                 chart = {}
             if chart.get("sorted_data_keys"):
                 charts[style] = chart
             time.sleep(0.25)
 
-        out.append("-- %s %d (%s)" % (classToken, specID, slug))
-        if not charts:
-            reason = HEALER_REASON if specID in HEALERS else NO_PROFILE_REASON
-            out.append("ns.GuideStore:RegisterTrinkets(%d, { unavailable = %s })" % (specID, lua_str(reason)))
+        ivURL = "https://www.icy-veins.com/wow/%s-pve-%s-gear-best-in-slot" % (ivSlug, ivRole)
+        ivTiers, ivUpdated = None, None
+        try:
+            ivTiers, ivUpdated = parse_icy_veins(fetch(ivURL))
+        except Exception as exc:
+            print("  %s: %s" % (ivURL, exc), file=sys.stderr)
+        time.sleep(0.5)
+
+        ivTierOf = {}
+        for t in (ivTiers or []):
+            for it in t["items"]:
+                ivTierOf.setdefault(it["itemID"], t["tier"])
+
+        out.append("-- %s %d (%s | %s)" % (classToken, specID, bmSlug, ivSlug))
+        if not charts and not ivTiers:
+            out.append("ns.GuideStore:RegisterTrinkets(%d, { unavailable = %s })" % (
+                specID, lua_str("neither bloodmallet nor Icy Veins had a trinket list for this spec when "
+                                "tools/fetch_trinkets.py last ran")))
             out.append("")
-            counts["unavailable"] += 1
-            print("%-12s %5d %-24s unavailable" % (classToken, specID, slug))
+            print("%-12s %5d %-24s NOTHING" % (classToken, specID, bmSlug))
             continue
 
-        first = next(iter(charts.values()))
-        settings = first.get("simc_settings", {})
-        source = ("bloodmallet.com trinket sims, SimulationCraft build %s (%s tier), %s UTC"
-                  % (settings.get("simc_hash", "?"), settings.get("tier", "?"), first.get("timestamp", "?")))
+        sources = []
+        if charts:
+            first = next(iter(charts.values()))
+            settings = first.get("simc_settings", {})
+            sources.append("bloodmallet.com trinket sims, SimulationCraft build %s (%s tier), %s UTC"
+                           % (settings.get("simc_hash", "?"), settings.get("tier", "?"), first.get("timestamp", "?")))
+        if ivTiers:
+            sources.append("Icy Veins %s gear guide, updated %s" % (ivSlug.replace("-", " ").title(), ivUpdated or "?"))
+
         out.append("ns.GuideStore:RegisterTrinkets(%d, {" % specID)
-        out.append("  source = %s," % lua_str(source))
+        out.append("  source = %s," % lua_str("; ".join(sources)))
         out.append('  patch = "12.1",')
+
+        notes = []
+        if not charts:
+            notes.append(HEALER_NOTE if specID in HEALERS else NO_PROFILE_NOTE)
+        simIDs = set()
         out.append("  lists = {")
         for style, title in FIGHT_STYLES:
             chart = charts.get(style)
             if not chart:
                 continue
+            rows = build_sim_list(chart)
             out.append("    { title = %s, fightStyle = %s, list = {" % (lua_str(title), lua_str(style)))
-            for r in build_list(chart):
-                out.append("      { itemID = %d, name = %s, ilvl = %d, gain = %.2f, tier = %s, source = %s, onUse = %s }," % (
-                    r["itemID"], lua_str(r["name"]), r["ilvl"], r["gain"], lua_str(r["tier"]),
-                    lua_str(r["source"]), "true" if r["onUse"] else "false"))
+            for r in rows:
+                r["siteTier"] = ivTierOf.get(r["itemID"])
+                simIDs.add(r["itemID"])
+                out.append(emit_row(r))
+            out.append("    }},")
+        if ivTiers:
+            out.append("    { title = \"Icy Veins\", fightStyle = \"icyveins\", list = {")
+            for t in ivTiers:
+                for it in t["items"]:
+                    out.append(emit_row({"itemID": it["itemID"], "name": it["name"], "tier": t["tier"]}))
             out.append("    }},")
         out.append("  },")
+
+        if charts and ivTiers:
+            missing = [it["name"] for t in ivTiers if t["tier"] == "S"
+                       for it in t["items"] if it["itemID"] not in simIDs]
+            if missing:
+                notes.append("Icy Veins also rates %s S-tier, which the sims either did not run or "
+                             "ranked outside the top %d - worth a look if you have it."
+                             % (", ".join(missing), TOP_N))
+        if notes:
+            out.append("  note = %s," % lua_str(" ".join(notes)))
+            counts["notes"] += 1
         out.append("})")
         out.append("")
-        counts["lists"] += 1
-        print("%-12s %5d %-24s %d fight style(s)" % (classToken, specID, slug, len(charts)))
+        if charts:
+            counts["sim"] += 1
+        if ivTiers:
+            counts["iv"] += 1
+        print("%-12s %5d %-24s sim=%d IV=%s%s" % (classToken, specID, bmSlug, len(charts),
+              "yes" if ivTiers else "no", " (note)" if notes else ""))
 
     path = "SpecSage/Data/Trinkets.lua"
     with open(path, "w") as f:
         f.write("\n".join(out))
-    print("wrote %s: %d specs with lists, %d unavailable" % (path, counts["lists"], counts["unavailable"]))
+    print("wrote %s: %d specs with sim lists, %d with an Icy Veins list, %d with notes"
+          % (path, counts["sim"], counts["iv"], counts["notes"]))
 
 
 if __name__ == "__main__":
