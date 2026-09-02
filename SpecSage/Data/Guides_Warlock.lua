@@ -53,6 +53,12 @@ local ADDON, ns = ...
 -- in patch 12.0.0 and was NOT added back). This pass built on top of the
 -- already-corrected Dark Harvest/Vilefiend/Grimoire mechanics above and
 -- did not touch Demonology's verified Diabolist/Soul Harvester pairing.
+-- raidLoadout follow-up (2026-09-02): checked SimC's `midnight` branch
+-- fresh - still exactly one profile per spec for Demonology and
+-- Destruction, no genuinely separate raid build to source a distinct field
+-- from. Enriched both specs' hero-talent notes instead with the source
+-- material's raid-vs-M+ framing (informational text, no opaque talent
+-- string needed or risked).
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -198,7 +204,7 @@ ns.GuideStore:RegisterSpec("WARLOCK", 266, {
         { spellID = 104316, text = "Call Dreadstalkers to build your demon pack — Vilefiend is no longer a separate summon, it's folded into this same cast" },
         { text = "Grimoire: Imp Lord or Grimoire: Fel Ravager (talent-dependent) to add another pet before Tyrant" },
         { spellID = 265187, text = "Summon Demonic Tyrant once your demons are out, to empower and extend the full pack" },
-        { text = "Opener Notes: Demonology splits along the Diabolist and Soul Harvester hero trees (not Hellcaller, which pairs with Affliction and Destruction instead) — check which one your loadout uses. SimC's current profile runs a genuinely separate action list for each (gated on talent.diabolic_ritual vs talent.demonic_soul), not just a shared list with a few swapped lines" },
+        { text = "Opener Notes: Demonology splits along the Diabolist and Soul Harvester hero trees (not Hellcaller, which pairs with Affliction and Destruction instead) — check which one your loadout uses. SimC's current profile runs a genuinely separate action list for each (gated on talent.diabolic_ritual vs talent.demonic_soul), not just a shared list with a few swapped lines. As a starting point, Diabolist (SimC's default) suits raid single-target/burst better, while Soul Harvester is competitive for pure single-target and sees use in some Mythic+ variants — re-sim if you're unsure" },
     }},
     { title = "Single Target", steps = {
         { spellID = 104316, text = "Call Dreadstalkers on cooldown — its Vilefiend comes along automatically, and you want both up before you pop Tyrant" },
@@ -314,7 +320,7 @@ ns.GuideStore:RegisterSpec("WARLOCK", 267, {
         { spellID = 196447, text = "Channel Demonfire (talent) to spend Immolate uptime into extra AoE damage" },
     }},
     { title = "Opener Notes", steps = {
-        { text = "Destruction's two hero talent trees are Diabolist (SimC's default; also Demonology's) and Hellcaller (also Affliction's) — check which one your loadout uses. SimC runs the same core Chaos Bolt/Incinerate priority list for both, so the difference shows up in your passive/capstone kit rather than a different sequence to play" },
+        { text = "Destruction's two hero talent trees are Diabolist (SimC's default; also Demonology's) and Hellcaller (also Affliction's) — check which one your loadout uses. SimC runs the same core Chaos Bolt/Incinerate priority list for both, so the difference shows up in your passive/capstone kit rather than a different sequence to play. As a starting point, Hellcaller (its reworked Wither focuses damage on the priority target) suits raid single-target/2-target/spread fights, while Diabolist's demon-and-cleave kit suits Mythic+ better — re-sim if you're unsure" },
     }},
   },
   cooldowns = {

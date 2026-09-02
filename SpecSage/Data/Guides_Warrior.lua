@@ -48,6 +48,12 @@ local ADDON, ns = ...
 -- spellID added was verified against Wowhead rather than guessed (Thunder
 -- Blast was deliberately left without a spellID - even addon developers
 -- have shipped the wrong one for it, per a public Hekili bug report).
+-- raidLoadout follow-up (2026-09-02): checked SimC's `midnight` branch
+-- fresh - still exactly one profile per spec, no genuinely separate raid
+-- build to source a distinct field from (same reasoning as the Arms note
+-- above). Enriched Fury's Slayer/Mountain Thane note instead with the
+-- source material's raid-vs-M+ framing (informational text, no opaque
+-- talent string needed or risked).
 -- This is community-maintained conventional guidance (stat priorities and
 -- rotations that match the spec's long-standing design) — not a claim of
 -- bleeding-edge sim-perfect optimization.
@@ -219,7 +225,7 @@ ns.GuideStore:RegisterSpec("WARRIOR", 72, {
     { title = "Opener Notes", steps = {
         { text = "Open with Bloodthirst to establish Enrage immediately, then weave Rampage as rage allows" },
         { text = "Save Recklessness for a moment you can chain several Enrage-consuming abilities back to back" },
-        { text = "Your hero talent choice matters for burst sequencing: Slayer strings Recklessness into Rampage, Bladestorm, and Execute together, while Mountain Thane instead weaves Bloodthirst and Raging Blow through its own lightning-infused cooldown windows and leans on Thunder Blast for extra AoE — check which one your loadout uses before assuming a fixed order" },
+        { text = "Your hero talent choice matters for burst sequencing: Slayer strings Recklessness into Rampage, Bladestorm, and Execute together, while Mountain Thane instead weaves Bloodthirst and Raging Blow through its own lightning-infused cooldown windows and leans on Thunder Blast for extra AoE. As a starting point, Slayer suits single-target raid bosses better and Mountain Thane suits Mythic+/add-heavy fights better — but check which one your loadout uses before assuming a fixed order, and re-sim if you're unsure" },
     }},
   },
   cooldowns = {
