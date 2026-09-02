@@ -331,6 +331,49 @@ before. Rows are clickable item links (addendum above). An uncached item shows
 the sim's own name, queues `C_Item.RequestLoadItemDataByID`, and re-renders
 on `GET_ITEM_INFO_RECEIVED` the same way checklist entries do.
 
+## Linked BiS lists (v1.5, Data/BiS.lua)
+
+The owner asked for the BiS tab's items to be real links, not prose. Icy
+Veins' gear guide for every spec carries a "Best in Slot" block with one tab
+per context (Overall, Mythic+, Raid) and, per slot, the item's wowhead ID,
+name and drop source, parseable from plain HTML. `tools/fetch_bis.py`
+generates `Data/BiS.lua`: one `RegisterBiS(specID, { source, patch, lists
+= { { title, list = { { slot, itemID, name, from } } } } })` per spec, slots
+mapped onto the 14-slot vocabulary `Data/API.lua` validates. Wowhead could
+not be read (client-rendered, 403 to plain clients), so this is one site's
+editorial list and the tab's attribution line says so — and says it goes
+stale every patch, which is the whole reason the shipped prose guidance and
+the personal checklist still exist alongside it.
+
+Codex BiS tab order is now: prose gear guidance, **Best in Slot (Icy
+Veins)** with a context toggle and one clickable row per slot (slot |
+quality-coloured item + drop source | **Add**, which files the item on the
+personal checklist under that slot via `BiS:Add`), the trinket tier list,
+then the personal checklist. As of 2026-09-02 all 40 specs have all three
+contexts. One guide (Discipline) repeats its block; the parser keeps the
+first list per title.
+
+## Guide-site talent builds (v1.5, Data/SiteLoadouts.lua)
+
+Icy Veins' "Spec Builds & Talents" page for each spec publishes its
+recommended builds as export-string blocks (title + exact Blizzard export
+string). `tools/fetch_talents.py` reads them from the raw HTML — never
+through a summarising fetch, since talent strings are opaque — and
+**decodes every string's header** (first 8 bits: serialization version;
+next 16: specID) to confirm it encodes the spec it is filed under; a string
+for the wrong spec is dropped with a warning. That check is what makes
+shipping a site's strings safe where WebFetch never was. Output:
+`RegisterSiteLoadouts(specID, { source, patch, builds = { { label, string
+} } })`. As of 2026-09-02: 136 builds across all 40 specs (2–15 per spec;
+Shadow Priest's page ships per-boss variants).
+
+The Codex Loadouts tab renders them as "Icy Veins: <label> (patch 12.1)"
+rows under the SimC/Blizzard suggested rows, with the same Copy and Add to
+my vault buttons; the vault category is inferred from the site's own label
+words (`SiteBuildCategory`: Mythic+/keys/dungeon/AoE → Mythic+, delve →
+Delves, raid/single/cleave → Raid, else Other). They sit alongside, not in
+place of, the guide's own `mplusLoadout`/`raidLoadout`/`mplusMetaLoadout`.
+
 ## Item stat ranks and trinket tiers on tooltips (v1.5, Modules/ItemRanks.lua)
 
 Two annotations share one tooltip hook. **Trinket tier**: an item that

@@ -19,6 +19,11 @@ class guides, talent loadouts, and live character tracking in one place:
   you can tell at a glance whether a drop in your bags is for you.
 - **Talent Loadout Vault** — save, label, import, and export talent loadout
   strings per spec, organised by content type (Raid, Mythic+, Delves, PvP).
+  Ships with suggested builds per spec: SimulationCraft's default profile,
+  the live top-Mythic+-players build from Blizzard's API, and Icy Veins'
+  recommended builds (`tools/fetch_talents.py` regenerates
+  `Data/SiteLoadouts.lua`, verifying every string decodes to its spec) —
+  each one Copy-able or one click from your vault.
 - **Personal Notes** — free-text notes per spec, kept between sessions.
 - **Feedback button** — in the Codex title bar (and `/sage feedback`): shows
   the addon's GitHub Issues link ready to Ctrl+C for bug reports and feature
@@ -51,6 +56,11 @@ BiS tab:
 - **Slot-by-slot guidance** in SpecSage's own words (which slots carry your
   tier set, what stats to look for on rings, what trinket styles suit the
   spec).
+- **A linked Best-in-Slot list per spec** from Icy Veins' gear guide
+  (`tools/fetch_bis.py` regenerates `Data/BiS.lua`): Overall, Mythic+ and
+  Raid lists, one clickable item per slot with its drop source, and an Add
+  button that puts it straight on your personal checklist. One site's list
+  at the time of the release, and it goes stale every patch; the tab says so.
 - **A trinket tier list per spec**, from two sources side by side
   (`tools/fetch_trinkets.py` regenerates `Data/Trinkets.lua`): bloodmallet.com's
   public SimulationCraft trinket sims — each row shows the simulated DPS gain

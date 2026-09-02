@@ -953,10 +953,157 @@ local function AcquireTrinketRow(pool, index, parent)
     return row
 end
 
+-- One linked-BiS row (Data/BiS.lua): slot tag | quality-coloured item name
+-- (a clickable item link) with its drop source | an Add button that puts the
+-- item on the personal checklist below.
+local BIS_LINK_SLOT_WIDTH = 64
+
+local function AcquireBiSLinkRow(pool, index, parent)
+    local row = pool[index]
+    if not row then
+        row = CreateFrame("Frame", nil, parent)
+        row:EnableMouse(true)
+
+        row.slot = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        row.slot:SetFontObject(SpecSageBoldFontSmall)
+        row.slot:SetJustifyH("LEFT")
+        row.slot:SetPoint("LEFT", row, "LEFT", 0, 0)
+        row.slot:SetWidth(BIS_LINK_SLOT_WIDTH)
+
+        row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        row.text:SetFontObject(SpecSageBodyFontSmall)
+        row.text:SetJustifyH("LEFT")
+        row.text:SetPoint("LEFT", row, "LEFT", BIS_LINK_SLOT_WIDTH, 0)
+        pcall(row.text.SetWordWrap, row.text, false)
+
+        row.addButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+        row.addButton:SetSize(50, 18)
+        row.addButton:SetText("Add")
+        row.addButton:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+        SkinButton(row.addButton)
+
+        row:SetScript("OnEnter", function(self2)
+            if self2.itemID then ShowItemTooltip(self2, self2.itemID) end
+        end)
+        row:SetScript("OnLeave", function()
+            pcall(function() GameTooltip:Hide() end)
+        end)
+        row:SetScript("OnMouseUp", function(self2, button)
+            if self2.itemID then ClickItemLink(self2.itemID, button) end
+        end)
+
+        pool[index] = row
+    end
+    return row
+end
+
+-- Cycles the linked BiS list through the registered contexts (Overall /
+-- Mythic+ / Raid).
+function Codex:CycleBiSList()
+    local data = self.selectedSpecID and ns.GuideStore:GetBiS(self.selectedSpecID)
+    local count = (data and data.lists and #data.lists) or 1
+    self.bisListIndex = ((self.bisListIndex or 1) % count) + 1
+    if self.activeTab == "BiS" then self:RenderActiveTab() end
+end
+
+-- "Add" on a linked BiS row: puts the item on the personal checklist for the
+-- viewed spec under the row's slot, then re-renders so it appears below.
+function Codex:OnAddBiSLinkClicked(button, specID, entry)
+    local BiSModule = ns:GetModule("BiS")
+    if not BiSModule or not specID or not entry then return end
+    local ok, err = BiSModule:Add(specID, entry.slot, tostring(entry.itemID))
+    if ok then
+        button:SetText("Added!")
+        C_Timer.After(2, function()
+            pcall(button.SetText, button, "Add")
+            if self.activeTab == "BiS" then self:RenderActiveTab() end
+        end)
+    else
+        ns.Print("could not add BiS entry: " .. tostring(err))
+    end
+end
+
+-- The linked Best-in-Slot section of the BiS tab (Data/BiS.lua): header
+-- with the context toggle beside it, one row per slot into
+-- self.bisLinkRowPool, and an attribution line. Returns the new pool index
+-- and y cursor; draws nothing when the spec has no list registered.
+function Codex:RenderBiSLinkSection(pool, index, parent, width, y, specID)
+    local data = specID and ns.GuideStore:GetBiS(specID)
+    local rowPool = self.bisLinkRowPool
+    local toggle = self.bisListToggle
+    if not data or not data.lists then
+        toggle:Hide()
+        HidePoolFrom(rowPool, 1)
+        return index, y
+    end
+
+    index = index + 1
+    y = PlaceLine(pool, index, parent, y, width, "Best in Slot (Icy Veins)", { color = HEADER_COLOR, isHeader = true })
+    local headerRow = pool[index]
+
+    local count = #data.lists
+    if (self.bisListIndex or 1) > count then self.bisListIndex = 1 end
+    local active = data.lists[self.bisListIndex or 1]
+
+    toggle:ClearAllPoints()
+    toggle:SetPoint("TOPRIGHT", headerRow, "TOPRIGHT", 0, 2)
+    toggle:SetText(active.title or "")
+    toggle:SetShown(count > 1)
+
+    for i, entry in ipairs(active.list) do
+        local row = AcquireBiSLinkRow(rowPool, i, parent)
+        row:ClearAllPoints()
+        row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
+        row:SetSize(width, ROW_HEIGHT)
+        row.text:SetWidth(width - BIS_LINK_SLOT_WIDTH - 58)
+
+        row.slot:SetText(entry.slot or "")
+        row.slot:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])
+
+        local name, quality = entry.name
+        if GetItemInfoAPI then
+            local ok, realName, _, realQuality = pcall(GetItemInfoAPI, entry.itemID)
+            if ok and type(realName) == "string" and realName ~= "" then
+                name, quality = realName, realQuality
+            elseif C_Item and C_Item.RequestLoadItemDataByID then
+                pcall(C_Item.RequestLoadItemDataByID, entry.itemID)
+            end
+        end
+        local r, g, b = ItemQualityColor(quality)
+        local fromText = (entry.from and entry.from ~= "") and ("  |cff8a97a5" .. entry.from .. "|r") or ""
+        row.text:SetText(format("|cff%02x%02x%02x%s|r%s",
+            math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5), name, fromText))
+        row.text:SetTextColor(1, 1, 1)
+        row.itemID = entry.itemID
+
+        row.addButton:SetText("Add")
+        row.addButton:SetScript("OnClick", function(btn) self:OnAddBiSLinkClicked(btn, specID, entry) end)
+        row:Show()
+        y = y - ROW_STEP
+    end
+    HidePoolFrom(rowPool, #active.list + 1)
+
+    index = index + 1
+    y = PlaceLine(pool, index, parent, y, width,
+        format("One site's list (%s), and it goes stale every patch: %s. Click an item for its link; Add puts it on your checklist.",
+            active.title or "", data.source or "source unknown"),
+        { color = MUTED_COLOR })
+
+    return index, y - GROUP_GAP
+end
+
 function Codex:EnsureBiSWidgets()
     if self.bisButtons then return end
 
     local parent = self.scrollChild
+
+    local bisListToggle = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+    bisListToggle:SetSize(90, 20)
+    bisListToggle:SetScript("OnClick", function() self:CycleBiSList() end)
+    SkinButton(bisListToggle)
+    self.bisListToggle = bisListToggle
+    self.bisLinkRowPool = {}
+    self.bisListIndex = self.bisListIndex or 1
 
     -- Trinket tier list: one button cycling through the registered fight
     -- styles (Single Target / 3 Targets / 5 Targets), sitting beside the
@@ -1239,6 +1386,7 @@ function Codex:RenderBiS(guide, specID)
     end
 
     y = y - GROUP_GAP
+    index, y = self:RenderBiSLinkSection(pool, index, parent, width, y, specID)
     index, y = self:RenderTrinketSection(pool, index, parent, width, y, specID)
 
     y = y - GROUP_GAP
@@ -1412,6 +1560,23 @@ local SUGGESTED_LOADOUT_KINDS = {
       addName = "Top M+ Build (Live)", category = "Mythic+", attribution = "via Blizzard's API" },
 }
 
+-- Which vault category a guide site's build label belongs to, from the words
+-- the sites actually use ("AoE / Mythic+", "High Mythic+ Keys", "Raid /
+-- Cleave", "Delves"). Must return one of Loadouts.VALID_CATEGORIES.
+local function SiteBuildCategory(label)
+    local lower = (label or ""):lower()
+    if lower:find("mythic", 1, true) or lower:find("dungeon", 1, true) or lower:find("keys", 1, true)
+        or lower:find("m+", 1, true) or lower:find("aoe", 1, true) then
+        return "Mythic+"
+    end
+    if lower:find("delve", 1, true) then return "Delves" end
+    if lower:find("pvp", 1, true) then return "PvP" end
+    if lower:find("raid", 1, true) or lower:find("single", 1, true) or lower:find("cleave", 1, true) then
+        return "Raid"
+    end
+    return "Other"
+end
+
 local function CreateSuggestedLoadoutRow(parent)
     local row = CreateFrame("Frame", nil, parent)
 
@@ -1556,6 +1721,42 @@ function Codex:RenderLoadouts(specID, guide)
             suggested:Hide()
         end
     end
+
+    -- Guide-site builds (Data/SiteLoadouts.lua): a pooled row per build,
+    -- same Copy / Add-to-my-vault buttons as the suggested rows above. The
+    -- vault category is inferred from the site's own label.
+    local site = specID and ns.GuideStore:GetSiteLoadouts(specID)
+    self.siteLoadoutRowPool = self.siteLoadoutRowPool or {}
+    local siteCount = 0
+    if site and site.builds then
+        for i, build in ipairs(site.builds) do
+            siteCount = i
+            local row = self.siteLoadoutRowPool[i]
+            if not row then
+                row = CreateSuggestedLoadoutRow(parent)
+                self.siteLoadoutRowPool[i] = row
+            end
+            row:ClearAllPoints()
+            row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
+            row:SetSize(width, ROW_HEIGHT)
+            row.name:SetText(format("Icy Veins: %s (patch %s)", build.label, site.patch or "?"))
+            row.name:SetTextColor(TEXT_PRIMARY_COLOR[1], TEXT_PRIMARY_COLOR[2], TEXT_PRIMARY_COLOR[3])
+            row.copyButton:Show()
+            row.copyButton:SetScript("OnClick", function() self:ShowCopyDialog(build.string) end)
+            local kind = {
+                addName = "Icy Veins: " .. build.label,
+                category = SiteBuildCategory(build.label),
+            }
+            row.addButton:SetText("Add to my vault")
+            row.addButton:Show()
+            row.addButton:SetScript("OnClick", function(btn)
+                self:OnAddSuggestedLoadoutClicked(btn, specID, kind, build.string)
+            end)
+            row:Show()
+            y = y - ROW_STEP
+        end
+    end
+    HidePoolFrom(self.siteLoadoutRowPool, siteCount + 1)
 
     local Loadouts = ns:GetModule("Loadouts")
     local list = (Loadouts and specID) and Loadouts:GetForSpec(specID) or {}
@@ -2099,6 +2300,8 @@ function Codex:HideOtherTabWidgets(activeTab)
         if self.bisRowPool then HidePoolFrom(self.bisRowPool, 1) end
         if self.trinketRowPool then HidePoolFrom(self.trinketRowPool, 1) end
         if self.trinketToggle then self.trinketToggle:Hide() end
+        if self.bisLinkRowPool then HidePoolFrom(self.bisLinkRowPool, 1) end
+        if self.bisListToggle then self.bisListToggle:Hide() end
     end
 
     if activeTab ~= "Loadouts" then
@@ -2110,6 +2313,7 @@ function Codex:HideOtherTabWidgets(activeTab)
         if self.suggestedLoadoutRows then
             for _, row in pairs(self.suggestedLoadoutRows) do row:Hide() end
         end
+        if self.siteLoadoutRowPool then HidePoolFrom(self.siteLoadoutRowPool, 1) end
     end
 
     if activeTab ~= "Options" and self.optionPools then

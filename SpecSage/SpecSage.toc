@@ -26,6 +26,8 @@ Data\Guides_Druid.lua
 Data\Guides_DemonHunter.lua
 Data\Guides_Evoker.lua
 Data\Trinkets.lua
+Data\BiS.lua
+Data\SiteLoadouts.lua
 UI\Overlay.lua
 UI\Tooltips.lua
 UI\Codex.lua

@@ -328,6 +328,101 @@ function GuideStore:GetTrinkets(specID)
     return trinkets[specID]
 end
 
+-- Linked BiS lists (v1.5, generated Data/BiS.lua): { source, patch, lists =
+-- { { title, list = { { slot, itemID, name, from }, ... } }, ... } }. Every
+-- row is a concrete item in one of the 14 gear slots.
+local bisLists = {}
+
+local function ValidateBiS(data)
+    if type(data) ~= "table" then return false, "bis must be a table" end
+    if type(data.lists) ~= "table" or #data.lists == 0 then
+        return false, "bis.lists must be a non-empty array"
+    end
+    for listIndex, listEntry in ipairs(data.lists) do
+        if type(listEntry) ~= "table" or type(listEntry.title) ~= "string" or listEntry.title == "" then
+            return false, format("bis.lists[%d] must have a title", listIndex)
+        end
+        if type(listEntry.list) ~= "table" or #listEntry.list == 0 then
+            return false, format("bis.lists[%d].list must be a non-empty array", listIndex)
+        end
+        for rowIndex, row in ipairs(listEntry.list) do
+            local where = format("bis.lists[%d].list[%d]", listIndex, rowIndex)
+            if type(row) ~= "table" then return false, where .. " must be a table" end
+            if type(row.slot) ~= "string" or not VALID_GEAR_SLOTS[row.slot] then
+                return false, where .. " has an invalid slot"
+            end
+            if type(row.itemID) ~= "number" then return false, where .. ".itemID must be a number" end
+            if type(row.name) ~= "string" or row.name == "" then
+                return false, where .. ".name must be a non-empty string"
+            end
+        end
+    end
+    return true
+end
+
+function GuideStore:RegisterBiS(specID, data)
+    if type(specID) ~= "number" then
+        ns.Print(format("|cffff4444bis rejected|r (spec=%s): specID must be a number", tostring(specID)))
+        return false
+    end
+    local ok, err = ValidateBiS(data)
+    if not ok then
+        ns.Print(format("|cffff4444bis rejected|r (spec=%s): %s", tostring(specID), err))
+        return false
+    end
+    bisLists[specID] = data
+    return true
+end
+
+function GuideStore:GetBiS(specID)
+    return bisLists[specID]
+end
+
+-- Guide-site talent builds (v1.5, generated Data/SiteLoadouts.lua):
+-- { source, patch, builds = { { label, string }, ... } }, each string an
+-- exact Blizzard export string. Kept apart from the guide's own
+-- mplusLoadout/raidLoadout/mplusMetaLoadout so a regenerated site list never
+-- touches the hand-written guides.
+local siteLoadouts = {}
+
+local function ValidateSiteLoadouts(data)
+    if type(data) ~= "table" then return false, "siteLoadouts must be a table" end
+    if type(data.patch) ~= "string" or data.patch == "" then
+        return false, "siteLoadouts.patch must be a non-empty string"
+    end
+    if type(data.builds) ~= "table" or #data.builds == 0 then
+        return false, "siteLoadouts.builds must be a non-empty array"
+    end
+    for index, build in ipairs(data.builds) do
+        if type(build) ~= "table" then return false, format("siteLoadouts.builds[%d] must be a table", index) end
+        if type(build.label) ~= "string" or build.label == "" then
+            return false, format("siteLoadouts.builds[%d].label must be a non-empty string", index)
+        end
+        if type(build.string) ~= "string" or build.string == "" then
+            return false, format("siteLoadouts.builds[%d].string must be a non-empty string", index)
+        end
+    end
+    return true
+end
+
+function GuideStore:RegisterSiteLoadouts(specID, data)
+    if type(specID) ~= "number" then
+        ns.Print(format("|cffff4444site loadouts rejected|r (spec=%s): specID must be a number", tostring(specID)))
+        return false
+    end
+    local ok, err = ValidateSiteLoadouts(data)
+    if not ok then
+        ns.Print(format("|cffff4444site loadouts rejected|r (spec=%s): %s", tostring(specID), err))
+        return false
+    end
+    siteLoadouts[specID] = data
+    return true
+end
+
+function GuideStore:GetSiteLoadouts(specID)
+    return siteLoadouts[specID]
+end
+
 -- Returns the guide table for a specID, or nil if none is registered.
 function GuideStore:GetGuide(specID)
     return guides[specID]

@@ -49,6 +49,8 @@ local FILES = {
     "Data\\Guides_DemonHunter.lua",
     "Data\\Guides_Evoker.lua",
     "Data\\Trinkets.lua",
+    "Data\\BiS.lua",
+    "Data\\SiteLoadouts.lua",
     "UI\\Overlay.lua",
     "UI\\Tooltips.lua",
     "UI\\Codex.lua",
@@ -3067,6 +3069,131 @@ do
     check(exposed, "the stat-ranks option is in ns.OPTION_GROUPS")
 
     mock.items[880001], mock.items[880002] = nil, nil
+end
+
+--------------------------------------------------------------------------------
+section("Linked BiS lists and guide-site builds (Data/BiS.lua, Data/SiteLoadouts.lua)")
+--------------------------------------------------------------------------------
+
+do
+    local GuideStore = ns.GuideStore
+    -- Shipped data: every spec has a BiS list with all 14-slot rows valid,
+    -- and a set of site builds whose strings look like export strings.
+    local bisSpecs, buildSpecs, builds = 0, 0, 0
+    local VALID_SLOT = {}
+    for _, slot in ipairs(ns:GetModule("BiS").SLOT_ORDER) do VALID_SLOT[slot] = true end
+    for _, classEntry in ipairs(GuideStore:GetClasses()) do
+        for _, specID in ipairs(GuideStore:GetClassSpecs(classEntry.token)) do
+            if specID < 9000 then
+                local bis = GuideStore:GetBiS(specID)
+                check(bis ~= nil and #bis.lists >= 1, format("spec %d ships a linked BiS list", specID))
+                if bis then
+                    bisSpecs = bisSpecs + 1
+                    local titles = {}
+                    for _, listEntry in ipairs(bis.lists) do
+                        check(not titles[listEntry.title], format("spec %d BiS list titles are unique", specID), listEntry.title)
+                        titles[listEntry.title] = true
+                        check(#listEntry.list >= 12, format("spec %d '%s' BiS list covers most slots", specID, listEntry.title), #listEntry.list)
+                        for _, row in ipairs(listEntry.list) do
+                            if not VALID_SLOT[row.slot] then check(false, format("spec %d BiS row has a valid slot", specID), row.slot) end
+                        end
+                    end
+                end
+                local site = GuideStore:GetSiteLoadouts(specID)
+                check(site ~= nil and #site.builds >= 1, format("spec %d ships at least one Icy Veins build", specID))
+                if site then
+                    buildSpecs = buildSpecs + 1
+                    for _, build in ipairs(site.builds) do
+                        builds = builds + 1
+                        check(build.string:match("^[A-Za-z0-9+/]+$") ~= nil and #build.string >= 60,
+                            format("spec %d build '%s' string looks like a talent export string", specID, build.label))
+                        check(build.label:find("\n", 1, true) == nil and build.label:match("[-–]%s*$") == nil,
+                            format("spec %d build label is clean", specID), build.label)
+                    end
+                end
+            end
+        end
+    end
+    check(bisSpecs == 40, "all 40 specs have a linked BiS list", bisSpecs)
+    check(buildSpecs == 40, "all 40 specs have Icy Veins builds", buildSpecs)
+    check(builds >= 100, "over 100 Icy Veins builds ship in total", builds)
+
+    -- Validation.
+    local _, bad = silently(function() return GuideStore:RegisterBiS(9701, { lists = { { title = "x", list = { { slot = "Cape", itemID = 1, name = "n" } } } } }) end)
+    check(bad == false, "RegisterBiS rejects an invalid slot")
+    _, bad = silently(function() return GuideStore:RegisterSiteLoadouts(9701, { patch = "12.1", builds = { { label = "x", string = "" } } }) end)
+    check(bad == false, "RegisterSiteLoadouts rejects an empty string")
+
+    -- BiS tab: rows, toggle, link click, Add-to-checklist.
+    GuideStore:RegisterBiS(9604, {
+        source = "test", patch = "12.1",
+        lists = {
+            { title = "Overall", list = {
+                { slot = "Weapon", itemID = 19019, name = "Thunderfury, Blessed Blade of the Windseeker", from = "Molten Core" },
+                { slot = "Neck", itemID = 42, name = "Champion's Dreadful Gladiator's Pendant of Alacrity", from = "PvP" },
+            }},
+            { title = "Raid", list = { { slot = "Neck", itemID = 42, name = "Champion's Dreadful Gladiator's Pendant of Alacrity", from = "PvP" } } },
+        },
+    })
+    Codex.bisListIndex = 1
+    Codex:Open("MAGE", 9604)
+    Codex:SelectTab("BiS")
+    local function shownLinkRows()
+        local n = 0
+        for _, row in ipairs(Codex.bisLinkRowPool) do if row:IsShown() then n = n + 1 end end
+        return n
+    end
+    check(shownLinkRows() == 2, "the Overall BiS list renders one row per slot", shownLinkRows())
+    local linkRow = Codex.bisLinkRowPool[1]
+    check(linkRow.slot:GetText() == "Weapon" and linkRow.itemID == 19019, "a BiS row shows its slot and knows its item")
+    check(linkRow.text:GetText():find("Thunderfury", 1, true) ~= nil and linkRow.text:GetText():find("Molten Core", 1, true) ~= nil,
+        "a BiS row shows the item name and drop source", linkRow.text:GetText())
+    check(Codex.bisListToggle:IsShown() and Codex.bisListToggle:GetText() == "Overall", "the BiS context toggle shows the active list")
+    mock.itemRefClicks = {}
+    linkRow:GetScript("OnMouseUp")(linkRow, "LeftButton")
+    check(#mock.itemRefClicks == 1, "clicking a BiS row opens its item link")
+
+    local BiSMod = ns:GetModule("BiS")
+    local before = #BiSMod:GetForSpec(9604)
+    linkRow.addButton:GetScript("OnClick")(linkRow.addButton)
+    local after = BiSMod:GetForSpec(9604)
+    check(#after == before + 1 and after[#after].itemID == 19019 and after[#after].slot == "Weapon",
+        "Add on a BiS row puts the item on the personal checklist under its slot", #after)
+    check(linkRow.addButton:GetText() == "Added!", "the Add button confirms")
+
+    Codex:CycleBiSList()
+    check(Codex.bisListToggle:GetText() == "Raid" and shownLinkRows() == 1, "the toggle cycles to the Raid list", shownLinkRows())
+    Codex:SelectTab("Overview")
+    check(shownLinkRows() == 0 and not Codex.bisListToggle:IsShown(), "leaving the tab hides the linked BiS rows")
+
+    -- Loadouts tab: Icy Veins build rows with Copy and Add to my vault.
+    GuideStore:RegisterSiteLoadouts(9604, {
+        source = "test", patch = "12.1",
+        builds = {
+            { label = "Raid / Cleave - Sunfury", string = "C4DAAAAAAAAAAAAAAAAAAAAAAYGGLzMzswMDamZGAAAGAwMz0sssMDAgNAAAzMDbWmxMLzYMzMzMsxMmZmBAYAAAGgZGwMAYYmZA" },
+            { label = "High Mythic+ Keys - Spellslinger", string = "C4DAAAAAAAAAAAAAAAAAAAAAAYGGLzMzswMDamZGAAAGAwMz0sssMDAgNAAAzMDbWmxMLzYMzMzMsxMmZmBAYAAAGgZGwMAYYmZB" },
+        },
+    })
+    Codex:SelectTab("Loadouts")
+    local shownSite = 0
+    for _, row in ipairs(Codex.siteLoadoutRowPool) do if row:IsShown() then shownSite = shownSite + 1 end end
+    check(shownSite == 2, "the Loadouts tab renders one row per Icy Veins build", shownSite)
+    local siteRow = Codex.siteLoadoutRowPool[1]
+    check(siteRow.name:GetText():find("Icy Veins: Raid / Cleave - Sunfury", 1, true) ~= nil, "a site build row is labelled with its source and title", siteRow.name:GetText())
+    siteRow.copyButton:GetScript("OnClick")()
+    check(Codex.copyBox:GetText():find("^C4DAAAA") ~= nil, "Copy on a site build row opens the copy dialog with its string")
+    Codex.copyDialog:Hide()
+    local LoadoutsMod = ns:GetModule("Loadouts")
+    local vaultBefore = #LoadoutsMod:GetForSpec(9604)
+    Codex.siteLoadoutRowPool[2].addButton:GetScript("OnClick")(Codex.siteLoadoutRowPool[2].addButton)
+    local vault = LoadoutsMod:GetForSpec(9604)
+    check(#vault == vaultBefore + 1 and vault[#vault].category == "Mythic+",
+        "Add to my vault on a Mythic+ site build files it under Mythic+", vault[#vault] and vault[#vault].category)
+    check(vault[#vault].name == "Icy Veins: High Mythic+ Keys - Spellslinger", "the vault entry is named after the site build", vault[#vault].name)
+    Codex:SelectTab("Overview")
+    shownSite = 0
+    for _, row in ipairs(Codex.siteLoadoutRowPool) do if row:IsShown() then shownSite = shownSite + 1 end end
+    check(shownSite == 0, "leaving the Loadouts tab hides the site build rows")
 end
 
 --------------------------------------------------------------------------------
