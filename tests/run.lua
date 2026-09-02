@@ -2963,12 +2963,28 @@ do
     GameTooltip:SetOwner(nil, "ANCHOR_NONE")
     mock.FireTooltipItem(GameTooltip, 880001)
     local dump = table.concat(GameTooltip:Dump(), "\n")
-    -- Ranks land on the stat's own line ("+512 Haste  #1"), not in a
-    -- summary underneath.
-    check(dump:find("+512 Haste  |cff", 1, true) ~= nil and dump:match("%+512 Haste  |cff%x+#1|r") ~= nil,
-        "the Haste line itself gains its #1 rank", dump)
-    check(dump:match("%+380 Versatility  |cff%x+#4|r") ~= nil, "the Versatility line itself gains its #4 rank", dump)
-    check(dump:find("+900 Stamina  ", 1, true) == nil, "the Stamina line is left alone", dump)
+    -- Ranks land on the stat's own line, in its right-aligned column (the
+    -- mock's Dump renders a line as "left=right"), not in a summary
+    -- underneath, and not appended to the left text where they would sit at
+    -- a different offset on every line.
+    check(dump:match("%+512 Haste=|cff%x+#1|r") ~= nil, "the Haste line's right column gains its #1 rank", dump)
+    check(dump:match("%+380 Versatility=|cff%x+#4|r") ~= nil, "the Versatility line's right column gains its #4 rank", dump)
+    check(dump:find("+512 Haste  ", 1, true) == nil, "the left text is not appended to when the right column is free", dump)
+    check(GameTooltip.lines[2].rightShown or GameTooltip.lines[3].rightShown, "the right column FontString is shown")
+    check(dump:find("+900 Stamina=", 1, true) == nil, "the Stamina line is left alone", dump)
+
+    -- When the right column is already in use, the rank falls back to the
+    -- left text so it is never dropped or overwritten.
+    GameTooltip:SetOwner(nil, "ANCHOR_NONE")
+    GameTooltip:SetItemByID(880001)
+    for _, line in ipairs(GameTooltip.lines) do line.right = "taken" end
+    ItemRanks:Annotate(GameTooltip, "item:880001")
+    local busy = table.concat(GameTooltip:Dump(), "\n")
+    check(busy:match("%+512 Haste  |cff%x+#1|r=taken") ~= nil,
+        "a line whose right column is occupied gets the rank appended to its left text instead", busy)
+    GameTooltip:SetOwner(nil, "ANCHOR_NONE")
+    mock.FireTooltipItem(GameTooltip, 880001)
+    dump = table.concat(GameTooltip:Dump(), "\n")
     check(dump:find("SpecSage stat ranks", 1, true) == nil,
         "no summary line is added when every rank was placed inline", dump)
 

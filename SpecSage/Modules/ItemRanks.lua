@@ -198,12 +198,33 @@ function ItemRanks:AnnotateInline(tooltip, lines)
         local fs = _G[name .. "TextLeft" .. i]
         local okT, text = pcall(function() return fs and fs.GetText and fs:GetText() end)
         if okT and type(text) == "string" and text:sub(1, 1) == "+" and not text:find("#", 1, true) then
+            -- The line's right-hand FontString: ranks written there sit in
+            -- one right-aligned column instead of trailing each stat's text
+            -- by a different amount. Only used when it is empty (an item
+            -- line never uses it; a double line from another addon might).
+            local right = _G[name .. "TextRight" .. i]
+            local okR, rightText = pcall(function() return right and right.GetText and right:GetText() end)
+            local rightFree = okR and right ~= nil and (rightText == nil or rightText == "")
+            -- A rank already sitting in the right column (a second post-call
+            -- pass over the same tooltip) means this line is done.
+            local alreadyRanked = okR and type(rightText) == "string" and rightText:find("#", 1, true) ~= nil
+
             for index, line in ipairs(remaining) do
+                if alreadyRanked then break end
                 local label = STAT_NAMES[line.stat]
                 if label and text:find(label, 1, true) then
                     local rankText = line.rank and format("#%d", line.rank) or "unranked"
-                    local okS = pcall(fs.SetText, fs,
-                        format("%s  %s%s|r", text, ColorCode({ line.r, line.g, line.b }), rankText))
+                    local colored = format("%s%s|r", ColorCode({ line.r, line.g, line.b }), rankText)
+                    local okS
+                    if rightFree then
+                        okS = pcall(function()
+                            right:SetText(colored)
+                            if right.Show then right:Show() end
+                        end)
+                    end
+                    if not okS then
+                        okS = pcall(fs.SetText, fs, format("%s  %s", text, colored))
+                    end
                     if okS then table.remove(remaining, index) end
                     break
                 end

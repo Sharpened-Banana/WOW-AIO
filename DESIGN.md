@@ -344,13 +344,18 @@ lists for the spec; a non-trinket gets no tier line at all.
 `ItemRanks:DescribeTrinket(itemID, specID)` is the tooltip-free half.
 
 **Stat ranks**: every item tooltip in the game gets each secondary stat's
-rank written onto that stat's own line — `+512 Haste  #1`, `+380
-Versatility  #4` — against the player's *current spec's* Codex
-`statPriority`. Tooltip lines are the FontStrings `<tooltipName>TextLeft<i>`;
-`ItemRanks:AnnotateInline` walks them, takes only lines starting with `+`
-(so an effect description mentioning Haste is untouched) and matches the
-client's own localized `STAT_*` names, and skips a line already carrying a
-`#` so a second post-call pass cannot stack ranks. Whatever it cannot place
+rank written onto that stat's own line, in the line's right-aligned column
+so the ranks form one column down the tooltip's edge (`+512 Haste ...... #1`,
+`+380 Versatility .. #4`) rather than trailing each stat's text at a
+different offset — against the player's *current spec's* Codex
+`statPriority`. Tooltip lines are FontString pairs `<tooltipName>TextLeft<i>`
+/ `TextRight<i>`; `ItemRanks:AnnotateInline` walks them, takes only lines
+whose left text starts with `+` (so an effect description mentioning Haste
+is untouched), matches the client's own localized `STAT_*` names, and writes
+the rank into `TextRight<i>` (showing it) when that is empty, appending to
+the left text only when another addon already used the right half. A line
+whose right column already carries a `#` is skipped, so a second post-call
+pass cannot stack ranks. Whatever it cannot place
 (an unnamed tooltip, or a stat with no `+` line) falls back to the summary
 line described next, so a
 Haste/Versatility piece reads, for an Unholy DK, as `Haste #1 of 4 ·

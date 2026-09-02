@@ -962,10 +962,18 @@ function mock.SyncTooltipFontStrings(tooltip)
             GetText = function() return line.left end,
             SetText = function(_, text) line.left = text end,
         }
+        -- The right-aligned half of the line, empty (and hidden) on a
+        -- single-text line the way the client leaves it.
+        _G[name .. "TextRight" .. i] = {
+            GetText = function() return line.right end,
+            SetText = function(_, text) line.right = text end,
+            Show = function() line.rightShown = true end,
+        }
     end
     -- Clear the tail so a longer previous tooltip's lines do not linger.
     for i = #tooltip.lines + 1, 60 do
         _G[name .. "TextLeft" .. i] = nil
+        _G[name .. "TextRight" .. i] = nil
     end
 end
 
