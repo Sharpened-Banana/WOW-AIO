@@ -1,0 +1,10755 @@
+{
+"102": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+271092,
+"",
+"Ula'tek"
+],
+[
+"Offhand",
+245769,
+"",
+"Crafting/Misc"
+],
+[
+"Head",
+271875,
+"",
+"Ula'tek"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+268246,
+"",
+"Vashnik the Malignant"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+251159,
+"",
+"Den of Nalorakk"
+],
+[
+"Wrist",
+244576,
+"",
+"Crafting/Misc"
+],
+[
+"Gloves",
+268234,
+"",
+"Sszorak"
+],
+[
+"Belt",
+268256,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+268225,
+"",
+"The Coiled Altar"
+],
+[
+"Boots",
+268261,
+"",
+"The Twin Fangs"
+],
+[
+"Ring",
+158366,
+"",
+"Temple of Sethraliss"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Trinket",
+270167,
+"",
+"Nymrissa Wavecaller"
+],
+[
+"Trinket",
+273796,
+"",
+"Altar of Fangs"
+]
+],
+"title": "Best in Slot Gear for Balance Druid"
+}
+],
+"builds": [
+[
+"Keeper of the Grove",
+"Raid",
+"CYGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWoMbNjxMDMmlZmZmBMDWmZbGzYGLsMjZmZMzGGAMALbjFMNzsMCAAAwGzMzMYzAjZAMzAADA"
+],
+[
+"Keeper of the Grove",
+"Mythic+",
+"CYGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWoMbNMmZgxsMzMzMLMwDMbzsMWmxMWYZGjxMjFMAYAW2GLYamZZEAAAgNzMPwMD2MmxYGAzMAwA"
+],
+[
+"Keeper of the Grove",
+"Delves",
+"CYGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWoMbNMmZgxsMzMzMLMgZZmlx2MmxGLzYmZGmFMAYAW2GLYamZbEAAAgNmZmZwmxMGzAYmBAGA"
+],
+[
+"Elune's Chosen",
+"Raid",
+"CYGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWoMbNjxMDwsMzMzMYYGjZWmhxMWYZmlZGjZ2wAgx2yMDGz2IwEAAAgFzMzMD2MMGzAAYmBLDA"
+],
+[
+"Elune's Chosen",
+"Mythic+",
+"CYGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWoMbNMmZgxsMzMzMLMgxMLzsYmZswyMLjxMjNMAYstNzgxsNCMBAAAYhZmZGsZMjxAAwMDWGA"
+],
+[
+"Elune's Chosen",
+"Delves",
+"CYGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWoMbNMmZgxsMzMzMLMgxMLzsYMzswyMLjxMjNMAYstNzgxsNCMBAAAYhZmZGsZMjxAAwMDWGA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270164,
+"raid"
+],
+[
+270167,
+"raid"
+],
+[
+273796,
+"dungeon"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+250215,
+"dungeon"
+],
+[
+250214,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+270169,
+"raid"
+],
+[
+193757,
+"dungeon"
+],
+[
+270168,
+"raid"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+270161,
+"raid"
+],
+[
+270170,
+"raid"
+],
+[
+250259,
+"dungeon"
+],
+[
+250224,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+250462,
+"delves"
+],
+[
+270162,
+"raid"
+],
+[
+250255,
+"dungeon"
+],
+[
+273794,
+"dungeon"
+],
+[
+273649,
+"dungeon"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/09/01"
+},
+"103": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+268215,
+"",
+"Ula'tek"
+],
+[
+"Head",
+271528,
+"",
+"Catalyst"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271526,
+"",
+"Catalyst"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271531,
+"",
+"Vashnik the Malignant"
+],
+[
+"Wrist",
+244576,
+"",
+"Crafting/Misc"
+],
+[
+"Gloves",
+244575,
+"",
+"Crafting/Misc"
+],
+[
+"Belt",
+268256,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271527,
+"",
+"Catalyst"
+],
+[
+"Boots",
+268261,
+"",
+"The Twin Fangs"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Ring",
+252258,
+"",
+"Voidscar Arena"
+],
+[
+"Trinket",
+270173,
+"",
+"The Coiled Altar"
+],
+[
+"Trinket",
+270175,
+"",
+"Ula'tek"
+]
+],
+"title": "Best in Slot Gear for Feral Druid"
+}
+],
+"builds": [
+[
+"Druid of the Claw",
+"Raid",
+"CcGAAAAAAAAAAAAAAAAAAAAAAAAAAAAwghxYmZmxsxDsMz2MzMmZGAAAAWCmNYMzomxswMzMGzMDAAAAAAgBAAAQzsMLzMzACsAmZAWMzwAAAYmNMA"
+],
+[
+"Druid of the Claw",
+"Mythic+",
+"CcGAAAAAAAAAAAAAAAAAAAAAAAAAAAAgZmZ2YmZmxY2MPw2YbGzMmZAAAAYLY2MwMzUzYWMzMzsMmxAAAAAAwADAAAgmZZWmZmBEYBmZGgFGMAAAmZDD"
+],
+[
+"Wildstalker",
+"Raid",
+"CcGAAAAAAAAAAAAAAAAAAAAAAAAAAAAwYMjxYmZMmtFWGbzMzYmZAAAAYJY2gxMjaGzCzMzYMzMAAAAAAAGAAAABAz2MLNLzssBmZAWMzwAAYmBAD"
+],
+[
+"Wildstalker",
+"Mythic+",
+"CcGAAAAAAAAAAAAAAAAAAAAAAAAAAAAgZmZ2YmZmxY2MPw2YbGzMmZAAAAYJY2gxMjaGzCzMzsMmZGAAAAAAADAAAgAgZbmlmlZW2AzMALMDDAgZGAMA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270175,
+"raid"
+],
+[
+270173,
+"raid"
+],
+[
+270164,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+159617,
+"dungeon"
+],
+[
+273796,
+"dungeon"
+],
+[
+270165,
+"raid"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+250215,
+"dungeon"
+],
+[
+250214,
+"dungeon"
+],
+[
+270166,
+"dungeon"
+],
+[
+250225,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+250259,
+"dungeon"
+],
+[
+250228,
+"dungeon"
+],
+[
+273797,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+158374,
+"dungeon"
+],
+[
+270168,
+"raid"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/12"
+},
+"104": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+268215,
+"",
+"Ula'tek"
+],
+[
+"Head",
+271875,
+"",
+"Ula'tek"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271526,
+"",
+"Tier Set"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271531,
+"",
+"Tier Set"
+],
+[
+"Wrist",
+268240,
+"",
+"Nek'zali the Soulcoiler"
+],
+[
+"Gloves",
+271529,
+"",
+"Tier Set"
+],
+[
+"Belt",
+268256,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271527,
+"",
+"Tier Set"
+],
+[
+"Boots",
+268261,
+"",
+"The Twin Fangs"
+],
+[
+"Ring",
+268252,
+"",
+"Sszorak"
+],
+[
+"Ring 2",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Trinket",
+270164,
+"",
+"The Lost Explorers"
+],
+[
+"Trinket 2",
+270173,
+"",
+"The Coiled Altar"
+]
+],
+"title": "Best in Slot Gear for Guardian Druid"
+}
+],
+"builds": [
+[
+"Druid of the Claw",
+"Raid",
+"CgGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgZmxsMPwYMzmZZGMWGY2gRT0MzsMzMzMGzYGAAAAAwMWmBAAAgamlZZmZGAALYmBYxMYAbW2GAMzGMA"
+],
+[
+"Druid of the Claw",
+"Mythic+",
+"CgGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgZmxsMmZMziZZGmZZZgZzwoJamZWmZmZmlxMMAAAAAgZsMDAAAA1MLzyMzMAAWwMPAwiZwA2sAAmZDG"
+],
+[
+"Elune's Chosen",
+"Raid",
+"CgGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgZmxsYGjZ2MLGMLLDMbwoJamZWmZmZGjZMDAAAAAYGLzAW2mZwY2GATBAAA2wMDwiZwA2ssNAzMAG"
+],
+[
+"Elune's Chosen",
+"Mythic+",
+"CgGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgZmZml5BmZMziZxwMLLDMbGGNRzMzyMzMzsMmBAAAAAgZsYAbbzMYMLDgpAAAAbYmBYxMYAbWAYmBwA"
+],
+[
+"Elune's Chosen",
+"Delves",
+"CgGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgZmxsMzMjZWMLGMWGY2MjRT0MzsYmZmxYGGAAAAAwwyMgltZGMmlBwUAAAgNMzDMgFzgBjNLbAmZAMA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/28",
+"tiers": [
+{
+"items": [
+[
+270164,
+"raid"
+],
+[
+270173,
+"raid"
+],
+[
+270175,
+"raid"
+],
+[
+270165,
+"raid"
+],
+[
+270168,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+270166,
+"raid"
+],
+[
+273796,
+"dungeon"
+],
+[
+273797,
+"dungeon"
+],
+[
+250215,
+"dungeon"
+],
+[
+250245,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+250228,
+"dungeon"
+],
+[
+250214,
+"dungeon"
+],
+[
+159617,
+"dungeon"
+],
+[
+250259,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+246304,
+"crafting"
+],
+[
+246305,
+"crafting"
+],
+[
+246306,
+"crafting"
+],
+[
+246307,
+"crafting"
+],
+[
+241340,
+"crafting"
+],
+[
+250225,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+158374,
+"dungeon"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/30"
+},
+"105": {
+"bis": [
+{
+"rows": [
+[
+"Helm",
+271528,
+"",
+"Ula'tek (Raid) & Catalyst"
+],
+[
+"Neck",
+268251,
+"",
+"The Twin Fangs (Raid)"
+],
+[
+"Shoulders",
+244572,
+"",
+""
+],
+[
+"Cape",
+268253,
+"",
+"The Coiled Alter (Raid)"
+],
+[
+"Chest",
+271531,
+"",
+"Nek'zali the Soulcoiler (Raid) & Catalyst"
+],
+[
+"Bracers",
+244576,
+"",
+""
+],
+[
+"Gloves",
+271529,
+"",
+"Entomed Sentinels (Raid)"
+],
+[
+"Belt",
+268256,
+"",
+"The Coiled Alter (Raid)"
+],
+[
+"Legs",
+271527,
+"",
+"The Coiled Alter (Raid) & Catalyst"
+],
+[
+"Boots",
+244569,
+"",
+""
+],
+[
+"Ring",
+268266,
+"",
+"Nymrissa Wavebinder (Raid)"
+],
+[
+"Ring",
+252258,
+"",
+"Voidscar Arena"
+],
+[
+"Trinkets",
+270167,
+"",
+"Nymrissa Wavebinder (Raid)"
+],
+[
+"Trinkets",
+270162,
+"",
+"Nek'zali the Soulcoiler (Raid)"
+],
+[
+"1h Weapon",
+271092,
+"",
+"Ula'tek (Raid)"
+],
+[
+"Offhand",
+268197,
+"",
+"Entomed Sentinels (Raid)"
+]
+],
+"title": "Best in Slot Gear for Restoration Druid"
+},
+{
+"rows": [
+[
+"Helm",
+271528,
+"",
+"Murder Row & Catalyst"
+],
+[
+"Neck",
+251142,
+"",
+"Murder Row"
+],
+[
+"Shoulders",
+244572,
+"",
+""
+],
+[
+"Cape",
+251190,
+"",
+"The Blinding Vale"
+],
+[
+"Chest",
+271531,
+"",
+"Den of Nalorakk & Catalyst"
+],
+[
+"Bracers",
+244576,
+"",
+""
+],
+[
+"Gloves",
+271529,
+"",
+"Temple of Sethraliss & Catalyst"
+],
+[
+"Belt",
+159317,
+"",
+"Temple of Sethraliss"
+],
+[
+"Legs",
+271527,
+"",
+"Kings Rest & Catalyst"
+],
+[
+"Boots",
+251153,
+"",
+"Den of Nalorakk"
+],
+[
+"Ring",
+159459,
+"",
+"Kings Rest"
+],
+[
+"Ring",
+252258,
+"",
+"Voidscar Arena"
+],
+[
+"Trinkets",
+250214,
+"",
+"The Blinding Vale"
+],
+[
+"Trinkets",
+250255,
+"",
+"Murder Row"
+],
+[
+"2h Weapon",
+159636,
+"",
+"Temple of Sethraliss"
+]
+],
+"title": "Best in Slot Mythic+-Only Gear for Restoration Druid"
+}
+],
+"builds": [
+[
+"Keeper of the Grove",
+"Raid",
+"CkGAAAAAAAAAAAAAAAAAAAAAAMjxMLzMjZmxsNMDmFjNmBAAAAAAAAAAbDa2YMNzY4BMLzMzMDDzAAAAAAAAAbbjFMNzsMAAABswYmZYmBGNDAmZAADA"
+],
+[
+"Keeper of the Grove",
+"Mythic+",
+"CkGAAAAAAAAAAAAAAAAAAAAAAMMmZZMjZmxsNMMmlZsZbGAAAAAAAAAAsMoZzw0MjZwsYmZmZZGGDAAAAAAAGw2yYBTzMLDAAQALMmZgZ2ANDAmZAADA"
+],
+[
+"Keeper of the Grove",
+"Mythic+",
+"CkGAAAAAAAAAAAAAAAAAAAAAAMMmZZMjZmxsNzMgFzsZbGAAAAAAAAAAsNoZzw0MmZMmFzMzMLzwYAAAAAAAwAAQAAAzyMbNLzsYDm5BwMWANDAwMDADA"
+],
+[
+"Wildstalker",
+"Raid",
+"CkGAAAAAAAAAAAAAAAAAAAAAAYMmZZmZMzMmthZwsZsNmBAAAAAAAAAAbDa2YMNzY4BMLzMzMDDzAAAAAAAAAAIAAgZbmlmtZ2sxYmZwMwoZAAmZAYA"
+],
+[
+"Wildstalker",
+"Mythic+",
+"CkGAAAAAAAAAAAAAAAAAAAAAAMMmZZMjZmxsNMMmlZsZbGAAAAAAAAAAsMoZzw0MjZwsYmZmZZGGDAAAAAAAGAACAAYWmZrZbmFbMmZgZ2ANDAwMDADA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270167,
+"raid"
+],
+[
+270164,
+"raid"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+250214,
+"dungeon"
+],
+[
+249343,
+"raid"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+270169,
+"raid"
+],
+[
+248583,
+"delves"
+],
+[
+251792,
+"delves"
+],
+[
+273649,
+"dungeon"
+],
+[
+273796,
+"dungeon"
+],
+[
+250215,
+"dungeon"
+],
+[
+250248,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+],
+[
+264507,
+"delves"
+],
+[
+250254,
+"dungeon"
+],
+[
+250255,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+251788,
+"delves"
+],
+[
+251789,
+"delves"
+]
+],
+"tier": "D"
+},
+{
+"items": [
+[
+270171,
+"raid"
+],
+[
+264701,
+"delves"
+],
+[
+252957,
+"delves"
+],
+[
+264694,
+"delves"
+],
+[
+193748,
+"dungeon"
+]
+],
+"tier": "F"
+}
+],
+"updated": "2026/09/02"
+},
+"1467": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+271092,
+"",
+"Ula'tek"
+],
+[
+"Offhand",
+245769,
+"",
+"Crafting"
+],
+[
+"Head",
+271501,
+"",
+"Tier Set"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271499,
+"",
+"Tier Set"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271504,
+"",
+"Tier Set"
+],
+[
+"Wrist",
+244584,
+"",
+"Crafting"
+],
+[
+"Gloves",
+271502,
+"",
+"Tier Set"
+],
+[
+"Belt",
+268254,
+"",
+"Vashnik the Malignant"
+],
+[
+"Legs",
+271500,
+"",
+"Tier Set"
+],
+[
+"Boots",
+268233,
+"",
+"Sszorak"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Ring",
+158366,
+"",
+"Temple of Sethraliss"
+],
+[
+"Trinket",
+270164,
+"",
+"The Lost Explorers"
+],
+[
+"Trinket",
+270167,
+"",
+"Nymrissa Wavecaller"
+]
+],
+"title": "Best in Slot Gear for Devastation Evoker"
+},
+{
+"rows": [
+[
+"",
+268211,
+"",
+""
+]
+],
+"title": "Bonus Rolling with Nebulous Voidcores"
+}
+],
+"builds": [
+[
+"Scalecommander",
+"Raid",
+"CsbBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjZgZYGzMgBjZamZmpZM2mxMzMzMzMzAmxMGzMLzMDMwYwGsMGN2GQmBBbYgZGMMA"
+],
+[
+"Scalecommander",
+"Mythic+",
+"CsbBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjZAMzwMwAjZaMzMNjZ2mxMzMzMzMzAmZmZGzMLzMDMwYwGsMGN2GQmBBbYGMzghB"
+],
+[
+"Scalecommander",
+"Delves",
+"CsbBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwMjZgZYmhBGGjZaMzMNjxyMmZmZmZmZGwMzYYmZZmZgBYwGsMGN2GQmBBbYgZGMjB"
+],
+[
+"Flameshaper",
+"Raid",
+"CsbBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgZmZwMDGMgBjZamZmJjxyMzMzwMzMzAmxMzYmZZmZwMwMmB2ALgZYCsFsMMAmZGG"
+],
+[
+"Flameshaper",
+"Mythic+",
+"CsbBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjZwMjZGzMwMGDTDzMZM2mZmZGGzMzAmZmxYmZbmZwMwMmBWAbgZYCsFsMMDwMzwA"
+],
+[
+"Flameshaper",
+"Delves",
+"CsbBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgZMDmZMzYmBmxYYaYmJjx2MzMzwYmZGwMzMGzMmZGMDMjZgFwGYGmAbBLDzAMzMMA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270164,
+"raid"
+],
+[
+273796,
+"dungeon"
+],
+[
+270167,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+250214,
+"dungeon"
+],
+[
+270170,
+"raid"
+],
+[
+250215,
+"dungeon"
+],
+[
+250224,
+"dungeon"
+],
+[
+270169,
+"raid"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+273649,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+],
+[
+250259,
+"dungeon"
+],
+[
+251792,
+"delves"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+270161,
+"raid"
+],
+[
+270168,
+"raid"
+],
+[
+273794,
+"dungeon"
+],
+[
+274493,
+"delves"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+246305,
+"crafting"
+],
+[
+246304,
+"crafting"
+],
+[
+246306,
+"crafting"
+],
+[
+246307,
+"crafting"
+],
+[
+241340,
+"crafting"
+],
+[
+251786,
+"delves"
+],
+[
+274497,
+"delves"
+],
+[
+274496,
+"delves"
+],
+[
+250462,
+"delves"
+],
+[
+251783,
+"delves"
+],
+[
+251787,
+"delves"
+],
+[
+251784,
+"delves"
+],
+[
+251785,
+"delves"
+],
+[
+280123,
+"delves"
+],
+[
+274496,
+"delves"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/31"
+},
+"1468": {
+"bis": [
+{
+"rows": [
+[
+"Helm",
+271501,
+"",
+"Temple of Sethraliss & Catalyst"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek (Raid)"
+],
+[
+"Shoulders",
+271499,
+"",
+"The Coiled Altar (Raid) & Catalyst"
+],
+[
+"Cape",
+268253,
+"",
+"The Coiled Altar (Raid)"
+],
+[
+"Chest",
+271504,
+"",
+"Ula'tek (Raid) & Catalyst"
+],
+[
+"Bracers",
+268217,
+"",
+"Nymrissa Wavebinder (Raid)"
+],
+[
+"Gloves",
+271502,
+"",
+"Kings Rest & Catalyst"
+],
+[
+"Belt",
+268254,
+"",
+"Vashnik the Malignant (Raid)"
+],
+[
+"Legs",
+271500,
+"",
+"The Coiled Altar (Raid) & Catalyst"
+],
+[
+"Boots",
+159388,
+"",
+"Temple of Sethraliss"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant (Raid)"
+],
+[
+"Ring",
+158366,
+"",
+"Temple of Sethraliss"
+],
+[
+"Trinkets",
+270164,
+"",
+"The Lost Explorers (Raid)"
+],
+[
+"Trinkets",
+270162,
+"",
+"Nek'zali the Soulcoiler (Raid)"
+],
+[
+"1h Weapon",
+271092,
+"",
+"Ula'tek (Raid)"
+],
+[
+"Offhand",
+268197,
+"",
+"Entomed Sentinels (Raid)"
+]
+],
+"title": "Best in Slot Gear for Preservation Evoker"
+}
+],
+"builds": [
+[
+"Flameshaper",
+"Mythic+",
+"CwbBAAAAAAAAAAAAAAAAAAAAAAAAAAAmZmZ2WmZGDjxsZGw2wAAAzYmZmZMMTMmBAAAMzMTGzMzMGzAAjZgFwGYGmQ2YsZYGgZGGA"
+],
+[
+"Flameshaper",
+"Delves",
+"CwbBAAAAAAAAAAAAAAAAAAAAAAAAAAAmZmZ2MwYmZGMzMDbAAAYYMDzYGZmZAAAALzMz0MGzMjZmBAGzAbgNwMMhsxYzwAYmZmB"
+],
+[
+"Chronowarden",
+"Raid",
+"CwbBAAAAAAAAAAAAAAAAAAAAAAAAAAAYmZ2WmHADzMmNjZmZWmxAAAzYGDmxMyMzAAAAMzMTmxMjZbmZAwAjZsxCMwMaoBsAjZGgxA"
+],
+[
+"Chronowarden",
+"Mythic+",
+"CwbBAAAAAAAAAAAAAAAAAAAAAAAAAAAegZmZ2WGYYmxsZGjx2wAAAzYmZmZMMTMmBAAA2mZmJjZmZGjZAAYMjNWgBmRDNMsAzMzAwA"
+],
+[
+"Chronowarden",
+"Delves",
+"CwbBAAAAAAAAAAAAAAAAAAAAAAAAAAAmZmZ2MwYmZGMzMDbAAAYYMDzYGZmZAAAALzMz0MGzMjZmBAgxM2YDGYGN0gxCMmZAmZA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270162,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+270164,
+"raid"
+],
+[
+270167,
+"raid"
+],
+[
+250214,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+248583,
+"delves"
+],
+[
+251792,
+"delves"
+],
+[
+250215,
+"dungeon"
+],
+[
+273796,
+"dungeon"
+],
+[
+264507,
+"delves"
+],
+[
+270169,
+"raid"
+],
+[
+273649,
+"dungeon"
+],
+[
+250248,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+],
+[
+250254,
+"dungeon"
+],
+[
+250255,
+"dungeon"
+],
+[
+249343,
+"delves"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+251788,
+"delves"
+],
+[
+251789,
+"delves"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+270171,
+"raid"
+]
+],
+"tier": "D"
+},
+{
+"items": [
+[
+252957,
+"delves"
+],
+[
+193748,
+"dungeon"
+]
+],
+"tier": "F"
+}
+],
+"updated": "2026/08/16"
+},
+"1473": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+271092,
+"",
+"Ula'tek"
+],
+[
+"Offhand",
+268197,
+"",
+"Entombed Sentinels"
+],
+[
+"Head",
+271501,
+"",
+"Tier Set"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271499,
+"",
+"Tier Set"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271504,
+"",
+"Tier Set"
+],
+[
+"Wrist",
+244584,
+"",
+"Crafting"
+],
+[
+"Gloves",
+271502,
+"",
+"Tier Set"
+],
+[
+"Belt",
+244581,
+"",
+"Crafting"
+],
+[
+"Legs",
+271500,
+"",
+"Tier Set"
+],
+[
+"Boots",
+268233,
+"",
+"Sszorak"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Ring",
+158366,
+"",
+"Temple of Sethraliss"
+],
+[
+"Trinket",
+270168,
+"",
+"Ula'tek"
+],
+[
+"Trinket",
+250224,
+"",
+"Voidscar Arena"
+]
+],
+"title": "Best in Slot Gear for Augmentation Evoker"
+},
+{
+"rows": [
+[
+"",
+270168,
+"",
+""
+],
+[
+"",
+268231,
+"",
+""
+],
+[
+"",
+268249,
+"",
+""
+]
+],
+"title": "Bonus Rolling with Nebulous Voidcores"
+}
+],
+"builds": [
+[
+"Chronowarden",
+"Raid",
+"CEcBAAAAAAAAAAAAAAAAAAAAAMMzMbzMzgZYmZZGzMjZ2AAAAAAAAYmhxMYM1YmZGAAAAMjZMmZWGzMwMMwYGLsADMDDNiFMGzMAwA"
+],
+[
+"Chronowarden",
+"Mythic+",
+"CEcBAAAAAAAAAAAAAAAAAAAAAMMzMbzMzgZYmZZGzMjZ2AAAAAAAAwMMzAjpGzMzAAAAgZmZMmZ2GzMwMMwYGLsADMDDNiFMmZmBAG"
+],
+[
+"Chronowarden",
+"Delves",
+"CEcBAAAAAAAAAAAAAAAAAAAAAMMzMbjZmxyMYmlZMzMmBAAAAAAAAmhZGYM1YmZGAAAAMzMjxMzyYmBmZzAjZswCMwMM0IWwYmZGAYA"
+],
+[
+"Scalecommander",
+"Raid",
+"CEcBAAAAAAAAAAAAAAAAAAAAAMMzMbzMzgZYmZZGzMjZ2AAAAAAAAYmhxMYM1YmZGAAAAMjZMmZWGzMwMMGsALjhx2AYmI2wYgZGAD"
+],
+[
+"Scalecommander",
+"Mythic+",
+"CEcBAAAAAAAAAAAAAAAAAAAAAMMzMbjZGMDzMLzYmZMzGAAAAAAAAmhZGYM1YmZGAAAAMzMjxMz2YmBmZzYwCsMGGbDgZiYDjZwMDgB"
+],
+[
+"Scalecommander",
+"Delves",
+"CEcBAAAAAAAAAAAAAAAAAAAAAMMzMbjZmxyMYmlZMzMmBAAAAAAAAmhZGYM1YmZGAAAAMzMjxMzyYmBmZzYwCsMGGbDgZiYDjZwMDgB"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270168,
+"raid"
+],
+[
+250224,
+"dungeon"
+],
+[
+270164,
+"raid"
+],
+[
+270167,
+"raid"
+],
+[
+270161,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+249346,
+"raid"
+],
+[
+270170,
+"raid"
+],
+[
+250215,
+"dungeon"
+],
+[
+250214,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+273796,
+"raid"
+],
+[
+270169,
+"raid"
+],
+[
+250259,
+"dungeon"
+],
+[
+273794,
+"dungeon"
+],
+[
+246304,
+"crafting"
+],
+[
+248583,
+"delves"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+193757,
+"dungeon"
+],
+[
+158368,
+"dungeon"
+],
+[
+273649,
+"dungeon"
+],
+[
+274493,
+"delves"
+],
+[
+251792,
+"delves"
+],
+[
+246305,
+"crafting"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+251786,
+"delves"
+],
+[
+274497,
+"delves"
+],
+[
+274496,
+"delves"
+],
+[
+246306,
+"crafting"
+],
+[
+246307,
+"crafting"
+],
+[
+241340,
+"crafting"
+],
+[
+251783,
+"delves"
+],
+[
+251787,
+"delves"
+],
+[
+251784,
+"delves"
+],
+[
+251785,
+"delves"
+],
+[
+280123,
+"delves"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/09/02"
+},
+"1480": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+271092,
+"",
+"Ula'tek"
+],
+[
+"Offhand",
+268211,
+"",
+"The Coiled Altar"
+],
+[
+"Head",
+271537,
+"",
+"Ula'tek"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271535,
+"",
+"Voidscar Arena"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271540,
+"",
+"Den of Nalorakk"
+],
+[
+"Wrist",
+244576,
+"",
+"Crafting/Misc"
+],
+[
+"Gloves",
+271538,
+"",
+"Tier Set"
+],
+[
+"Belt",
+268256,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271536,
+"",
+"The Coiled Altar"
+],
+[
+"Boots",
+244569,
+"",
+"Crafting/Misc"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Ring",
+158366,
+"",
+"Temple of Sethraliss"
+],
+[
+"Trinket",
+250215,
+"",
+"Murder Row"
+],
+[
+"Trinket (Raid)",
+270167,
+"",
+"Nymrissa Wavecaller"
+],
+[
+"Trinket (M+)",
+270164,
+"",
+"The Lost Explorers"
+]
+],
+"title": "Best in Slot Gear for Devourer Demon Hunter"
+}
+],
+"builds": [
+[
+"Void-Scarred",
+"Raid ST",
+"CgcBAAAAAAAAAAAAAAAAAAAAAAA2MmZmZmZmxwMAAAAAAAegxsNYGAAAAAAAAmxMMmZmZMzMzYmtZGjNttAgAGgZMzMbzMTz2MLzMjZMA"
+],
+[
+"Void-Scarred",
+"Raid Cleave",
+"CgcBAAAAAAAAAAAAAAAAAAAAAAAWMmZmZmZmBmBAAAAAAY7BGz2gZAAAAAAAAYGzwYmZmZmZmZMz2Mjxm2WAQADwDMmZmtZmpZbmlZmxYGA"
+],
+[
+"Void-Scarred",
+"Mythic+",
+"CgcBAAAAAAAAAAAAAAAAAAAAAAAWmZmZmZGjxwMAAAAAAALGz2gZAAAAAAAAYGzw8AzMzMzMzMMz2MjxmsAgAGgZMzMbzMTzyMLzMDzMA"
+],
+[
+"Void-Scarred",
+"Delves",
+"CgcBAAAAAAAAAAAAAAAAAAAAAAA2MzMzMzMjxwMAAAAAAAmxAmBAAAAAAAgZMDzDMzMzMzMzMmZbmxYTbbAIgBwMzMz2Mz0sNz2MzwMDA"
+],
+[
+"Annihilator",
+"Raid ST",
+"CgcBAAAAAAAAAAAAAAAAAAAAAAA2MmZmZmZmxwMAAAAAAAegxsNYGAAAAAAAAmxMMzMzMjZmZGzsYGjFtswMzMzWbzMzAYGDABMGMmB"
+],
+[
+"Annihilator",
+"Raid Cleave",
+"CgcBAAAAAAAAAAAAAAAAAAAAAAA2MmZmZmZmxwMAAAAAAAegxsNYGAAAAAAAAmxMMzMzMzMzMDzsYGjFtswMzMzWbzMzAYGDABMGMmB"
+],
+[
+"Annihilator",
+"Mythic+",
+"CgcBAAAAAAAAAAAAAAAAAAAAAAA2mxMzMzMzMGmBAAAAAAYxY2GMDAAAAAAAAzYwMzMzMzMzMjZWMjxiWWYmZmZrtZmZAMMAEwYwYGA"
+],
+[
+"Annihilator",
+"Delves",
+"CgcBAAAAAAAAAAAAAAAAAAAAAAA2MmZmZmZmxwMAAAAAAAmxAmBAAAAAAAgZMDzMzMzMzMzwMbmxYRLbMzMzs1yMzMAmZGACYMYMD"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/17",
+"tiers": [
+{
+"items": [
+[
+250215,
+"dungeon"
+],
+[
+270164,
+"raid"
+],
+[
+270167,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+273796,
+"dungeon"
+],
+[
+270161,
+"raid"
+],
+[
+193757,
+"dungeon"
+],
+[
+250224,
+"dungeon"
+],
+[
+270169,
+"raid"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+251792,
+"delves"
+],
+[
+250259,
+"dungeon"
+],
+[
+273649,
+"dungeon"
+],
+[
+270170,
+"raid"
+],
+[
+270168,
+"raid"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+251785,
+"delves"
+],
+[
+251783,
+"delves"
+],
+[
+273794,
+"dungeon"
+],
+[
+246304,
+"crafting"
+],
+[
+251786,
+"delves"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+246305,
+"crafting"
+],
+[
+246306,
+"crafting"
+],
+[
+246307,
+"crafting"
+],
+[
+241340,
+"crafting"
+],
+[
+250214,
+"dungeon"
+],
+[
+274493,
+"delves"
+],
+[
+251787,
+"delves"
+],
+[
+251784,
+"delves"
+],
+[
+274495,
+"delves"
+],
+[
+280123,
+"delves"
+],
+[
+274496,
+"delves"
+],
+[
+274497,
+"delves"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/17"
+},
+"250": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+268213,
+"",
+"The Coiled Altar"
+],
+[
+"Head",
+271474,
+"",
+"Nek'zali the Soulcoiler"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271472,
+"",
+"Temple of Sethraliss"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271477,
+"",
+"The Coiled Altar"
+],
+[
+"Wrist",
+237834,
+"",
+"Crafting"
+],
+[
+"Gloves",
+271475,
+"",
+"King's Rest"
+],
+[
+"Belt",
+268259,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271878,
+"",
+"Ula'tek"
+],
+[
+"Boots",
+273777,
+"",
+"Altar of Fangs"
+],
+[
+"Ring ()",
+251487,
+"",
+"Crafting"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Ring",
+251194,
+"",
+"Blinding Vale"
+],
+[
+"Trinket",
+270175,
+"",
+"Ula'tek"
+],
+[
+"Trinket",
+270173,
+"",
+"The Coiled Altar"
+]
+],
+"title": "Best in Slot Gear for Deathbringer Blood Death Knight"
+},
+{
+"rows": [
+[
+"Weapon",
+268213,
+"",
+"The Coiled Altar"
+],
+[
+"Head",
+271474,
+"",
+"Nek'zali the Soulcoiler"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271472,
+"",
+"Temple of Sethraliss"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271477,
+"",
+"The Coiled Altar"
+],
+[
+"Wrist",
+237834,
+"",
+"Crafting"
+],
+[
+"Gloves",
+271475,
+"",
+"King's Rest"
+],
+[
+"Belt",
+268259,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271878,
+"",
+"Ula'tek"
+],
+[
+"Boots",
+273777,
+"",
+"Altar of Fangs"
+],
+[
+"Ring ()",
+251487,
+"",
+"Crafting"
+],
+[
+"Ring",
+159459,
+"",
+"King's Rest"
+],
+[
+"Ring",
+252258,
+"",
+"Voidscar Arena"
+],
+[
+"Trinket",
+270175,
+"",
+"Ula'tek"
+],
+[
+"Trinket",
+270173,
+"",
+"The Coiled Altar"
+]
+],
+"title": "Best in Slot Gear for San'layn Blood Death Knight"
+}
+],
+"builds": [
+[
+"Deathbringer",
+"Raid",
+"CoPAAAAAAAAAAAAAAAAAAAAAAwYWGzMmxMjhZZmZmmZxYmxMmBAAAAmZmZmZmZYGjZAYMzMzAAAMmtBGwSwywEYYBwMMAAMzAYYA"
+],
+[
+"Deathbringer",
+"Mythic+",
+"CoPAAAAAAAAAAAAAAAAAAAAAAwMzyMzMmxMzMMLzMz0MLGjxMGAAAAwMmZmZmZYGDAYmZmZGAAgxsNwAWCWGmADLAmxMAAMzAYYA"
+],
+[
+"Deathbringer",
+"Delves",
+"CoPAAAAAAAAAAAAAAAAAAAAAAwYWmZmxMmZmhZZmZmmZxYmxMGAAAAwMzMzMzMDzYMAYMzMzAAAMmtBGwSwywEYYBghZAAMzAMYA"
+],
+[
+"San'layn",
+"Raid",
+"CoPAAAAAAAAAAAAAAAAAAAAAAwYWmZmxMmZmhZZmZmmZxYMmxAAAAAmZmZmZmZYGjZAYMzMzAAAYgBmxiGLLgsMgNAzwAAAmZghB"
+],
+[
+"San'layn",
+"Mythic+",
+"CoPAAAAAAAAAAAAAAAAAAAAAAwYWmZmxMmZmhZZmZmmZxYMmxAAAAAmxMzMzMDzYMAYMzMzAAAYgBmxiGLLgsMgNAzYmBAAmZghB"
+],
+[
+"San'layn",
+"Delves",
+"CoPAAAAAAAAAAAAAAAAAAAAAAwYWmZmxMmZmhZZmZmmZxYMmxAAAAAmxMzMzMDzYMAYMzMzAAAYgBmxiGLLgsMgNAzYmBAAmZwgB"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/20",
+"tiers": [
+{
+"items": [
+[
+270173,
+"raid"
+],
+[
+270175,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+270165,
+"raid"
+],
+[
+273796,
+"dungeon"
+],
+[
+250238,
+"dungeon"
+],
+[
+250259,
+"dungeon"
+],
+[
+193762,
+"dungeon"
+],
+[
+273797,
+"dungeon"
+],
+[
+270164,
+"raid"
+],
+[
+274493,
+"delves"
+],
+[
+158367,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+250245,
+"dungeon"
+],
+[
+270168,
+"raid"
+],
+[
+270163,
+"raid"
+],
+[
+251783,
+"delves"
+],
+[
+250228,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+273795,
+"dungeon"
+],
+[
+250229,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+250244,
+"dungeon"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/20"
+},
+"251": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+268202,
+"",
+"Ula'tek"
+],
+[
+"Offhand",
+268209,
+"",
+"The Coiled Altar"
+],
+[
+"Head",
+271474,
+"",
+"Tier Set"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271472,
+"",
+"Tier Set"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271477,
+"",
+"The Coiled Altar"
+],
+[
+"Wrist",
+237834,
+"",
+"Crafting/Misc"
+],
+[
+"Gloves",
+271475,
+"",
+"Tier Set"
+],
+[
+"Belt",
+268259,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271878,
+"",
+"Ula'tek"
+],
+[
+"Boots",
+268260,
+"",
+"Vashnik the Malignant"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Ring",
+251513,
+"",
+"Crafting/Misc"
+],
+[
+"Trinket",
+270173,
+"",
+"The Coiled Altar"
+],
+[
+"Trinket",
+270175,
+"",
+"Ula'tek"
+]
+],
+"title": "Best in Slot Gear for Frost Death Knight"
+}
+],
+"builds": [
+[
+"Deathbringer",
+"Raid",
+"CsPAAAAAAAAAAAAAAAAAAAAAAMAmZMjZAz2MzMzMLzMjMjxYYmxgZmZmZmZmZAAAAAAAAAYMbDMgFwywEyYBzMmZGYAYYmBYmBD"
+],
+[
+"Deathbringer",
+"Mythic+",
+"CsPAAAAAAAAAAAAAAAAAAAAAAMAzMMjZAz2MzMzMLzMjMjxYYmxgZmZmZmZmZAAAAAAAAAYMbDMgFwywEyYBzMmZGYAYYmBYmBD"
+],
+[
+"Deathbringer",
+"Delves",
+"CsPAAAAAAAAAAAAAAAAAAAAAAMAzMMzMDY2MzMzMLzMjMjxYYmxgZmZmZmZmZAAAAAAAAAYMbDMgFwywEyYBzMmZGYAYYmBYmBD"
+],
+[
+"Rider of the Apocalypse",
+"Raid",
+"CsPAAAAAAAAAAAAAAAAAAAAAAMDwMjZMDY2mZmZmZZmZkZMGDzMGMjZmZmZmZAAAAAAAAAAsZWMMwAzmGaYDzMmZGYAYAYmZmBD"
+],
+[
+"Rider of the Apocalypse",
+"Mythic+",
+"CsPAAAAAAAAAAAAAAAAAAAAAAMAmhZMDY2mZmZmZZmZ0MjxYYmxgZmZmZmZmZAAAAAAAAAAsZWMMwAzmGaYDzMmZGYAYAYmZmBD"
+],
+[
+"Rider of the Apocalypse",
+"Delves",
+"CsPAAAAAAAAAAAAAAAAAAAAAAYAzMMjZMDzmZmZmZxMjmZMGmZGGPwMmZmZmZmZAAAAAAAAAAsZ2MMwAzmGaYDzMzMzAAYAYmZGYA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270173,
+"raid"
+],
+[
+270164,
+"raid"
+],
+[
+270175,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+273797,
+"dungeon"
+],
+[
+250259,
+"dungeon"
+],
+[
+250238,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+270165,
+"raid"
+],
+[
+273796,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+270168,
+"raid"
+],
+[
+250228,
+"dungeon"
+],
+[
+193762,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+250229,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+],
+[
+158367,
+"dungeon"
+],
+[
+273795,
+"dungeon"
+],
+[
+270163,
+"raid"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/09/02"
+},
+"252": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+268213,
+"",
+"The Coiled Altar"
+],
+[
+"Head",
+271474,
+"",
+"Tier Set"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271472,
+"",
+"Tier Set"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271477,
+"",
+"Tier Set"
+],
+[
+"Wrist",
+237834,
+"",
+"Crafting"
+],
+[
+"Gloves",
+271475,
+"",
+"Tier Set"
+],
+[
+"Belt",
+268259,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271878,
+"",
+"Ula'tek"
+],
+[
+"Boots",
+237828,
+"",
+"Crafting"
+],
+[
+"Ring",
+273792,
+"",
+"Altar of Fangs"
+],
+[
+"Ring",
+252258,
+"",
+"Voidscar Arena]"
+],
+[
+"Trinket",
+270175,
+"",
+"Ula'tek"
+],
+[
+"Trinket",
+270173,
+"",
+"The Coiled Altar"
+]
+],
+"title": "Best in Slot Gear for Unholy Death Knight"
+}
+],
+"builds": [
+[
+"Rider of the Apocalypse",
+"Rider ST",
+"CwPAAAAAAAAAAAAAAAAAAAAAAAwMjZMDDz2MzMTzmZmZMjBAAAAAAAgZGmZAwyMmZ2mZGzMDYzsYYIDMbM0YBAzAAzMjZAmZmxYA"
+],
+[
+"Rider of the Apocalypse",
+"Rider M+/Delves",
+"CwPAAAAAAAAAAAAAAAAAAAAAAAYmhZMDDz2MzMTzmxMzMjBAAAAAAAgZGzYAwyMmZ2MzYMDYzsZYIDMbM0YBDYGAGzMjZAmZmxYA"
+],
+[
+"Rider of the Apocalypse",
+"Open World",
+"CwPAAAAAAAAAAAAAAAAAAAAAAAwMjZMDDz2MzMTzmZmZMjBAAAAAAAgZGzYAw2MmZ2mZGjZAbmNDDZgZhhGLYAzAAzMjZAmZmxYA"
+],
+[
+"San'layn",
+"San ST",
+"CwPAAAAAAAAAAAAAAAAAAAAAAAwMjZMDDz2MzMTjZmxYGDAAAAAAAAzDMMGAsMDzsZmxMzYgBmxiGLbA2mYDAzAYmZmZMDmZwMzYA"
+],
+[
+"San'layn",
+"San AoE",
+"CwPAAAAAAAAAAAAAAAAAAAAAAAwMjZMDDz2MzMTzmZmZMjBAAAAAAAg5BGDDAWmhZ2MzYMjBGYGbassAYZiNMgZAMzMzMmBzMYGjB"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270175,
+"raid"
+],
+[
+270173,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+270165,
+"raid"
+],
+[
+270164,
+"raid"
+],
+[
+250228,
+"dungeon"
+],
+[
+273797,
+"dungeon"
+],
+[
+245829,
+"crafting"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+251783,
+"delves"
+],
+[
+245855,
+"crafting"
+],
+[
+193757,
+"dungeon"
+],
+[
+250229,
+"dungeon"
+],
+[
+251792,
+"delves"
+],
+[
+274497,
+"delves"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+245750,
+"crafting"
+],
+[
+251782,
+"delves"
+],
+[
+250238,
+"dungeon"
+],
+[
+270163,
+"raid"
+],
+[
+250462,
+"raid"
+],
+[
+274493,
+"delves"
+],
+[
+270168,
+"raid"
+],
+[
+274496,
+"delves"
+],
+[
+273796,
+"dungeon"
+],
+[
+193762,
+"dungeon"
+],
+[
+250259,
+"dungeon"
+],
+[
+250245,
+"dungeon"
+],
+[
+158367,
+"dungeon"
+],
+[
+280123,
+"delves"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+251791,
+"delves"
+],
+[
+251787,
+"delves"
+],
+[
+241340,
+"crafting"
+],
+[
+245846,
+"crafting"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/09/02"
+},
+"253": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+268207,
+"",
+"Ula'tek"
+],
+[
+"Head",
+271492,
+"",
+"The Twin Fangs"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271490,
+"",
+"The Coiled Altar"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271495,
+"",
+"Ula'tek"
+],
+[
+"Wrist",
+244584,
+"",
+""
+],
+[
+"Gloves",
+271493,
+"",
+"King's Rest"
+],
+[
+"Belt",
+244581,
+"",
+""
+],
+[
+"Legs",
+271491,
+"",
+"The Coiled Altar"
+],
+[
+"Boots",
+159388,
+"",
+"Temple of Sethraliss"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Ring",
+252258,
+"",
+"Voidscar Arena"
+],
+[
+"Trinket",
+270173,
+"",
+"The Coiled Altar"
+],
+[
+"Trinket",
+270175,
+"",
+"Ula'tek"
+],
+[
+"Trinket (Raid only)",
+270165,
+"",
+"Entombed Sentinels"
+]
+],
+"title": "Best in Slot Gear for Beast Mastery Hunter"
+}
+],
+"builds": [
+[
+"Pack Leader",
+"Raid",
+"C0PAAAAAAAAAAAAAAAAAAAAAAAMmxwCsAzwQDbAAYGGzsMzwMmZYYmxYmxMzYGzwMzYGzghmBAAAAMDAAAzMzMAzsRYYWAbDAD"
+],
+[
+"Pack Leader",
+"Mythic+",
+"C0PAAAAAAAAAAAAAAAAAAAAAAAMmxwCsBzwQDbAAYGPwMzsMzwMzMjZGMzYmhZGzMzYbmZYMDLDNDAAAAAAAAmHYMzAmZjAmFw2AwA"
+],
+[
+"Pack Leader",
+"Delves",
+"C0PAAAAAAAAAAAAAAAAAAAAAAAMmxwCsAzwQDbAAYGPwMzsMzwMzMjZGMzYmhZmZGzwMzwYmhx0MAAAAAAAAYMmBYmNCWmZBsNAM"
+],
+[
+"Dark Ranger",
+"Raid",
+"C0PAAAAAAAAAAAAAAAAAAAAAAYzsNwAGwMsBZsAAgZMjZWMDzYmxMMzYYGzMjZMDzMjZMDGaGAAAAwMAAAMzMzgZGQYYWAbDAD"
+],
+[
+"Dark Ranger",
+"Mythic+",
+"C0PAAAAAAAAAAAAAAAAAAAAAAYzsNwAGwMsBZsAAgZGzMziZYGmxMjZmZYGzMjZmZsNzMMmhlhmBAAAAMDAAAzDMmZYmBEwsA2GAA"
+],
+[
+"Dark Ranger",
+"Delves",
+"C0PAAAAAAAAAAAAAAAAAAAAAAYzsNwAGwMsBZsAAgZGzMziZYGmxMjZmZYGzMzMjZYmZYMzwYaGAAAAwMAAAMGzgZGQwyMLgtBA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270173,
+"raid"
+],
+[
+270175,
+"raid"
+],
+[
+270165,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+270168,
+"raid"
+],
+[
+159617,
+"dungeon"
+],
+[
+273796,
+"dungeon"
+],
+[
+270164,
+"raid"
+],
+[
+250215,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+270166,
+"raid"
+],
+[
+273797,
+"dungeon"
+],
+[
+250228,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+],
+[
+246304,
+"crafting"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+274493,
+"delves"
+],
+[
+250214,
+"dungeon"
+],
+[
+250259,
+"dungeon"
+],
+[
+250225,
+"dungeon"
+],
+[
+158374,
+"dungeon"
+],
+[
+246305,
+"crafting"
+],
+[
+246307,
+"crafting"
+],
+[
+274496,
+"delves"
+],
+[
+274497,
+"delves"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+241340,
+"crafting"
+],
+[
+246306,
+"crafting"
+],
+[
+280123,
+"delves"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/30"
+},
+"254": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+268207,
+"",
+"Ula'tek"
+],
+[
+"Head",
+271492,
+"",
+"Catalyst the Nek'zali the Soulcoiler Head"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271490,
+"",
+"Catalyst the The Coiled Altar Shoulders"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271495,
+"",
+"Catalyst the Ula'tek Chest"
+],
+[
+"Wrist",
+244584,
+"",
+"Crafting/Misc"
+],
+[
+"Gloves",
+271493,
+"",
+"Catalyst the Ruby Life Pools Gloves"
+],
+[
+"Belt",
+244581,
+"",
+"Crafting/Misc"
+],
+[
+"Legs",
+271491,
+"",
+"Catalyst the The Coiled Altar Legs"
+],
+[
+"Boots",
+268233,
+"",
+"Sszorak"
+],
+[
+"Ring",
+251136,
+"",
+"Murder Row"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Trinket",
+270175,
+"",
+"Ula'tek"
+],
+[
+"Trinket",
+270168,
+"",
+"Ula'tek"
+]
+],
+"title": "Best in Slot Gear for Marksmanship Hunter"
+},
+{
+"rows": [
+[
+"",
+268207,
+"",
+""
+],
+[
+"",
+268253,
+"",
+""
+],
+[
+"",
+270164,
+"",
+""
+]
+],
+"title": "Bonus Rolling with Nebulous Voidcores"
+}
+],
+"builds": [
+[
+"Sentinel",
+"Single Target",
+"C4PAAAAAAAAAAAAAAAAAAAAAAwCMwMGzYZAMD2AAAAAAAAAzYmZmFzYmZMDGTzYwYbZmZmZmZmZWwsMYGAAwYmZMAmptNYA2YmtZMA"
+],
+[
+"Sentinel",
+"Raid AoE/Cleave",
+"C4PAAAAAAAAAAAAAAAAAAAAAAwCMwMGzYZAMD2AAAAAAAAAzYmZmFzYmZMDGTzYwstZmZmZmZmZWwsMMDAAwYmZMAmptNYA2YmtZMA"
+],
+[
+"Sentinel",
+"Mythic+",
+"C4PAAAAAAAAAAAAAAAAAAAAAAwGMwMGzYZAMD2AAAAAAAAAzYmZGbzYmZMDLjpZMYW22mZmZmZmZmFmZZYGAAAPwYMAMTbgBYjZ2mxA"
+],
+[
+"Sentinel",
+"Delves",
+"C4PAAAAAAAAAAAAAAAAAAAAAAwGMwMGzYZAMD2AAAAAAAAAzYmZGMmZGzMMmGGMLbLzMzMzMzMzCmthZAAAmZMGAmpNsMDwGzsNjB"
+],
+[
+"Dark Ranger",
+"Single Target",
+"C4PAAAAAAAAAAAAAAAAAAAAAAYzsMwAmgZYbAzCAAAAAAAAYGzMzsYGzMjZwYaGDGbLzMzMzMzMzCmlBDAAwYmZMzMDIbwAsxMbzYA"
+],
+[
+"Dark Ranger",
+"Mythic+",
+"C4PAAAAAAAAAAAAAAAAAAAAAAYzsMwAmgZYbAzCAAAAAAAAYGzMzYbGzMjZYZMNjBzymZMzMzMzMLMzywMAAAegxYmZmBEwAsxMbzYA"
+],
+[
+"Dark Ranger",
+"Delves",
+"C4PAAAAAAAAAAAAAAAAAAAAAAYzsMwAmgZYbAzCAAAAAAAAYGzMzgxMzYmhx0wgZZzMmZmZmZmFMbDzAAAMzYMzMzACWmBYjZ2mxA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270175,
+"raid"
+],
+[
+270168,
+"raid"
+],
+[
+270173,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+273796,
+"dungeon"
+],
+[
+159617,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+250225,
+"dungeon"
+],
+[
+250215,
+"dungeon"
+],
+[
+270165,
+"raid"
+],
+[
+273797,
+"dungeon"
+],
+[
+270164,
+"raid"
+],
+[
+270166,
+"raid"
+],
+[
+250214,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+193757,
+"dungeon"
+],
+[
+250228,
+"dungeon"
+],
+[
+158374,
+"dungeon"
+],
+[
+246304,
+"crafting"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+250259,
+"dungeon"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/09/02"
+},
+"255": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+268215,
+"",
+"Ula'tek"
+],
+[
+"Head",
+271492,
+"",
+"Tier Set|Voidscar Arena"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271490,
+"",
+"Tier Set|The Coiled Altar"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271876,
+"",
+"Ula'tek"
+],
+[
+"Wrist",
+244584,
+"",
+"Crafting"
+],
+[
+"Gloves",
+271493,
+"",
+"Tier Set|King's Rest"
+],
+[
+"Belt",
+244581,
+"",
+"Crafting"
+],
+[
+"Legs",
+271491,
+"",
+"Tier Set|The Coiled Altar"
+],
+[
+"Boots",
+268233,
+"",
+"Sszorak"
+],
+[
+"Ring",
+273792,
+"",
+"Altar of Fangs"
+],
+[
+"Ring",
+252258,
+"",
+"Voidscar Arena"
+],
+[
+"Trinket",
+270175,
+"",
+"Ula'tek"
+],
+[
+"Trinket",
+270173,
+"",
+"The Coiled Altar"
+]
+],
+"title": "Best in Slot Gear for Survival Hunter"
+}
+],
+"builds": [
+[
+"Pack Leader",
+"Raid",
+"C8PAAAAAAAAAAAAAAAAAAAAAAMgxMGWIbwMM0gFjZmxMWGAAAAAAmZmZmhZMmxMYMNDAAAwAgZssMzMLMzMzYmxAmZDAjxMWMAA"
+],
+[
+"Pack Leader",
+"Mythic+",
+"C8PAAAAAAAAAAAAAAAAAAAAAAMgxMG2ILwMM0gFzMzMzMWGAAAAAAmZmZmhZMmxMYMNDAAAwAgHYssMzYhZmZGzMGwMbAYMmZWMAA"
+],
+[
+"Pack Leader",
+"Delves",
+"C8PAAAAAAAAAAAAAAAAAAAAAAMgxMG2ILwMM0gFzMzMzMWGAAAAAAmZmZmhZMMmZYMNDAAAwAgHYssMzYhZmZGjxAmZDgZMmZWMAA"
+],
+[
+"Sentinel",
+"Raid",
+"C8PAAAAAAAAAAAAAAAAAAAAAAMWgBmxoxyAYmgNjZmxwyAAAAAAwMmZmhZMmxMYMNDAAAwAgZstMzMLmZmZGzMzAwMWAjxMWMAA"
+],
+[
+"Sentinel",
+"Mythic+",
+"C8PAAAAAAAAAAAAAAAAAAAAAAMWgBmxoxyAYmgtZmZmxMz2MAAAAAAmxMzMMjxMmBjpZAAAAGAgltZGLzYmxYMzAwM2wixwMLGAA"
+],
+[
+"Sentinel",
+"Mythic+",
+"C8PAAAAAAAAAAAAAAAAAAAAAAMWgBmxoxyAYmgtZmZmxMz2MAAAAAAmxMzMMjxMmBjpZAAAAGAgltZGbzYmxYMzAwM2wixwMLGAA"
+],
+[
+"Sentinel",
+"Delves",
+"C8PAAAAAAAAAAAAAAAAAAAAAAMWgBmxoxyAYmgtZmZmZmZ2mBAAAAAwMzMzMMjhxMDjpZAAAAGAgltZGLDzMGjxAwM2gZMMziBA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/27",
+"tiers": [
+{
+"items": [
+[
+270173,
+"raid"
+],
+[
+270175,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+270165,
+"raid"
+],
+[
+270164,
+"raid"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+159617,
+"dungeon"
+],
+[
+250214,
+"dungeon"
+],
+[
+250215,
+"dungeon"
+],
+[
+273796,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+250225,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+],
+[
+250259,
+"dungeon"
+],
+[
+270166,
+"raid"
+],
+[
+250228,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+158374,
+"dungeon"
+],
+[
+250245,
+"dungeon"
+],
+[
+270168,
+"raid"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/21"
+},
+"256": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+271092,
+"",
+""
+],
+[
+"Offhand",
+159667,
+"",
+""
+],
+[
+"Head",
+271874,
+"",
+""
+],
+[
+"Neck",
+268265,
+"",
+""
+],
+[
+"Shoulders",
+271553,
+"",
+""
+],
+[
+"Cloak",
+268253,
+"",
+""
+],
+[
+"Chest",
+271558,
+"",
+""
+],
+[
+"Wrist",
+239648,
+"",
+"Crafting"
+],
+[
+"Gloves",
+271556,
+"",
+"The Coiled Altar"
+],
+[
+"Belt",
+239649,
+"",
+"Crafting"
+],
+[
+"Legs",
+271554,
+"",
+""
+],
+[
+"Boots",
+268255,
+"",
+""
+],
+[
+"Ring",
+268266,
+"",
+""
+],
+[
+"Ring",
+252258,
+"",
+""
+],
+[
+"Trinket",
+270167,
+"",
+""
+],
+[
+"Trinket",
+270162,
+"",
+""
+]
+],
+"title": "Best in Slot Gear for Discipline Priest"
+}
+],
+"builds": [
+[
+"Oracle",
+"Raid",
+"CAQAAAAAAAAAAAAAAAAAAAAAAADsMGWmZmBDmZbmtZmZmxMDAAAAAAAAAgZYZGMzMDmxMgpZamBYmNMEGzyAMGsAAAjxMjBzAMzMTwA"
+],
+[
+"Oracle",
+"Mythic+",
+"CAQAAAAAAAAAAAAAAAAAAAAAAADsMDWmZMmBmZbmtZmZmxMDAAAAAAAAAgxYZGMzMjNjZGsZamYAmZDDhxsMAjBLAAwYmZGDmBYmZEMD"
+],
+[
+"Voidweaver",
+"Raid",
+"CAQAAAAAAAAAAAAAAAAAAAAAAADsMmxyYmBzgZbmtZmZmZmBAAAAAAAAAgZYZGMzMDzwMgpZamBzMAIAmtZbBM2MAAMGzMGmZwMDGBD"
+],
+[
+"Voidweaver",
+"Mythic+",
+"CAQAAAAAAAAAAAAAAAAAAAAAAADsMzMWYMGzgZzsNzMzMzMDAAAAAAAAAgxYZGMzMjNjZGsZamYwMDACgZb2WAjNDAAjZmZMYGMzgRwM"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270167,
+"raid"
+],
+[
+270169,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+270162,
+"raid"
+],
+[
+270164,
+"raid"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+251792,
+"delves"
+],
+[
+248583,
+"delves"
+],
+[
+230639,
+"delves"
+],
+[
+250214,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+273649,
+"dungeon"
+],
+[
+273796,
+"dungeon"
+],
+[
+250215,
+"dungeon"
+],
+[
+250255,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [],
+"tier": "D"
+}
+],
+"updated": "2026/08/18"
+},
+"257": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+271092,
+"",
+""
+],
+[
+"Offhand",
+268263,
+"",
+""
+],
+[
+"Head",
+271874,
+"",
+""
+],
+[
+"Neck",
+268265,
+"",
+""
+],
+[
+"Shoulders",
+271553,
+"",
+""
+],
+[
+"Cloak",
+251132,
+"",
+""
+],
+[
+"Chest",
+271558,
+"",
+""
+],
+[
+"Wrist",
+239648,
+"",
+"Crafting"
+],
+[
+"Gloves",
+271556,
+"",
+""
+],
+[
+"Belt",
+239649,
+"",
+"Crafting"
+],
+[
+"Legs",
+271554,
+"",
+""
+],
+[
+"Boots",
+268218,
+"",
+""
+],
+[
+"Ring",
+268252,
+"",
+""
+],
+[
+"Ring",
+251148,
+"",
+""
+],
+[
+"Trinket",
+270164,
+"",
+""
+],
+[
+"Trinket",
+270162,
+"",
+""
+]
+],
+"title": "Best in Slot Gear for Holy Priest"
+}
+],
+"builds": [
+[
+"Archon",
+"Raid",
+"CEQAAAAAAAAAAAAAAAAAAAAAAwYAAAAAAAgZmlxMjZmZYmZYZGmBAAAwwsMDzMzMYGzAYmaAgZWMTmFDAMGsZmZ2A0MMjxwMz2yAMDMA"
+],
+[
+"Archon",
+"Mythic+",
+"CEQAAAAAAAAAAAAAAAAAAAAAAwYAAAAAAAMmxsMYMzMDzMDLzMzMAAAAGzsMDmZmBjZGDYmCAMzmZysZAgxgNzM2A0MmZMGmZ2WGgBMA"
+],
+[
+"Archon",
+"Delves",
+"CEQAAAAAAAAAAAAAAAAAAAAAAwYAAAAAAAMmxsMmxMzYYmBLzMzMAAAAGmlZGzMzM2MmZMbLYmCAMziZysZAgxgNzM2A0wMMGMz2yAMgB"
+],
+[
+"Oracle",
+"Raid",
+"CEQAAAAAAAAAAAAAAAAAAAAAAADAAAAAAYBmZWGzMmZMMDzsMzYGAAAAzYWmBzMzwMMDgZqBwMbYIMmlBYMwiZmZBQzYMGDzMAzMzAD"
+],
+[
+"Oracle",
+"Mythic+",
+"CEQAAAAAAAAAAAAAAAAAAAAAAADAAAAAAgZmxsMmZMzYYGYZmZmBAAAwYmlZwMzM2mxMDgZKAmZDDhxsMAjBWMzMLAaGzMGDmBYmZAD"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/24",
+"tiers": [
+{
+"items": [
+[
+270162,
+"raid"
+],
+[
+270164,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+270167,
+"raid"
+],
+[
+270169,
+"raid"
+],
+[
+250214,
+"dungeon"
+],
+[
+250215,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+248583,
+"delves"
+],
+[
+251792,
+"delves"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+230639,
+"delves"
+],
+[
+250255,
+"dungeon"
+],
+[
+273649,
+"dungeon"
+],
+[
+273796,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [],
+"tier": "D"
+}
+],
+"updated": "2026/08/24"
+},
+"258": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+271092,
+"",
+"Ula'tek"
+],
+[
+"Offhand",
+268197,
+"",
+"Entombed Sentinels"
+],
+[
+"Head",
+271555,
+"",
+"Ula'tek"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+239045,
+"",
+"King's Rest"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271558,
+"",
+"Vashnik the Malignant"
+],
+[
+"Wrist",
+239648,
+"",
+"Crafting/Misc"
+],
+[
+"Gloves",
+271556,
+"",
+"The Coiled Altar"
+],
+[
+"Belt",
+239649,
+"",
+"Crafting/Misc"
+],
+[
+"Legs",
+271554,
+"",
+"Den of Nalorakk"
+],
+[
+"Boots",
+268255,
+"",
+"The Coiled Altar"
+],
+[
+"Ring",
+252258,
+"",
+"Voidscar Arena"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Trinket",
+270167,
+"",
+"Nymrissa Wavecaller"
+],
+[
+"Trinket",
+250215,
+"",
+"Murder Row"
+]
+],
+"title": "Best in Slot Gear for Shadow Priest"
+}
+],
+"builds": [
+[
+"Archon",
+"Single Target",
+"CIQAAAAAAAAAAAAAAAAAAAAAAMMDzAAAAAAAAAAAAwMLmxMbzMGz2MGzw2MzYmZGbIzYxMNAzAMzmZY2MAkxYBAzMIjZmZMbMz2yAMTMA"
+],
+[
+"Archon",
+"Raid Cleave",
+"CIQAAAAAAAAAAAAAAAAAAAAAAMMDDAAAAAAAAAAAAmZxMmZbmxMz2MGzw2MzYmZGbIzYxMNAzAMzmZY2MAkxYBAzMIjZmZMbMz2yAMTMA"
+],
+[
+"Archon",
+"Mythic+",
+"CIQAAAAAAAAAAAAAAAAAAAAAAMMDDAAAAAAAAAAAAmZxMmZbmxMzyMGD2mZGzMzYDZGLbz0AMDwMbmhZzAQGjFAMzgMmZmxsxMbLDwMxA"
+],
+[
+"Voidweaver",
+"Single Target",
+"CIQAAAAAAAAAAAAAAAAAAAAAAMMjZGAAAAAAAAAAAAegZxMmZbmBz2MzYG2mZGzMzYDZGLmpBYmZGAIAz2stAmNGAYkxMzMmtxMYmBzEDA"
+],
+[
+"Voidweaver",
+"Raid Cleave",
+"CIQAAAAAAAAAAAAAAAAAAAAAAMMjZGAAAAAAAAAAAAMLmxMbzMMz2MzYG2mZGzMzYDZGLmpBYmZGAIAz2stAmNGAYkxMzMmtxMYmBzEDA"
+],
+[
+"Voidweaver",
+"Mythic+",
+"CIQAAAAAAAAAAAAAAAAAAAAAAMMDDAAAAAAAAAAAAmZxMmZbmxMzyMzYG2mZGzMzYDZGLmpBYmZGAIAz2stAmNGAYkxMzMmNmBzMYmYA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [],
+"tier": "S"
+},
+{
+"items": [
+[
+250215,
+"dungeon"
+],
+[
+273796,
+"dungeon"
+],
+[
+270167,
+"raid"
+],
+[
+270164,
+"raid"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+270169,
+"raid"
+],
+[
+250214,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+248583,
+"delves"
+],
+[
+251792,
+"delves"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+249343,
+"raid"
+],
+[
+250224,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+],
+[
+270170,
+"dungeon"
+],
+[
+270161,
+"raid"
+]
+],
+"tier": "D"
+},
+{
+"items": [
+[
+270168,
+"raid"
+]
+],
+"tier": "F"
+}
+],
+"updated": "2026/08/31"
+},
+"259": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+271093,
+"",
+"Ula'tek"
+],
+[
+"Offhand",
+237837,
+"",
+"Crafting/Misc"
+],
+[
+"Head",
+271510,
+"",
+"Ula'tek"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271508,
+"",
+"Voidscar Arena"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271513,
+"",
+"Den of Nalorakk"
+],
+[
+"Wrist",
+244576,
+"",
+"Crafting/Misc"
+],
+[
+"Gloves",
+271511,
+"",
+"Entombed Sentinels"
+],
+[
+"Belt",
+268256,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271509,
+"",
+"The Coiled Altar"
+],
+[
+"Boots",
+251153,
+"",
+"Den of Nalorakk"
+],
+[
+"Ring",
+273792,
+"",
+"Altar of Fangs"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Trinket",
+270175,
+"",
+"Ula'tek"
+],
+[
+"Trinket",
+270168,
+"",
+"Ula'tek"
+]
+],
+"title": "Best in Slot Gear for Assassination Rogue"
+},
+{
+"rows": [
+[
+"",
+270168,
+"",
+""
+]
+],
+"title": "Bonus Rolling with Nebulous Voidcores"
+}
+],
+"builds": [
+[
+"Deathstalker",
+"Raid Single Target",
+"CMQAAAAAAAAAAAAAAAAAAAAAAYmlxsNDGAAAAAYWGsNDAAAAAottZmZmZmxYZmZmtZWmZmZMjZMGzMGGgNzyADYJYZYCMsAmZAGjB"
+],
+[
+"Deathstalker",
+"Raid",
+"CMQAAAAAAAAAAAAAAAAAAAAAAYmlxsZwAAAAAAzygtZAAAAAAttNzMzMzMGLzMzsNzyMz8AjxMjxYmZmxAsZWGYALBLDTghFwMDwYMA"
+],
+[
+"Deathstalker",
+"Mythic+",
+"CMQAAAAAAAAAAAAAAAAAAAAAAYmlZmFDAAAAAAzygtZAAAAAAttNzMzMzMGLzMzsNzyMz8AmxMjxMmZMGgNzyADYJYZYCMsYwMDgZ8BA"
+],
+[
+"Fatebound",
+"Raid Single Target",
+"CMQAAAAAAAAAAAAAAAAAAAAAAYmlxsNDGAAAAAYWGsNDAAAAAottZmZmZmxYZmZmtZWmZmZMjZMGzMGGADsAzY0Y2AZbAbGAMzMYA"
+],
+[
+"Fatebound",
+"Raid",
+"CMQAAAAAAAAAAAAAAAAAAAAAAYmlxsZwAAAAAAzygtZAAAAAAttNzMzMzMGLzMzsNzyMz8AjxMjxYmZmxAYgFYGjGzGIbDYzAgZmBD"
+],
+[
+"Fatebound",
+"Mythic+",
+"CMQAAAAAAAAAAAAAAAAAAAAAAYmlZmFDAAAAAAzygtZAAAAAAttNzMzMzMGLzMzsNzyMz8AmxMjxMmZMGADsAzY0YWAZbAbGAMzMDfA"
+]
+],
+"err": [],
+"talentUpdated": "2026/09/01",
+"tiers": [
+{
+"items": [
+[
+270175,
+"raid"
+],
+[
+270168,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+193701,
+"dungeon"
+],
+[
+270165,
+"raid"
+],
+[
+270173,
+"raid"
+],
+[
+270164,
+"raid"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+159617,
+"dungeon"
+],
+[
+250215,
+"dungeon"
+],
+[
+250228,
+"dungeon"
+],
+[
+273796,
+"dungeon"
+],
+[
+250225,
+"dungeon"
+],
+[
+270166,
+"raid"
+],
+[
+250259,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+193757,
+"dungeon"
+],
+[
+273797,
+"dungeon"
+],
+[
+250214,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+158374,
+"dungeon"
+],
+[
+250462,
+"delves"
+],
+[
+250245,
+"dungeon"
+],
+[
+251783,
+"delves"
+],
+[
+251782,
+"delves"
+],
+[
+251792,
+"delves"
+],
+[
+251791,
+"delves"
+],
+[
+251787,
+"delves"
+],
+[
+251784,
+"delves"
+],
+[
+251785,
+"delves"
+],
+[
+280123,
+"delves"
+],
+[
+274496,
+"delves"
+],
+[
+274497,
+"delves"
+],
+[
+274493,
+"delves"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/29"
+},
+"260": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+268209,
+"",
+"The Coiled Altar"
+],
+[
+"Offhand",
+271093,
+"",
+"Ula'tek"
+],
+[
+"Head",
+271875,
+"",
+"Ula'tek"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271508,
+"",
+"Tier Set"
+],
+[
+"Cloak",
+268248,
+"",
+"Nek'zali the Soulcoiler"
+],
+[
+"Chest",
+271513,
+"",
+"Tier Set"
+],
+[
+"Wrist",
+268240,
+"",
+"Nek'zali the Soulcoiler"
+],
+[
+"Gloves",
+271511,
+"",
+"Tier Set"
+],
+[
+"Belt",
+244573,
+"",
+"Crafting/Misc"
+],
+[
+"Legs",
+271509,
+"",
+"Tier Set"
+],
+[
+"Boots",
+244569,
+"",
+"Crafting/Misc"
+],
+[
+"Ring",
+268266,
+"",
+"Nymrissa Wavecaller"
+],
+[
+"Ring",
+268252,
+"",
+"Sszorak"
+],
+[
+"Trinket",
+270173,
+"",
+"The Coiled Altar"
+],
+[
+"Trinket",
+270175,
+"",
+"Ula'tek"
+]
+],
+"title": "Best in Slot Gear for Outlaw Rogue"
+}
+],
+"builds": [
+[
+"Trickster",
+"Raid",
+"CQQAAAAAAAAAAAAAAAAAAAAAAAgx2MMzMmZmtZmZmZMmF4BmZbaZw2MAAAAAAbbzMzwMzMziZmZbAAAAYmBAjZxwQGYWYhWYjBYmBDMA"
+],
+[
+"Trickster",
+"Mythic+",
+"CQQAAAAAAAAAAAAAAAAAAAAAAAgx2MMzMjZmtZmZMzMzsAmZbaZw2MAAAAAAbbzMzwMzMziZmZbAAAAYmBAjZxwQGYWYhWYjBYmBDMA"
+],
+[
+"Trickster",
+"Delves",
+"CQQAAAAAAAAAAAAAAAAAAAAAAAgx2MMzMjZmtZmZMzMzsAmZbaZw2MAAAAAA2mZmhZmZmFzMz2AAAAwYAwYWMMkBmFWoF2YAmZwMYG"
+],
+[
+"Fatebound",
+"Raid",
+"CQQAAAAAAAAAAAAAAAAAAAAAAAgx2MMzMmZmtZmZmZMmF4BmZbaZw2MAAAAAAbbzMzwMzMziZmZbAAAAYmBMwGMjRjZDw2EWYAwMzAD"
+],
+[
+"Fatebound",
+"Mythic+",
+"CQQAAAAAAAAAAAAAAAAAAAAAAAgx2MMzMjZmtZmZMzMzsAmZbaZw2MAAAAAAbbzMzwMzMziZmZbAAAAYmBMwGMjRjZDw2EWYAgZGYA"
+],
+[
+"Fatebound",
+"Delves",
+"CQQAAAAAAAAAAAAAAAAAAAAAAAgx2MMzMjZmtZmZMzMzsAmZbaZw2MAAAAAA2mZmhZmZmFzMz2AAAAwYADsBzY0Y2AsNhFGAMzMDmB"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270173,
+"raid"
+],
+[
+270175,
+"raid"
+],
+[
+270164,
+"raid"
+],
+[
+270165,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+159617,
+"dungeon"
+],
+[
+273796,
+"dungeon"
+],
+[
+250225,
+"dungeon"
+],
+[
+250214,
+"dungeon"
+],
+[
+250215,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+273797,
+"dungeon"
+],
+[
+250228,
+"dungeon"
+],
+[
+158374,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+193757,
+"dungeon"
+],
+[
+250245,
+"dungeon"
+],
+[
+270166,
+"raid"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+250259,
+"dungeon"
+],
+[
+270168,
+"raid"
+],
+[
+250462,
+"delves"
+],
+[
+246305,
+"crafting"
+],
+[
+246304,
+"crafting"
+],
+[
+246306,
+"crafting"
+],
+[
+246307,
+"crafting"
+],
+[
+241340,
+"crafting"
+],
+[
+251783,
+"delves"
+],
+[
+251782,
+"delves"
+],
+[
+251792,
+"delves"
+],
+[
+251791,
+"delves"
+],
+[
+251787,
+"delves"
+],
+[
+251784,
+"delves"
+],
+[
+251785,
+"delves"
+],
+[
+274493,
+"delves"
+],
+[
+280123,
+"delves"
+],
+[
+274496,
+"delves"
+],
+[
+274497,
+"delves"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/09/01"
+},
+"261": {
+"bis": [
+{
+"rows": [
+[
+"Main-Hand",
+271093,
+"",
+"Ula'tek"
+],
+[
+"Off-Hand",
+237837,
+"",
+"Crafting/Misc"
+],
+[
+"Head",
+271510,
+"",
+"Tier Set - Ula'tek"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271508,
+"",
+"Tier Set - Vashnik the Malignant"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271513,
+"",
+"Tier Set - Nek'zali the Soulcoiler"
+],
+[
+"Wrist",
+244576,
+"",
+"Crafting/Misc"
+],
+[
+"Gloves",
+271511,
+"",
+"Tier Set - Sszorak"
+],
+[
+"Belt",
+268256,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271509,
+"",
+"The Coiled Altar"
+],
+[
+"Boots",
+159304,
+"",
+"King's Rest"
+],
+[
+"Ring",
+251194,
+"",
+"Blinding Vale"
+],
+[
+"Ring",
+162544,
+"",
+"Temple of Sethraliss"
+],
+[
+"Trinket",
+270173,
+"",
+"The Coiled Altar"
+],
+[
+"Trinket",
+270175,
+"",
+"Ula'tek"
+]
+],
+"title": "Best in Slot Gear for Subtlety Rogue"
+}
+],
+"builds": [
+[
+"Deathstalker",
+"Raid",
+"CUQAAAAAAAAAAAAAAAAAAAAAAAgx2MAAAAAwsMGLTMbbjxMDDzMzMzw8AbzYGbbzMzMzMjBjZ2GAAAAGMmFzyADYBsMMhMLYGmZAmxA"
+],
+[
+"Deathstalker",
+"Mythic+",
+"CUQAAAAAAAAAAAAAAAAAAAAAAAgx2MAAAAAwsMGLTMbbjxMDjZmZmZGGbzYGbbzMzMzMjBjZ2GAAAAGMmFzyADYBsMMhMLYGmZAmxA"
+],
+[
+"Trickster",
+"Raid",
+"CUQAAAAAAAAAAAAAAAAAAAAAAAgx2MAAAAAwsMGLTMbbjxMDDzMzMzw8AbzYGbbzMzMzMjBjZ2GAAAAGMGwY2MMwAziWoFbYGwMDmxA"
+],
+[
+"Trickster",
+"Mythic+",
+"CUQAAAAAAAAAAAAAAAAAAAAAAAgx2MAAAAAwsMGLTMbLjxMDDzMzMzw8AbzYGbbzMzMzMjBjZ2GAAAAGMGwY2MMwAziWoFbYGwMDmxA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/20",
+"tiers": [
+{
+"items": [
+[
+270175,
+"raid"
+],
+[
+270173,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+270164,
+"raid"
+],
+[
+270165,
+"raid"
+],
+[
+273797,
+"dungeon"
+],
+[
+250215,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+250214,
+"dungeon"
+],
+[
+270166,
+"raid"
+],
+[
+250259,
+"dungeon"
+],
+[
+159617,
+"dungeon"
+],
+[
+251785,
+"dungeon"
+],
+[
+270168,
+"raid"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+273796,
+"dungeon"
+],
+[
+251792,
+"delves"
+],
+[
+250225,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+],
+[
+274493,
+"delves"
+],
+[
+158374,
+"dungeon"
+],
+[
+250228,
+"dungeon"
+],
+[
+248583,
+"delves"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+265657,
+"delves"
+],
+[
+251783,
+"raid"
+],
+[
+246304,
+"crafting"
+],
+[
+241340,
+"crafting"
+],
+[
+246305,
+"crafting"
+],
+[
+246306,
+"crafting"
+],
+[
+246307,
+"crafting"
+],
+[
+274497,
+"delves"
+],
+[
+274496,
+"delves"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/24"
+},
+"262": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+271092,
+"",
+"Ula'tek"
+],
+[
+"Offhand",
+268262,
+"",
+"Nymrissa Wavecaller"
+],
+[
+"Head",
+271483,
+"",
+"Tier Set"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271481,
+"",
+"Tier Set"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271486,
+"",
+"Tier Set"
+],
+[
+"Wrist",
+244584,
+"",
+"Crafting"
+],
+[
+"Gloves",
+271484,
+"",
+"Tier Set"
+],
+[
+"Belt",
+268254,
+"",
+"Vashnik the Malignant"
+],
+[
+"Legs",
+271482,
+"",
+"Tier Set"
+],
+[
+"Boots",
+244577,
+"",
+"Crafting"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Ring",
+252258,
+"",
+"Voidscar Arena"
+],
+[
+"Trinket",
+270164,
+"",
+"The Lost Explorers"
+],
+[
+"Trinket",
+273796,
+"",
+"Altar of Fangs"
+]
+],
+"title": "Best in Slot Gear for Elemental Shaman"
+}
+],
+"builds": [
+[
+"Farseer",
+"Raid",
+"CYQAAAAAAAAAAAAAAAAAAAAAAAAAAAzMbLzMmZmZZbZMMjBAAAAsYmNYADY2YCZWAgZZmZGjtFTYmZZsMzMzYYZWmxiZGmZZAADAMzYYYA"
+],
+[
+"Farseer",
+"Mythic+",
+"CYQAAAAAAAAAAAAAAAAAAAAAAAAAAAzMbLzMGjZZZZMmhBAAAAsYmNYADY2YCZWAgZZmZGjtFTbMzYsMzMzYYZWMWmZGzMLAAzAgZGDDD"
+],
+[
+"Farseer",
+"Delves",
+"CYQAAAAAAAAAAAAAAAAAAAAAAAAAAAzMLLzMmZmZbZZMmxMDAAAAsZmNYADY2YCZWAgZZmZGjtFTYmxYZmZmZmxiFjFMmZWAAGAYmxwwA"
+],
+[
+"Stormbringer",
+"Mythic+",
+"CYQAAAAAAAAAAAAAAAAAAAAAAAAAAAzMLLzMzMzMbbLDmxMDAAAAA2MjhNYBmRDN2AgZZmZGjtFTYmxYZmZmZmxiFjFjhZWAAGAzMwwwA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/21",
+"tiers": [
+{
+"items": [
+[
+273796,
+"dungeon"
+],
+[
+250215,
+"dungeon"
+],
+[
+270164,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+270167,
+"raid"
+],
+[
+250214,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+246304,
+"crafting"
+],
+[
+250259,
+"dungeon"
+],
+[
+270170,
+"raid"
+],
+[
+250224,
+"dungeon"
+],
+[
+273649,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+246305,
+"crafting"
+],
+[
+270161,
+"raid"
+],
+[
+273794,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+270169,
+"raid"
+],
+[
+270168,
+"raid"
+],
+[
+158368,
+"dungeon"
+],
+[
+246306,
+"crafting"
+],
+[
+241340,
+"crafting"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/17"
+},
+"263": {
+"bis": [
+{
+"rows": [
+[
+"Main Hand",
+268209,
+"",
+"The Coiled Altar"
+],
+[
+"Off Hand",
+237850,
+"",
+""
+],
+[
+"Head",
+271483,
+"",
+"Catalyst \u2013 Voidscar Arena"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271481,
+"",
+"Catalyst \u2013 The Coiled Altar"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271486,
+"",
+"Catalyst \u2013 Ula'tek"
+],
+[
+"Wrist",
+244584,
+"",
+""
+],
+[
+"Gloves",
+271484,
+"",
+"Token \u2013 Entombed Sentinels"
+],
+[
+"Belt",
+268254,
+"",
+"Vashnik"
+],
+[
+"Legs",
+271482,
+"",
+"Catalyst \u2013 The Coiled Altar"
+],
+[
+"Boots",
+268258,
+"",
+"The Lost Explorers"
+],
+[
+"Ring 1",
+273792,
+"",
+"Altar of Fangs"
+],
+[
+"Ring 2",
+268252,
+"",
+"Sszorak"
+],
+[
+"Trinket 1",
+270175,
+"",
+"Ula'tek"
+],
+[
+"Trinket 2",
+270173,
+"",
+"The Coiled Altar"
+]
+],
+"title": "Best in Slot Enhancement Shaman Gear"
+},
+{
+"rows": [
+[
+"",
+270168,
+"",
+""
+],
+[
+"",
+268209,
+"",
+""
+],
+[
+"",
+270164,
+"",
+""
+]
+],
+"title": "Bonus Rolling with Nebulous Voidcores"
+}
+],
+"builds": [
+[
+"Stormbringer",
+"Raid",
+"CcQAAAAAAAAAAAAAAAAAAAAAAMzMzgZmZmZmhZmZAAAAAAAAA2AsZGDLkFYGGawCAzyMmZGLLzAzMbsMzMzwwYGAgZYMzYmJwMDGMGA"
+],
+[
+"Stormbringer",
+"Cleave",
+"CcQAAAAAAAAAAAAAAAAAAAAAAMzMzgZmZmZmhZmZAAAAAAAAA2AsZGDbkFYGGawCAzyMmZGLLzAzMbsMzMzwwYGAgZYMzYmJwMDGMGA"
+],
+[
+"Stormbringer",
+"Mythic+",
+"CcQAAAAAAAAAAAAAAAAAAAAAAMzMzgZmZmZmhZmZAAAAAAAAA2AsZGDbkFYGGawCAzyMmxYZxYjZmtxyMzMzgFmBAYGGzMMTgZGMYMA"
+],
+[
+"Stormbringer",
+"Delves",
+"CcQAAAAAAAAAAAAAAAAAAAAAAMzMzgZmZmZmhZmZAAAAAAAAA2AsZGDbkNYGGawCAzyMmxYZZGYmxYxMzMjxCzAAMDjZGzMBmZwgxA"
+],
+[
+"Totemic",
+"Raid",
+"CcQAAAAAAAAAAAAAAAAAAAAAAMzMzMzMzMzMzMzMzYGAAAAAAAAAsAbwMW0YbAMTwGAzyMmZGLLzAzMbsMzMzwwYGAADwYmJmZAgxA"
+],
+[
+"Totemic",
+"Cleave",
+"CcQAAAAAAAAAAAAAAAAAAAAAAMzMzMzMzMzMzMzMzYGAAAAAAAAAsAbwMW0YbAMTwGAzyMmZGLLzAzMbsMzMzwwYGAAgxYmJmZAgxA"
+],
+[
+"Totemic",
+"Mythic+",
+"CcQAAAAAAAAAAAAAAAAAAAAAAMzMzMjZmZmZmZmZGzAAAAAAAAAgFYDmxiGbDgZC2AYWmxMGLLGbMzsNWm5BmZGsMmBAAYMmRMzAMYMA"
+],
+[
+"Totemic",
+"Delves",
+"CcQAAAAAAAAAAAAAAAAAAAAAAMzMjZmZmZmZmZmZGzAAAAAAAAAgFYDmxiGbDgZC2AYWmxMGLLzAzMGLmZmZMWYGAAgxYmJmZAGMGA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/22",
+"tiers": [
+{
+"items": [
+[
+270175,
+"raid"
+],
+[
+270173,
+"raid"
+],
+[
+270164,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+273796,
+"dungeon"
+],
+[
+270165,
+"raid"
+],
+[
+250225,
+"dungeon"
+],
+[
+250228,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+250215,
+"dungeon"
+],
+[
+250214,
+"dungeon"
+],
+[
+159617,
+"dungeon"
+],
+[
+248583,
+"delves"
+],
+[
+251792,
+"delves"
+],
+[
+270166,
+"raid"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+270168,
+"raid"
+],
+[
+265657,
+"delves"
+],
+[
+274493,
+"delves"
+],
+[
+250259,
+"dungeon"
+],
+[
+158374,
+"dungeon"
+],
+[
+273797,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+251785,
+"delves"
+],
+[
+274496,
+"delves"
+],
+[
+274497,
+"delves"
+],
+[
+246304,
+"crafting"
+],
+[
+241340,
+"crafting"
+]
+],
+"tier": "D"
+},
+{
+"items": [
+[
+251784,
+"delves"
+],
+[
+251783,
+"delves"
+],
+[
+246306,
+"crafting"
+],
+[
+246307,
+"crafting"
+],
+[
+246305,
+"crafting"
+]
+],
+"tier": "F"
+}
+],
+"updated": "2026/08/24"
+},
+"264": {
+"bis": [
+{
+"rows": [
+[
+"Helm",
+271483,
+"",
+"Raid | Vault"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek (Raid)"
+],
+[
+"Shoulders",
+271481,
+"",
+"The Coiled Altar (Raid) & Catalyst"
+],
+[
+"Cape",
+268248,
+"",
+"Nek'zali the Soulcoiler (Raid)"
+],
+[
+"Chest",
+271486,
+"",
+"Kings Rest & Catalyst"
+],
+[
+"Bracers",
+159380,
+"",
+"Temple of Sethraliss"
+],
+[
+"Gloves",
+271484,
+"",
+"The Blinding Vale & Catalyst"
+],
+[
+"Belt",
+268216,
+"",
+"Nek'zali the Soulcoiler (Raid)"
+],
+[
+"Legs",
+271482,
+"",
+"Temple of Sethraliss & Catalyst"
+],
+[
+"Boots",
+251125,
+"",
+"Murder Row"
+],
+[
+"Ring",
+268252,
+"",
+"Sszorak (Raid)"
+],
+[
+"Ring",
+251148,
+"",
+"Den of Nalorakk"
+],
+[
+"Trinkets",
+270162,
+"",
+"Nek'zali the Soulcoiler (Raid)"
+],
+[
+"Trinkets",
+270167,
+"",
+"Nymrissa Wavebinder (Raid)"
+],
+[
+"1h Weapon",
+271092,
+"",
+"Ula'tek (Raid)"
+],
+[
+"Shield",
+268196,
+"",
+"The Lost Explorers (Raid)"
+]
+],
+"title": "Best in Slot Gear for Restoration Shaman"
+},
+{
+"rows": [
+[
+"",
+237831,
+"",
+"Your most important slot is a weapon, but this season you are guaranteed to get a very strong weapon by week 4 at the latest due to your bonus rolls on Ula'tek. Crafting a weapon that you know you will replace in the first month of the season would be a waste of myth crests, so unless you really need to secure some extra power very early on your best choice is a shield."
+],
+[
+"",
+244584,
+"",
+"Your second craft is a bit less valuable than the first due to other slots being less relevant than your weapon. You still want a second embellishment but the specific timing of when you craft it can vary depending on how lucky you get with your bonus rolls."
+]
+],
+"title": "Midnight Season 2 Gearing Strategy for Restoration Shaman"
+},
+{
+"rows": [
+[
+"",
+237831,
+"",
+"Your most important slot is a weapon, but this season you are guaranteed to get a very strong weapon due to your bonus rolls. Crafting a weapon that you know you will replace in the first month of the season would be a waste of myth crests, so your best choice is a shield."
+],
+[
+"",
+244584,
+"",
+"Your second craft is a bit less valuable than the first due to other slots being less relevant than your weapon. You still want a second embellishment but the specific timing of when you craft it can vary depending on how lucky you get with your bonus rolls."
+]
+],
+"title": "Midnight Season 2 Gearing Strategy for Restoration Shaman"
+},
+{
+"rows": [
+[
+"",
+268265,
+"",
+""
+],
+[
+"",
+270162,
+"",
+""
+]
+],
+"title": "Bonus Rolling with Nebulous Voidcores"
+}
+],
+"builds": [
+[
+"Farseer",
+"Raid",
+"CgQAAAAAAAAAAAAAAAAAAAAAAAAAAgBAAAAzMzsssNjZGjZGzMMWMzGMgJY2YCMWMDzgtxYmmtlZmNzYWYxMzMmhZZAAAgZmBAzMwgZA"
+],
+[
+"Farseer",
+"Mythic+",
+"CgQAAAAAAAAAAAAAAAAAAAAAAAAAAgBAAAAzMzsssNzMzMjZGjZMWMzCMgJYWYCMWwMDmtZGjmtlZmNzYWYxYmxwysMAAAwMzAgZGYwM"
+],
+[
+"Totemic",
+"Raid",
+"CgQAAAAAAAAAAAAAAAAAAAAAAAAAAgBAAAAzMzsssNjZGjZGzMDjFYDmxiGbDIzAbmhZw2YMTz2yMzmZMLsYegZGzwsMAAAwMzgZGAYwM"
+],
+[
+"Totemic",
+"Mythic+",
+"CgQAAAAAAAAAAAAAAAAAAAAAAAAAAgBAAAAzMzsstMzMzMjZGjZgFYDmxiGbDIzAbMzMY2mZMa2WmZ2MjZhFjZGDLzyAAAAzMDmZAgBzA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/27",
+"tiers": [
+{
+"items": [
+[
+270162,
+"raid"
+],
+[
+270164,
+"raid"
+],
+[
+270167,
+"raid"
+],
+[
+270169,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+193757,
+"dungeon"
+],
+[
+250215,
+"dungeon"
+],
+[
+248583,
+"delves"
+],
+[
+251792,
+"delves"
+],
+[
+250255,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+250214,
+"dungeon"
+],
+[
+273796,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+250248,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+273649,
+"dungeon"
+],
+[
+270171,
+"raid"
+],
+[
+250254,
+"dungeon"
+],
+[
+273649,
+"dungeon"
+]
+],
+"tier": "D"
+},
+{
+"items": [
+[
+193748,
+"dungeon"
+],
+[
+264701,
+"delves"
+]
+],
+"tier": "F"
+}
+],
+"updated": "2026/08/26"
+},
+"265": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+271092,
+"",
+"Ula'tek"
+],
+[
+"Offhand",
+273779,
+"",
+""
+],
+[
+"Head",
+271874,
+"",
+"Ula'tek"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271544,
+"",
+"The Lost Explorers"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271549,
+"",
+"Vashnik the Malignant"
+],
+[
+"Wrist",
+239648,
+"",
+"Crafting"
+],
+[
+"Gloves",
+271547,
+"",
+"Entombed Sentinels"
+],
+[
+"Belt",
+239649,
+"",
+"Crafting"
+],
+[
+"Legs",
+271545,
+"",
+"Sszorak"
+],
+[
+"Boots",
+268255,
+"",
+"The Coiled Altar"
+],
+[
+"Ring",
+268252,
+"",
+"Sszorak"
+],
+[
+"Ring",
+273792,
+"",
+"The Coiled Altar"
+],
+[
+"Trinket",
+270164,
+"",
+"The Lost Explorers"
+],
+[
+"Trinket",
+273649,
+"",
+""
+]
+],
+"title": "Best in Slot Gear for Affliction Warlock"
+}
+],
+"builds": [
+[
+"Hellcaller",
+"Raid",
+"CkQAAAAAAAAAAAAAAAAAAAAAAwMzMzoZhhZmZmlBAAYmZZWmZmlxAAWgBmFjGzAysAWGAAAmBAAmZAzMjhZGmZMzMGMzMzAAmBG"
+],
+[
+"Hellcaller",
+"Raid Cleave",
+"CkQAAAAAAAAAAAAAAAAAAAAAAwMmZGNbM2mZGzyAAAmZmlZxMzyYAALwAziRjZAZ2ALDAAAzAAAzMYMjZmtxwYmZmZYYmZGAgZgB"
+],
+[
+"Hellcaller",
+"Mythic+",
+"CkQAAAAAAAAAAAAAAAAAAAAAAwMegZGNbzM2mZGz2AAAmZmlZxMzyYAALwAziRjZAZ2ALDAAAzAAAzMYMjxsNGzYmZmZYYmZGAgBMA"
+],
+[
+"Soul Harvester",
+"Raid",
+"CkQAAAAAAAAAAAAAAAAAAAAAAwMzMzoZhhZmZmlBAAYmZZ2mZmlxAAjllBGwEMDbBG2GAAAmBAAwMDzMjBzwMzMzMGMzMzAAmBG"
+],
+[
+"Soul Harvester",
+"Raid Cleave",
+"CkQAAAAAAAAAAAAAAAAAAAAAAwMmZGNbM2mZGzyAAAmZmlZxMzyYAgx2yADYCmhtADbDAAAzAAAYmZMjZmtxwYmZmZYYmZGAgZgB"
+],
+[
+"Soul Harvester",
+"Mythic+",
+"CkQAAAAAAAAAAAAAAAAAAAAAAwMjZGNbmx2MzYWGAAwMzsMLmZ2GDAM2WGYATwMsFYYbAAAYGAAAzMjZMzsNGzYMzMzYYmZGAgBMA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270164,
+"raid"
+],
+[
+273649,
+"dungeon"
+],
+[
+273796,
+"dungeon"
+],
+[
+270167,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+250214,
+"dungeon"
+],
+[
+270170,
+"raid"
+],
+[
+250259,
+"dungeon"
+],
+[
+250215,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+250224,
+"dungeon"
+],
+[
+270169,
+"raid"
+],
+[
+193757,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+270161,
+"raid"
+],
+[
+273794,
+"dungeon"
+],
+[
+274493,
+"delves"
+],
+[
+251792,
+"delves"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+251786,
+"delves"
+],
+[
+274497,
+"delves"
+],
+[
+274496,
+"delves"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/23"
+},
+"266": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+271092,
+"",
+"Ula'tek"
+],
+[
+"Offhand",
+268197,
+"",
+"Entombed Sentinels"
+],
+[
+"Head",
+271874,
+"",
+"Ula'tek"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271544,
+"",
+"The Lost Explorers"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271549,
+"",
+"Vashnik the Malignant"
+],
+[
+"Wrist",
+239648,
+"",
+"Crafting"
+],
+[
+"Gloves",
+271547,
+"",
+"Entombed Sentinels"
+],
+[
+"Belt",
+239649,
+"",
+"Crafting"
+],
+[
+"Legs",
+271545,
+"",
+"Sszorak"
+],
+[
+"Boots",
+268255,
+"",
+"The Coiled Altar"
+],
+[
+"Ring",
+268252,
+"",
+"Sszorak"
+],
+[
+"Ring",
+158366,
+"",
+""
+],
+[
+"Trinket",
+270164,
+"",
+"The Lost Explorers"
+],
+[
+"Trinket",
+273796,
+"",
+""
+]
+],
+"title": "Best in Slot Gear for Demonology Warlock"
+}
+],
+"builds": [
+[
+"Diabolist",
+"Raid",
+"CoQAAAAAAAAAAAAAAAAAAAAAAYmZMzoZjhZmxsMAAAAAAAgxMGWgB2GtQDLGjxysMzMjZAgZGzMzMzAMzMmZAAAGzMzMDDLzYAD"
+],
+[
+"Diabolist",
+"Raid Cleave",
+"CoQAAAAAAAAAAAAAAAAAAAAAAYmhZGNbmx2MzYWGAAAAAAAwYGDLwAbj2ohFjZGLz2MzMmBAmZMmZmZAmZGmZDAAMmZmxwwyMGwA"
+],
+[
+"Soul Harvester",
+"Raid",
+"CoQAAAAAAAAAAAAAAAAAAAAAAYmZMzoZjhZmxsMAAAAAAAjllBGwAmhlQGbmhZ2mlZmZMDAYMzMzAMzMzMmZAAAmZmZmZMDLDAD"
+],
+[
+"Soul Harvester",
+"Raid Cleave",
+"CoQAAAAAAAAAAAAAAAAAAAAAAYmhZGNbmx2MzYWGAAAAAAgxyyADYAzwSIjNDGLz2MzMmBAmxMzMDwMzMzwMbAAgZmZmxMD2mBwA"
+],
+[
+"Soul Harvester",
+"Mythic+",
+"CoQAAAAAAAAAAAAAAAAAAAAAAYmhZGNbmx2MzYWGAAAAAAgxyyADYAzwSIjNDGLjZmZmZAgZMzYGgZmZmhZ2AAAzMzMjZGsNzAMA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270164,
+"raid"
+],
+[
+273796,
+"dungeon"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+270167,
+"raid"
+],
+[
+250215,
+"dungeon"
+],
+[
+250214,
+"dungeon"
+],
+[
+270170,
+"raid"
+],
+[
+250259,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+273649,
+"dungeon"
+],
+[
+250224,
+"dungeon"
+],
+[
+270169,
+"raid"
+],
+[
+193757,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+270161,
+"raid"
+],
+[
+273794,
+"dungeon"
+],
+[
+274493,
+"delves"
+],
+[
+251792,
+"delves"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+251786,
+"delves"
+],
+[
+274497,
+"delves"
+],
+[
+274496,
+"delves"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/24"
+},
+"267": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+271092,
+"",
+"Ula'tek"
+],
+[
+"Offhand",
+273779,
+"",
+""
+],
+[
+"Head",
+271874,
+"",
+"Ula'tek"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271544,
+"",
+"The Lost Explorers"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271549,
+"",
+"Vashnik the Malignant"
+],
+[
+"Wrist",
+239648,
+"",
+"Crafting"
+],
+[
+"Gloves",
+271547,
+"",
+"Entombed Sentinels"
+],
+[
+"Belt",
+239649,
+"",
+"Crafting"
+],
+[
+"Legs",
+271545,
+"",
+"Sszorak"
+],
+[
+"Boots",
+268255,
+"",
+"The Coiled Altar"
+],
+[
+"Ring",
+268252,
+"",
+"Sszorak"
+],
+[
+"Ring",
+273792,
+"",
+"The Coiled Altar"
+],
+[
+"Trinket",
+270164,
+"",
+"The Lost Explorers"
+],
+[
+"Trinket",
+270167,
+"",
+"Nymrissa Wavecaller"
+]
+],
+"title": "Best in Slot Gear for Destruction Warlock"
+},
+{
+"rows": [
+[
+"",
+271092,
+"",
+""
+],
+[
+"",
+270164,
+"",
+""
+],
+[
+"",
+270164,
+"",
+""
+]
+],
+"title": "Best Bonus Roll targets for Destruction Warlock in Midnight"
+}
+],
+"builds": [
+[
+"Diabolist",
+"Raid",
+"CsQAAAAAAAAAAAAAAAAAAAAAAwMzMzoZjhZmZmlZzMzMLGjFzAAgZmxMzsAGzYYhMw2wGNWYAAgxAjNAMzAYmxYAAAYmZmBAwYYA"
+],
+[
+"Diabolist",
+"Mythic+",
+"CsQAAAAAAAAAAAAAAAAAAAAAAwMjZGNbmZ2mZGzysZmZmFzMLLzDMAAYGjZmZBMmxwCZgthFaswAAAjZYAAmZAGzYMbAAAmZmBAAGG"
+],
+[
+"Diabolist",
+"Cleave",
+"CsQAAAAAAAAAAAAAAAAAAAAAAwMzMzoZjhZmxsMLzMzMLGz2iZAAwMGzMzCYMjhFyAbDb0YhBAAGDwCAmZAmZGjZDAAwMzMAAMGG"
+],
+[
+"Hellcaller",
+"Raid",
+"CsQAAAAAAAAAAAAAAAAAAAAAAwMmZGNLMzmZmZWmFzMzsYMWMDAAmZGzMziNYgZxoxMAmtYjBAAGDM2AAmZwYGzYDAAwMzMAAMGG"
+],
+[
+"Hellcaller",
+"Mythic+",
+"CsQAAAAAAAAAAAAAAAAAAAAAAwMjZGNLmxiZGzysNzMjFzYZZmBAAzgZmZxCMwsY0YGAzWsxAAAjZYAAwMDGzMmZDAAwMzMDAAzwA"
+],
+[
+"Hellcaller",
+"Cleave",
+"CsQAAAAAAAAAAAAAAAAAAAAAAwMmZGNLMzmZmZWmlZmZmFjZbxDMAAYGjZmZxGMwsY0YGAzWsxAAAjBGbAAzMYMjZsBAAYmZGAAGDD"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/29",
+"tiers": [
+{
+"items": [
+[
+270164,
+"raid"
+],
+[
+270167,
+"raid"
+],
+[
+250215,
+"dungeon"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+250214,
+"dungeon"
+],
+[
+270170,
+"raid"
+],
+[
+250259,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+273796,
+"dungeon"
+],
+[
+273649,
+"dungeon"
+],
+[
+250224,
+"dungeon"
+],
+[
+270169,
+"raid"
+],
+[
+193757,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+270161,
+"raid"
+],
+[
+273794,
+"dungeon"
+],
+[
+274493,
+"delves"
+],
+[
+251792,
+"delves"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+251786,
+"delves"
+],
+[
+274497,
+"delves"
+],
+[
+274496,
+"delves"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/18"
+},
+"268": {
+"bis": [
+{
+"rows": [
+[
+"Weapon (2h)",
+268215,
+"",
+"Ula'tek"
+],
+[
+"Weapons (1h)",
+268209,
+"",
+"The Coiled Altar Sszorak"
+],
+[
+"Head",
+271519,
+"",
+"Catalyst|Raid|Vault"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271517,
+"",
+"Catalyst|Mythic+|Vault"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271522,
+"",
+"Catalyst|Mythic+|Vault"
+],
+[
+"Wrist",
+244576,
+"",
+"Leatherworking"
+],
+[
+"Gloves",
+271520,
+"",
+"Catalyst|Mythic+|Vault"
+],
+[
+"Belt",
+268256,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271518,
+"",
+"Catalyst|Raid|Vault"
+],
+[
+"Boots",
+159304,
+"",
+"Kings' Rest"
+],
+[
+"Ring",
+251148,
+"",
+"Den of Nalorakk"
+],
+[
+"Ring",
+251513,
+"",
+"Jewelcrafting"
+],
+[
+"Trinket (Damage)",
+270175,
+"",
+"Ula'tek"
+],
+[
+"Trinket (Damage)",
+270173,
+"",
+"The Coiled Altar"
+],
+[
+"Trinket (Defense)",
+270160,
+"",
+"The Lost Explorers"
+],
+[
+"Trinket (Defense)",
+159617,
+"",
+"Kings' Rest"
+]
+],
+"title": "Best in Slot Gear for Brewmaster Monk"
+},
+{
+"rows": [
+[
+"",
+271875,
+"",
+""
+],
+[
+"",
+159459,
+"",
+""
+],
+[
+"",
+270173,
+"",
+""
+]
+],
+"title": "Bonus Rolling with Nebulous Voidcores"
+}
+],
+"builds": [
+[
+"Shado-pan",
+"Standard Raid",
+"CwQAAAAAAAAAAAAAAAAAAAAAAAAAAgZbzYGPwYWM2mxMDAAAAAAALLYEmBmhxmZMmZmZMzywMmZZYZzy2sNMLAAwGCAAwsNLNzMziZYDgZGmGDAAYA"
+],
+[
+"Shado-pan",
+"Mythic+",
+"CwQAAAAAAAAAAAAAAAAAAAAAAAAAAwMLbGDzwyM2MmZMAAAAAAALLgYmBmhBzgZmZGzsNMjZWGW2stNbzYWAAgNEAAgZbWamZmNG2AYmhpxAGAwA"
+],
+[
+"Shado-pan",
+"Delves",
+"CwQAAAAAAAAAAAAAAAAAAAAAAAAAAgZZzYGzwyM2MmZMAAAAAAALLgYmBmhBzgZmZGzsNMjZWGW2ssNbzYWAAgNEAAgZbWamZmFG2AYmhpxAGAwA"
+],
+[
+"Master of Harmony",
+"Standard Raid",
+"CwQAAAAAAAAAAAAAAAAAAAAAAAAAAgZbzYGPwYWM2mxMDAAAAAAALLYEmBmhxmZMmZmZMzywMmZZYZzy2sNMLAAwysMtMbzsMAAQAmhNwMDYaMAAgB"
+],
+[
+"Master of Harmony",
+"Mythic+",
+"CwQAAAAAAAAAAAAAAAAAAAAAAAAAAgZZzYGzwyM2MmZMAAAAAAALLgYmBmhBzgZmZGzsNMjZWGW2stNbzYWAAglZZaZ2mZZAAgAYYDMzAmGDYAAD"
+],
+[
+"Master of Harmony",
+"Delves",
+"CwQAAAAAAAAAAAAAAAAAAAAAAAAAAgZZzYGzwyM2MmZMAAAAAAALLgYmBmhBzgZmZGzsNMjZWGW2ssNbzYWAAglZZaZ2mZZAAgAYYDMzAmGDYAAD"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/13",
+"tiers": [
+{
+"items": [
+[
+270175,
+"raid"
+],
+[
+270173,
+"raid"
+],
+[
+270168,
+"raid"
+],
+[
+250245,
+"dungeon"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+159617,
+"dungeon"
+],
+[
+158374,
+"dungeon"
+],
+[
+250215,
+"dungeon"
+],
+[
+270164,
+"raid"
+],
+[
+250228,
+"dungeon"
+],
+[
+270166,
+"raid"
+],
+[
+250259,
+"dungeon"
+],
+[
+250214,
+"dungeon"
+],
+[
+248583,
+"delves"
+],
+[
+270165,
+"raid"
+],
+[
+270160,
+"raid"
+],
+[
+265657,
+"delves"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+273796,
+"dungeon"
+],
+[
+251785,
+"delves"
+],
+[
+159618,
+"dungeon"
+],
+[
+274493,
+"delves"
+],
+[
+250225,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+],
+[
+273797,
+"dungeon"
+],
+[
+250243,
+"dungeon"
+],
+[
+251792,
+"delves"
+],
+[
+250244,
+"dungeon"
+],
+[
+246307,
+"crafting"
+],
+[
+241340,
+"crafting"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+274498,
+"delves"
+],
+[
+251790,
+"delves"
+],
+[
+251783,
+"delves"
+],
+[
+246306,
+"crafting"
+],
+[
+274499,
+"delves"
+],
+[
+274497,
+"delves"
+],
+[
+270174,
+"raid"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+274496,
+"delves"
+],
+[
+246304,
+"crafting"
+],
+[
+264694,
+"delves"
+],
+[
+246305,
+"crafting"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/27"
+},
+"269": {
+"bis": [
+{
+"rows": [
+[
+"2H Weapon",
+268215,
+"",
+"Ula'tek"
+],
+[
+"Head",
+271875,
+"",
+"Ula'tek"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulder",
+271517,
+"",
+"Tier Set"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+268235,
+"",
+"Nek'zali the Soulcoiler"
+],
+[
+"Wrist",
+244576,
+"",
+"Crafting"
+],
+[
+"Hands",
+251124,
+"",
+"Murder Row"
+],
+[
+"Belt",
+268256,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+268225,
+"",
+"The Coiled Altar"
+],
+[
+"Feet",
+244569,
+"",
+"Crafting"
+],
+[
+"Ring",
+158366,
+"",
+"Temple of Sethraliss"
+],
+[
+"Ring",
+252258,
+"",
+"Voidscar Arena"
+],
+[
+"Trinket 1",
+270175,
+"",
+"Ula'tek"
+],
+[
+"Trinket 2",
+270173,
+"",
+"The Coiled Altar"
+]
+],
+"title": "Best in Slot Gear for Windwalker Monk"
+}
+],
+"builds": [
+[
+"Shado-pan",
+"Raid - Single Target",
+"C0QAAAAAAAAAAAAAAAAAAAAAAMzYM2GmhlZGbzAAAAAAAAAAAAsMMCzwwAmZGmZmZY2GmhZZmAAWMz2MjZmZmBAwGAMLzSzMzsAgBmZAYsMQMgLA"
+],
+[
+"Shado-pan",
+"Raid - Cleave",
+"C0QAAAAAAAAAAAAAAAAAAAAAAMzYMYMYbmZ2mxAAAAAAAAAAAALDjwMMMgZMMzMzwsNMDzyMBAsYmtxwYmZAAsBAzys0MzMLADDMzAwYZMEDYA"
+],
+[
+"Shado-pan",
+"Mythic+",
+"C0QAAAAAAAAAAAAAAAAAAAAAAMzYAMGbzMz2MAAAAAAAAAAAALDzEmhhBMjhZmZGmNMDzyMBAsYmtZmxMzMDAgNAYWmlmZmZBgZgZGAYZMEDYA"
+],
+[
+"Conduit of the Celestials",
+"Raid - Single Target",
+"C0QAAAAAAAAAAAAAAAAAAAAAAMzYM2GmhlZmZbGAAAAAAAAAAAglhRYGGGwMzwMzMDz2wMMLzEAwiZ2mZMjZmBAwiZWmlxEEAAGAzAMWGImZmFXA"
+],
+[
+"Conduit of the Celestials",
+"Raid - Cleave",
+"C0QAAAAAAAAAAAAAAAAAAAAAAMzYMgxYZmx2MDAAAAAAAAAAAYZYEmhhBMzMMzMzwsNMDzyMBAsYmtxMGzMDAgFzsMLjJIAghBwMAjlBiZmZzA"
+],
+[
+"Conduit of the Celestials",
+"Mythic+",
+"C0QAAAAAAAAAAAAAAAAAAAAAAMzYMgxYZmZ2mBAAAAAAAAAAAYZYEmhhBMjhZmZGmNMDzyMBAswsxMmZmZAAsYmlZZMBBAMzMAmBYsMGiZmZzA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/13",
+"tiers": [
+{
+"items": [
+[
+270175,
+"raid"
+],
+[
+270173,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+250215,
+"dungeon"
+],
+[
+273796,
+"dungeon"
+],
+[
+250225,
+"dungeon"
+],
+[
+270164,
+"raid"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+250259,
+"dungeon"
+],
+[
+270168,
+"raid"
+],
+[
+159617,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [],
+"tier": "C"
+},
+{
+"items": [
+[
+270165,
+"raid"
+],
+[
+250214,
+"dungeon"
+],
+[
+241340,
+"crafting"
+],
+[
+273797,
+"dungeon"
+],
+[
+270166,
+"raid"
+]
+],
+"tier": "D"
+},
+{
+"items": [
+[
+250228,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+],
+[
+158374,
+"dungeon"
+]
+],
+"tier": "F"
+}
+],
+"updated": "2026/08/25"
+},
+"270": {
+"bis": [
+{
+"rows": [
+[
+"Helm",
+271519,
+"",
+"Ula'tek & Catalyst"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271517,
+"",
+"Den of Nalorakk & Catalyst"
+],
+[
+"Cape",
+193763,
+"",
+"Ruby Life Pools"
+],
+[
+"Chest",
+271522,
+"",
+"Voidscar Arena & Catalyst"
+],
+[
+"Bracers",
+251135,
+"",
+"Murder Row"
+],
+[
+"Gloves",
+271520,
+"",
+"Murder Row & Catalyst"
+],
+[
+"Belt",
+251189,
+"",
+"The Blinding Vale"
+],
+[
+"Legs",
+271518,
+"",
+"Kings' Rest & Catalyst"
+],
+[
+"Boots",
+268247,
+"",
+"Nymrissa Wavebinder"
+],
+[
+"Ring",
+268266,
+"",
+"Nymrissa Wavebinder"
+],
+[
+"Ring",
+159459,
+"",
+"Kings' Rest"
+],
+[
+"Trinkets",
+270167,
+"",
+"Nymrissa Wavebinder"
+],
+[
+"Trinkets",
+270162,
+"",
+"Nek'zali the Soulcoiler"
+],
+[
+"1h Weapon",
+268211,
+"",
+"The Coiled Altar"
+],
+[
+"Offhand",
+159667,
+"",
+"Kings' Rest"
+]
+],
+"title": "Best in Slot Gear for Mistweaver Monk for Raid"
+},
+{
+"rows": [
+[
+"Helm",
+271519,
+"",
+"Ula'tek & Catalyst"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271517,
+"",
+"The Lost Explorers"
+],
+[
+"Cape",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271522,
+"",
+"Nek'zali the Soulcoiler & Catalyst"
+],
+[
+"Bracers",
+251135,
+"",
+"Murder Row"
+],
+[
+"Gloves",
+271520,
+"",
+"Murder Row & Catalyst"
+],
+[
+"Belt",
+268256,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271518,
+"",
+"The Coiled Altar & Catalyst"
+],
+[
+"Boots",
+251153,
+"",
+"Den of Nalorakk"
+],
+[
+"Ring",
+268266,
+"",
+"Nymrissa Wavebinder"
+],
+[
+"Ring",
+252258,
+"",
+"Voidscar Arena"
+],
+[
+"Trinkets",
+270167,
+"",
+"Nymrissa Wavebinder"
+],
+[
+"Trinkets",
+270162,
+"",
+"Nek'zali the Soulcoiler"
+],
+[
+"1h Weapon",
+268211,
+"",
+"The Coiled Altar"
+],
+[
+"Offhand",
+268197,
+"",
+"Entomed Sentinels"
+]
+],
+"title": "Best in Slot Gear for Mistweaver Monk for Mythic+"
+}
+],
+"builds": [
+[
+"Conduit of the Celestials",
+"Raid",
+"C4QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAghx2YZYzixMzyyM2wYGmZZZbmxCzoZMDYwgxYmZmhZbMGsYCAAAAgAsYZmlZbmBAAGwAMDYMMWkxMA"
+],
+[
+"Conduit of the Celestials",
+"Mythic+",
+"C4QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAghxyMLjZx2MmZsZsZZGzs9AzstsMzYhhmxMgBDYWmZmZY2wMMLzEAAAAABYx2Mbz2MDAAMAAzAGDsIjZA"
+],
+[
+"Conduit of the Celestials",
+"Delves",
+"C4QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMWmZZML2mxMjNDYMzmZ222mZswQzYGLYwAGzMzMMbDzwsMTAAAAAEgFbzsNbzMAAAwAMDYMMDZMDA"
+],
+[
+"Master of Harmony",
+"Raid",
+"C4QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAghx2YZYzixMzyyM2wYGmZZZbmxCzoZMDYwgxYmZmhZbMGsYCAAAAMLTLz2MLzGAAAADYmZAgxwYRGA"
+],
+[
+"Master of Harmony",
+"Mythic+",
+"C4QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAghxyMLjZx2MmZsZsZZGzs9AzstsMzYhhmxMgBDYWmZmZY2wMMLzEAAAAYWm2mtZWmNAAAAGgZGAYMwiMAA"
+],
+[
+"Master of Harmony",
+"Delves",
+"C4QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMWmZZML2mxMjNDYMzmZ222mZswQzYGLYwAGzMzMMbDzwsMTAAAAgZZab2mZZ2AAAAAYmZAgxwMkBA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/28",
+"tiers": [
+{
+"items": [
+[
+270162,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+270167,
+"raid"
+],
+[
+270169,
+"raid"
+],
+[
+270164,
+"raid"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+248583,
+"delves"
+],
+[
+251792,
+"delves"
+],
+[
+273796,
+"dungeon"
+],
+[
+250248,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+274493,
+"delves"
+],
+[
+250215,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+],
+[
+250255,
+"dungeon"
+],
+[
+250254,
+"dungeon"
+],
+[
+250214,
+"dungeon"
+],
+[
+264507,
+"delves"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+273649,
+"dungeon"
+],
+[
+251789,
+"delves"
+],
+[
+270171,
+"raid"
+],
+[
+251788,
+"delves"
+],
+[
+280091,
+"delves"
+],
+[
+274495,
+"delves"
+]
+],
+"tier": "D"
+},
+{
+"items": [
+[
+252957,
+"delves"
+],
+[
+193748,
+"dungeon"
+],
+[
+264694,
+"delves"
+],
+[
+274494,
+"delves"
+],
+[
+264701,
+"delves"
+]
+],
+"tier": "F"
+}
+],
+"updated": "2026/09/01"
+},
+"577": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+268209,
+"",
+"The Coiled Altar"
+],
+[
+"Offhand",
+237840,
+"",
+"Crafting/Misc"
+],
+[
+"Head",
+271875,
+"",
+"Ula'tek"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271535,
+"",
+"Vashnik the Malignant"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271540,
+"",
+"King's Rest"
+],
+[
+"Wrist",
+244576,
+"",
+"Crafting/Misc"
+],
+[
+"Gloves",
+271538,
+"",
+"Entombed Sentinels"
+],
+[
+"Belt",
+268256,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271536,
+"",
+"The Coiled Altar"
+],
+[
+"Boots",
+159327,
+"",
+"Temple of Sethraliss"
+],
+[
+"Ring",
+251136,
+"",
+"Murder Row"
+],
+[
+"Ring",
+158366,
+"",
+"Temple of Sethraliss"
+],
+[
+"Trinket",
+270173,
+"",
+"The Coiled Altar"
+],
+[
+"Trinket",
+270168,
+"",
+"Ula'tek"
+]
+],
+"title": "Best in Slot Gear for Havoc Demon Hunter"
+}
+],
+"builds": [
+[
+"Fel-Scarred",
+"Raid",
+"CEkAAAAAAAAAAAAAAAAAAAAAAYmZGzMzmxMzMmZmMmZAAAAAAAzyDMmtZYmBzMWmZMDzMGzyALziZMMbaaMzMG2AAAAAAAAYmBDAAAAD"
+],
+[
+"Fel-Scarred",
+"Mythic+",
+"CEkAAAAAAAAAAAAAAAAAAAAAAYmZGzMz2MmZmxYmMmZAAAAAAAzixsNDzMwMWmZmZYmBzyALzmZMMLaaMzMmxGAAAwAAAAYmBDAAAAD"
+],
+[
+"Aldrachi Reaver",
+"Raid",
+"CEkAAAAAAAAAAAAAAAAAAAAAAYgZmZ2MmZmxMzkxMDAAAAAAYWegxsNDzMz2MzYZmxMWmZYmlZ2mBDjlNmkxMjhFAAAAAAAwMDwAAAAwA"
+],
+[
+"Aldrachi Reaver",
+"Mythic+",
+"CEkAAAAAAAAAAAAAAAAAAAAAAYGMzMz2MmZmxYmMmZAAAAAAAzixsNDzMz2MzYZmxMMzwMLzsNDGGbbMJjZGzYBAAAAAAAMzAMAAAAM"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/22",
+"tiers": [
+{
+"items": [
+[
+270173,
+"raid"
+],
+[
+270168,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+270175,
+"raid"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+270166,
+"raid"
+],
+[
+270165,
+"raid"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+270164,
+"raid"
+],
+[
+250225,
+"dungeon"
+],
+[
+250462,
+"delves"
+],
+[
+250214,
+"dungeon"
+],
+[
+159617,
+"dungeon"
+],
+[
+273796,
+"dungeon"
+],
+[
+158374,
+"dungeon"
+],
+[
+250228,
+"dungeon"
+],
+[
+246304,
+"crafting"
+],
+[
+193757,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+250259,
+"dungeon"
+],
+[
+251785,
+"delves"
+],
+[
+274493,
+"delves"
+],
+[
+250215,
+"dungeon"
+],
+[
+246307,
+"crafting"
+],
+[
+246305,
+"crafting"
+]
+],
+"tier": "D"
+},
+{
+"items": [
+[
+251783,
+"delves"
+],
+[
+273797,
+"dungeon"
+],
+[
+251784,
+"delves"
+],
+[
+274497,
+"delves"
+],
+[
+274496,
+"delves"
+],
+[
+241340,
+"crafting"
+],
+[
+246306,
+"crafting"
+]
+],
+"tier": "F"
+}
+],
+"updated": "2026/08/28"
+},
+"581": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+268209,
+"",
+"The Coiled Altar"
+],
+[
+"Offhand",
+237840,
+"",
+"Crafted"
+],
+[
+"Head",
+271537,
+"",
+"Ula'tek"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271535,
+"",
+"Voidscar Arena"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271540,
+"",
+"Vashnik the Malignant"
+],
+[
+"Wrist",
+244576,
+"",
+"Crafted"
+],
+[
+"Gloves",
+271538,
+"",
+"Murder Row"
+],
+[
+"Belt",
+268256,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271536,
+"",
+"The Coiled Altar"
+],
+[
+"Boots",
+251153,
+"",
+"Den of Nalorakk"
+],
+[
+"Ring",
+268252,
+"",
+"Sszorak"
+],
+[
+"Ring",
+159459,
+"",
+"King's Rest"
+],
+[
+"Trinket",
+270164,
+"",
+"The Lost Explorers"
+],
+[
+"Trinket",
+270175,
+"",
+"Ula'tek"
+],
+[
+"Trinket (Raw Damage)",
+270173,
+"",
+"The Coiled Altar"
+]
+],
+"title": "Best in Slot Gear for Vengeance Demon Hunter"
+}
+],
+"builds": [
+[
+"Aldrachi Reaver",
+"Raid",
+"CUkAAAAAAAAAAAAAAAAAAAAAAAAYMzMjZmZkZmZY2MzMjhZMzYGzYmZYGmx2MzYMAAAAgZbGMMW2YCDzMjFAAAAMYAIAzMADAAAgB"
+],
+[
+"Aldrachi Reaver",
+"Mythic+",
+"CUkAAAAAAAAAAAAAAAAAAAAAAAAYMzMjhZkZmBWMjZwMjZGz8AzMzYYmZmx2YGjxMAAAAMbzghxyGTYYmZsAAAAgBGABYmBMDAAAgB"
+],
+[
+"Aldrachi Reaver",
+"Cleave",
+"CUkAAAAAAAAAAAAAAAAAAAAAAAAYMzMjZmZkZmZYYmZGDzYmxMmxMmxMmZsNzMGDAAAAY2mBDjlNmwwMzYBAAAADGACwMDwAAAAYA"
+],
+[
+"Aldrachi Reaver",
+"Delves",
+"CUkAAAAAAAAAAAAAAAAAAAAAAAAYMzMjxMjMzMwmZMDmZMzYmHYGzYMzMzM2GzgxMAAAAMbzghxyGTYYmZsAAAAgBzAIAzMADAAAgB"
+],
+[
+"Annihilator",
+"Raid",
+"CUkAAAAAAAAAAAAAAAAAAAAAAAAYMzMjZmZkZmZY2MzMjhZMzYGzYmZYGmx2MzYMAAAAAAAQAzMjNAAAAMYMzMzs02MzMAwAAAAYA"
+],
+[
+"Annihilator",
+"Mythic+",
+"CUkAAAAAAAAAAAAAAAAAAAAAAAAYMzMjhZkZmBWMjZwMjZGz8AzMzYYmZmx2YGjxMAAAAAAACYmZsBAAAgBmZmZml2mZmBAzAAAAYA"
+],
+[
+"Annihilator",
+"Cleave",
+"CUkAAAAAAAAAAAAAAAAAAAAAAAAYMzMjZmZkZmZYWMzMzMMjZGzYGzYYGmx2MzYMAAAAAAAQAzMjNAAAAMYMzMzs02MzMAwAAAAYA"
+],
+[
+"Annihilator",
+"Delves",
+"CUkAAAAAAAAAAAAAAAAAAAAAAAAYMzMjxMjMzMwmZMDmZMzYmHYGzYMzMzM2GzgxMAAAAAAACYmZsBAAAgBzMzMzs02MzMAwAAAAYA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270175,
+"raid"
+],
+[
+270173,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+270164,
+"raid"
+],
+[
+270165,
+"raid"
+],
+[
+270168,
+"raid"
+],
+[
+250245,
+"dungeon"
+],
+[
+250228,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+159617,
+"dungeon"
+],
+[
+250225,
+"dungeon"
+],
+[
+250215,
+"dungeon"
+],
+[
+273796,
+"dungeon"
+],
+[
+273797,
+"dungeon"
+],
+[
+270166,
+"raid"
+],
+[
+250462,
+"delves"
+],
+[
+246304,
+"crafting"
+],
+[
+250244,
+"dungeon"
+],
+[
+270174,
+"raid"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+270160,
+"raid"
+],
+[
+250243,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+],
+[
+158374,
+"dungeon"
+],
+[
+250214,
+"dungeon"
+],
+[
+250259,
+"dungeon"
+],
+[
+246307,
+"crafting"
+],
+[
+241340,
+"crafting"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+159618,
+"dungeon"
+],
+[
+246305,
+"crafting"
+],
+[
+246306,
+"crafting"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/25"
+},
+"62": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+271092,
+"",
+"Ula'tek"
+],
+[
+"Offhand",
+245769,
+"",
+"Crafting"
+],
+[
+"Head",
+271564,
+"",
+"Ula'tek"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271562,
+"",
+"The Twin Fangs"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271567,
+"",
+"Altar of Fangs"
+],
+[
+"Wrist",
+239648,
+"",
+"Crafting"
+],
+[
+"Gloves",
+271565,
+"",
+"The Coiled Altar"
+],
+[
+"Belt",
+268257,
+"",
+"Sszorak"
+],
+[
+"Legs",
+271563,
+"",
+"Nek'zali the Soulcoiler"
+],
+[
+"Boots",
+268255,
+"",
+"The Coiled Altar"
+],
+[
+"Ring",
+268266,
+"",
+"Nymrissa Wavecaller"
+],
+[
+"Ring",
+251148,
+"",
+"Den of Nalorakk"
+],
+[
+"Trinket",
+250215,
+"",
+"Murder Row"
+],
+[
+"Trinket",
+270164,
+"",
+"The Lost Explorers"
+]
+],
+"title": "Best in Slot Gear for Arcane Mage"
+}
+],
+"builds": [
+[
+"Spellslinger",
+"Raid",
+"C4DAAAAAAAAAAAAAAAAAAAAAAYGGLzMzswMDamZGAAAGAAEwMzMLLzMxCAAwMzMjNLzMzsMjxYmZwCzYmZGAgBAAYmZBAMDAGmZG"
+],
+[
+"Spellslinger",
+"Mythic+",
+"C4DAAAAAAAAAAAAAAAAAAAAAAMzwYZmZmFMzQzMGAAAGAAEwMzMLLzMxCAAbDmZG2sMjZMjxMzMzwCzMzMzAAMAAAzMbAADAGmZG"
+],
+[
+"Sunfury",
+"Raid",
+"C4DAAAAAAAAAAAAAAAAAAAAAAYGGLzMzswMDamZGAAAGAwMz0sssMDAEbAAAmZG2sMjZWmxYmZmZYhZMzMDAwAAAMAzMgZAwwMzA"
+],
+[
+"Sunfury",
+"Mythic+",
+"C4DAAAAAAAAAAAAAAAAAAAAAAMzwYZmZmFMzQzMGAAAGAwMz0sssMDAEbAAsBzMDbWmxMLzYMzMzMswMzMzMAADAAwAMzAMAYYmZA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/31",
+"tiers": [
+{
+"items": [
+[
+270164,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+250214,
+"dungeon"
+],
+[
+273796,
+"dungeon"
+],
+[
+250224,
+"dungeon"
+],
+[
+251792,
+"delves"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+270170,
+"raid"
+],
+[
+270169,
+"raid"
+],
+[
+273649,
+"dungeon"
+],
+[
+250259,
+"dungeon"
+],
+[
+273794,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+],
+[
+270161,
+"raid"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+270603,
+"delves"
+],
+[
+251785,
+"delves"
+],
+[
+251784,
+"delves"
+],
+[
+264878,
+"delves"
+],
+[
+270602,
+"delves"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+250462,
+"delves"
+],
+[
+270168,
+"raid"
+],
+[
+251786,
+"delves"
+],
+[
+251783,
+"delves"
+],
+[
+251787,
+"delves"
+],
+[
+274493,
+"delves"
+],
+[
+274496,
+"delves"
+],
+[
+274497,
+"delves"
+],
+[
+246305,
+"crafting"
+],
+[
+246304,
+"crafting"
+],
+[
+246306,
+"crafting"
+],
+[
+246307,
+"crafting"
+],
+[
+241340,
+"crafting"
+]
+],
+"tier": "F"
+}
+],
+"updated": "2026/08/18"
+},
+"63": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+271092,
+"",
+"Ula'tek"
+],
+[
+"Offhand",
+245769,
+"",
+"Crafting"
+],
+[
+"Head",
+271564,
+"",
+"Tier Set"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271562,
+"",
+"Tier Set"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271567,
+"",
+"Tier Set"
+],
+[
+"Wrist",
+239648,
+"",
+"Crafting/Misc"
+],
+[
+"Gloves",
+271565,
+"",
+"Tier Set"
+],
+[
+"Belt",
+268257,
+"",
+"Sszorak"
+],
+[
+"Legs",
+271563,
+"",
+"Tier Set"
+],
+[
+"Boots",
+268255,
+"",
+"The Coiled Altar"
+],
+[
+"Ring",
+268266,
+"",
+"Nymrissa Wavecaller"
+],
+[
+"Ring",
+159459,
+"",
+"King's Rest"
+],
+[
+"Trinket",
+273796,
+"",
+"Altar of Fangs"
+],
+[
+"Trinket",
+270164,
+"",
+"The Lost Explorers"
+]
+],
+"title": "Best in Slot Gear for Fire Mage"
+},
+{
+"rows": [
+[
+"",
+271092,
+"",
+""
+],
+[
+"",
+268211,
+"",
+""
+]
+],
+"title": "Bonus Rolling with Nebulous Voidcores"
+}
+],
+"builds": [
+[
+"Sunfury",
+"Raid",
+"C8DAAAAAAAAAAAAAAAAAAAAAAYGGLzMzswMzIzMzAAAwAAmZmmlttZAA2MzM2mZmZGLAAAAAYxMjZAAgZMmZmZMzsMAMzQGjBMDjB"
+],
+[
+"Sunfury",
+"Mythic+",
+"C8DAAAAAAAAAAAAAAAAAAAAAAMzwYZmZmFMzIzMzMAAAGAwMz0sstNDAwmZmx2MzMzYDAAAAALmZmZAAgZMmZmZMzsMAMzQYMgZYMA"
+],
+[
+"Sunfury",
+"Delves",
+"C8DAAAAAAAAAAAAAAAAAAAAAAMzwMLzMzsgZGZmxAAAwAAmZmmlltZAA2MzM2GzMzYBAAAAA2MzMzMAAYMDjZmZmZbAYmhwYMYGG"
+],
+[
+"Frostfire",
+"Raid",
+"C8DAAAAAAAAAAAAAAAAAAAAAAYGGLzMzswMzIzMzAAAwMLzYmZZWgAAAWMzw2MzMzYBAAAAALmZMDAAMzwMzMzMzsAMzAyYMGMYMA"
+],
+[
+"Frostfire",
+"Mythic+",
+"C8DAAAAAAAAAAAAAAAAAAAAAAMzwYZmZmFMzIzMzMAAAmZZGzMLzCEAAwiZG2mZmZGbAAAAAYxMzMDAAMzwMzMzMzsAMzACjxgBjB"
+],
+[
+"Frostfire",
+"Delves",
+"C8DAAAAAAAAAAAAAAAAAAAAAAMzwYZmZmFMzIzMzAAAwMLzYmZZWgAAAWMzM2mZmZmZDAAAAALmZmZAAgZMmZmZMzsAMzAyYMgBjB"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/13",
+"tiers": [
+{
+"items": [
+[
+270164,
+"raid"
+],
+[
+273796,
+"dungeon"
+],
+[
+270167,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+250214,
+"dungeon"
+],
+[
+270170,
+"raid"
+],
+[
+250259,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+250224,
+"dungeon"
+],
+[
+270169,
+"raid"
+],
+[
+273649,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+270161,
+"raid"
+],
+[
+270168,
+"raid"
+],
+[
+273794,
+"dungeon"
+],
+[
+274493,
+"delves"
+],
+[
+251792,
+"delves"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+193757,
+"dungeon"
+],
+[
+250215,
+"dungeon"
+],
+[
+246305,
+"crafting"
+],
+[
+246304,
+"crafting"
+],
+[
+246306,
+"crafting"
+],
+[
+246307,
+"crafting"
+],
+[
+241340,
+"crafting"
+],
+[
+251786,
+"delves"
+],
+[
+274497,
+"delves"
+],
+[
+274496,
+"delves"
+],
+[
+250462,
+"delves"
+],
+[
+251783,
+"delves"
+],
+[
+251787,
+"delves"
+],
+[
+251784,
+"delves"
+],
+[
+251785,
+"delves"
+],
+[
+280123,
+"delves"
+],
+[
+274496,
+"delves"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/24"
+},
+"64": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+271092,
+"",
+"Ula'tek"
+],
+[
+"Offhand",
+268263,
+"",
+"Nymrissa Wavecaller"
+],
+[
+"Head",
+271564,
+"",
+"Tier Set"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271562,
+"",
+"Tier Set"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271567,
+"",
+"Tier Set"
+],
+[
+"Wrist",
+239648,
+"",
+"Crafting/Misc"
+],
+[
+"Gloves",
+271565,
+"",
+"Tier Set"
+],
+[
+"Belt",
+239649,
+"",
+"Crafting/Misc"
+],
+[
+"Legs",
+271563,
+"",
+"Tier Set"
+],
+[
+"Boots",
+268255,
+"",
+"The Coiled Altar"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Ring",
+158366,
+"",
+"Temple of Sethraliss"
+],
+[
+"Trinket",
+270164,
+"",
+"The Lost Explorers"
+],
+[
+"Trinket",
+270167,
+"",
+"Nymrissa Wavecaller"
+]
+],
+"title": "Best in Slot Gear for Frost Mage"
+}
+],
+"builds": [
+[
+"Spellslinger",
+"Raid ST",
+"CAEAAAAAAAAAAAAAAAAAAAAAAYGGLzMzsMmZmYmZGjZMziZmZmZMDAAAMzMzyyMTbAAAAAAwGAbLjZmZgtZMzMsAAAwMbAzEGwADD"
+],
+[
+"Spellslinger",
+"Raid Cleave",
+"CAEAAAAAAAAAAAAAAAAAAAAAAYGGLzMzsMmZmYmZGzMzMziZmZMjZAAAgZmZWWmZaDAAAAAA2AYbZMzMDmthxMsAAAwMbAzEGwMYYA"
+],
+[
+"Spellslinger",
+"Mythic+",
+"CAEAAAAAAAAAAAAAAAAAAAAAAMzwYZmZmFMzEzMmZmZmZWMzMjZMDAAAMzMzyyMTbAAwCAAAYBgtlxMzMY2GGzwCAAAzsBMTGDYGMMA"
+],
+[
+"Frostfire",
+"Raid ST",
+"CAEAAAAAAAAAAAAAAAAAAAAAAYGGLzMzsMmZmYmZGjZMziZmZmxMzsMTzMLzCAAAaBAAAAAA2AYbZMzMDsNjxM2WAAAAzMYmwAGYYA"
+],
+[
+"Frostfire",
+"Raid Cleave",
+"CAEAAAAAAAAAAAAAAAAAAAAAAYGGLzMzsMmZmYmxYmZmZWMzMzMzMzsMTzMbzCAAAaBAAAAAAAw2yYmZGMbzYmZstAAAAmZwMZMgBwA"
+],
+[
+"Frostfire",
+"Mythic+",
+"CAEAAAAAAAAAAAAAAAAAAAAAAMzwYZmZmFMzEzMmZmZmZWMzMzMzMzsMTzMbzCAAAaBAAWAAAAAYbZMzMDmtZMzM2WAAAAzMYmMGwAYA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/21",
+"tiers": [
+{
+"items": [
+[
+270164,
+"raid"
+],
+[
+270167,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+273796,
+"dungeon"
+],
+[
+273649,
+"dungeon"
+],
+[
+250224,
+"dungeon"
+],
+[
+250215,
+"dungeon"
+],
+[
+270170,
+"raid"
+],
+[
+270168,
+"raid"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+250259,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+],
+[
+250214,
+"dungeon"
+],
+[
+270161,
+"raid"
+],
+[
+270169,
+"raid"
+],
+[
+251792,
+"delves"
+],
+[
+274493,
+"delves"
+],
+[
+248583,
+"delves"
+],
+[
+246305,
+"crafting"
+],
+[
+246304,
+"crafting"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+273794,
+"dungeon"
+],
+[
+158368,
+"dungeon"
+],
+[
+246306,
+"crafting"
+],
+[
+246307,
+"crafting"
+],
+[
+241340,
+"crafting"
+],
+[
+251785,
+"delves"
+],
+[
+251784,
+"delves"
+],
+[
+251786,
+"delves"
+],
+[
+274496,
+"delves"
+],
+[
+274497,
+"delves"
+],
+[
+251783,
+"delves"
+]
+],
+"tier": "C"
+},
+{
+"items": [],
+"tier": "D"
+}
+],
+"updated": "2026/08/18"
+},
+"65": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+268211,
+"",
+"The Coiled Altar"
+],
+[
+"Shield",
+268262,
+"",
+"Nymrissa Wavecaller"
+],
+[
+"Head",
+271465,
+"",
+"Murder Row"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271463,
+"",
+"Murder Row"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271468,
+"",
+"The Coiled Altar"
+],
+[
+"Wrist",
+268239,
+"",
+"The Lost Explorers"
+],
+[
+"Gloves",
+271466,
+"",
+"Entombed Sentinels"
+],
+[
+"Belt",
+268259,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271464,
+"",
+"Ula'tek"
+],
+[
+"Boots",
+268260,
+"",
+"Vashnik the Malignant"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Ring",
+252258,
+"",
+"Voidscar Arena"
+],
+[
+"Trinket",
+270162,
+"",
+"Nek'zali the Soulcoiler"
+],
+[
+"Trinket",
+270164,
+"",
+"The Lost Explorers"
+]
+],
+"title": "Best in Slot Gear for Holy Paladin"
+}
+],
+"builds": [
+[
+"Herald of the Sun",
+"Raid",
+"CEEAAAAAAAAAAAAAAAAAAAAAAAAAALAwMAAw2MzMjZMzYxYmZYZwMLmpJGGzMDjZLDADYYDsxyMmZZ2mZmtGAAAgFAYzwYGzwMAAmZYGjRDA"
+],
+[
+"Herald of the Sun",
+"Raid",
+"CEEAAAAAAAAAAAAAAAAAAAAAAAAAALAwMAAwyMzMjZ2mZmNYMsM2MziZaihxMzwY2yAwAG2AbsMjZWmtZmZrBAAAYBA2MMmxMMDAgZGmxY0A"
+],
+[
+"Herald of the Sun",
+"Mythic+",
+"CEEAAAAAAAAAAAAAAAAAAAAAAAAAALAwMAAD2GzMzMjZmZBmZYZsZmFjmYYMzMMmtMAMAsB2YZmZmlZbmZ2aAAAAWAmhNDMjZYGAAzMMjxoB"
+],
+[
+"Herald of the Sun",
+"Mythic+",
+"CEEAAAAAAAAAAAAAAAAAAAAAAAAAALAwMAADWGzMzMjZmZBGDLzsZmFjmYYMzMMmtMAMAsB2YZmZmlZbmZ2aAAAAWAmhNDMjZwAAYmhZMGNA"
+],
+[
+"Herald of the Sun",
+"Delves",
+"CEEAAAAAAAAAAAAAAAAAAAAAAAAAALAwMAADMmZmZGzMzixMmxyYzMLGNxYGjZYMbZAYAYDsxyMzMLz2Mzs1AAAAsAMDbGYGzwAAwMDzYMaA"
+],
+[
+"Lightsmith",
+"Raid",
+"CEEAAAAAAAAAAAAAAAAAAAAAAAAAAbAwMAAw2MzMjZMzYxYmZYZwMLmpJGGzMDjZLDADYYDsxyMGAEAwMzyyitZG2AgNDjZMDzAYmBgZMGNA"
+],
+[
+"Lightsmith",
+"Raid",
+"CEEAAAAAAAAAAAAAAAAAAAAAAAAAALAwMAAwyMzMjZMzMbGzYYZsZmFz0EDjZmhxslBgBMsB2YZGDACAYmZZZx2MDbAwmhxMmhBgZGAmxY0A"
+],
+[
+"Lightsmith",
+"Mythic+",
+"CEEAAAAAAAAAAAAAAAAAAAAAAAAAAbAwMAAD2GzMzMjZmZBmZYZsZmFjmYYMzMMmtMAMAsB2YZmZAQAAzMLLL2mZYDYG2MwMmhZAMzAwMGjGA"
+],
+[
+"Lightsmith",
+"Mythic+",
+"CEEAAAAAAAAAAAAAAAAAAAAAAAAAALAwMAADWGzMzMjZmZZwYYZsZmFz0EDjZmhxslBgBgNwGLzMDACAYmZZZx2MDbAzwmBmxMMAMzAwMGjGA"
+],
+[
+"Lightsmith",
+"Delves",
+"CEEAAAAAAAAAAAAAAAAAAAAAAAAAALAwMAADMmZmZGzMzixMmxyYzMLGNxwYMDjZLDADAbgNWmZGAEAwMz22ilZG2AzMsZgZYYAYmBgZMGNA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270162,
+"raid"
+],
+[
+270164,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+270167,
+"raid"
+],
+[
+250215,
+"dungeon"
+],
+[
+250214,
+"dungeon"
+],
+[
+270169,
+"raid"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+273796,
+"dungeon"
+],
+[
+248583,
+"delves"
+],
+[
+251792,
+"delves"
+],
+[
+273649,
+"dungeon"
+],
+[
+250248,
+"dungeon"
+],
+[
+241340,
+"crafting"
+],
+[
+245829,
+"crafting"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+250254,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+],
+[
+250255,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+270171,
+"raid"
+],
+[
+193748,
+"dungeon"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/25"
+},
+"66": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+268209,
+"",
+"The Coiled Altar"
+],
+[
+"Shield",
+268196,
+"",
+"The Lost Explorers"
+],
+[
+"Head",
+271465,
+"",
+"Tier Set"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271463,
+"",
+"Tier Set"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271468,
+"",
+"Tier Set"
+],
+[
+"Wrist",
+237834,
+"",
+"Crafting Blacksmithing"
+],
+[
+"Gloves",
+271466,
+"",
+"Tier Set"
+],
+[
+"Belt",
+268259,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271878,
+"",
+"Ula'tek"
+],
+[
+"Boots",
+237828,
+"",
+"Crafting Blacksmithing"
+],
+[
+"Ring",
+268252,
+"",
+"Sszorak"
+],
+[
+"Ring 2",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Trinket",
+270173,
+"",
+"The Coiled Altar"
+],
+[
+"Trinket 2",
+270175,
+"",
+"Ula'tek"
+]
+],
+"title": "Best in Slot Gear for Protection Paladin"
+}
+],
+"builds": [
+[
+"Templar",
+"Raid",
+"CIEAAAAAAAAAAAAAAAAAAAAAAsNzYWmZYGzM2WGDLzithBAYAAAAAAQamZxMmZGjZrNAMgBMYbAAgZm2mZWmBAYzyGzYAMmhxAAsNDwMDyYD"
+],
+[
+"Templar",
+"Mythic+",
+"CIEAAAAAAAAAAAAAAAAAAAAAAsZeAzyYGzYmZWWGjZZWmlZMAADAAAAAAaamhZMzwY2aDADMgZw2AAAzMtNzsMDAwmlFMAgZYMAALzAmZGkxC"
+],
+[
+"Lightsmith",
+"Raid",
+"CIEAAAAAAAAAAAAAAAAAAAAAAsNzYWmZYGzM2WGDLzithBAYAAAAAAQamZxMmZGjZrNAMgBMYbAAAEgZmttlWmZsYZjZMAGzwYAwMDAmZQGb"
+],
+[
+"Lightsmith",
+"Mythic+",
+"CIEAAAAAAAAAAAAAAAAAAAAAAsZeAzyYGzYmZWWGjZZWmlZMAADAAAAAAaamhZMzwY2aDADMgZw2AAAIAzMbbLtMzYxyCGAwMMGAMzAwMzgMWA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270164,
+"raid"
+],
+[
+270173,
+"raid"
+],
+[
+270175,
+"raid"
+],
+[
+270165,
+"raid"
+],
+[
+270168,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+273796,
+"dungeon"
+],
+[
+270163,
+"raid"
+],
+[
+273797,
+"dungeon"
+],
+[
+158367,
+"dungeon"
+],
+[
+250259,
+"dungeon"
+],
+[
+250245,
+"dungeon"
+],
+[
+250229,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+250228,
+"dungeon"
+],
+[
+273795,
+"dungeon"
+],
+[
+193762,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+241340,
+"crafting"
+],
+[
+250238,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+246304,
+"crafting"
+],
+[
+246305,
+"crafting"
+],
+[
+246306,
+"crafting"
+],
+[
+246307,
+"crafting"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/30"
+},
+"70": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+268213,
+"",
+"The Coiled Altar"
+],
+[
+"Head",
+271465,
+"",
+"Tier Set"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271463,
+"",
+"Tier Set"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271468,
+"",
+"Tier Set"
+],
+[
+"Wrist",
+237834,
+"",
+"Blacksmithing"
+],
+[
+"Gloves",
+271466,
+"",
+"Tier Set"
+],
+[
+"Belt",
+268259,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271464,
+"",
+"Ula'tek"
+],
+[
+"Boots",
+268260,
+"",
+"Vashnik the Malignant"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Ring",
+251513,
+"",
+"Jewelcrafting"
+],
+[
+"Trinket",
+270173,
+"",
+"The Coiled Altar"
+],
+[
+"Trinket",
+270175,
+"",
+"Ula'tek"
+]
+],
+"title": "Best in Slot Gear for Retribution Paladin"
+}
+],
+"builds": [
+[
+"Templar",
+"Raid",
+"CYEAAAAAAAAAAAAAAAAAAAAAAAAAAAANbbzMzywMDAAAAAAzUGzwMjtxsNMz2MGjxwMWYbAAAZmptZmtZAAbAGAMmhZwMmZ2w2MYYMjBD"
+],
+[
+"Templar",
+"Mythic+",
+"CYEAAAAAAAAAAAAAAAAAAAAAAAAAAAwoZbbmZWGzMzAAAAAAYmyYGmZsNmthZ2mxYMGmxGbAAAZmptZmtZAAbAGAMmhBmxMzGWmBDjZMYA"
+],
+[
+"Templar",
+"Delves",
+"CYEAAAAAAAAAAAAAAAAAAAAAAAAAAAwoZbbmZWGjZmBAAAAAYmyYGMjtZmthZ2mxYMzwM2YDAAIzMtNzsNDAYDwAAmhBmxM2wyMYMjZMYA"
+],
+[
+"Herald of the Sun",
+"Raid",
+"CYEAAAAAAAAAAAAAAAAAAAAAAAAAAAANbbzMzywMDAAAAAAzUGzwMjtxsNMz2MGjxwMWYbAYWmtZmZrBBAAsAYAwYGmBzYmZDYmZYMjBD"
+],
+[
+"Herald of the Sun",
+"Mythic+",
+"CYEAAAAAAAAAAAAAAAAAAAAAAAAAAAwoZbbmZWGzMzAAAAAAYmyYGmZsNmthZ2mxYMGmxCbAYWmtZmZrBBAAsAYAwYGGYGzMbAzMDjZMYA"
+],
+[
+"Herald of the Sun",
+"Delves",
+"CYEAAAAAAAAAAAAAAAAAAAAAAAAAAAwoZbbmZWGjZmBAAAAAYmyYGMjtZmthZ2mxYMzwMWYDAzysNzMbNIAAgFADAYGGYGzYDYmZMjZMYA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/25",
+"tiers": [
+{
+"items": [
+[
+270173,
+"raid"
+],
+[
+270175,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [],
+"tier": "A"
+},
+{
+"items": [
+[
+270164,
+"raid"
+],
+[
+270165,
+"raid"
+],
+[
+273796,
+"dungeon"
+],
+[
+193762,
+"dungeon"
+],
+[
+250259,
+"dungeon"
+],
+[
+251792,
+"delves"
+],
+[
+274493,
+"delves"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+250228,
+"dungeon"
+],
+[
+158367,
+"dungeon"
+],
+[
+250229,
+"dungeon"
+],
+[
+250238,
+"dungeon"
+],
+[
+273797,
+"dungeon"
+],
+[
+250245,
+"dungeon"
+],
+[
+246304,
+"crafting"
+],
+[
+246305,
+"crafting"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+270168,
+"raid"
+],
+[
+270163,
+"raid"
+],
+[
+273795,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+],
+[
+246307,
+"crafting"
+],
+[
+246306,
+"crafting"
+],
+[
+241340,
+"crafting"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/25"
+},
+"71": {
+"bis": [
+{
+"rows": [
+[
+"Helm",
+271456,
+"",
+"The Twin Fangs"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271454,
+"",
+"BoE Trash Drop"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271459,
+"",
+"The Coiled Altar"
+],
+[
+"Bracers",
+237834,
+"",
+"Crafted"
+],
+[
+"Gloves",
+271457,
+"",
+"Entombed Sentinels"
+],
+[
+"Belt",
+268259,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271455,
+"",
+"Ula'tek"
+],
+[
+"Boots",
+237828,
+"",
+"Crafted"
+],
+[
+"Ring",
+252258,
+"",
+"Voidscar Arena"
+],
+[
+"Ring",
+273792,
+"",
+"Altar of Fangs"
+],
+[
+"Trinket",
+270173,
+"",
+"The Coiled Altar"
+],
+[
+"Trinket",
+270175,
+"",
+"Ula'tek"
+],
+[
+"Mainhand",
+268213,
+"",
+"The Coiled Altar"
+]
+],
+"title": "Best-in-Slot Gear for Arms Warriors"
+}
+],
+"builds": [
+[
+"Slayer",
+"Raid ST",
+"CcEAAAAAAAAAAAAAAAAAAAAAAAzMzsMzMmZGAAAghphxYmxyMzMzgxMDAAAAgZWmZAhxyyALgBMDTIzgNwMjtx2ALzsMAzMAYGGA"
+],
+[
+"Slayer",
+"Raid MT",
+"CcEAAAAAAAAAAAAAAAAAAAAAAAzMzsMzYmZGAAAghphxYmxyMzMzgxMDAAAAgZWmZgJMW2GYBMgZYCZGsBmZsN2GYZmtBYmBAzwA"
+],
+[
+"Slayer",
+"Mythic+",
+"CcEAAAAAAAAAAAAAAAAAAAAAAgZmZmFzYmZGAAAghphxYmZzMzMzYmxMDAAAAgxyMDMhxy2AbgBMDTIzgNwMDDDmlZ2GgZGAMDDA"
+],
+[
+"Colossus",
+"ST Raid",
+"CcEAAAAAAAAAAAAAAAAAAAAAAAzMzsMzwMDAAAghphxYmxyMzMzgxMDAAAAgZ2mZABwmZMsBDMj2oxgFwMjtx2MzmlZWGMzAAMDDA"
+],
+[
+"Colossus",
+"MT Raid",
+"CcEAAAAAAAAAAAAAAAAAAAAAAgZmxsMzMzYGAAAghphxYmxyMzMzgxMDAAAAgxmZgJLAbmxwCMwMajGDWAzM2GbjxsZ2GMzAAMDDA"
+],
+[
+"Colossus",
+"Mythic+",
+"CcEAAAAAAAAAAAAAAAAAAAAAAgZmxsMzMzYGAAAghphxYmZzMzMzYmxMDAAAAgxmZgJLAbmxwCMwMajGDWAzMMMGzmZbwMDAwMMA"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270173,
+"raid"
+],
+[
+270175,
+"raid"
+],
+[
+270164,
+"dungeon"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+273796,
+"raid"
+],
+[
+250259,
+"dungeon"
+],
+[
+250228,
+"raid"
+],
+[
+270165,
+"raid"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+250238,
+"dungeon"
+],
+[
+250229,
+"raid"
+],
+[
+193757,
+"dungeon"
+],
+[
+193762,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+270168,
+"dungeon"
+],
+[
+273797,
+"dungeon"
+],
+[
+270163,
+"dungeon"
+],
+[
+273795,
+"dungeon"
+]
+],
+"tier": "C"
+}
+],
+"updated": "2026/08/26"
+},
+"72": {
+"bis": [
+{
+"rows": [
+[
+"Helm",
+271456,
+"",
+"Murder Row"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271454,
+"",
+"Murder Row"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271459,
+"",
+"The Coiled Altar"
+],
+[
+"Bracers",
+237834,
+"",
+"Crafted"
+],
+[
+"Gloves",
+271457,
+"",
+"Den of Nalorakk"
+],
+[
+"Belt",
+268259,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271455,
+"",
+"Ula'tek"
+],
+[
+"Boots",
+268260,
+"",
+"Vashnik the Malignant"
+],
+[
+"Ring",
+252258,
+"",
+"Voidscar Arena"
+],
+[
+"Ring",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Trinket",
+270173,
+"",
+"The Coiled Altar"
+],
+[
+"Trinket",
+270175,
+"",
+"Ula'tek"
+],
+[
+"Mainhand",
+268213,
+"",
+"The Coiled Altar"
+],
+[
+"Offhand",
+237846,
+"",
+"Crafted"
+]
+],
+"title": "Best-in-Slot Gear for Fury Warriors"
+}
+],
+"builds": [
+[
+"Slayer",
+"Raid ST",
+"CgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgGDzMmZ2MzMzMDjZmZGzMzsMzMmZmZzYmBAAixy2ALgJYGmAzwGwMDjNAAYmhxYYMYM"
+],
+[
+"Slayer",
+"Raid MT",
+"CgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgGDjxMzmZmZmZYMzMzMzYmlZMmZMbmZmBAAixy2ALgJYGmAzwGwMzmxGAAMzwYWGGDGD"
+],
+[
+"Slayer",
+"Mythic+",
+"CgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgGDjxMzmZmZmZmZMzMzMzYmlZMmZMbmZmBAAixy2ALgJYGmAzwGwMzmBAAYmhxsMwgxA"
+],
+[
+"Mountain Thane",
+"ST Raid",
+"CgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgGDjZmZ2MzMzMDjZmZGzMzsMzMzMjZ5BGzMAAQYgNYZxoxMgMLYYBwMMzGAMzAMGYMgxA"
+],
+[
+"Mountain Thane",
+"MT Raid",
+"CgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgGDjZmZ2WmZmZMMmZmZmZMzyMzMzMmFzMzAAAhB2glFjGzAysgZsAYmNGAwMDADLmBYM"
+],
+[
+"Mountain Thane",
+"Mythic+",
+"CgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgGDjZMz2yMzMjZmxMzMzMjZWmZmZmxsYmZGAAIMwGssY0YGQmFMjFAzgBAMzAwwiZAGD"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270173,
+"raid"
+],
+[
+270175,
+"raid"
+],
+[
+270164,
+"dungeon"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+273796,
+"raid"
+],
+[
+250259,
+"dungeon"
+],
+[
+250228,
+"raid"
+],
+[
+270165,
+"raid"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+250238,
+"dungeon"
+],
+[
+250229,
+"raid"
+],
+[
+193757,
+"dungeon"
+],
+[
+193762,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+270168,
+"dungeon"
+],
+[
+273797,
+"dungeon"
+],
+[
+270163,
+"dungeon"
+],
+[
+273795,
+"dungeon"
+]
+],
+"tier": "C"
+}
+],
+"updated": "2026/08/26"
+},
+"73": {
+"bis": [
+{
+"rows": [
+[
+"Weapon",
+268209,
+"",
+"The Coiled Altar"
+],
+[
+"Shield",
+268196,
+"",
+"The Lost Explorers"
+],
+[
+"Head",
+271456,
+"",
+"Tier Set"
+],
+[
+"Neck",
+268265,
+"",
+"Ula'tek"
+],
+[
+"Shoulders",
+271454,
+"",
+"Tier Set"
+],
+[
+"Cloak",
+268253,
+"",
+"The Coiled Altar"
+],
+[
+"Chest",
+271459,
+"",
+"Tier Set"
+],
+[
+"Wrist",
+237834,
+"",
+"Crafting Blacksmithing"
+],
+[
+"Gloves",
+271457,
+"",
+"Tier Set"
+],
+[
+"Belt",
+268259,
+"",
+"The Coiled Altar"
+],
+[
+"Legs",
+271878,
+"",
+"Ula'tek"
+],
+[
+"Boots",
+237828,
+"",
+"Crafting Blacksmithing"
+],
+[
+"Ring",
+268252,
+"",
+"Sszorak"
+],
+[
+"Ring 2",
+268249,
+"",
+"Vashnik the Malignant"
+],
+[
+"Trinket",
+270173,
+"",
+"The Coiled Altar"
+],
+[
+"Trinket 2",
+270175,
+"",
+"Ula'tek"
+]
+],
+"title": "Best in Slot Gear for Protection Warrior"
+}
+],
+"builds": [
+[
+"Colossus",
+"Raid",
+"CkEAAAAAAAAAAAAAAAAAAAAAA0yAAAzMDzMzMzMzmxsMjxYmGmZGLjZmZYGzMAAAAYZAYGDAsZGDbkBmhFaMzCMDzgZDAwMDAYAjB"
+],
+[
+"Colossus",
+"Mythic+",
+"CkEAAAAAAAAAAAAAAAAAAAAAA0yAAAjZYmZmZGzmZmlZMGz0YGzYZMzMDzYmBAAAALDAzYAgNzYYjMwMsQjZWgZGzgZDAwMDAYAjB"
+],
+[
+"Mountain Thane",
+"Raid",
+"CkEAAAAAAAAAAAAAAAAAAAAAA0yAAAzMzYmZGzY2MzsMjxYmGmZYZMzMDzYmBAAAAbDAzYAGYD2WMaMDgZLmZDmxMDmNAYmBAgBMG"
+],
+[
+"Mountain Thane",
+"Mythic+",
+"CkEAAAAAAAAAAAAAAAAAAAAAAkBAAGzYmZmZmxsZmZZGjxImxwyMzMzYGmZAAAAwyMDwMGgB2glFjGzAYWiZ2AmZGGbAwMDAAzAjB"
+]
+],
+"err": [],
+"talentUpdated": "2026/08/12",
+"tiers": [
+{
+"items": [
+[
+270164,
+"raid"
+],
+[
+270173,
+"raid"
+],
+[
+270175,
+"raid"
+],
+[
+270165,
+"raid"
+],
+[
+270168,
+"raid"
+]
+],
+"tier": "S"
+},
+{
+"items": [
+[
+273796,
+"dungeon"
+],
+[
+270163,
+"raid"
+],
+[
+273797,
+"dungeon"
+],
+[
+158367,
+"dungeon"
+],
+[
+250259,
+"dungeon"
+],
+[
+250245,
+"dungeon"
+],
+[
+250229,
+"dungeon"
+]
+],
+"tier": "A"
+},
+{
+"items": [
+[
+250228,
+"dungeon"
+],
+[
+273795,
+"dungeon"
+],
+[
+193762,
+"dungeon"
+]
+],
+"tier": "B"
+},
+{
+"items": [
+[
+241340,
+"crafting"
+],
+[
+250238,
+"dungeon"
+],
+[
+193757,
+"dungeon"
+]
+],
+"tier": "C"
+},
+{
+"items": [
+[
+246304,
+"crafting"
+],
+[
+246305,
+"crafting"
+],
+[
+246306,
+"crafting"
+],
+[
+246307,
+"crafting"
+]
+],
+"tier": "D"
+}
+],
+"updated": "2026/08/30"
+}
+}

@@ -60,6 +60,7 @@ local TIER_COLORS = {
     B = { 0.00, 0.60, 1.00 },
     C = { 0.20, 0.80, 0.20 },
     D = { 0.60, 0.60, 0.60 },
+    F = { 0.55, 0.35, 0.35 },
 }
 
 local function ColorCode(rgb)

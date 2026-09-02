@@ -21,7 +21,7 @@ class guides, talent loadouts, and live character tracking in one place:
   strings per spec, organised by content type (Raid, Mythic+, Delves, PvP).
   Ships with suggested builds per spec: SimulationCraft's default profile,
   the live top-Mythic+-players build from Blizzard's API, and Icy Veins'
-  recommended builds (`tools/fetch_talents.py` regenerates
+  and Wowhead's recommended builds (`tools/fetch_talents.py` regenerates
   `Data/SiteLoadouts.lua`, verifying every string decodes to its spec) —
   each one Copy-able or one click from your vault.
 - **Personal Notes** — free-text notes per spec, kept between sessions.
@@ -56,20 +56,23 @@ BiS tab:
 - **Slot-by-slot guidance** in SpecSage's own words (which slots carry your
   tier set, what stats to look for on rings, what trinket styles suit the
   spec).
-- **A linked Best-in-Slot list per spec** from Icy Veins' gear guide
-  (`tools/fetch_bis.py` regenerates `Data/BiS.lua`): Overall, Mythic+ and
-  Raid lists, one clickable item per slot with its drop source, and an Add
-  button that puts it straight on your personal checklist. One site's list
-  at the time of the release, and it goes stale every patch; the tab says so.
+- **Linked Best-in-Slot lists per spec** from both Icy Veins (Overall,
+  Mythic+, Raid) and Wowhead (`tools/fetch_bis.py` regenerates
+  `Data/BiS.lua`; Wowhead is harvested in a browser by
+  `tools/wowhead_harvest.js`): one clickable item per slot with its drop
+  source, and an Add button that puts it straight on your personal
+  checklist. Each is one site's list at the time of the release, and it
+  goes stale every patch; the tab says so.
 - **A trinket tier list per spec**, from two sources side by side
   (`tools/fetch_trinkets.py` regenerates `Data/Trinkets.lua`): bloodmallet.com's
   public SimulationCraft trinket sims — each row shows the simulated DPS gain
   over no trinket and an S/A/B/C tier relative to the best one, for
-  single-target, 3-target and 5-target fights — and Icy Veins' editorial
-  trinket ranking as its own list, with Icy Veins' tier also shown beside
-  every sim row. Healers and the few specs SimC has no current-patch profile
-  for yet get the Icy Veins list only, and the tab says why. Neither is a
-  verdict for your fight, and the tab says that too.
+  single-target, 3-target and 5-target fights — and Icy Veins' and
+  Wowhead's editorial trinket rankings as their own lists, with both sites'
+  tiers also shown beside every sim row. Healers and the few specs SimC has
+  no current-patch profile for yet get the site lists only, and the tab
+  says why. None of it is a verdict for your fight, and the tab says that
+  too.
 - **A personal checklist** you fill from whichever source you trust: pick a
   slot, shift-click an item link (or paste an item ID or name) from chat, a
   guide, or the dungeon journal, and SpecSage marks each entry equipped /

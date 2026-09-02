@@ -1,0 +1,1197 @@
+{
+"158366": {
+"name": "Charged Sandstone Band",
+"quality": 4,
+"slot": "Ring"
+},
+"158367": {
+"name": "Merektha's Fang",
+"quality": 4,
+"slot": "Trinket"
+},
+"158368": {
+"name": "Sethraliss' Defiled Relic",
+"quality": 4,
+"slot": "Trinket"
+},
+"158374": {
+"name": "Tiny Electromental in a Jar",
+"quality": 4,
+"slot": "Trinket"
+},
+"159304": {
+"name": "Goldfeather Boots",
+"quality": 4,
+"slot": "Feet"
+},
+"159317": {
+"name": "Whirling Dervish Sash",
+"quality": 4,
+"slot": "Waist"
+},
+"159327": {
+"name": "Sand-Shined Snakeskin Sandals",
+"quality": 4,
+"slot": "Feet"
+},
+"159380": {
+"name": "Arc-Glass Bindings",
+"quality": 4,
+"slot": "Wrist"
+},
+"159388": {
+"name": "Sabatons of Coruscating Energy",
+"quality": 4,
+"slot": "Feet"
+},
+"159459": {
+"name": "Ritual Binder's Ring",
+"quality": 4,
+"slot": "Ring"
+},
+"159617": {
+"name": "Lustrous Golden Plumage",
+"quality": 4,
+"slot": "Trinket"
+},
+"159618": {
+"name": "Mchimba's Ritual Bandages",
+"quality": 4,
+"slot": "Trinket"
+},
+"159636": {
+"name": "Staff of the Lightning Serpent",
+"quality": 4,
+"slot": "Weapon"
+},
+"159667": {
+"name": "Vessel of Last Rites",
+"quality": 4,
+"slot": "Off-hand"
+},
+"162544": {
+"name": "Jade Ophidian Band",
+"quality": 4,
+"slot": "Ring"
+},
+"193701": {
+"name": "Algeth'ar Puzzle Box",
+"quality": 3,
+"slot": "Trinket"
+},
+"193748": {
+"name": "Kyrakka's Searing Embers",
+"quality": 4,
+"slot": "Trinket"
+},
+"193757": {
+"name": "Ruby Whelp Shell",
+"quality": 4,
+"slot": "Trinket"
+},
+"193762": {
+"name": "Blazebinder's Hoof",
+"quality": 4,
+"slot": "Trinket"
+},
+"193763": {
+"name": "Fireproof Drape",
+"quality": 4,
+"slot": "Back"
+},
+"230639": {
+"name": "Astral Gladiator's Insignia of Alacrity",
+"quality": 4,
+"slot": "Trinket"
+},
+"237828": {
+"name": "Spellbreaker's March",
+"quality": 4,
+"slot": "Feet"
+},
+"237831": {
+"name": "Spellbreaker's Rebuke",
+"quality": 4,
+"slot": "Off-hand"
+},
+"237834": {
+"name": "Spellbreaker's Bracers",
+"quality": 4,
+"slot": "Wrist"
+},
+"237837": {
+"name": "Farstrider's Mercy",
+"quality": 4,
+"slot": "Weapon"
+},
+"237840": {
+"name": "Spellbreaker's Warglaive",
+"quality": 4,
+"slot": "Weapon"
+},
+"237846": {
+"name": "Blood Knight's Warblade",
+"quality": 4,
+"slot": "Weapon"
+},
+"237850": {
+"name": "Farstrider's Chopper",
+"quality": 4,
+"slot": "Weapon"
+},
+"239045": {
+"name": "Mantle of Ceremonial Ascension",
+"quality": 4,
+"slot": "Shoulder"
+},
+"239648": {
+"name": "Martyr's Bindings",
+"quality": 4,
+"slot": "Wrist"
+},
+"239649": {
+"name": "Martyr's Waistwrap",
+"quality": 4,
+"slot": "Waist"
+},
+"241340": {
+"name": "Magister's Alchemist Stone",
+"quality": 4,
+"slot": "Trinket"
+},
+"244569": {
+"name": "Silvermoon Agent's Sneakers",
+"quality": 4,
+"slot": "Feet"
+},
+"244572": {
+"name": "Silvermoon Agent's Mantle",
+"quality": 4,
+"slot": "Shoulder"
+},
+"244573": {
+"name": "Silvermoon Agent's Utility Belt",
+"quality": 4,
+"slot": "Waist"
+},
+"244575": {
+"name": "Silvermoon Agent's Handwraps",
+"quality": 4,
+"slot": "Hands"
+},
+"244576": {
+"name": "Silvermoon Agent's Deflectors",
+"quality": 4,
+"slot": "Wrist"
+},
+"244577": {
+"name": "Farstrider's Razor Talons",
+"quality": 4,
+"slot": "Feet"
+},
+"244581": {
+"name": "Farstrider's Trophy Belt",
+"quality": 4,
+"slot": "Waist"
+},
+"244584": {
+"name": "Farstrider's Plated Bracers",
+"quality": 4,
+"slot": "Wrist"
+},
+"245750": {
+"name": "Darkmoon Deck: Void",
+"quality": 4,
+"slot": "Trinket"
+},
+"245769": {
+"name": "Aln'hara Lantern",
+"quality": 4,
+"slot": "Off-hand"
+},
+"245829": {
+"name": "Darkmoon Deck: Hunt",
+"quality": 4,
+"slot": "Trinket"
+},
+"245846": {
+"name": "Darkmoon Deck: Rot",
+"quality": 4,
+"slot": "Trinket"
+},
+"245855": {
+"name": "Darkmoon Deck: Blood",
+"quality": 4,
+"slot": "Trinket"
+},
+"246304": {
+"name": "Darkmoon Dominion: Hunt",
+"quality": 4,
+"slot": "Trinket"
+},
+"246305": {
+"name": "Darkmoon Dominion: Blood",
+"quality": 4,
+"slot": "Trinket"
+},
+"246306": {
+"name": "Darkmoon Dominion: Rot",
+"quality": 4,
+"slot": "Trinket"
+},
+"246307": {
+"name": "Darkmoon Dominion: Void",
+"quality": 4,
+"slot": "Trinket"
+},
+"248583": {
+"name": "Drum of Renewed Bonds",
+"quality": 4,
+"slot": "Trinket"
+},
+"249343": {
+"name": "Gaze of the Alnseer",
+"quality": 4,
+"slot": "Trinket"
+},
+"249346": {
+"name": "Vaelgor's Final Stare",
+"quality": 4,
+"slot": "Trinket"
+},
+"250214": {
+"name": "Lightspire Core",
+"quality": 4,
+"slot": "Trinket"
+},
+"250215": {
+"name": "Freightrunner's Flask",
+"quality": 4,
+"slot": "Trinket"
+},
+"250224": {
+"name": "Mindpiercer's Sigil",
+"quality": 4,
+"slot": "Trinket"
+},
+"250225": {
+"name": "Void Execution Mandate",
+"quality": 4,
+"slot": "Trinket"
+},
+"250228": {
+"name": "Resonant Bellowstone",
+"quality": 4,
+"slot": "Trinket"
+},
+"250229": {
+"name": "Idol of the War Loa",
+"quality": 4,
+"slot": "Trinket"
+},
+"250238": {
+"name": "Seed of the Devouring Wild",
+"quality": 4,
+"slot": "Trinket"
+},
+"250243": {
+"name": "Manaheart's Binding Flame",
+"quality": 4,
+"slot": "Trinket"
+},
+"250244": {
+"name": "Permafrost Essence",
+"quality": 4,
+"slot": "Trinket"
+},
+"250245": {
+"name": "Tumor of the Swarm",
+"quality": 4,
+"slot": "Trinket"
+},
+"250248": {
+"name": "Mycolic Medicine",
+"quality": 4,
+"slot": "Trinket"
+},
+"250254": {
+"name": "Seed of Radiant Hope",
+"quality": 4,
+"slot": "Trinket"
+},
+"250255": {
+"name": "Unstable Felheart Crystal",
+"quality": 4,
+"slot": "Trinket"
+},
+"250259": {
+"name": "Sapling of the Dawnroot",
+"quality": 4,
+"slot": "Trinket"
+},
+"250462": {
+"name": "Forgotten Farstrider's Insignia",
+"quality": 4,
+"slot": "Trinket"
+},
+"251124": {
+"name": "Gauntlets of Fevered Defense",
+"quality": 4,
+"slot": "Hands"
+},
+"251125": {
+"name": "Felsoaked Soles",
+"quality": 4,
+"slot": "Feet"
+},
+"251132": {
+"name": "Speakeasy Shroud",
+"quality": 4,
+"slot": "Back"
+},
+"251135": {
+"name": "Fury-fletched Armlets",
+"quality": 4,
+"slot": "Wrist"
+},
+"251136": {
+"name": "Signet of Snarling Servitude",
+"quality": 4,
+"slot": "Ring"
+},
+"251142": {
+"name": "Pendant of Malefic Fury",
+"quality": 4,
+"slot": "Neck"
+},
+"251148": {
+"name": "Pilfered Precious Band",
+"quality": 4,
+"slot": "Ring"
+},
+"251153": {
+"name": "Arctic Explorer's Legwraps",
+"quality": 4,
+"slot": "Feet"
+},
+"251159": {
+"name": "War Trial Vestments",
+"quality": 4,
+"slot": "Chest"
+},
+"251189": {
+"name": "Rootwalker Harness",
+"quality": 4,
+"slot": "Waist"
+},
+"251190": {
+"name": "Bloodthorn Burnous",
+"quality": 4,
+"slot": "Back"
+},
+"251194": {
+"name": "Lightwarden's Bind",
+"quality": 4,
+"slot": "Ring"
+},
+"251487": {
+"name": "Prismatic Focusing Iris",
+"quality": 3,
+"slot": null
+},
+"251513": {
+"name": "Loa Worshiper's Band",
+"quality": 4,
+"slot": "Ring"
+},
+"251782": {
+"name": "Withered Saptor's Paw",
+"quality": 4,
+"slot": "Trinket"
+},
+"251783": {
+"name": "Lost Idol of the Hash'ey",
+"quality": 4,
+"slot": "Trinket"
+},
+"251784": {
+"name": "Sylvan Wakrapuku",
+"quality": 4,
+"slot": "Trinket"
+},
+"251785": {
+"name": "Void-Reaper's Libram",
+"quality": 4,
+"slot": "Trinket"
+},
+"251786": {
+"name": "Ever-Collapsing Void Fissure",
+"quality": 4,
+"slot": "Trinket"
+},
+"251787": {
+"name": "Sealed Chaos Urn",
+"quality": 4,
+"slot": "Trinket"
+},
+"251788": {
+"name": "Gift of Light",
+"quality": 4,
+"slot": "Trinket"
+},
+"251789": {
+"name": "Consecrated Chalice",
+"quality": 4,
+"slot": "Trinket"
+},
+"251790": {
+"name": "Desecrated Chalice",
+"quality": 4,
+"slot": "Trinket"
+},
+"251791": {
+"name": "Holy Retributor's Order",
+"quality": 4,
+"slot": "Trinket"
+},
+"251792": {
+"name": "Glorious Crusader's Keepsake",
+"quality": 4,
+"slot": "Trinket"
+},
+"252258": {
+"name": "Sickening Signet of Atroxus",
+"quality": 4,
+"slot": "Ring"
+},
+"252957": {
+"name": "Tangle of Vibrant Vines",
+"quality": 4,
+"slot": "Trinket"
+},
+"264507": {
+"name": "Crucible of Erratic Energies",
+"quality": 4,
+"slot": "Trinket"
+},
+"264694": {
+"name": "Ultradon Cuirass",
+"quality": 4,
+"slot": "Trinket"
+},
+"264701": {
+"name": "Cosmic Bell",
+"quality": 4,
+"slot": "Trinket"
+},
+"264878": {
+"name": "Astalor's Anguish Agitator",
+"quality": 4,
+"slot": "Trinket"
+},
+"265657": {
+"name": "Fiber of Living Agony",
+"quality": 4,
+"slot": "Trinket"
+},
+"268196": {
+"name": "Venom-Slashed Scuteward",
+"quality": 4,
+"slot": "Off-hand"
+},
+"268197": {
+"name": "Spine of the Hissing Abyss",
+"quality": 4,
+"slot": "Off-hand"
+},
+"268202": {
+"name": "Jaw of the Shackled Goddess",
+"quality": 4,
+"slot": "Weapon"
+},
+"268207": {
+"name": "Caustic Repose Greatbow",
+"quality": 4,
+"slot": "Weapon"
+},
+"268209": {
+"name": "Aman'muso, Warlord's Vengeance",
+"quality": 4,
+"slot": "Weapon"
+},
+"268211": {
+"name": "Baleful Hexblade",
+"quality": 4,
+"slot": "Weapon"
+},
+"268213": {
+"name": "Maze-roa, Warlord's Fury",
+"quality": 4,
+"slot": "Weapon"
+},
+"268215": {
+"name": "Abyssal Broodfiend's Bardiche",
+"quality": 4,
+"slot": "Weapon"
+},
+"268216": {
+"name": "Cursed Reliquary Cincture",
+"quality": 4,
+"slot": "Waist"
+},
+"268217": {
+"name": "Rising Tide Wristguards",
+"quality": 4,
+"slot": "Wrist"
+},
+"268218": {
+"name": "Nek'zali's Spiritwalkers",
+"quality": 4,
+"slot": "Feet"
+},
+"268225": {
+"name": "Coiled Hex Legguards",
+"quality": 4,
+"slot": "Legs"
+},
+"268231": {
+"name": "Soulslither Spaulders",
+"quality": 4,
+"slot": "Shoulder"
+},
+"268233": {
+"name": "Ferocious Scaleboots",
+"quality": 4,
+"slot": "Feet"
+},
+"268234": {
+"name": "Ruthless Slaughtergrips",
+"quality": 4,
+"slot": "Hands"
+},
+"268235": {
+"name": "Vestment of the Awakening",
+"quality": 4,
+"slot": "Chest"
+},
+"268239": {
+"name": "Shellbound Bracers",
+"quality": 4,
+"slot": "Wrist"
+},
+"268240": {
+"name": "Restless Spirit Shackles",
+"quality": 4,
+"slot": "Wrist"
+},
+"268246": {
+"name": "Frothing Venom Spaulders",
+"quality": 4,
+"slot": "Shoulder"
+},
+"268247": {
+"name": "Breakwater Boots",
+"quality": 4,
+"slot": "Feet"
+},
+"268248": {
+"name": "Amani Summoning Shawl",
+"quality": 4,
+"slot": "Back"
+},
+"268249": {
+"name": "Vile Alchemist's Band",
+"quality": 4,
+"slot": "Ring"
+},
+"268251": {
+"name": "Amulet of the Twin Fangs",
+"quality": 4,
+"slot": "Neck"
+},
+"268252": {
+"name": "Apex Brute's Claw Ring",
+"quality": 4,
+"slot": "Ring"
+},
+"268253": {
+"name": "Silken Voodoo Drape",
+"quality": 4,
+"slot": "Back"
+},
+"268254": {
+"name": "Serpentine Mixing Belt",
+"quality": 4,
+"slot": "Waist"
+},
+"268255": {
+"name": "Cackling Soultreads",
+"quality": 4,
+"slot": "Feet"
+},
+"268256": {
+"name": "Sash of the Forlorn Vessel",
+"quality": 4,
+"slot": "Waist"
+},
+"268257": {
+"name": "Caustic Chain-Wrapped Sash",
+"quality": 4,
+"slot": "Waist"
+},
+"268258": {
+"name": "Boots of the Reckless Wayfarer",
+"quality": 4,
+"slot": "Feet"
+},
+"268259": {
+"name": "Girdle of Toxic Regret",
+"quality": 4,
+"slot": "Waist"
+},
+"268260": {
+"name": "Scaled Fiend's Warboots",
+"quality": 4,
+"slot": "Feet"
+},
+"268261": {
+"name": "Bespittled Slitherslippers",
+"quality": 4,
+"slot": "Feet"
+},
+"268262": {
+"name": "Bubblefin Splash Guard",
+"quality": 4,
+"slot": "Off-hand"
+},
+"268263": {
+"name": "Frostscale's Mystic Frond",
+"quality": 4,
+"slot": "Off-hand"
+},
+"268265": {
+"name": "Aqirbane Reliquary",
+"quality": 4,
+"slot": "Neck"
+},
+"268266": {
+"name": "Alluring Bubbleband",
+"quality": 4,
+"slot": "Ring"
+},
+"270160": {
+"name": "First Mate's Shellward",
+"quality": 4,
+"slot": "Trinket"
+},
+"270161": {
+"name": "Fang of Umbral Malignance",
+"quality": 4,
+"slot": "Trinket"
+},
+"270162": {
+"name": "Soulcoiler Ritual Vessel",
+"quality": 4,
+"slot": "Trinket"
+},
+"270163": {
+"name": "Sszorak's Ferocity",
+"quality": 4,
+"slot": "Trinket"
+},
+"270164": {
+"name": "Gebbo's Bottomless Bag",
+"quality": 4,
+"slot": "Trinket"
+},
+"270165": {
+"name": "Keeper's Seething Core",
+"quality": 4,
+"slot": "Trinket"
+},
+"270166": {
+"name": "Vashnik's Sanguine Rancor",
+"quality": 4,
+"slot": "Trinket"
+},
+"270167": {
+"name": "Wavecaller's Seastone",
+"quality": 4,
+"slot": "Trinket"
+},
+"270168": {
+"name": "Font of Venomous Rage",
+"quality": 4,
+"slot": "Trinket"
+},
+"270169": {
+"name": "Hex Lord's Dooming Idol",
+"quality": 4,
+"slot": "Trinket"
+},
+"270170": {
+"name": "Vexhul's Everflowing Gland",
+"quality": 4,
+"slot": "Trinket"
+},
+"270171": {
+"name": "Preternatural Antivenom",
+"quality": 4,
+"slot": "Trinket"
+},
+"270173": {
+"name": "Zul'jin's Guillotine Technique",
+"quality": 4,
+"slot": "Trinket"
+},
+"270174": {
+"name": "Idol of the Howling Nexus",
+"quality": 4,
+"slot": "Trinket"
+},
+"270175": {
+"name": "Voracious Heart of Ula'tek",
+"quality": 4,
+"slot": "Trinket"
+},
+"270602": {
+"name": "Venomous Gladiator's Badge of Ferocity",
+"quality": 4,
+"slot": "Trinket"
+},
+"270603": {
+"name": "Venomous Gladiator's Insignia of Alacrity",
+"quality": 4,
+"slot": "Trinket"
+},
+"271092": {
+"name": "Jan'thrazet, the Soul Fang",
+"quality": 4,
+"slot": "Weapon"
+},
+"271093": {
+"name": "Zatha'tek, Breath of Corruption",
+"quality": 4,
+"slot": "Weapon"
+},
+"271454": {
+"name": "Raging Pauldrons of the Jade Warlord",
+"quality": 4,
+"slot": "Shoulder"
+},
+"271455": {
+"name": "Greaves of the Jade Warlord",
+"quality": 4,
+"slot": "Legs"
+},
+"271456": {
+"name": "Tempered Horns of the Jade Warlord",
+"quality": 4,
+"slot": "Head"
+},
+"271457": {
+"name": "Jeweled Gauntlets of the Jade Warlord",
+"quality": 4,
+"slot": "Hands"
+},
+"271459": {
+"name": "Cuirass of the Jade Warlord",
+"quality": 4,
+"slot": "Chest"
+},
+"271463": {
+"name": "Pauldrons of the Consecrated Flame",
+"quality": 4,
+"slot": "Shoulder"
+},
+"271464": {
+"name": "Greaves of the Consecrated Flame",
+"quality": 4,
+"slot": "Legs"
+},
+"271465": {
+"name": "Warhelm of the Consecrated Flame",
+"quality": 4,
+"slot": "Head"
+},
+"271466": {
+"name": "Gauntlets of the Consecrated Flame",
+"quality": 4,
+"slot": "Hands"
+},
+"271468": {
+"name": "Bulwark of the Consecrated Flame",
+"quality": 4,
+"slot": "Chest"
+},
+"271472": {
+"name": "Baleful Grave-Knight's Gibbets",
+"quality": 4,
+"slot": "Shoulder"
+},
+"271474": {
+"name": "Baleful Grave-Knight's Casque",
+"quality": 4,
+"slot": "Head"
+},
+"271475": {
+"name": "Baleful Grave-Knight's Deathgrips",
+"quality": 4,
+"slot": "Hands"
+},
+"271477": {
+"name": "Baleful Grave-Knight's Breastplate",
+"quality": 4,
+"slot": "Chest"
+},
+"271481": {
+"name": "Hissing Mantle of the Ophidian Oracle",
+"quality": 4,
+"slot": "Shoulder"
+},
+"271482": {
+"name": "Leggings of the Ophidian Oracle",
+"quality": 4,
+"slot": "Legs"
+},
+"271483": {
+"name": "Serpent Crown of the Ophidian Oracle",
+"quality": 4,
+"slot": "Head"
+},
+"271484": {
+"name": "Hexing Grips of the Ophidian Oracle",
+"quality": 4,
+"slot": "Hands"
+},
+"271486": {
+"name": "Fanged Raiment of the Ophidian Oracle",
+"quality": 4,
+"slot": "Chest"
+},
+"271490": {
+"name": "Jaws of the Skulking Viper",
+"quality": 4,
+"slot": "Shoulder"
+},
+"271491": {
+"name": "Skulking Viper's Coiled Legwraps",
+"quality": 4,
+"slot": "Legs"
+},
+"271492": {
+"name": "Skulking Viper's Weeping Fangs",
+"quality": 4,
+"slot": "Head"
+},
+"271493": {
+"name": "Skulking Viper's Hidepiercers",
+"quality": 4,
+"slot": "Hands"
+},
+"271495": {
+"name": "Skulking Viper's Scuteplate",
+"quality": 4,
+"slot": "Chest"
+},
+"271499": {
+"name": "Calamitous Echo's Sundered Peaks",
+"quality": 4,
+"slot": "Shoulder"
+},
+"271500": {
+"name": "Earthen Pillars of Calamity",
+"quality": 4,
+"slot": "Legs"
+},
+"271501": {
+"name": "Calamitous Echo's Magmashapers",
+"quality": 4,
+"slot": "Head"
+},
+"271502": {
+"name": "Calamitous Echo's Ebon Greathorns",
+"quality": 4,
+"slot": "Hands"
+},
+"271504": {
+"name": "Searing Caldera of Calamity",
+"quality": 4,
+"slot": "Chest"
+},
+"271508": {
+"name": "Chosen Bloodslayer's Voodoo Guards",
+"quality": 4,
+"slot": "Shoulder"
+},
+"271509": {
+"name": "Chosen Bloodslayer's Reinforced Pants",
+"quality": 4,
+"slot": "Legs"
+},
+"271510": {
+"name": "Chosen Bloodslayer's Spirit Shroud",
+"quality": 4,
+"slot": "Head"
+},
+"271511": {
+"name": "Chosen Bloodslayer's Fanged Grips",
+"quality": 4,
+"slot": "Hands"
+},
+"271513": {
+"name": "Chosen Bloodslayer's Banded Poncho",
+"quality": 4,
+"slot": "Chest"
+},
+"271517": {
+"name": "Tassels of the Monkey King",
+"quality": 4,
+"slot": "Shoulder"
+},
+"271518": {
+"name": "Pantaloons of the Monkey King",
+"quality": 4,
+"slot": "Legs"
+},
+"271519": {
+"name": "Monkey King's Unyielding Visage",
+"quality": 4,
+"slot": "Head"
+},
+"271520": {
+"name": "Monkey King's Fighting Fists",
+"quality": 4,
+"slot": "Hands"
+},
+"271522": {
+"name": "Battle Gi of the Monkey King",
+"quality": 4,
+"slot": "Chest"
+},
+"271526": {
+"name": "Enigmatic Dreamwatcher's Plumage",
+"quality": 4,
+"slot": "Shoulder"
+},
+"271527": {
+"name": "Enigmatic Dreamwatcher's Leggings",
+"quality": 4,
+"slot": "Legs"
+},
+"271528": {
+"name": "Enigmatic Dreamwatcher's Somnolent Stare",
+"quality": 4,
+"slot": "Head"
+},
+"271529": {
+"name": "Enigmatic Dreamwatcher's Gauntlets",
+"quality": 4,
+"slot": "Hands"
+},
+"271531": {
+"name": "Enigmatic Dreamwatcher's Lunar Raiment",
+"quality": 4,
+"slot": "Chest"
+},
+"271535": {
+"name": "Abyssal Doomhound's Jaws",
+"quality": 4,
+"slot": "Shoulder"
+},
+"271536": {
+"name": "Abyssal Doomhound's Legwraps",
+"quality": 4,
+"slot": "Legs"
+},
+"271537": {
+"name": "Abyssal Doomhound's Relentless Stare",
+"quality": 4,
+"slot": "Head"
+},
+"271538": {
+"name": "Abyssal Doomhound's Studded Gauntlets",
+"quality": 4,
+"slot": "Hands"
+},
+"271540": {
+"name": "Abyssal Doomhound's Coreguard",
+"quality": 4,
+"slot": "Chest"
+},
+"271544": {
+"name": "Spires of the Damned Necrolyte",
+"quality": 4,
+"slot": "Shoulder"
+},
+"271545": {
+"name": "Damned Necrolyte's Leg Bindings",
+"quality": 4,
+"slot": "Legs"
+},
+"271547": {
+"name": "Damned Necrolyte's Charred Grasps",
+"quality": 4,
+"slot": "Hands"
+},
+"271549": {
+"name": "Damned Necrolyte's Rattling Robes",
+"quality": 4,
+"slot": "Chest"
+},
+"271553": {
+"name": "Cosmic Penitent's Echoing Screams",
+"quality": 4,
+"slot": "Shoulder"
+},
+"271554": {
+"name": "Enveloping Legwraps of the Cosmic Penitent",
+"quality": 4,
+"slot": "Legs"
+},
+"271555": {
+"name": "Cosmic Penitent's Truesight",
+"quality": 4,
+"slot": "Head"
+},
+"271556": {
+"name": "Cosmic Penitent's Celestial Grips",
+"quality": 4,
+"slot": "Hands"
+},
+"271558": {
+"name": "Cosmic Penitent's Eclipsing Robes",
+"quality": 4,
+"slot": "Chest"
+},
+"271562": {
+"name": "Primal Leywarden's Manaflux",
+"quality": 4,
+"slot": "Shoulder"
+},
+"271563": {
+"name": "Primal Leywarden's Tailored Legwraps",
+"quality": 4,
+"slot": "Legs"
+},
+"271564": {
+"name": "Crown of the Primal Leywarden",
+"quality": 4,
+"slot": "Head"
+},
+"271565": {
+"name": "Primal Leywarden's Manashapers",
+"quality": 4,
+"slot": "Hands"
+},
+"271567": {
+"name": "Crest of the Primal Leywarden",
+"quality": 4,
+"slot": "Chest"
+},
+"271874": {
+"name": "Venomkeeper's Horrific Cowl",
+"quality": 4,
+"slot": "Head"
+},
+"271875": {
+"name": "Gaze of the Coiled Watcher",
+"quality": 4,
+"slot": "Head"
+},
+"271876": {
+"name": "Awoken Dreadfang Cuirass",
+"quality": 4,
+"slot": "Chest"
+},
+"271878": {
+"name": "Chausses of Unbound Rancor",
+"quality": 4,
+"slot": "Legs"
+},
+"273649": {
+"name": "Stormbound Emblem of Dazar",
+"quality": 4,
+"slot": "Trinket"
+},
+"273777": {
+"name": "Poison-Proof Stompers",
+"quality": 4,
+"slot": "Feet"
+},
+"273779": {
+"name": "Nocuous Focal Fang",
+"quality": 4,
+"slot": "Off-hand"
+},
+"273792": {
+"name": "Band of the Amani Warlord",
+"quality": 4,
+"slot": "Ring"
+},
+"273794": {
+"name": "Knot of Writhing Serpents",
+"quality": 4,
+"slot": "Trinket"
+},
+"273795": {
+"name": "Coiled Fangstone",
+"quality": 4,
+"slot": "Trinket"
+},
+"273796": {
+"name": "Vile Vial of Volatile Venom",
+"quality": 4,
+"slot": "Trinket"
+},
+"273797": {
+"name": "Tattered Amani War Banner",
+"quality": 4,
+"slot": "Trinket"
+},
+"274493": {
+"name": "Effigy of Ula'tek's Faithful",
+"quality": 4,
+"slot": "Trinket"
+},
+"274494": {
+"name": "Chiral Marrowgrafter",
+"quality": 4,
+"slot": "Trinket"
+},
+"274495": {
+"name": "Pulse Seeker's Oculus",
+"quality": 4,
+"slot": "Trinket"
+},
+"274496": {
+"name": "Ophidian Bone Whistle",
+"quality": 4,
+"slot": "Trinket"
+},
+"274497": {
+"name": "Spirit-Rending Poison",
+"quality": 4,
+"slot": "Trinket"
+},
+"274498": {
+"name": "Spirit Ward",
+"quality": 4,
+"slot": "Trinket"
+},
+"274499": {
+"name": "Toxiferous Transfusion",
+"quality": 4,
+"slot": "Trinket"
+},
+"280091": {
+"name": "Latent Purifier",
+"quality": 3,
+"slot": "Trinket"
+},
+"280123": {
+"name": "Sharp Axe Holster",
+"quality": 3,
+"slot": "Trinket"
+}
+}

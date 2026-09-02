@@ -2815,8 +2815,13 @@ do
                         end
                         check(#listEntry.list > 0 and (not isSim or #listEntry.list <= 15),
                             format("spec %d '%s' list has rows (sim lists at most 15)", specID, listEntry.title), #listEntry.list)
-                        check(listEntry.list[1] and listEntry.list[1].tier == "S",
-                            format("spec %d '%s' top trinket is tier S", specID, listEntry.title))
+                        -- A sim list always opens with the best trinket (S by
+                        -- construction); an editorial list may leave its S row
+                        -- empty (Wowhead does for a couple of specs), so it
+                        -- only has to open at S or A.
+                        local top = listEntry.list[1] and listEntry.list[1].tier
+                        check(top == "S" or (not isSim and top == "A"),
+                            format("spec %d '%s' top trinket is tier S (or A for an editorial list)", specID, listEntry.title), top)
                     end
                     check(sorted, format("spec %d sim lists are sorted by gain, best first", specID))
                     check(simRowsCarrySiteTier, format("spec %d siteTier values are valid tiers", specID))
@@ -3115,8 +3120,51 @@ do
         end
     end
     check(bisSpecs == 40, "all 40 specs have a linked BiS list", bisSpecs)
-    check(buildSpecs == 40, "all 40 specs have Icy Veins builds", buildSpecs)
-    check(builds >= 100, "over 100 Icy Veins builds ship in total", builds)
+    check(buildSpecs == 40, "all 40 specs have site builds", buildSpecs)
+    check(builds >= 100, "over 100 site builds ship in total", builds)
+
+    -- Wowhead sits beside Icy Veins on every spec: a Wowhead BiS list, a
+    -- Wowhead trinket list, Wowhead builds, and whTier on sim trinket rows.
+    local whBis, whTrinkets, whBuilds, ivBuilds, whTierRows = 0, 0, 0, 0, 0
+    for _, classEntry in ipairs(GuideStore:GetClasses()) do
+        for _, specID in ipairs(GuideStore:GetClassSpecs(classEntry.token)) do
+            if specID < 9000 then
+                local bis = GuideStore:GetBiS(specID)
+                local sawWH, sawIV = false, false
+                for _, listEntry in ipairs(bis.lists) do
+                    if listEntry.title:find("^Wowhead") then sawWH = true end
+                    if listEntry.title:find("^Icy Veins") then sawIV = true end
+                end
+                check(sawWH and sawIV, format("spec %d has both an Icy Veins and a Wowhead BiS list", specID))
+                if sawWH then whBis = whBis + 1 end
+                local trinkets = GuideStore:GetTrinkets(specID)
+                for _, listEntry in ipairs(trinkets.lists) do
+                    if listEntry.title == "Wowhead" then whTrinkets = whTrinkets + 1 end
+                    for _, row in ipairs(listEntry.list) do
+                        if row.whTier then whTierRows = whTierRows + 1 end
+                    end
+                end
+                local site = GuideStore:GetSiteLoadouts(specID)
+                local specWH, specIV = 0, 0
+                for _, build in ipairs(site.builds) do
+                    if build.site == "Wowhead" then specWH = specWH + 1 elseif build.site == "Icy Veins" then specIV = specIV + 1 end
+                    check(build.site == "Wowhead" or build.site == "Icy Veins", format("spec %d build names its site", specID), build.site)
+                end
+                check(specWH > 0 and specIV > 0, format("spec %d has builds from both sites", specID), specWH .. "/" .. specIV)
+                whBuilds, ivBuilds = whBuilds + specWH, ivBuilds + specIV
+            end
+        end
+    end
+    check(whBis == 40, "all 40 specs have a Wowhead BiS list", whBis)
+    check(whTrinkets == 40, "all 40 specs have a Wowhead trinket list", whTrinkets)
+    check(whBuilds >= 150 and ivBuilds >= 100, "both sites contribute builds in bulk", whBuilds .. "/" .. ivBuilds)
+    check(whTierRows >= 200, "most sim trinket rows carry a Wowhead tier", whTierRows)
+    local _, badTier = silently(function()
+        return GuideStore:RegisterTrinkets(9702, { lists = { { title = "x", list = { { itemID = 1, name = "n", tier = "S", whTier = "Z" } } } } })
+    end)
+    check(badTier == false, "RegisterTrinkets rejects an invalid whTier")
+    check(GuideStore:RegisterTrinkets(9702, { lists = { { title = "x", list = { { itemID = 1, name = "n", tier = "F" } } } } }) == true,
+        "RegisterTrinkets accepts tier F (Wowhead uses it)")
 
     -- Validation.
     local _, bad = silently(function() return GuideStore:RegisterBiS(9701, { lists = { { title = "x", list = { { slot = "Cape", itemID = 1, name = "n" } } } } }) end)

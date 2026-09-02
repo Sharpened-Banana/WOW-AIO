@@ -374,6 +374,45 @@ words (`SiteBuildCategory`: Mythic+/keys/dungeon/AoE → Mythic+, delve →
 Delves, raid/single/cleave → Raid, else Other). They sit alongside, not in
 place of, the guide's own `mplusLoadout`/`raidLoadout`/`mplusMetaLoadout`.
 
+## Wowhead as a second source (2026-09-02)
+
+Wowhead's guide pages are rendered client-side and return 403 to any
+non-browser client, so the Python generators cannot read them. What does
+work: a page on wowhead.com can `fetch()` its sibling guide pages
+same-origin, and the response carries the guide body as Wowhead's own
+`[markup]` (item tables as `[table]…[item=ID]`, the trinket list as
+`[tier-list]…[tier-label]S[/tier-label]…[icon-badge=ID display-options=raid]`,
+talent builds as `[copy="Raid"]CODE[/copy]`). `tools/wowhead_harvest.js`,
+run in the browser (devtools console, or Claude's Chrome tool) on any
+lightweight wowhead.com page — a heavy guide page freezes the renderer —
+fetches and parses all 80 pages for the 40 specs into `window.__ss`, which
+is dumped as `tools/wowhead_dump.json`. Item names and equip slots the
+tables omit come from Wowhead's public tooltip endpoint
+(`nether.wowhead.com/tooltip/item/<id>`, which plain HTTP *can* reach),
+cached in `tools/wowhead_items.json` by `tools/wowhead_items.py`;
+`tools/wowhead.py` turns the dump into the shapes the three generators
+consume. Regenerating from a fresh dump is: harvest in browser → save dump
+→ run the three scripts.
+
+What it adds, alongside Icy Veins on every spec (never replacing it):
+
+- **BiS**: a `Wowhead` list per spec (or one per hero tree, `Wowhead
+  (Deathbringer)` / `Wowhead (San'layn)`, where the guide splits them);
+  the Icy Veins lists are now titled `Icy Veins Overall/Mythic+/Raid` so
+  the toggle names its source. Wowhead's own slot labels vary ("Helm",
+  "Cape", "Trinket (Raid)", "2h Weapon", "Ring 1") and a few tables have
+  no slot column at all; both are normalised through the tooltip slot.
+- **Trinkets**: a `Wowhead` list per spec (its single S–F ranking, with
+  each item's source from the site's raid/dungeon/delves/crafting filter
+  tags), `whTier` on every sim row the site lists, rendered as "Icy Veins
+  A · Wowhead S" in the row detail, and the same "site rates X S-tier but
+  the sims don't have it" note logic for Wowhead. `F` joined the valid
+  tier letters.
+- **Talent builds**: Wowhead's import codes with the hero tree folded into
+  the label ("Fel-Scarred: Raid (Best)"), decoded and spec-checked exactly
+  like Icy Veins'. Each build now carries `site`, and the Loadouts row and
+  vault name use it.
+
 ## Item stat ranks and trinket tiers on tooltips (v1.5, Modules/ItemRanks.lua)
 
 Two annotations share one tooltip hook. **Trinket tier**: an item that

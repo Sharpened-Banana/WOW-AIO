@@ -320,6 +320,8 @@ local TIER_COLORS = {
     A = { 0.64, 0.21, 0.93 },
     B = { 0.00, 0.60, 1.00 },
     C = { 0.20, 0.80, 0.20 },
+    D = { 0.60, 0.60, 0.60 },
+    F = { 0.55, 0.35, 0.35 },
 }
 
 -- Layers a soft top-to-bottom gradient and a 1px top-edge highlight seam over
@@ -1098,7 +1100,7 @@ function Codex:EnsureBiSWidgets()
     local parent = self.scrollChild
 
     local bisListToggle = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-    bisListToggle:SetSize(90, 20)
+    bisListToggle:SetSize(170, 20)
     bisListToggle:SetScript("OnClick", function() self:CycleBiSList() end)
     SkinButton(bisListToggle)
     self.bisListToggle = bisListToggle
@@ -1109,7 +1111,7 @@ function Codex:EnsureBiSWidgets()
     -- styles (Single Target / 3 Targets / 5 Targets), sitting beside the
     -- section header.
     local trinketToggle = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-    trinketToggle:SetSize(110, 20)
+    trinketToggle:SetSize(130, 20)
     trinketToggle:SetScript("OnClick", function() self:CycleTrinketList() end)
     SkinButton(trinketToggle)
     self.trinketToggle = trinketToggle
@@ -1291,13 +1293,15 @@ function Codex:RenderTrinketSection(pool, index, parent, width, y, specID)
         -- or says the site does not list it, so the two views are compared
         -- on the row rather than by flipping between lists.
         if entry.gain ~= nil then
-            if entry.siteTier then
-                local st = TIER_COLORS[entry.siteTier] or MUTED_COLOR
-                detail[#detail + 1] = format("Icy Veins |cff%02x%02x%02x%s|r|cff8a97a5",
-                    math.floor(st[1] * 255 + 0.5), math.floor(st[2] * 255 + 0.5), math.floor(st[3] * 255 + 0.5),
-                    entry.siteTier)
-            else
-                detail[#detail + 1] = "not on Icy Veins' list"
+            for _, site in ipairs({ { "Icy Veins", entry.siteTier }, { "Wowhead", entry.whTier } }) do
+                if site[2] then
+                    local st = TIER_COLORS[site[2]] or MUTED_COLOR
+                    detail[#detail + 1] = format("%s |cff%02x%02x%02x%s|r|cff8a97a5", site[1],
+                        math.floor(st[1] * 255 + 0.5), math.floor(st[2] * 255 + 0.5), math.floor(st[3] * 255 + 0.5),
+                        site[2])
+                else
+                    detail[#detail + 1] = format("not on %s' list", site[1])
+                end
             end
         end
         local detailText = #detail > 0 and ("  |cff8a97a5" .. table.concat(detail, " · ") .. "|r") or ""
@@ -1739,12 +1743,13 @@ function Codex:RenderLoadouts(specID, guide)
             row:ClearAllPoints()
             row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
             row:SetSize(width, ROW_HEIGHT)
-            row.name:SetText(format("Icy Veins: %s (patch %s)", build.label, site.patch or "?"))
+            local siteName = build.site or "Icy Veins"
+            row.name:SetText(format("%s: %s (patch %s)", siteName, build.label, site.patch or "?"))
             row.name:SetTextColor(TEXT_PRIMARY_COLOR[1], TEXT_PRIMARY_COLOR[2], TEXT_PRIMARY_COLOR[3])
             row.copyButton:Show()
             row.copyButton:SetScript("OnClick", function() self:ShowCopyDialog(build.string) end)
             local kind = {
-                addName = "Icy Veins: " .. build.label,
+                addName = siteName .. ": " .. build.label,
                 category = SiteBuildCategory(build.label),
             }
             row.addButton:SetText("Add to my vault")

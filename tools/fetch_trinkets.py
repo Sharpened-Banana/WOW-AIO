@@ -36,6 +36,9 @@ import sys
 import time
 import urllib.request
 
+sys.path.insert(0, "tools")
+import wowhead  # noqa: E402
+
 TOP_N = 15
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36"
 
@@ -208,6 +211,8 @@ def emit_row(r):
     parts.append("tier = %s" % lua_str(r["tier"]))
     if r.get("siteTier"):
         parts.append("siteTier = %s" % lua_str(r["siteTier"]))
+    if r.get("whTier"):
+        parts.append("whTier = %s" % lua_str(r["whTier"]))
     if r.get("source"):
         parts.append("source = %s" % lua_str(r["source"]))
     if r.get("onUse") is not None:
@@ -226,10 +231,12 @@ def main():
     out.append("--    the spec's no-trinket baseline at the highest item level it was simmed")
     out.append("--    at, tiered S/A/B/C by share of the best trinket's gain in the same list")
     out.append("--    (S >= 90%, A >= 78%, B >= 62%, C below). `siteTier` on a sim row is Icy")
-    out.append("--    Veins' tier for the same item, when they list it.")
+    out.append("--    Veins' tier for the same item, when they list it; `whTier` is Wowhead's.")
     out.append("--  * icy-veins.com's per-spec \"Trinket Rankings\" table, an editorial S..D")
-    out.append("--    tier list, as its own list on every spec (the only list for healers and")
-    out.append("--    for specs SimC has no current-tier profile for yet).")
+    out.append("--    tier list, as its own list on every spec (the only sim-free list for")
+    out.append("--    healers and for specs SimC has no current-tier profile for yet).")
+    out.append("--  * wowhead.com's per-spec trinket tier list (S..F, harvested in a browser by")
+    out.append("--    tools/wowhead_harvest.js into tools/wowhead_dump.json), as its own list.")
     out.append("-- A `note` records where the two disagree. Neither is a verdict for any given")
     out.append("-- fight - see DESIGN.md's \"Trinket tier lists\".")
     out.append("-- Generated: %s UTC" % datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M"))
@@ -238,7 +245,8 @@ def main():
     out.append("if not ns.GuideStore then return end")
     out.append("")
 
-    counts = {"sim": 0, "iv": 0, "notes": 0}
+    counts = {"sim": 0, "iv": 0, "wh": 0, "notes": 0}
+    dump = wowhead.load()
     for classToken, specID, bmSlug, ivSlug, ivRole in SPECS:
         charts = {}
         for style, _ in FIGHT_STYLES:
@@ -264,9 +272,14 @@ def main():
         for t in (ivTiers or []):
             for it in t["items"]:
                 ivTierOf.setdefault(it["itemID"], t["tier"])
+        whTiers = wowhead.trinket_tiers(dump, specID)
+        whTierOf = {}
+        for t in whTiers:
+            for it in t["items"]:
+                whTierOf.setdefault(it["itemID"], t["tier"])
 
         out.append("-- %s %d (%s | %s)" % (classToken, specID, bmSlug, ivSlug))
-        if not charts and not ivTiers:
+        if not charts and not ivTiers and not whTiers:
             out.append("ns.GuideStore:RegisterTrinkets(%d, { unavailable = %s })" % (
                 specID, lua_str("neither bloodmallet nor Icy Veins had a trinket list for this spec when "
                                 "tools/fetch_trinkets.py last ran")))
@@ -282,6 +295,9 @@ def main():
                            % (settings.get("simc_hash", "?"), settings.get("tier", "?"), first.get("timestamp", "?")))
         if ivTiers:
             sources.append("Icy Veins %s gear guide, updated %s" % (ivSlug.replace("-", " ").title(), ivUpdated or "?"))
+        if whTiers:
+            sources.append("Wowhead %s gear guide, updated %s" % (ivSlug.replace("-", " ").title(),
+                                                                 wowhead.updated(dump, specID) or "?"))
 
         out.append("ns.GuideStore:RegisterTrinkets(%d, {" % specID)
         out.append("  source = %s," % lua_str("; ".join(sources)))
@@ -300,6 +316,7 @@ def main():
             out.append("    { title = %s, fightStyle = %s, list = {" % (lua_str(title), lua_str(style)))
             for r in rows:
                 r["siteTier"] = ivTierOf.get(r["itemID"])
+                r["whTier"] = whTierOf.get(r["itemID"])
                 simIDs.add(r["itemID"])
                 out.append(emit_row(r))
             out.append("    }},")
@@ -309,15 +326,23 @@ def main():
                 for it in t["items"]:
                     out.append(emit_row({"itemID": it["itemID"], "name": it["name"], "tier": t["tier"]}))
             out.append("    }},")
+        if whTiers:
+            out.append("    { title = \"Wowhead\", fightStyle = \"wowhead\", list = {")
+            for t in whTiers:
+                for it in t["items"]:
+                    out.append(emit_row({"itemID": it["itemID"], "name": it["name"], "tier": t["tier"],
+                                         "source": it["source"]}))
+            out.append("    }},")
         out.append("  },")
 
-        if charts and ivTiers:
-            missing = [it["name"] for t in ivTiers if t["tier"] == "S"
-                       for it in t["items"] if it["itemID"] not in simIDs]
-            if missing:
-                notes.append("Icy Veins also rates %s S-tier, which the sims either did not run or "
-                             "ranked outside the top %d - worth a look if you have it."
-                             % (", ".join(missing), TOP_N))
+        if charts:
+            for siteName, siteTiers in (("Icy Veins", ivTiers or []), ("Wowhead", whTiers)):
+                missing = [it["name"] for t in siteTiers if t["tier"] == "S"
+                           for it in t["items"] if it["itemID"] not in simIDs]
+                if missing:
+                    notes.append("%s also rates %s S-tier, which the sims either did not run or "
+                                 "ranked outside the top %d - worth a look if you have it."
+                                 % (siteName, ", ".join(missing), TOP_N))
         if notes:
             out.append("  note = %s," % lua_str(" ".join(notes)))
             counts["notes"] += 1
@@ -327,14 +352,16 @@ def main():
             counts["sim"] += 1
         if ivTiers:
             counts["iv"] += 1
-        print("%-12s %5d %-24s sim=%d IV=%s%s" % (classToken, specID, bmSlug, len(charts),
-              "yes" if ivTiers else "no", " (note)" if notes else ""))
+        if whTiers:
+            counts["wh"] += 1
+        print("%-12s %5d %-24s sim=%d IV=%s WH=%s%s" % (classToken, specID, bmSlug, len(charts),
+              "yes" if ivTiers else "no", "yes" if whTiers else "no", " (note)" if notes else ""))
 
     path = "SpecSage/Data/Trinkets.lua"
     with open(path, "w") as f:
         f.write("\n".join(out))
-    print("wrote %s: %d specs with sim lists, %d with an Icy Veins list, %d with notes"
-          % (path, counts["sim"], counts["iv"], counts["notes"]))
+    print("wrote %s: %d specs with sim lists, %d with an Icy Veins list, %d with a Wowhead list, %d with notes"
+          % (path, counts["sim"], counts["iv"], counts["wh"], counts["notes"]))
 
 
 if __name__ == "__main__":
