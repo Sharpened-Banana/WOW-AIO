@@ -70,25 +70,34 @@ local GetSpecializationInfoByID = (C_SpecializationInfo and C_SpecializationInfo
 -- small margin over that, with tab width/stride untouched so "Consumables"
 -- still fits its button. CONTENT_WIDTH grows by the same 86 to keep its own
 -- invariant (frame width minus 310px of chrome).
-local FRAME_WIDTH, FRAME_HEIGHT = 1070, 520
+local FRAME_WIDTH, FRAME_HEIGHT = 1070, 600
 local CLASS_RAIL_WIDTH = 120
 local SPEC_RAIL_WIDTH = 150
 local TITLE_HEIGHT = 26
-local TAB_HEIGHT = 24
+local TAB_HEIGHT = 28
 local TAB_BUTTON_WIDTH = 84
 local TAB_BUTTON_STRIDE = 86
 local CONTENT_WIDTH = 760
-local PADDING = 10
-local LINE_GAP = 3
-local PARAGRAPH_GAP = 6
-local GROUP_GAP = 10
+local PADDING = 12
+local LINE_GAP = 5
+local PARAGRAPH_GAP = 10
+local GROUP_GAP = 16
+
+-- Interactive list rows (BiS checklist, trinket tier list, loadouts): the
+-- row frame's height and the y-cursor step between rows. Raised from 18/20
+-- in the 2026-09-02 readability pass, together with the font sizes below;
+-- the two must move together or text clips against the next row.
+local ROW_HEIGHT = 22
+local ROW_STEP = 26
+local STAT_ROW_HEIGHT = 20
+local STAT_ROW_STEP = 24
 
 -- Options is last, and is the one tab whose content ignores the class/spec
 -- rails entirely: settings are global (or per-character), not per-spec.
 local TABS = { "Overview", "Stats", "Rotation", "Cooldowns", "Consumables", "BiS", "Loadouts", "Notes", "Options" }
 
 -- Options tab row metrics.
-local OPTION_ROW_HEIGHT = 22
+local OPTION_ROW_HEIGHT = 26
 local OPTION_CHECK_SIZE = 20
 local OPTION_STEP_BUTTON_WIDTH = 24
 local OPTION_VALUE_WIDTH = 58
@@ -132,21 +141,24 @@ local ACCENT_GLOW_COLOR = { 0.776, 0.608, 0.427, 0.38 }
 local TEXT_PRIMARY_COLOR = { 0.906, 0.929, 0.953 }   -- #E7EDF3
 local TEXT_SECONDARY_COLOR = { 0.651, 0.706, 0.761 } -- #A6B4C2
 
--- Bundled PT Sans (SIL OFL, SpecSage/Fonts/) for rotation/stat/button body
--- text; the frame title and tab labels keep Blizzard's own GameFontNormal
--- (Friz Quadrata) so the Codex still reads as native game chrome rather than
--- a foreign overlay. Built once at load and reused via SetFontObject rather
--- than a fresh CreateFont per row.
-local BODY_FONT_PATH = "Interface\\AddOns\\SpecSage\\Fonts\\PTSans-Regular.ttf"
-local BODY_FONT_BOLD_PATH = "Interface\\AddOns\\SpecSage\\Fonts\\PTSans-Bold.ttf"
+-- Body text uses the game's own standard font (Friz Quadrata via
+-- STANDARD_TEXT_FONT, the face every default tooltip and panel uses) at 13pt
+-- for rows and 14pt for paragraphs. The 2026-09-01 pass bundled PT Sans at
+-- 11/12pt for a "modern" look; the owner found it harder to read than the
+-- game's own face and too small, so this is the 2026-09-02 readability pass:
+-- Blizzard's font, two sizes up, and the row metrics above opened to match.
+-- Friz has no bold cut in the client, so headers use the same face and rely
+-- on their colour and divider rule to stand out. Built once at load and
+-- reused via SetFontObject rather than a fresh CreateFont per row.
+local BODY_FONT_PATH = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
 local SpecSageBodyFont = CreateFont("SpecSageBodyFont")
-SpecSageBodyFont:SetFont(BODY_FONT_PATH, 12, "")
+SpecSageBodyFont:SetFont(BODY_FONT_PATH, 14, "")
 SpecSageBodyFont:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
 local SpecSageBodyFontSmall = CreateFont("SpecSageBodyFontSmall")
-SpecSageBodyFontSmall:SetFont(BODY_FONT_PATH, 11, "")
+SpecSageBodyFontSmall:SetFont(BODY_FONT_PATH, 13, "")
 SpecSageBodyFontSmall:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
 local SpecSageBoldFontSmall = CreateFont("SpecSageBoldFontSmall")
-SpecSageBoldFontSmall:SetFont(BODY_FONT_BOLD_PATH, 11, "")
+SpecSageBoldFontSmall:SetFont(BODY_FONT_PATH, 13, "")
 SpecSageBoldFontSmall:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
 
 -- BiS tab: status-tag colours (DESIGN.md: green/yellow/grey) and the default
@@ -620,7 +632,7 @@ local function PlaceLine(pool, index, parent, y, width, text, opts)
     if not ok or not height or height <= 0 then
         local charsPerLine = math.max(20, math.floor(textWidth / 6))
         local lineCount = math.max(1, math.ceil((#(text or "")) / charsPerLine))
-        height = lineCount * 14
+        height = lineCount * 17
     end
 
     -- Headers reserve a little extra room below the text for the divider
@@ -671,7 +683,7 @@ local function PlaceStatRow(pool, index, parent, y, width, label, value, muted)
     local row = AcquireStatRow(pool, index, parent)
     row:ClearAllPoints()
     row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
-    row:SetSize(width, 16)
+    row:SetSize(width, STAT_ROW_HEIGHT)
 
     row.label:SetText(label or "")
     if muted then
@@ -684,7 +696,7 @@ local function PlaceStatRow(pool, index, parent, y, width, label, value, muted)
     row.value:SetTextColor(TEXT_PRIMARY_COLOR[1], TEXT_PRIMARY_COLOR[2], TEXT_PRIMARY_COLOR[3])
 
     row:Show()
-    return y - 18
+    return y - STAT_ROW_STEP
 end
 
 -- Hides the unused tail of a pool and sizes the scroll child to fit what was
@@ -1104,7 +1116,7 @@ function Codex:RenderTrinketSection(pool, index, parent, width, y, specID)
         local row = AcquireTrinketRow(rowPool, i, parent)
         row:ClearAllPoints()
         row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
-        row:SetSize(width, 18)
+        row:SetSize(width, ROW_HEIGHT)
         row.text:SetWidth(width - TRINKET_TAG_WIDTH - TRINKET_GAIN_WIDTH - 8)
 
         local tier = TIER_COLORS[entry.tier] or MUTED_COLOR
@@ -1151,7 +1163,7 @@ function Codex:RenderTrinketSection(pool, index, parent, width, y, specID)
         row.gain:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])
 
         row:Show()
-        y = y - 20
+        y = y - ROW_STEP
     end
     HidePoolFrom(rowPool, #active.list + 1)
 
@@ -1253,7 +1265,7 @@ function Codex:RenderBiS(guide, specID)
         local empty = AcquireBiSRow(rowPool, 1, parent)
         empty:ClearAllPoints()
         empty:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
-        empty:SetSize(width, 18)
+        empty:SetSize(width, ROW_HEIGHT)
         empty.text:SetWidth(width - BIS_ROW_TEXT_WIDTH_INSET)
         empty.text:SetText("no BiS entries yet - add one below")
         empty.text:SetTextColor(MUTED_COLOR[1], MUTED_COLOR[2], MUTED_COLOR[3])
@@ -1261,14 +1273,14 @@ function Codex:RenderBiS(guide, specID)
         empty.itemID = nil
         empty.deleteButton:Hide()
         empty:Show()
-        y = y - 20
+        y = y - ROW_STEP
         HidePoolFrom(rowPool, 2)
     else
         for i, entry in ipairs(list) do
             local row = AcquireBiSRow(rowPool, i, parent)
             row:ClearAllPoints()
             row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
-            row:SetSize(width, 18)
+            row:SetSize(width, ROW_HEIGHT)
             row.text:SetWidth(width - BIS_ROW_TEXT_WIDTH_INSET)
 
             local displayName, quality = BiSModule:ResolveDisplay(entry)
@@ -1294,7 +1306,7 @@ function Codex:RenderBiS(guide, specID)
             end)
 
             row:Show()
-            y = y - 20
+            y = y - ROW_STEP
         end
         HidePoolFrom(rowPool, #list + 1)
     end
@@ -1512,7 +1524,7 @@ function Codex:RenderLoadouts(specID, guide)
         if loadout then
             suggested:ClearAllPoints()
             suggested:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
-            suggested:SetSize(width, 18)
+            suggested:SetSize(width, ROW_HEIGHT)
 
             -- kind.attribution names the real source (SimC vs Blizzard's
             -- own API) rather than a hardcoded phrase - see
@@ -1539,7 +1551,7 @@ function Codex:RenderLoadouts(specID, guide)
             end)
 
             suggested:Show()
-            y = y - 20
+            y = y - ROW_STEP
         else
             suggested:Hide()
         end
@@ -1553,20 +1565,20 @@ function Codex:RenderLoadouts(specID, guide)
         local empty = AcquireLoadoutRow(pool, 1, parent)
         empty:ClearAllPoints()
         empty:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
-        empty:SetSize(width, 18)
+        empty:SetSize(width, ROW_HEIGHT)
         empty.name:SetText("no loadouts saved for this spec yet")
         empty.name:SetTextColor(MUTED_COLOR[1], MUTED_COLOR[2], MUTED_COLOR[3])
         empty.copyButton:Hide()
         empty.deleteButton:Hide()
         empty:Show()
-        y = y - 20
+        y = y - ROW_STEP
         HidePoolFrom(pool, 2)
     else
         for i, loadout in ipairs(list) do
             local row = AcquireLoadoutRow(pool, i, parent)
             row:ClearAllPoints()
             row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
-            row:SetSize(width, 18)
+            row:SetSize(width, ROW_HEIGHT)
 
             row.name:SetText(format("%s  |cff888888[%s]|r", loadout.name, loadout.category))
             row.name:SetTextColor(TEXT_PRIMARY_COLOR[1], TEXT_PRIMARY_COLOR[2], TEXT_PRIMARY_COLOR[3])
@@ -1581,7 +1593,7 @@ function Codex:RenderLoadouts(specID, guide)
             end)
 
             row:Show()
-            y = y - 20
+            y = y - ROW_STEP
         end
         HidePoolFrom(pool, #list + 1)
     end
@@ -2213,7 +2225,7 @@ function Codex:RefreshSpecRail(classToken)
         local btn = pool[index]
         if not btn then
             btn = CreateFrame("Button", nil, rail)
-            btn:SetSize(SPEC_RAIL_WIDTH - 8, 28)
+            btn:SetSize(SPEC_RAIL_WIDTH - 8, 32)
 
             btn.icon = btn:CreateTexture(nil, "ARTWORK")
             btn.icon:SetSize(24, 24)
@@ -2336,7 +2348,7 @@ function Codex:BuildClassRail()
     local y = -4
     for _, entry in ipairs(ns.GuideStore:GetClasses()) do
         local btn = CreateFrame("Button", nil, rail)
-        btn:SetSize(CLASS_RAIL_WIDTH - 8, 26)
+        btn:SetSize(CLASS_RAIL_WIDTH - 8, 30)
         btn:SetPoint("TOPLEFT", rail, "TOPLEFT", 4, y)
 
         local icon = btn:CreateTexture(nil, "ARTWORK")

@@ -557,13 +557,23 @@ with a faked vertical gradient (`Texture:SetGradient`, no bundled art) and a
 1px top-edge highlight seam (`ApplyPanelChrome` in `UI/Codex.lua`), a warm
 bronze accent (`ACCENT_COLOR`) that shifts to the selected class's own color
 for the active-tab underline, and flat bordered buttons (`SkinButton`)
-replacing the stock gray 3D-bevel `UIPanelButtonTemplate` look. Body/button
-text uses bundled PT Sans (SIL OFL, `SpecSage/Fonts/PTSans-Regular.ttf` +
-`-Bold.ttf`, license in that same folder); the frame title and tab labels
-keep Blizzard's own Friz Quadrata (`GameFontNormal`) so the window still
-reads as native game chrome rather than a foreign overlay. Section headers
-(`PlaceLine(..., { isHeader = true })`) get a bold label plus a hairline
-divider instead of a bare colored line.
+replacing the stock gray 3D-bevel `UIPanelButtonTemplate` look. Section
+headers (`PlaceLine(..., { isHeader = true })`) get a hairline divider
+instead of a bare colored line.
+
+**Readability pass (2026-09-02):** the 2026-09-01 pass bundled PT Sans (SIL
+OFL) at 11/12pt for body text; the owner found it harder to read than the
+game's own face, too small, and the rows too cramped. Body text is now the
+client's standard font (`STANDARD_TEXT_FONT`, Friz Quadrata — the same face
+every default tooltip and panel uses) at 13pt for rows and 14pt for
+paragraphs, and the layout opened to match: list rows 18→22px on a 20→26px
+step (`ROW_HEIGHT`/`ROW_STEP`), stat rows 16→20 on 18→24, option rows
+22→26, line/paragraph/group gaps 3/6/10→5/10/16, wrapped-text height
+estimate 14→17px per line, tabs 24→28px, rail buttons 26/28→30/32px, and
+the frame 520→600px tall to keep the same amount on screen. Friz has no
+bold cut in the client, so "bold" headers use the same face and lean on
+their colour and divider. The PT Sans files and their license were removed
+from `SpecSage/Fonts/` since nothing references them now.
 
 **Rounded corners and a glow texture (2026-09-02 follow-up):** the main
 Codex frame's corners are now genuinely rounded, and buttons get a soft
