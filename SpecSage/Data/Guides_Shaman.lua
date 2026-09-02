@@ -25,6 +25,17 @@ local ADDON, ns = ...
 -- Lightning Bolt/Chain Lightning the guide never mentioned at all, despite
 -- it now carrying a large share of the spec's damage baseline (no talent
 -- gate on it in the APL).
+-- A later pass (2026-09-01) enriched all three specs' overview/rotation/
+-- cooldowns/tips with opener sequences, single-target-vs-AoE priority
+-- nuances, cooldown-syncing notes, and hero-talent-caused differences,
+-- drawing on guide sites (Wowhead/Icy Veins/Maxroll/Method/Boostmatch),
+-- now a permitted source per repo policy (see
+-- .claude/skills/specsage-refresh/SKILL.md). All prose was rewritten in
+-- SpecSage's own words rather than copied from any source, and every
+-- spellID added was verified against Wowhead rather than guessed. This
+-- pass built on top of the already-corrected Tempest/Elemental Blast
+-- priority above (Earth Shock stays deprioritized, no stale mechanics
+-- reintroduced).
 -- This is community-maintained conventional guidance (stat priorities and
 -- rotations that match the spec's long-standing design) — not a claim of
 -- bleeding-edge sim-perfect optimization.
@@ -39,8 +50,8 @@ ns.GuideStore:RegisterSpec("SHAMAN", 262, {
   role = "DAMAGER",
   overview = {
     "Elemental Shaman is a ranged caster spec that blends instant-cast Lava Burst and Lightning Bolt spam with Maelstrom-fueled Earth Shock and Elemental Blast casts, plus a free empowered Lightning Bolt/Chain Lightning (Tempest) that fires once enough Maelstrom is built, all while maintaining Flame Shock on the target as a bridge between Lava Burst casts. It plays with a mix of instant and hard-cast spells that reward positioning discipline during movement-heavy fights.",
-    "The core resource is Maelstrom, generated from spells like Lightning Bolt, and spent on Earth Shock and Elemental Blast — with Tempest now carrying a large share of the spec's damage as a free, automatically-triggered empowered cast. The defining mechanic is Lava Surge, a proc that makes Lava Burst instant and resets its cooldown — chaining these procs with Flame Shock uptime is central to sustained damage.",
-    "Elemental brings strong burst through Storm Elemental/Fire Elemental-style cooldowns, solid AoE via Earthquake and Chain Lightning, and useful raid utility (Bloodlust, Hex), making it a flexible pick for both single-target progression fights and add-heavy Mythic+ content.",
+    "The core resource is Maelstrom, generated from spells like Lightning Bolt, and spent on Earth Shock and Elemental Blast — with Tempest now carrying a large share of the spec's damage as a free, automatically-triggered empowered cast. Don't let Maelstrom sit at cap; Elemental Blast and Tempest come ahead of Earth Shock in priority, so plan your spending around those first. The defining mechanic is Lava Surge, a proc that makes Lava Burst instant and resets its cooldown — chaining these procs with Flame Shock uptime is central to sustained damage.",
+    "Elemental brings strong single-target damage and big-pull AoE via Earthquake and Chain Lightning, useful raid utility (Bloodlust, Hex), and burst through Storm Elemental/Fire Elemental-style cooldowns — though recent tuning nerfed those cooldowns, so damage is flatter across a fight than it used to be. It's noticeably weaker on small 2-3 target cleave than at pure single target or full-pull AoE, so weigh that when a fight sits in that awkward middle ground.",
   },
   statPriority = {
     { stat = "primary", note = "Intellect, passive" },
@@ -50,35 +61,47 @@ ns.GuideStore:RegisterSpec("SHAMAN", 262, {
     { stat = "versatility" },
   },
   rotation = {
+    { title = "Opener", steps = {
+        { spellID = 191634, text = "Stormkeeper roughly 1.5-3 seconds before the pull, so it's ready to empower your first casts" },
+        { spellID = 51505, text = "Lava Burst about 1.5 seconds before the pull to land right as combat starts" },
+        { spellID = 443454, text = "Ancestral Swiftness (if talented) to fire an instant cast into the opening seconds" },
+        { spellID = 114050, text = "Ascendance alongside trinkets and your burst potion for the opening cooldown stack" },
+        { spellID = 51505, text = "Lava Burst again once you're in the Ascendance window" },
+    }},
     { title = "Single Target", steps = {
         { spellID = 188389, text = "Flame Shock kept active on the target" },
-        { spellID = 51505, text = "Lava Burst on cooldown, prioritized when Lava Surge procs" },
-        { text = "Elemental Blast and Tempest ahead of Earth Shock as your priority Maelstrom spenders" },
-        { spellID = 8042, text = "Earth Shock to spend remaining Maelstrom once it's built up" },
-        { spellID = 188196, text = "Lightning Bolt as a Maelstrom generator and filler" },
-        { spellID = 198067, text = "Fire Elemental on cooldown for a sustained burst window" },
-        { spellID = 114050, text = "Ascendance on cooldown for a burst window, ideally alongside Fire/Storm Elemental" },
-        { spellID = 191634, text = "Stormkeeper before a burst window to empower your next casts" },
+        { spellID = 191634, text = "Stormkeeper on cooldown" },
+        { spellID = 443454, text = "Ancestral Swiftness on cooldown for a free instant cast" },
+        { spellID = 114050, text = "Ascendance on cooldown for a burst window" },
+        { spellID = 117014, text = "Elemental Blast, if you don't already have its buff and are at 1 or fewer Tempest stacks" },
+        { spellID = 454009, text = "Tempest once Master of the Elements is available to consume" },
+        { spellID = 8042, text = "Earth Shock to spend remaining Maelstrom once the Elemental Blast/Tempest priorities above are handled" },
+        { spellID = 51505, text = "Lava Burst only when a Lava Surge proc makes it instant — otherwise let it sit behind your Maelstrom spenders" },
+        { spellID = 188196, text = "Lightning Bolt as filler and Maelstrom generation" },
         { text = "Never let Flame Shock fall off — it feeds Lava Surge procs" },
     }},
     { title = "AoE", steps = {
         { spellID = 61882, text = "Earthquake as the primary AoE Maelstrom spender" },
-        { spellID = 188443, text = "Chain Lightning as the primary AoE Maelstrom generator" },
+        { spellID = 188443, text = "Chain Lightning as the primary AoE Maelstrom generator/filler" },
+        { text = "Voltaic Blaze applies Flame Shock to multiple targets at once, so lean on it to spread the dot on a big pull" },
         { spellID = 188389, text = "Flame Shock spread to priority targets" },
         { spellID = 51505, text = "Lava Burst on cooldown, still valuable while cleaving" },
         { spellID = 198067, text = "Fire Elemental for burst during add waves" },
-        { text = "Prioritize Earthquake/Chain Lightning over single-target casts once 3+ targets are engaged" },
+        { text = "This spec is strongest at 1 target or a big pull — expect a weaker showing at 2-3 target cleave" },
     }},
     { title = "Opener Notes", steps = {
         { text = "Apply Flame Shock immediately and build Maelstrom before your first Elemental Blast/Earth Shock" },
         { text = "Line up Fire Elemental/Storm Elemental with trinkets for maximum burst" },
+        { text = "Don't hold Stormkeeper or Ascendance too long waiting for a 'perfect' window — recent tuning flattened the spec's burst profile, so using them promptly on cooldown outweighs hoarding them" },
+        { text = "Hero talent choice changes where you're strongest: Farseer favors single target and small cleave, while Stormbringer favors mass AoE pulls" },
     }},
   },
   cooldowns = {
     { spellID = 198067, text = "Fire Elemental — core offensive cooldown, use on cooldown" },
     { spellID = 192249, text = "Storm Elemental — alternative burst cooldown depending on talents" },
-    { spellID = 114050, text = "Ascendance — burst cooldown, line it up with your elemental and Stormkeeper" },
-    { spellID = 191634, text = "Stormkeeper — empowers your next Lightning Bolt/Chain Lightning casts, use before a burst window" },
+    { spellID = 114050, text = "Ascendance — burst cooldown, line it up with your elemental and Stormkeeper; don't hold it long waiting for a better window" },
+    { spellID = 191634, text = "Stormkeeper — empowers your next Lightning Bolt/Chain Lightning casts; fire it roughly 1.5-3 seconds before a pull or burst window rather than banking it" },
+    { spellID = 443454, text = "Ancestral Swiftness — free instant cast, use on cooldown rather than saving it" },
     { spellID = 108271, text = "Astral Shift — defensive damage-reduction cooldown" },
     { spellID = 2825, text = "Bloodlust — raid-wide haste cooldown, coordinate timing with the raid" },
     { spellID = 51514, text = "Hex — crowd control utility for dangerous adds" },
@@ -120,9 +143,11 @@ ns.GuideStore:RegisterSpec("SHAMAN", 262, {
   },
   tips = {
     "Keep Flame Shock active on the target at all times — it's the engine behind Lava Surge procs.",
-    "Don't cap Maelstrom — spend it on Elemental Blast/Earth Shock before it overflows.",
+    "Don't cap Maelstrom — spend it on Elemental Blast/Tempest ahead of Earth Shock before it overflows.",
     "Coordinate Bloodlust timing with your raid rather than using it purely on your own cooldowns.",
     "Switch fully to Earthquake/Chain Lightning once three or more targets are engaged.",
+    "Only cast Lava Burst off cooldown when Lava Surge makes it instant — otherwise it loses out to your Maelstrom spenders.",
+    "Fire Stormkeeper and Ascendance promptly rather than banking them for a perfect moment — the spec's burst cooldowns run flatter than they used to.",
   },
 })
 
@@ -131,8 +156,8 @@ ns.GuideStore:RegisterSpec("SHAMAN", 263, {
   role = "DAMAGER",
   overview = {
     "Enhancement Shaman is a dual-wield melee spec that combines weapon-enchant-fueled attacks with elemental spells like Lava Lash and Stormstrike, generating Maelstrom Weapon stacks that empower its spells with instant casts and bonus effects. It plays as a fast, proc-driven spec with a strong emphasis on weaving spells at the right Maelstrom Weapon stack count.",
-    "The core resource is Maelstrom Weapon, generated from melee attacks and abilities, and spent by casting empowered spells like Lightning Bolt and Chain Lightning at high stacks for extra effects. The defining mechanic is stack management — using Maelstrom Weapon stacks efficiently rather than either spending too early or overcapping and wasting generation.",
-    "Enhancement brings strong burst through Feral Spirit and Doom Winds-style cooldowns, solid AoE via Chain Lightning and Crash Lightning, and good self-sufficiency, making it a strong pick for fights that reward burst windows and consistent melee uptime.",
+    "The core resource is Maelstrom Weapon, generated from melee attacks and abilities, and spent by casting empowered spells like Lightning Bolt and Chain Lightning — both go instant at 5+ stacks, so stay below the 10-stack cap rather than sitting on a full bar and wasting further generation. The defining mechanic is stack management — using Maelstrom Weapon stacks efficiently rather than either spending too early or overcapping and wasting generation.",
+    "Enhancement brings strong burst through Feral Spirit and Doom Winds-style cooldowns, solid AoE via Chain Lightning and Crash Lightning, and good self-sufficiency, making it a strong pick for fights that reward burst windows and consistent melee uptime. The Stormbringer hero talent in particular shines on 5-6 target packs, while Totemic plays a steadier totem-support game.",
   },
   statPriority = {
     { stat = "primary", note = "Agility, passive" },
@@ -142,26 +167,33 @@ ns.GuideStore:RegisterSpec("SHAMAN", 263, {
     { stat = "versatility" },
   },
   rotation = {
+    { title = "Opener", steps = {
+        { spellID = 188389, text = "Flame Shock on your approach, before you're even in melee range" },
+        { text = "Auto-attacks plus Stormstrike/Lava Lash to build Maelstrom Weapon stacks" },
+        { text = "Doom Winds, Feral Spirit, and/or Ascendance together to open your first cooldown window" },
+        { spellID = 197214, text = "Sundering to open your AoE/cleave damage if multiple targets are present" },
+    }},
     { title = "Single Target", steps = {
+        { text = "Voltaic Blaze on cooldown" },
+        { text = "Sync your empowered casts with Surging Totem — it wants a cast roughly every other GCD" },
+        { spellID = 60103, text = "Lava Lash with Hot Hand or Whirling Fire active" },
+        { spellID = 1218090, text = "Primordial Storm at 10 stacks of Maelstrom Weapon — a strong Maelstrom-fueled finisher" },
+        { spellID = 188196, text = "Tempest or Lightning Bolt at 10 stacks of Maelstrom Weapon" },
         { spellID = 17364, text = "Stormstrike on cooldown — core melee ability and Maelstrom generator" },
-        { spellID = 60103, text = "Lava Lash on cooldown for strong single-target damage" },
-        { spellID = 187874, text = "Crash Lightning to apply its buff even in single target if talented" },
-        { spellID = 188196, text = "Lightning Bolt to spend Maelstrom Weapon stacks at high value" },
-        { spellID = 51533, text = "Feral Spirit on cooldown for a burst window" },
-        { text = "Primordial Storm (Stormbringer hero talent) once Maelstrom Weapon is stacked high — a strong Maelstrom-fueled finisher" },
+        { spellID = 187874, text = "Crash Lightning on cooldown, even in single target if talented" },
         { text = "Spend Maelstrom Weapon stacks before they overcap and waste generation" },
     }},
     { title = "AoE", steps = {
-        { spellID = 187874, text = "Crash Lightning as the primary AoE melee tool" },
-        { spellID = 188443, text = "Chain Lightning to spend Maelstrom Weapon across multiple targets" },
-        { spellID = 17364, text = "Stormstrike still strong, cleaves with talents" },
-        { spellID = 60103, text = "Lava Lash for cleave damage and Flame Shock-style spread with talents" },
-        { spellID = 51533, text = "Feral Spirit for burst during add waves" },
-        { text = "Prioritize Crash Lightning/Chain Lightning once 3+ targets are engaged" },
+        { spellID = 187874, text = "Crash Lightning jumps up in priority against 3+ targets" },
+        { spellID = 188443, text = "Chain Lightning as your Maelstrom Weapon spender across multiple targets" },
+        { spellID = 333974, text = "Fire Nova to detonate Flame Shock/Magma stacks on the pull" },
+        { spellID = 197214, text = "Sundering for extra cleave" },
+        { text = "This spec's cleave especially shines at 5-6 targets under the Stormbringer hero talent" },
     }},
     { title = "Opener Notes", steps = {
         { text = "Build Maelstrom Weapon stacks briefly before your first big empowered cast" },
         { text = "Line up Feral Spirit and Doom Winds-style cooldowns with trinkets for maximum burst" },
+        { text = "Hero talent choice shapes your target-count sweet spot: Stormbringer is best on 5-6 target packs, while Totemic trades some of that ceiling for steadier totem support" },
     }},
   },
   cooldowns = {
@@ -207,10 +239,11 @@ ns.GuideStore:RegisterSpec("SHAMAN", 263, {
     sampleSize = 50,
   },
   tips = {
-    "Don't let Maelstrom Weapon stacks sit at cap — spend them before generation is wasted.",
+    "Don't let Maelstrom Weapon stacks sit at cap — Lightning Bolt/Chain Lightning are already instant at 5 stacks, so spend well before you hit 10 and waste generation.",
     "Keep Crash Lightning's buff active whenever it benefits your current target count.",
-    "Line up Feral Spirit with your other burst cooldowns and trinkets when possible.",
+    "Line up Doom Winds, Feral Spirit, and Ascendance together for a single big cooldown window rather than spreading them out.",
     "Weapon imbues matter a lot for Enhancement's damage — don't let them lapse.",
+    "Time your empowered casts to Surging Totem's cadence — it wants a cast roughly every other GCD to keep pace.",
   },
 })
 
@@ -238,12 +271,19 @@ ns.GuideStore:RegisterSpec("SHAMAN", 264, {
     { stat = "versatility" },
   },
   rotation = {
+    { title = "Pre-Pull", steps = {
+        { spellID = 73920, text = "Healing Rain pre-cast just before the pull if the fight opens with heavy damage" },
+        { spellID = 61295, text = "Riptide pre-cast onto the group alongside it" },
+        { spellID = 974, text = "Earth Shield kept active before combat starts" },
+    }},
     { title = "Priorities", steps = {
         { spellID = 61295, text = "Riptide on cooldown, cycled across multiple targets for HoT uptime — both its direct and periodic healing were increased in 12.1" },
-        { spellID = 1064, text = "Chain Heal for efficient grouped-up raid healing" },
+        { spellID = 5394, text = "Healing Stream Totem (or Stormstream Totem per your build) dropped for passive raid-wide trickle healing" },
         { spellID = 73920, text = "Healing Rain placed on top of the raid before or during damage — shorter cooldown and wider coverage as of 12.1, so use it more freely" },
         { spellID = 73685, text = "Unleash Life before a big heal — its healing was roughly doubled in 12.1" },
+        { spellID = 378081, text = "Nature's Swiftness (or Ancestral Swiftness under Farseer) on cooldown for a free instant heal" },
         { spellID = 8004, text = "Healing Surge for fast reactive single-target healing" },
+        { spellID = 1064, text = "Chain Heal for grouped-up raid damage, but it has no cooldown and costs meaningfully more mana than Riptide/Unleash Life/Healing Rain — treat it as a flexible filler you lean on as mana allows, not your first-line tool" },
         { text = "Pre-position Healing Rain and Riptide before predictable raid damage lands" },
     }},
     { title = "Cooldown Usage", steps = {
@@ -298,5 +338,8 @@ ns.GuideStore:RegisterSpec("SHAMAN", 264, {
     "Save Spirit Link Totem for the fight's known heaviest spread-damage windows, and Healing Tide Totem or Ascendance (whichever your build has, since 12.1 put them on a shared choice node) for sustained heavy phases.",
     "Use Mana Tide Totem during lulls to stay ahead of mana problems in longer fights.",
     "Unleash Life's healing bonus was roughly doubled in patch 12.1 — use it before a big cast.",
+    "Pre-cast Healing Rain and Riptide just before a pull that opens with heavy damage, rather than starting from zero.",
+    "Keep Earth Shield active on your tank — it's easy to let it lapse once you're busy with raid healing.",
+    "Chain Heal costs noticeably more mana than Riptide, Unleash Life, or Healing Rain — lean on those first and use Chain Heal as a flexible filler as mana allows.",
   },
 })
