@@ -493,7 +493,10 @@ direct field read (`loadouts[].talent_loadout_code` for the entry where
 `is_active` is true), the same "just pull the string" scope
 `mplusLoadout`/`raidLoadout` already had.
 
-**The pipeline is built and has now shipped for all 39 specs in the addon.**
+**The pipeline is built and has now shipped for all 39 specs in the addon**
+(a 40th, Devourer Demon Hunter, was added 2026-09-02 after this rollout and
+does not have one yet — no API credentials were available in that pass; see
+Guides_DemonHunter.lua's header).
 Protection Paladin (specID 66) ran first, end-to-end, on 2026-08-30:
 `GET /data/wow/connected-realm/{id}/mythic-leaderboard/{dungeonId}/period/{period}`
 (the confirmed live path — note `mythic-leaderboard`, not

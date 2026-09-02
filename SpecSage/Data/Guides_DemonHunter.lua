@@ -48,6 +48,12 @@ local ADDON, ns = ...
 -- judgment call (not a mechanically-determined fact) this repo's policy
 -- says to flag rather than silently adopt, and neither source gave a
 -- confident order clearly better than what already shipped.
+
+-- Devourer added (2026-09-02): Demon Hunter's third spec, specID 1480 (see
+-- SimC's engine/dbc/generated/sc_specialization_data.inc). See that spec's
+-- own block below for full sourcing notes - unlike Havoc/Vengeance above,
+-- this is a from-scratch SimC-only pass with no prior community consensus
+-- to check it against, since the spec is brand new this pass discovered it.
 if not ns.GuideStore then return end
 
 -- Havoc ----------------------------------------------------------------
@@ -253,5 +259,110 @@ ns.GuideStore:RegisterSpec("DEMONHUNTER", 581, {
     "Never let Fracture sit at max charges — spend it into Soul Cleave or Spirit Bomb before it caps.",
     "On Aldrachi Reaver, open every Art of the Glaive combo with Reaver's Glaive so both the Fracture and Soul Cleave that follow land empowered.",
     "On Annihilator, spend Voidfall stacks at 3 rather than banking them further.",
+  },
+})
+
+-- Devourer ---------------------------------------------------------------
+-- Added 2026-09-02: Devourer (specID 1480) is a new-this-session addition,
+-- Demon Hunter's third spec. Unlike Havoc/Vengeance, this entire block is
+-- sourced fresh from SimC's `midnight` branch (engine/class_modules/apl/
+-- demon_hunter/devourer.simc and profiles/MID2/MID2_Demon_Hunter_Devourer.simc,
+-- GPLv3) rather than corrected from older prose, since there is no prior
+-- community consensus to check it against yet - flagged as such rather than
+-- written with the same confidence as the other two specs. Two notable,
+-- APL-confirmed facts: Devourer is the first Intellect/ranged Demon Hunter
+-- spec (role=spell, position=back, and a ~3000 Intellect budget in SimC's
+-- default gearset vs. low triple-digit Agility on Havoc/Vengeance), and
+-- taking the Hunt talent flips BOTH of its hero trees from their default
+-- ranged kit into a melee one (actions.annihilator_melee / _ranged and
+-- actions.voidscarred_melee / _ranged are separate action lists gated on
+-- `talent.the_hunt`, independent of hero tree). Devourer's own hero trees
+-- are Annihilator (hero_tree.annihilator - also referenced by Vengeance's
+-- APL, so this tree is shared across Vengeance/Devourer rather than being
+-- Devourer-exclusive) and Void-Scarred (hero_tree.voidscarred, exclusive to
+-- Devourer in the files checked). mplusLoadout below is Void-Scarred only:
+-- SimC has not yet published a separate MID2 Annihilator profile for this
+-- spec (only one, internally-named "..._Void-Scarred", exists under MID2 as
+-- of this pass). Separately, MID2 profiles for every spec (not just this
+-- one) carry a new `omnium_talents=` field with no equivalent in this file's
+-- schema or in any MID1 profile - an apparent new patch-12.1 "Omnium" trait
+-- layer this pass did not investigate further or attempt to represent here.
+-- No mplusMetaLoadout: that requires a live Blizzard Battle.net API pull,
+-- and this pass had no API credentials to run one.
+ns.GuideStore:RegisterSpec("DEMONHUNTER", 1480, {
+  specName = "Devourer",
+  role = "DAMAGER",
+  overview = {
+    "Devourer is Demon Hunter's newest spec and its first built around Intellect rather than Agility: a void-corrupted caster that fights at range by default, channeling void energy to devour Soul Fragments instead of shredding with glaives up close.",
+    "The core loop still runs on Fury, but Devourer spends it differently: build Fury and pick up Soul Fragments outside of Metamorphosis until your Void Metamorphosis stack maxes out, then transform. Unlike Havoc/Vengeance's fixed-duration Metamorphosis, Devourer's drains Fury continuously while active, so the transformed window is a race to spend Void Ray, Collapsing Star, and the escalating Eradicate/Cull/Reap finisher chain (each one consumes accumulated Soul Fragments for more damage the more you've stacked) before your Fury runs out and the form drops.",
+    "Devourer's two hero talent trees are Annihilator (shared with Vengeance) and Void-Scarred (unique to this spec) - but the bigger choice is the Hunt talent, which flips either hero tree's default ranged kit into a melee one instead. Bring Devourer when you want a Demon Hunter that plays like a void-flavored spellcaster with a genuine ranged/melee flex built into a single talent pick, rather than Havoc's mobility or Vengeance's tanking. This is a brand-new spec with no established community consensus yet - treat this guide as a SimC-default-profile starting point, not settled best practice.",
+  },
+  statPriority = {
+    { stat = "primary" },
+    { stat = "mastery" },
+    { stat = "haste" },
+    { stat = "crit" },
+    { stat = "versatility" },
+  },
+  rotation = {
+    { title = "Opener", steps = {
+        { text = "Soul Immolation precombat to have your damage-over-time already ticking when the pull lands" },
+        { text = "Build Fury (Hungering Slash in the melee flex, Void Ray/fragment generators at range) while picking up Soul Fragments to stack Void Metamorphosis" },
+        { text = "Metamorphosis once your Void Metamorphosis stack is maxed" },
+        { text = "Void Ray, then the highest-tier finisher your banked Soul Fragments can afford (Eradicate > Cull > Reap), to spend hard inside the transformation" },
+        { text = "Opener Notes: whichever hero tree you're on (Annihilator or Void-Scarred), taking the Hunt talent swaps this same shape from a ranged opener into a melee one - the fragment-building and Metamorphosis-timing logic stays the same either way" },
+    }},
+    { title = "Single Target", steps = {
+        { text = "Keep Soul Immolation active on the target - it's a maintenance DoT, don't let it fall off" },
+        { text = "Pick up Soul Fragments whenever they're up to keep feeding your Void Metamorphosis stack between transformations" },
+        { text = "Void Ray on cooldown as your main Fury/cooldown-gated spender" },
+        { text = "Spend banked Soul Fragments through Eradicate, or Cull if Eradicate isn't available, or Reap as the baseline option - always the strongest one you can currently afford" },
+        { text = "Devour/Consume whenever the Soulburst buff is up - it's a free dump, don't hold it" },
+        { text = "Don't let Metamorphosis drop from starving it of Fury - track the drain rate and feed it before it runs out" },
+    }},
+    { title = "AoE", steps = {
+        { text = "Collapsing Star becomes the priority nuke once its stacking buff is built up - let it climb rather than firing it early" },
+        { text = "Soul Immolation still goes on your primary target even while cleaving" },
+        { text = "Reap/Eradicate/Cull scale with how many Soul Fragments you've picked up, so prioritize fragment pickups more aggressively in AoE" },
+        { text = "The Hunt's melee flex trades some range for easier Fragment pickups when packs are stacked on top of each other" },
+    }},
+  },
+  cooldowns = {
+    { text = "Metamorphosis - not a flat-duration burst window like Havoc/Vengeance's; it drains Fury while active, so time your entry for when you can keep feeding it and have Fragments/Fury banked to spend" },
+    { text = "The Hunt (talent) - shared Demon Hunter gap closer, and the talent that determines whether your whole kit plays ranged or melee" },
+    { text = "Vengeful Retreat - reposition, and on Void-Scarred procs a Voidstep buff worth spending immediately after" },
+    { text = "Collapsing Star - AoE/cleave payoff once its stacks are built; hold it for that rather than using it early" },
+  },
+  consumables = {
+    { slot = "Flask", text = "Flask of Tempered Swiftness — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used inside Metamorphosis. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
+    { slot = "Weapon", text = "Ironclaw Whetstone or the current-tier weapon enchant on both glaives" },
+    { slot = "Enchants", text = "Max-rank Intellect enchants on cloak and rings" },
+    { slot = "Gems", text = "Intellect/secondary stat gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
+  },
+  gear = {
+    { slot = "Head", text = "One of your tier-set slots — SimC's default profile has Season 2's set bonus active, but this spec is new enough that the exact 2pc/4pc effects weren't confirmed by the sources checked this pass. Check your in-game tooltip." },
+    { slot = "Chest", text = "A large stat budget and often your other tier piece — push your top secondary first" },
+    { slot = "Neck", text = "Usually carries a socket — favor Mastery, then Haste" },
+    { slot = "Ring", text = "No set bonus attached — use rings to round out Mastery and Haste" },
+    { slot = "Trinket", text = "One on-use trinket timed with Metamorphosis so its burst overlaps your transformation window" },
+    { slot = "Trinket", text = "A passive Intellect stat-stick trinket to keep pressure up between cooldowns" },
+    { slot = "Weapon", text = "Warglaives (fast one-handers) fit Devourer's dual-wield Fury generation, same as Havoc — take the pair with the highest weapon damage" },
+    { slot = "Off-hand", text = "Match your off-hand glaive's secondary stats to your main-hand's Mastery lean" },
+  },
+  mplusLoadout = {
+    string = "CgcBAAAAAAAAAAAAAAAAAAAAAAAWMzMzMzMzMwMAAAAAAALzYMYGAAAAAAAAmxMMmZmZYmZGzsNzYsptFAEwAMjZmZbmZa2mZbmZMjBA",
+    source = "SimulationCraft default profile, Void-Scarred hero tree (credit, not endorsement of 'best') - SimC has not yet published a separate MID2 Annihilator profile for this brand-new spec",
+    patch = "12.1",
+  },
+  tips = {
+    "This spec has no established community consensus yet — everything here is a SimC-default-profile reading, not settled best practice.",
+    "Devourer is Intellect, not Agility — don't carry over Havoc/Vengeance gear or gem/enchant choices by habit.",
+    "Track your Void Metamorphosis stack, not just Fury — you transform once it's maxed, and starving it of Soul Fragment pickups delays your next Metamorphosis window.",
+    "Metamorphosis drains Fury the whole time it's active — going in without banked Fury/Fragments to spend just shortens the window for no benefit.",
+    "The Hunt talent changes your whole playstyle from ranged to melee on both hero trees — pick it deliberately, not as an afterthought.",
+    "Spend Soul Fragments through the strongest finisher you can afford (Eradicate over Cull over Reap) rather than defaulting to the cheapest one.",
   },
 })

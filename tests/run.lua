@@ -611,7 +611,7 @@ do
     local EXPECTED_SPEC_COUNT = {
         WARRIOR = 3, PALADIN = 3, HUNTER = 3, ROGUE = 3, PRIEST = 3,
         DEATHKNIGHT = 3, SHAMAN = 3, MAGE = 3, WARLOCK = 3, MONK = 3,
-        DRUID = 4, DEMONHUNTER = 2, EVOKER = 3,
+        DRUID = 4, DEMONHUNTER = 3, EVOKER = 3,
     }
 
     local anyShipped = false
@@ -653,7 +653,7 @@ do
     end
 
     check(anyShipped == true, "at least one shipped class guide is registered (Shaman)", anyShipped)
-    check(totalShipped == 39, "exactly 39 shipped specs are registered across all classes", totalShipped)
+    check(totalShipped == 40, "exactly 40 shipped specs are registered across all classes", totalShipped)
 end
 
 --------------------------------------------------------------------------------
