@@ -19,6 +19,7 @@ local HELP = {
     "  |cffffff00/sage guide <class> [spec]|r - open the Codex at a class/spec (fuzzy match)",
     "  |cffffff00/sage lock|r / |cffffff00unlock|r - lock or unlock overlay dragging",
     "  |cffffff00/sage config|r - open the Options tab (add |cffffff00blizzard|r for the Settings panel)",
+    "  |cffffff00/sage feedback|r - show the CurseForge link for bug reports and feature requests",
     "  |cffffff00/sage scale <0.5-2>|r - set overlay scale",
     "  |cffffff00/sage width <120-320>|r - set overlay width",
     "  |cffffff00/sage font <8-20>|r - set font size",
@@ -147,6 +148,11 @@ handlers.help = function()
     for _, line in ipairs(HELP) do
         print(line)
     end
+end
+
+handlers.feedback = function()
+    local Codex = ns:GetModule("Codex")
+    if Codex then Codex:ShowFeedback() end
 end
 
 handlers.overlay = function()

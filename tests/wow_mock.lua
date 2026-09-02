@@ -1059,6 +1059,7 @@ end
 C_AddOns = {
     GetAddOnMetadata = function(_, field)
         if field == "Version" then return "1.0.0" end
+        if field == "X-Website" then return "https://www.curseforge.com/wow/addons/specsage" end
         return nil
     end,
 }

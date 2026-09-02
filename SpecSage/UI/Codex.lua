@@ -1748,17 +1748,31 @@ function Codex:EnsureCopyDialog()
 
     self.copyDialog = dialog
     self.copyBox = box
+    self.copyLabel = label
 end
 
-function Codex:ShowCopyDialog(exportString)
+-- `label` (optional) replaces the dialog's default "Ctrl+C to copy" caption
+-- for callers that need to say what the string is for (the Feedback link).
+function Codex:ShowCopyDialog(exportString, label)
     self:EnsureCopyDialog()
     -- Show first: EditBox:SetFocus() is a no-op on a hidden widget in the
     -- real client, so focusing/highlighting before Show() leaves nothing
     -- selected for Ctrl+C despite the dialog's own "Ctrl+C to copy" label.
     self.copyDialog:Show()
+    self.copyLabel:SetText(label or "Ctrl+C to copy")
     self.copyBox:SetText(exportString or "")
     self.copyBox:SetFocus()
     self.copyBox:HighlightText()
+end
+
+-- Feedback / feature requests. The game gives an addon no way to open a
+-- browser or send anything out, so this is the honest version of a
+-- "feedback button": the CurseForge page link, selected and ready to
+-- Ctrl+C. Opens the Codex first so the dialog has a parent to sit on.
+function Codex:ShowFeedback()
+    if not self.frame or not self:IsShown() then self:Toggle() end
+    self:ShowCopyDialog(ns.FeedbackURL(),
+        "Ctrl+C this link, paste it in your browser: bug reports and feature requests go there")
 end
 
 --------------------------------------------------------------------------------
@@ -2495,6 +2509,16 @@ function Codex:BuildFrame()
     closeButton:SetSize(24, 24)
     closeButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -4, -4)
     closeButton:SetScript("OnClick", function() self:Toggle() end)
+
+    -- Feedback button in the title bar, left of the close button: shows the
+    -- CurseForge link ready to copy (see Codex:ShowFeedback).
+    local feedbackButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    feedbackButton:SetSize(84, 20)
+    feedbackButton:SetPoint("RIGHT", closeButton, "LEFT", -6, 0)
+    feedbackButton:SetText("Feedback")
+    feedbackButton:SetScript("OnClick", function() self:ShowFeedback() end)
+    SkinButton(feedbackButton)
+    frame.feedbackButton = feedbackButton
 
     -- Registers the frame's global name for ESC-to-close; UISpecialFrames is
     -- a plain array of frame names that the client's own ESC handler reads.

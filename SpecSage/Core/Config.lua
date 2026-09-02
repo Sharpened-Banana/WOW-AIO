@@ -54,7 +54,24 @@ ns.OPTION_SCOPES = {
 ns.OPTION_ACTIONS = {
     resetPosition = function() ns.UI:ResetPosition() end,
     resetSession = function() ns:GetModule("Combat"):ResetSession() end,
+    feedback = function()
+        local Codex = ns:GetModule("Codex")
+        if Codex then Codex:ShowFeedback() end
+    end,
 }
+
+-- Where the Feedback button sends people. An addon cannot open a browser or
+-- send anything out of the game (no network access from Lua), so "feedback"
+-- means showing this link ready to Ctrl+C. Read from the TOC's X-Website so
+-- the one place to change it is the addon manifest.
+local FEEDBACK_URL_FALLBACK = "https://www.curseforge.com/wow/addons/specsage"
+function ns.FeedbackURL()
+    if C_AddOns and C_AddOns.GetAddOnMetadata then
+        local ok, url = pcall(C_AddOns.GetAddOnMetadata, ADDON, "X-Website")
+        if ok and type(url) == "string" and url ~= "" then return url end
+    end
+    return FEEDBACK_URL_FALLBACK
+end
 
 function ns.GetOptionValue(entry)
     local scope = ns.OPTION_SCOPES[entry.scope]
@@ -135,6 +152,10 @@ local function BuildOptionGroups()
           tooltip = "Add lines to every item tooltip: a trinket's tier in your current spec's trinket "
               .. "lists (Single Target S, Icy Veins A, ...) and each secondary stat's rank (#1, #2, ...) "
               .. "against your spec's stat priority from the Codex." },
+        { kind = "action", action = "feedback", label = "Feedback",
+          buttonText = "Feedback / requests",
+          tooltip = "Shows the link to SpecSage's CurseForge page, ready to copy, for bug reports "
+              .. "and feature requests. (An addon cannot open your browser itself.)" },
     }
 
     local stats = {

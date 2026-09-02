@@ -3070,6 +3070,44 @@ do
 end
 
 --------------------------------------------------------------------------------
+section("Codex: Feedback button")
+--------------------------------------------------------------------------------
+
+do
+    check(ns.FeedbackURL() == "https://www.curseforge.com/wow/addons/specsage",
+        "the feedback URL comes from the TOC's X-Website field", ns.FeedbackURL())
+    check(Codex.frame.feedbackButton ~= nil and Codex.frame.feedbackButton:GetText() == "Feedback",
+        "the Codex title bar has a Feedback button")
+
+    if Codex:IsShown() then Codex:Toggle() end
+    Codex.frame.feedbackButton:GetScript("OnClick")()
+    check(Codex:IsShown(), "the Feedback button opens the Codex if it was closed")
+    check(Codex.copyDialog:IsShown(), "the Feedback button opens the copy dialog")
+    check(Codex.copyBox:GetText() == ns.FeedbackURL(), "the copy dialog holds the feedback URL", Codex.copyBox:GetText())
+    check(Codex.copyBox.focused and Codex.copyBox.highlighted, "the URL is focused and selected, ready for Ctrl+C")
+    check(Codex.copyLabel:GetText():find("bug reports", 1, true) ~= nil, "the dialog caption says what the link is for",
+        Codex.copyLabel:GetText())
+
+    -- The same dialog reverts to its default caption for a loadout copy.
+    Codex:ShowCopyDialog("SomeExportString")
+    check(Codex.copyLabel:GetText() == "Ctrl+C to copy", "a loadout copy restores the default caption", Codex.copyLabel:GetText())
+    Codex.copyDialog:Hide()
+
+    -- Reachable from the Options schema and the slash command too.
+    local exposed = false
+    for _, group in ipairs(ns.OPTION_GROUPS) do
+        for _, entry in ipairs(group.options) do
+            if entry.kind == "action" and entry.action == "feedback" then exposed = true end
+        end
+    end
+    check(exposed and ns.OPTION_ACTIONS.feedback ~= nil, "a Feedback action is in ns.OPTION_GROUPS")
+    Codex.copyBox:SetText("")
+    run("feedback")
+    check(Codex.copyBox:GetText() == ns.FeedbackURL(), "/sage feedback shows the same dialog")
+    Codex.copyDialog:Hide()
+end
+
+--------------------------------------------------------------------------------
 section("Codex: close")
 --------------------------------------------------------------------------------
 
