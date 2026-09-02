@@ -21,7 +21,7 @@ class guides, talent loadouts, and live character tracking in one place:
   strings per spec, organised by content type (Raid, Mythic+, Delves, PvP).
 - **Personal Notes** — free-text notes per spec, kept between sessions.
 - **Feedback button** — in the Codex title bar (and `/sage feedback`): shows
-  the addon's CurseForge link ready to Ctrl+C for bug reports and feature
+  the addon's GitHub Issues link ready to Ctrl+C for bug reports and feature
   requests. WoW gives addons no network access, so no addon can open your
   browser or send a report itself; copying a link is the honest version.
 - **Stat Overlay** — a small movable overlay with your character stats, live
@@ -98,7 +98,7 @@ it, then `/sage lock` to fix it in place (locking lets clicks pass through).
 | `/sage stat` | List overlay stat rows and whether each is shown |
 | `/sage stat <name>` | Toggle a stat row for this character |
 | `/sage tooltips` | Toggle overlay hover tooltips |
-| `/sage feedback` | Show the CurseForge link (ready to copy) for bug reports and feature requests |
+| `/sage feedback` | Show the GitHub Issues link (ready to copy) for bug reports and feature requests |
 | `/sage pin [stat]` | Keep a tooltip on screen (the hovered one if no stat given) |
 | `/sage unpin [stat\|all]` | Close pinned tooltips |
 | `/sage pins` | List what is pinned |

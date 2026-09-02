@@ -64,7 +64,7 @@ ns.OPTION_ACTIONS = {
 -- send anything out of the game (no network access from Lua), so "feedback"
 -- means showing this link ready to Ctrl+C. Read from the TOC's X-Website so
 -- the one place to change it is the addon manifest.
-local FEEDBACK_URL_FALLBACK = "https://www.curseforge.com/wow/addons/specsage"
+local FEEDBACK_URL_FALLBACK = "https://github.com/Sharpened-Banana/WOW-AIO/issues"
 function ns.FeedbackURL()
     if C_AddOns and C_AddOns.GetAddOnMetadata then
         local ok, url = pcall(C_AddOns.GetAddOnMetadata, ADDON, "X-Website")
@@ -154,7 +154,7 @@ local function BuildOptionGroups()
               .. "against your spec's stat priority from the Codex." },
         { kind = "action", action = "feedback", label = "Feedback",
           buttonText = "Feedback / requests",
-          tooltip = "Shows the link to SpecSage's CurseForge page, ready to copy, for bug reports "
+          tooltip = "Shows the link to SpecSage's GitHub Issues page, ready to copy, for bug reports "
               .. "and feature requests. (An addon cannot open your browser itself.)" },
     }
 

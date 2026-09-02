@@ -6,7 +6,7 @@
 ## SavedVariables: SpecSageDB
 ## SavedVariablesPerCharacter: SpecSageCharDB
 ## IconTexture: Interface\Icons\INV_Misc_Book_11
-## X-Website: https://www.curseforge.com/wow/addons/specsage
+## X-Website: https://github.com/Sharpened-Banana/WOW-AIO/issues
 ## Category-enUS: Combat
 
 Core\Init.lua

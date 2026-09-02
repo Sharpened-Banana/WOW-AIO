@@ -1767,7 +1767,7 @@ end
 
 -- Feedback / feature requests. The game gives an addon no way to open a
 -- browser or send anything out, so this is the honest version of a
--- "feedback button": the CurseForge page link, selected and ready to
+-- "feedback button": the GitHub Issues link, selected and ready to
 -- Ctrl+C. Opens the Codex first so the dialog has a parent to sit on.
 function Codex:ShowFeedback()
     if not self.frame or not self:IsShown() then self:Toggle() end
@@ -2511,7 +2511,7 @@ function Codex:BuildFrame()
     closeButton:SetScript("OnClick", function() self:Toggle() end)
 
     -- Feedback button in the title bar, left of the close button: shows the
-    -- CurseForge link ready to copy (see Codex:ShowFeedback).
+    -- GitHub Issues link ready to copy (see Codex:ShowFeedback).
     local feedbackButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     feedbackButton:SetSize(84, 20)
     feedbackButton:SetPoint("RIGHT", closeButton, "LEFT", -6, 0)

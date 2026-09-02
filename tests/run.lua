@@ -3074,7 +3074,7 @@ section("Codex: Feedback button")
 --------------------------------------------------------------------------------
 
 do
-    check(ns.FeedbackURL() == "https://www.curseforge.com/wow/addons/specsage",
+    check(ns.FeedbackURL() == "https://github.com/Sharpened-Banana/WOW-AIO/issues",
         "the feedback URL comes from the TOC's X-Website field", ns.FeedbackURL())
     check(Codex.frame.feedbackButton ~= nil and Codex.frame.feedbackButton:GetText() == "Feedback",
         "the Codex title bar has a Feedback button")
