@@ -394,11 +394,32 @@ text uses bundled PT Sans (SIL OFL, `SpecSage/Fonts/PTSans-Regular.ttf` +
 keep Blizzard's own Friz Quadrata (`GameFontNormal`) so the window still
 reads as native game chrome rather than a foreign overlay. Section headers
 (`PlaceLine(..., { isHeader = true })`) get a bold label plus a hairline
-divider instead of a bare colored line. True rounded corners and a bundled
-glow texture were scoped out of this pass — `BackdropTemplate`'s `edgeFile`
-has no radius concept, and faking either convincingly needs custom art this
-addon doesn't ship; square corners plus the gradient/seam trick were judged
-close enough to the direction without adding fragile bespoke textures.
+divider instead of a bare colored line.
+
+**Rounded corners and a glow texture (2026-09-02 follow-up):** the main
+Codex frame's corners are now genuinely rounded, and buttons get a soft
+accent glow on hover. Both use bundled PNG assets in `SpecSage/Textures/`
+(generated with PIL for exact, pixel-precise alpha channels — an AI image
+generator can't produce a mathematically exact rounded-rect mask or radial
+gradient the way a script can). The rounding specifically required more
+than a corner-mask overlay: `BackdropTemplate`'s own bg/border fill paints
+the *entire* rectangle including the corners, so a transparent "cut" pixel
+drawn on top of that fill just reveals the same opaque color sitting
+underneath, not the real background behind the frame — the first version
+of this fix looked correct in isolation but would not actually have
+rounded anything in-game. `ApplyRoundedCorners` in `UI/Codex.lua` instead
+replaces the backdrop's fill entirely with a manual "cross" of 6 plain
+rects (3 border-colored, 3 fill-colored, each shaped to avoid the 4 corner
+squares) plus the 4 corner PNGs dropped into exactly those unpainted
+squares, so nothing else paints there and the tiles' transparent zone
+correctly reveals whatever's really behind. Only the main frame got this
+treatment (dialogs and the notes editbox keep the simpler flat corners);
+the 4 corner tiles are a fixed color rather than tinted per selected class
+like the rest of the border, a deliberate scope cut. **This has not been
+verified rendering correctly in an actual game client** — `luac`/the test
+suite can check the Lua is valid, not that the visual result looks right;
+if the corners look wrong in-game, `ApplyRoundedCorners` is isolated and
+safe to revert independently of everything else in this file.
 
 ## Overlay port
 

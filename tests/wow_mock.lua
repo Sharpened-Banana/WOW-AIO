@@ -128,6 +128,7 @@ local function NewTexture()
     function texture:SetDesaturated(value) self.desaturated = value end
     function texture:SetColorTexture(r, g, b, a) self.colorTexture = { r, g, b, a } end
     function texture:SetGradient(orientation, colorA, colorB) self.gradient = { orientation, colorA, colorB } end
+    function texture:SetBlendMode(mode) self.blendMode = mode end
     return texture
 end
 

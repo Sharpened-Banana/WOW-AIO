@@ -262,10 +262,7 @@ end
 -- Layers a soft top-to-bottom gradient and a 1px top-edge highlight seam over
 -- a flat BackdropTemplate panel - the two tricks that make a plain solid-color
 -- backdrop read as a lit "Blizzard Modern" panel instead of a flat rectangle,
--- using only WoW's own Texture:SetGradient API (no bundled art needed, and no
--- true rounded corners either - BackdropTemplate's edgeFile has no radius
--- concept, so this pass keeps square corners rather than faking rounding with
--- extra corner-mask art this addon doesn't ship).
+-- using only WoW's own Texture:SetGradient API (no bundled art needed).
 local function ApplyPanelChrome(frame, topColor, bottomColor)
     if frame.specSageChromeApplied then return end
     frame.specSageChromeApplied = true
@@ -282,6 +279,76 @@ local function ApplyPanelChrome(frame, topColor, bottomColor)
     seam:SetHeight(1)
     seam:SetColorTexture(unpack(BORDER_HIGHLIGHT_COLOR))
     seam:SetAlpha(0.6)
+end
+
+local CORNER_RADIUS = 10
+local CORNER_BORDER_WIDTH = 2
+local TEXTURE_PATH = "Interface\\AddOns\\SpecSage\\Textures\\"
+
+-- Genuinely rounds a panel's corners - unlike ApplyPanelChrome's gradient/
+-- seam trick above, a naive corner-mask overlay does NOT work here: a
+-- BackdropTemplate's own bg/border fill paints the FULL rectangle including
+-- the corners, so anything drawn on top of it with transparent "cut" pixels
+-- just reveals that same opaque fill sitting underneath, not the real
+-- background behind the frame - rounding requires nothing else to paint
+-- those corner pixels in the first place.
+-- This replaces the backdrop's fill entirely with a manually-built "cross"
+-- (3 border-colored rects + 3 fill-colored rects, each shaped to avoid the
+-- 4 corner squares) plus 4 pre-baked corner tiles
+-- (SpecSage/Textures/panel_corner_*.png - fill+border baked in, transparent
+-- outside the rounded arc) dropped into exactly those 4 unpainted corner
+-- squares. Since nothing else paints there, the tiles' transparent zone
+-- correctly reveals whatever's really behind the frame.
+-- Caller must also set the frame's own SetBackdropColor/BorderColor alpha
+-- to 0 so the old flat square fill doesn't paint underneath and defeat this.
+-- Only applied to the main Codex frame - dialogs/the notes editbox keep
+-- ApplyPanelChrome's simpler flat treatment, since this is a bigger change
+-- per frame and the main panel is the highest-value target.
+local function ApplyRoundedCorners(frame, bgColor, borderColor)
+    local r, bw = CORNER_RADIUS, CORNER_BORDER_WIDTH
+
+    -- Builds the 3-piece "frame rect minus 4 corner squares" cross shape
+    -- (a full-height center band + two side strips that stop short of the
+    -- top/bottom corners) at the given inset from the frame's true edges.
+    local function crossPieces(color, inset, sublevel)
+        local vert = frame:CreateTexture(nil, "BACKGROUND", nil, sublevel)
+        vert:SetColorTexture(unpack(color))
+        vert:SetPoint("TOPLEFT", frame, "TOPLEFT", r, -inset)
+        vert:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -r, inset)
+
+        local left = frame:CreateTexture(nil, "BACKGROUND", nil, sublevel)
+        left:SetColorTexture(unpack(color))
+        left:SetPoint("TOPLEFT", frame, "TOPLEFT", inset, -r)
+        left:SetPoint("BOTTOMRIGHT", frame, "BOTTOMLEFT", r, r)
+
+        local right = frame:CreateTexture(nil, "BACKGROUND", nil, sublevel)
+        right:SetColorTexture(unpack(color))
+        right:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -inset, -r)
+        right:SetPoint("BOTTOMLEFT", frame, "BOTTOMRIGHT", -r, r)
+
+        return { vert, left, right }
+    end
+
+    -- Border layer sits at the true edges (inset 0); the fill layer sits
+    -- inset by the border width so a `bw`-thick border ring shows on the
+    -- straight edges. Stored on the frame so UpdateClassHighlight can
+    -- recolor the (only) tintable part of this per selected class - the
+    -- 4 small corner tiles stay a fixed neutral color rather than also
+    -- being made tintable, a deliberate, low-risk scope cut.
+    frame.roundedBorderPieces = crossPieces(borderColor, 0, 0)
+    crossPieces(bgColor, bw, 1)
+
+    for _, spec in ipairs({
+        { point = "TOPLEFT", suffix = "TL" },
+        { point = "TOPRIGHT", suffix = "TR" },
+        { point = "BOTTOMLEFT", suffix = "BL" },
+        { point = "BOTTOMRIGHT", suffix = "BR" },
+    }) do
+        local tex = frame:CreateTexture(nil, "BORDER")
+        tex:SetSize(r, r)
+        tex:SetPoint(spec.point, frame, spec.point, 0, 0)
+        tex:SetTexture(TEXTURE_PATH .. "panel_corner_" .. spec.suffix .. ".png")
+    end
 end
 
 local DANGER_BORDER_COLOR = { 0.700, 0.298, 0.263 }
@@ -322,11 +389,28 @@ local function SkinButton(button, opts)
         button:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
     end
 
+    -- A soft accent-colored glow (SpecSage/Textures/accent_glow.png, a plain
+    -- radial gradient with real alpha falloff) behind the button on hover -
+    -- ADD blend means it only ever brightens what's underneath, so unlike
+    -- the corner tiles above there's no "opaque layer defeats it" problem
+    -- to worry about here.
+    local glow
+    if not isDanger then
+        glow = button:CreateTexture(nil, "BACKGROUND")
+        glow:SetPoint("TOPLEFT", button, "TOPLEFT", -6, 6)
+        glow:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 6, -6)
+        glow:SetTexture(TEXTURE_PATH .. "accent_glow.png")
+        glow:SetBlendMode("ADD")
+        glow:Hide()
+    end
+
     button:HookScript("OnEnter", function()
         border:SetColorTexture(unpack(isDanger and DANGER_BORDER_COLOR or ACCENT_COLOR))
+        if glow then glow:Show() end
     end)
     button:HookScript("OnLeave", function()
         border:SetColorTexture(unpack(BORDER_COLOR))
+        if glow then glow:Hide() end
     end)
 
     if button.SetNormalFontObject then
@@ -1798,7 +1882,13 @@ function Codex:UpdateClassHighlight()
     local color = ClassColor(self.selectedClass)
 
     if self.frame then
-        pcall(self.frame.SetBackdropBorderColor, self.frame, color.r, color.g, color.b, 1)
+        -- The frame's real border is now the 3-piece cross ApplyRoundedCorners
+        -- built (SetBackdropBorderColor is a no-op alpha-0 leftover) - the 4
+        -- small corner tiles deliberately stay a fixed color rather than also
+        -- being tinted per class, see that function's own comment.
+        for _, piece in ipairs(self.frame.roundedBorderPieces or {}) do
+            pcall(piece.SetColorTexture, piece, color.r, color.g, color.b, 1)
+        end
         if self.frame.title then
             self.frame.title:SetTextColor(color.r, color.g, color.b)
         end
@@ -2099,9 +2189,14 @@ function Codex:BuildFrame()
         edgeSize = 2,
         insets = { left = 2, right = 2, top = 2, bottom = 2 },
     })
-    frame:SetBackdropColor(unpack(PANEL_BACKDROP_COLOR))
-    frame:SetBackdropBorderColor(unpack(PANEL_BORDER_COLOR))
+    -- Alpha 0: the backdrop's own flat square fill/border is replaced by
+    -- ApplyRoundedCorners' manual texture stack below. A visible backdrop
+    -- fill here would paint the 4 corner squares too, defeating the
+    -- rounding (see that function's own comment for why).
+    frame:SetBackdropColor(0, 0, 0, 0)
+    frame:SetBackdropBorderColor(0, 0, 0, 0)
     ApplyPanelChrome(frame, PANEL_BG_TOP, PANEL_BG_BOTTOM)
+    ApplyRoundedCorners(frame, PANEL_BACKDROP_COLOR, PANEL_BORDER_COLOR)
 
     frame:SetScript("OnDragStart", function(self2) self2:StartMoving() end)
     frame:SetScript("OnDragStop", function(self2)
