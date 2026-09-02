@@ -158,9 +158,10 @@ not a claim of being bleeding-edge optimal.
 ## BiS / Gear (v1.1)
 
 WoW addons have no network access at runtime, so nothing can be pulled from
-Wowhead, Method, Archon, or anywhere else in game — and item-level BiS lists
-belong to the sites that maintain them and go stale every patch. SpecSage
-therefore splits gear into two halves:
+Wowhead, Method, Archon, or anywhere else in game — and a shipped
+item-level BiS list goes stale every patch regardless of where it's
+sourced from, becoming actively misleading until someone updates it.
+SpecSage therefore splits gear into two halves:
 
 **1. Shipped gear guidance** — the guide schema gains an optional `gear`
 array of slot guidance (what to look for, in our own words — stats, tier

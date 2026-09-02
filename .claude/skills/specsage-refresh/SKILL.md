@@ -1,6 +1,6 @@
 ---
 name: specsage-refresh
-description: Refresh SpecSage's (the WoW addon in this repo) game-version metadata, Mythic+ talent loadouts, and rotation guidance for a new WoW patch. Use this whenever the user asks to update, refresh, or sync SpecSage's data for a new patch/season, mentions the addon being "out of date," asks to pull new SimC data, or invokes /specsage-refresh directly. Runs a multi-agent pipeline: detect the current patch, pull fresh talent strings and rotation logic from SimulationCraft's public repo, handle specs SimC doesn't cover without ever touching Wowhead/Method/Archon, review, fix, and ship.
+description: Refresh SpecSage's (the WoW addon in this repo) game-version metadata, Mythic+ talent loadouts, and rotation guidance for a new WoW patch. Use this whenever the user asks to update, refresh, or sync SpecSage's data for a new patch/season, mentions the addon being "out of date," asks to pull new SimC data, or invokes /specsage-refresh directly. Runs a multi-agent pipeline: detect the current patch, pull fresh talent strings and rotation logic from SimulationCraft's public repo (guide sites are also a permitted source as of 2026-09-01, see below), review, fix, and ship.
 ---
 
 # SpecSage patch-day refresh
@@ -34,19 +34,41 @@ the player to know that from the UI. Check the tier's directory listing
 each refresh (layouts can change); if it's still one file per spec, refresh
 `mplusLoadout` alone and leave `raidLoadout` unset for that spec.
 
-## The one rule that can't bend: no Wowhead, Method, Archon, or any other
-guide site — ever, for anything
+## Guide sites (Wowhead, Icy Veins, Maxroll, Method, Boostmatch, etc.) are a
+permitted source (revised 2026-09-01)
 
-This was a deliberate call, not an oversight. Their rotation priorities and
-stat-weight orderings are curated analytical work product — courts treat
-that kind of compilation as protectable even when you paraphrase it, and
-these sites' own terms of use prohibit scraping and republishing. SimC's
-data is different: it's GPLv3, published by the project specifically for
-tools to build on, and a talent string is thin enough (a configuration
-choice from a fixed rule set, not prose) to carry a much lower risk. If SimC
-doesn't cover something, the fallback is Blizzard's own official patch
-notes (a primary source, fine to read and summarize) plus careful
-hand-authoring — never a guide site, no matter how convenient.
+Earlier versions of this skill banned guide sites outright, on the theory
+that their rotation priorities and stat-weight orderings are protectable
+curated analytical work product even when paraphrased. The repo owner
+reviewed that reasoning and overruled it: a spec's optimal rotation
+sequence is a mechanically-determined fact about the game (discoverable
+independently by anyone who simulates it, the same way a chess engine's
+best line isn't authored by whoever publishes it first), not a creative
+expression, and the "only one way to do it" argument holds for the parts of
+a rotation that follow deterministically from cooldowns/priority math.
+Guide sites may now be read and used as a source for SpecSage's rotation
+logic, hero-talent recommendations, and stat priorities, same as SimC or
+Blizzard's own notes.
+
+Two things still matter, independent of that copyright question:
+- **Don't copy prose verbatim.** Write rotation/overview/tips text in
+  SpecSage's own words and existing voice (plain, direct, no site's
+  particular flourishes) rather than pasting or lightly reworking a site's
+  sentences. This is about matching the file's established style and
+  avoiding a literal-expression risk that's unrelated to the "is a
+  rotation sequence copyrightable" question above, not a return to the old
+  ban.
+- **Where sites genuinely disagree** (a hero-talent pick, a stat-priority
+  split, a contested tuning point), that's a signal real analytical
+  judgment is involved rather than a single discoverable answer — note the
+  disagreement honestly (as the Codex's live `mplusMetaLoadout` data
+  already does for hero-talent splits) rather than silently picking one
+  side and presenting it as settled.
+
+SimC and Blizzard's own patch notes remain the preferred sources for
+anything they cover (SimC's data is GPLv3 and machine-verifiable, which
+guide-site prose isn't), but guide sites are no longer off-limits, including
+for specs SimC doesn't cover at all.
 
 ## The other rule that can't bend: never fetch an exact/opaque string with
 WebFetch
