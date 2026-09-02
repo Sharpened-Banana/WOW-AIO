@@ -930,6 +930,70 @@ end
 
 function GameTooltip:Show() self.shown = true end
 function GameTooltip:Hide() self.shown = false end
+function GameTooltip:GetName() return "GameTooltip" end
+
+-- Modules/ItemRanks.lua reads the link a tooltip is showing through
+-- GetItem (name, link), and the OnTooltipSetItem fallback path hooks the
+-- tooltip when TooltipDataProcessor is absent.
+function GameTooltip:GetItem()
+    if not self.itemID then return nil, nil end
+    local item = mock.items[self.itemID]
+    return item and item.name or ("Item " .. self.itemID), "item:" .. self.itemID
+end
+GameTooltip.hooks = {}
+function GameTooltip:HookScript(event, handler) self.hooks[event] = handler end
+
+-- The tooltip that opens when an item link is clicked, plus the two
+-- link-click entry points UI/Codex.lua's BiS rows go through. Both record
+-- rather than act so a test can assert on what was clicked.
+ItemRefTooltip = setmetatable({ lines = {}, shown = false, hooks = {} }, { __index = GameTooltip })
+function ItemRefTooltip:GetName() return "ItemRefTooltip" end
+
+mock.itemRefClicks = {}
+function SetItemRef(linkString, link, button)
+    table.insert(mock.itemRefClicks, { linkString = linkString, link = link, button = button })
+end
+mock.modifiedItemClicks = {}
+-- Returns false, the way the real function does when no modifier is held.
+function HandleModifiedItemClick(link)
+    table.insert(mock.modifiedItemClicks, link)
+    return false
+end
+
+-- Modern tooltip post-processing surface (10.0.2+). Registered post-calls
+-- are recorded so a test can fire one by hand (mock.FireTooltipItem).
+Enum = Enum or {}
+Enum.TooltipDataType = { Item = 0, Spell = 1, Unit = 2 }
+mock.tooltipPostCalls = {}
+TooltipDataProcessor = {
+    AddTooltipPostCall = function(dataType, handler)
+        mock.tooltipPostCalls[#mock.tooltipPostCalls + 1] = { dataType = dataType, handler = handler }
+    end,
+}
+
+-- Simulates the client finishing an item tooltip: sets the item on the
+-- tooltip the way SetItemByID does, then runs every registered Item
+-- post-call with a TooltipDataProcessor-style data table.
+function mock.FireTooltipItem(tooltip, itemID)
+    tooltip:SetItemByID(itemID)
+    for _, entry in ipairs(mock.tooltipPostCalls) do
+        if entry.dataType == Enum.TooltipDataType.Item then
+            entry.handler(tooltip, { type = Enum.TooltipDataType.Item, hyperlink = "item:" .. itemID, id = itemID })
+        end
+    end
+end
+
+-- Item stats, from the fixture's optional `stats` table, keyed the way the
+-- real API keys them (ITEM_MOD_HASTE_RATING_SHORT = 512, ...). Accepts an
+-- "item:ID" link or a bare itemID; nil for an unknown item.
+C_Item.GetItemStats = function(link)
+    local itemID = tonumber(link) or tonumber(tostring(link):match("item:(%d+)"))
+    local item = itemID and mock.items[itemID]
+    if not item then return nil end
+    local copy = {}
+    for key, value in pairs(item.stats or {}) do copy[key] = value end
+    return copy
+end
 
 -- Returns the rendered tooltip as a flat list of "left=right" strings.
 function GameTooltip:Dump()

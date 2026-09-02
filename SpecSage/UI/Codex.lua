@@ -259,6 +259,57 @@ local function ItemQualityColor(quality)
     return DEFAULT_ITEM_COLOR[1], DEFAULT_ITEM_COLOR[2], DEFAULT_ITEM_COLOR[3]
 end
 
+-- Clickable item links (DESIGN.md's "BiS / Gear" v1.5 addendum). Every
+-- concrete item the BiS tab shows - a trinket tier-list row, a gear guidance
+-- entry that names an item, a personal checklist entry - behaves like an item
+-- link in chat: hover for the item tooltip, click for the standard clickable
+-- ItemRefTooltip, shift-click to insert into chat, ctrl-click to dress up.
+local GetItemInfoAPI = (C_Item and C_Item.GetItemInfo) or GetItemInfo
+
+-- The item's real link once the client has it cached (quality colour, full
+-- bonus data), else a bare "item:ID" the link-click path still resolves.
+local function ItemLink(itemID)
+    if GetItemInfoAPI then
+        local ok, _, link = pcall(GetItemInfoAPI, itemID)
+        if ok and type(link) == "string" and link ~= "" then return link end
+    end
+    return "item:" .. tostring(itemID)
+end
+
+-- HandleModifiedItemClick covers the shift/ctrl modifiers (chat insert,
+-- dressing room) and returns true when it consumed the click; SetItemRef is
+-- what a plain click on a chat link runs, opening ItemRefTooltip. Both are
+-- pcall-wrapped since either has moved between client versions.
+local function ClickItemLink(itemID, button)
+    if type(itemID) ~= "number" then return false end
+    local link = ItemLink(itemID)
+    local ok = pcall(function()
+        if HandleModifiedItemClick and HandleModifiedItemClick(link) then return end
+        if SetItemRef then
+            local linkString = link:match("|H(.-)|h") or link
+            SetItemRef(linkString, link, button or "LeftButton")
+        end
+    end)
+    return ok
+end
+
+local function ShowItemTooltip(owner, itemID)
+    pcall(function()
+        GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
+        GameTooltip:SetItemByID(itemID)
+        GameTooltip:Show()
+    end)
+end
+
+-- Trinket tier-list tag colours (S/A/B/C), and the muted tag for the gain
+-- column / source text.
+local TIER_COLORS = {
+    S = { 1.00, 0.55, 0.10 },
+    A = { 0.64, 0.21, 0.93 },
+    B = { 0.00, 0.60, 1.00 },
+    C = { 0.20, 0.80, 0.20 },
+}
+
 -- Layers a soft top-to-bottom gradient and a 1px top-edge highlight seam over
 -- a flat BackdropTemplate panel - the two tricks that make a plain solid-color
 -- backdrop read as a lit "Blizzard Modern" panel instead of a flat rectangle,
@@ -498,6 +549,10 @@ local function AcquireLineRow(pool, index, parent)
         row.divider:Hide()
 
         row:SetScript("OnEnter", function(self)
+            if self.itemID then
+                ShowItemTooltip(self, self.itemID)
+                return
+            end
             if not self.spellID then return end
             pcall(function()
                 GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -507,6 +562,11 @@ local function AcquireLineRow(pool, index, parent)
         end)
         row:SetScript("OnLeave", function()
             pcall(function() GameTooltip:Hide() end)
+        end)
+        -- A gear guidance line that names a concrete item (opts.itemID in
+        -- PlaceLine) is a clickable item link; spell rows stay hover-only.
+        row:SetScript("OnMouseUp", function(self, button)
+            if self.itemID then ClickItemLink(self.itemID, button) end
         end)
 
         pool[index] = row
@@ -538,6 +598,8 @@ local function PlaceLine(pool, index, parent, y, width, text, opts)
         row.spellID = nil
         row:EnableMouse(false)
     end
+    row.itemID = opts.itemID
+    if opts.itemID then row:EnableMouse(true) end
     -- opts.indent (a step's condition sub-line) stacks with the spellID
     -- inset rather than replacing it, though the two are never combined in
     -- practice today - a condition line carries no icon of its own.
@@ -820,14 +882,58 @@ local function AcquireBiSRow(pool, index, parent)
         -- has no pinning" per DESIGN.md).
         row:SetScript("OnEnter", function(self2)
             if not self2.itemID then return end
-            pcall(function()
-                GameTooltip:SetOwner(self2, "ANCHOR_RIGHT")
-                GameTooltip:SetItemByID(self2.itemID)
-                GameTooltip:Show()
-            end)
+            ShowItemTooltip(self2, self2.itemID)
         end)
         row:SetScript("OnLeave", function()
             pcall(function() GameTooltip:Hide() end)
+        end)
+        -- A checklist entry with an itemID is a clickable item link (v1.5).
+        row:SetScript("OnMouseUp", function(self2, button)
+            if self2.itemID then ClickItemLink(self2.itemID, button) end
+        end)
+
+        pool[index] = row
+    end
+    return row
+end
+
+-- One trinket tier-list row: tier tag | item name (quality-coloured, a
+-- clickable item link) with its ilvl/source/on-use detail | sim gain.
+local TRINKET_TAG_WIDTH = 22
+local TRINKET_GAIN_WIDTH = 70
+
+local function AcquireTrinketRow(pool, index, parent)
+    local row = pool[index]
+    if not row then
+        row = CreateFrame("Frame", nil, parent)
+        row:EnableMouse(true)
+
+        row.tag = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        row.tag:SetFontObject(SpecSageBoldFontSmall)
+        row.tag:SetJustifyH("LEFT")
+        row.tag:SetPoint("LEFT", row, "LEFT", 0, 0)
+        row.tag:SetWidth(TRINKET_TAG_WIDTH)
+
+        row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        row.text:SetFontObject(SpecSageBodyFontSmall)
+        row.text:SetJustifyH("LEFT")
+        row.text:SetPoint("LEFT", row, "LEFT", TRINKET_TAG_WIDTH, 0)
+        pcall(row.text.SetWordWrap, row.text, false)
+
+        row.gain = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        row.gain:SetFontObject(SpecSageBodyFontSmall)
+        row.gain:SetJustifyH("RIGHT")
+        row.gain:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+        row.gain:SetWidth(TRINKET_GAIN_WIDTH)
+
+        row:SetScript("OnEnter", function(self2)
+            if self2.itemID then ShowItemTooltip(self2, self2.itemID) end
+        end)
+        row:SetScript("OnLeave", function()
+            pcall(function() GameTooltip:Hide() end)
+        end)
+        row:SetScript("OnMouseUp", function(self2, button)
+            if self2.itemID then ClickItemLink(self2.itemID, button) end
         end)
 
         pool[index] = row
@@ -839,6 +945,17 @@ function Codex:EnsureBiSWidgets()
     if self.bisButtons then return end
 
     local parent = self.scrollChild
+
+    -- Trinket tier list: one button cycling through the registered fight
+    -- styles (Single Target / 3 Targets / 5 Targets), sitting beside the
+    -- section header.
+    local trinketToggle = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+    trinketToggle:SetSize(110, 20)
+    trinketToggle:SetScript("OnClick", function() self:CycleTrinketList() end)
+    SkinButton(trinketToggle)
+    self.trinketToggle = trinketToggle
+    self.trinketRowPool = {}
+    self.trinketListIndex = self.trinketListIndex or 1
 
     local slotButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
     slotButton:SetSize(90, 20)
@@ -922,12 +1039,116 @@ function Codex:OnBiSItemInfoReceived(itemID)
     local BiSModule = ns:GetModule("BiS")
     if not BiSModule or not specID then return end
 
+    -- Anything on the tab showing that item re-renders: a checklist entry,
+    -- a trinket tier-list row, or a gear guidance line naming the item.
     for _, entry in ipairs(BiSModule:GetForSpec(specID)) do
         if entry.itemID == itemID then
             self:RenderBiS(ns.GuideStore:GetGuide(specID), specID)
             return
         end
     end
+    for _, row in ipairs(self.trinketRowPool or {}) do
+        if row.itemID == itemID and row:IsShown() then
+            self:RenderBiS(ns.GuideStore:GetGuide(specID), specID)
+            return
+        end
+    end
+    local guide = ns.GuideStore:GetGuide(specID)
+    for _, entry in ipairs((guide and guide.gear) or {}) do
+        if entry.itemID == itemID then
+            self:RenderBiS(guide, specID)
+            return
+        end
+    end
+end
+
+-- Cycles the trinket tier list through the spec's registered fight styles.
+function Codex:CycleTrinketList()
+    local data = self.selectedSpecID and ns.GuideStore:GetTrinkets(self.selectedSpecID)
+    local count = (data and data.lists and #data.lists) or 1
+    self.trinketListIndex = ((self.trinketListIndex or 1) % count) + 1
+    if self.activeTab == "BiS" then self:RenderActiveTab() end
+end
+
+-- The trinket tier-list section of the BiS tab. Draws the header (with the
+-- fight-style toggle beside it) into `pool` from `index`, then the rows into
+-- self.trinketRowPool, and returns the new pool index and y cursor.
+function Codex:RenderTrinketSection(pool, index, parent, width, y, specID)
+    local data = specID and ns.GuideStore:GetTrinkets(specID)
+    local rowPool = self.trinketRowPool
+    local toggle = self.trinketToggle
+
+    index = index + 1
+    y = PlaceLine(pool, index, parent, y, width, "Trinket Tier List", { color = HEADER_COLOR, isHeader = true })
+    local headerRow = pool[index]
+
+    if not data or not data.lists then
+        toggle:Hide()
+        HidePoolFrom(rowPool, 1)
+        index = index + 1
+        local reason = (data and data.unavailable) or "no trinket data registered for this spec"
+        y = PlaceLine(pool, index, parent, y, width, reason, { color = MUTED_COLOR })
+        return index, y
+    end
+
+    local count = #data.lists
+    if self.trinketListIndex > count then self.trinketListIndex = 1 end
+    local active = data.lists[self.trinketListIndex]
+
+    toggle:ClearAllPoints()
+    toggle:SetPoint("TOPRIGHT", headerRow, "TOPRIGHT", 0, 2)
+    toggle:SetText(active.title or "")
+    toggle:SetShown(count > 1)
+
+    for i, entry in ipairs(active.list) do
+        local row = AcquireTrinketRow(rowPool, i, parent)
+        row:ClearAllPoints()
+        row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
+        row:SetSize(width, 18)
+        row.text:SetWidth(width - TRINKET_TAG_WIDTH - TRINKET_GAIN_WIDTH - 8)
+
+        local tier = TIER_COLORS[entry.tier] or MUTED_COLOR
+        row.tag:SetText(entry.tier or "")
+        row.tag:SetTextColor(tier[1], tier[2], tier[3])
+
+        -- Quality colour once the client knows the item; a not-yet-cached
+        -- item shows the sim's own name in the default item colour and asks
+        -- the client to fetch it (OnBiSItemInfoReceived re-renders).
+        local name, quality = entry.name
+        if GetItemInfoAPI then
+            local ok, realName, _, realQuality = pcall(GetItemInfoAPI, entry.itemID)
+            if ok and type(realName) == "string" and realName ~= "" then
+                name, quality = realName, realQuality
+            elseif C_Item and C_Item.RequestLoadItemDataByID then
+                pcall(C_Item.RequestLoadItemDataByID, entry.itemID)
+            end
+        end
+        local r, g, b = ItemQualityColor(quality)
+        local detail = {}
+        if entry.ilvl then detail[#detail + 1] = "ilvl " .. tostring(entry.ilvl) end
+        if entry.source and entry.source ~= "" then detail[#detail + 1] = entry.source end
+        if entry.onUse then detail[#detail + 1] = "on-use" end
+        local detailText = #detail > 0 and ("  |cff8a97a5" .. table.concat(detail, " · ") .. "|r") or ""
+        row.text:SetText(format("|cff%02x%02x%02x%s|r%s",
+            math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5), name, detailText))
+        row.text:SetTextColor(1, 1, 1)
+        row.itemID = entry.itemID
+
+        row.gain:SetText(format("+%.1f%%", entry.gain or 0))
+        row.gain:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])
+
+        row:Show()
+        y = y - 20
+    end
+    HidePoolFrom(rowPool, #active.list + 1)
+
+    index = index + 1
+    y = PlaceLine(pool, index, parent, y, width,
+        format("Sim ranking (%s), not a verdict for your fight: %s. Click a trinket for its link.",
+            active.title or "", data.source or "source unknown"),
+        { color = MUTED_COLOR })
+
+    return index, y
 end
 
 -- Same two-click confirm as Codex:OnDeleteLoadoutClicked (see its comment for
@@ -964,9 +1185,30 @@ function Codex:RenderBiS(guide, specID)
     else
         for _, entry in ipairs(gear) do
             index = index + 1
-            y = PlaceLine(pool, index, parent, y, width, format("%s: %s", entry.slot or "?", entry.text or ""))
+            local text = format("%s: %s", entry.slot or "?", entry.text or "")
+            -- A guidance entry naming a concrete item (v1.5) shows it as a
+            -- quality-coloured, clickable link after the text.
+            if entry.itemID then
+                local name, quality
+                if GetItemInfoAPI then
+                    local ok, realName, _, realQuality = pcall(GetItemInfoAPI, entry.itemID)
+                    if ok and type(realName) == "string" and realName ~= "" then
+                        name, quality = realName, realQuality
+                    elseif C_Item and C_Item.RequestLoadItemDataByID then
+                        pcall(C_Item.RequestLoadItemDataByID, entry.itemID)
+                    end
+                end
+                local r, g, b = ItemQualityColor(quality)
+                text = format("%s  |cff%02x%02x%02x[%s]|r", text,
+                    math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5),
+                    name or ("Item " .. tostring(entry.itemID)))
+            end
+            y = PlaceLine(pool, index, parent, y, width, text, { itemID = entry.itemID })
         end
     end
+
+    y = y - GROUP_GAP
+    index, y = self:RenderTrinketSection(pool, index, parent, width, y, specID)
 
     y = y - GROUP_GAP
     index = index + 1
@@ -1810,6 +2052,8 @@ function Codex:HideOtherTabWidgets(activeTab)
             self.bisItemBox:Hide()
         end
         if self.bisRowPool then HidePoolFrom(self.bisRowPool, 1) end
+        if self.trinketRowPool then HidePoolFrom(self.trinketRowPool, 1) end
+        if self.trinketToggle then self.trinketToggle:Hide() end
     end
 
     if activeTab ~= "Loadouts" then

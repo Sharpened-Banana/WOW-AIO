@@ -8,9 +8,13 @@ class guides, talent loadouts, and live character tracking in one place:
   practical tips. Opens on your own spec, but you can read up on any class —
   teammates, enemies, or the alt you are levelling.
 - **BiS & Gear** — per-spec gear guidance (what to look for in each slot),
-  plus a personal best-in-slot checklist: paste item links from whatever
-  guide site you trust and SpecSage tracks live which pieces you have
-  equipped, in your bags, or still missing.
+  a sim-based **trinket tier list** per spec (S/A/B/C, single-target and
+  3/5-target, every row a clickable item link), plus a personal best-in-slot
+  checklist: paste item links from whatever guide site you trust and SpecSage
+  tracks live which pieces you have equipped, in your bags, or still missing.
+- **Stat ranks on item tooltips** — every item tooltip gets a line ranking
+  its secondary stats (#1, #2, …) against your current spec's stat priority,
+  so you can tell at a glance whether a Haste/Versatility drop is for you.
 - **Talent Loadout Vault** — save, label, import, and export talent loadout
   strings per spec, organised by content type (Raid, Mythic+, Delves, PvP).
 - **Personal Notes** — free-text notes per spec, kept between sessions.
@@ -34,16 +38,27 @@ not week-by-week sim results.
 
 ## Where BiS data comes from
 
-Nowhere, automatically — and that is deliberate. WoW addons have no network
-access, so no addon can pull Wowhead, Method, or Archon data in game; addons
-that appear to are re-shipped with scraped data every few days, and that
-data belongs to the sites that maintain it. SpecSage ships slot-by-slot
-*guidance* in its own words (which slots carry your tier set, what stats to
-look for on rings, what trinket styles suit the spec), and gives you a
-personal checklist to fill from whichever source you trust: open the BiS
-tab, pick a slot, shift-click an item link (or paste an item ID or name)
-from chat, a guide, or the dungeon journal, and SpecSage marks each entry
-equipped / in bags / missing as you gear up.
+WoW addons have no network access, so nothing updates itself in game; what
+ships is a snapshot, refreshed with each release. Three things live on the
+BiS tab:
+
+- **Slot-by-slot guidance** in SpecSage's own words (which slots carry your
+  tier set, what stats to look for on rings, what trinket styles suit the
+  spec).
+- **A trinket tier list per spec**, generated from bloodmallet.com's public
+  SimulationCraft trinket sims (`tools/fetch_trinkets.py` regenerates
+  `Data/Trinkets.lua`). Each row shows the simulated DPS gain over no trinket
+  and an S/A/B/C tier relative to the best one, for single-target, 3-target
+  and 5-target fights. It is a sim ranking, not a verdict for your fight, and
+  the tab says so. Healers have no list (SimC does not simulate healing), and
+  neither do the few specs SimC has no current-patch profile for yet.
+- **A personal checklist** you fill from whichever source you trust: pick a
+  slot, shift-click an item link (or paste an item ID or name) from chat, a
+  guide, or the dungeon journal, and SpecSage marks each entry equipped /
+  in bags / missing as you gear up.
+
+Every item on the tab is a real item link: hover for the tooltip, click to
+open it, shift-click to put it in chat.
 
 ## Install
 

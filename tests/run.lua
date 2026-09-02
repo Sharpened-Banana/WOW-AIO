@@ -48,6 +48,7 @@ local FILES = {
     "Data\\Guides_Druid.lua",
     "Data\\Guides_DemonHunter.lua",
     "Data\\Guides_Evoker.lua",
+    "Data\\Trinkets.lua",
     "UI\\Overlay.lua",
     "UI\\Tooltips.lua",
     "UI\\Codex.lua",
@@ -56,6 +57,7 @@ local FILES = {
     "Modules\\Procs.lua",
     "Modules\\Loadouts.lua",
     "Modules\\BiS.lua",
+    "Modules\\ItemRanks.lua",
     "Modules\\Notes.lua",
     "Core\\Options.lua",
     "Core\\Commands.lua",
@@ -2021,8 +2023,10 @@ end
 Codex:Open("MAGE", 9005)
 Codex:SelectTab("BiS")
 check(Codex.activeTab == "BiS", "SelectTab switches to the BiS tab")
-check(CountShownRows(Codex.pools.bis) == 5,
-    "the BiS tab renders one row per shipped gear entry plus the checklist header",
+-- 4 gear rows + the Trinket Tier List header + its "no data" reason line
+-- (9005 registers no trinkets) + the Personal Checklist header.
+check(CountShownRows(Codex.pools.bis) == 7,
+    "the BiS tab renders one row per shipped gear entry plus the trinket and checklist headers",
     CountShownRows(Codex.pools.bis))
 
 -- MAGE spec 9004 (also registered above) has no gear key at all: the
@@ -2719,6 +2723,257 @@ check(NotesModule:Get(72) == "Typed but not yet saved for 72.",
     "switching spec flushes the previously open note for its own spec")
 check(Codex.notesBox:GetText() == NotesModule:Get(71),
     "the newly selected spec's own note is shown, not the old spec's buffer")
+
+--------------------------------------------------------------------------------
+section("Trinket tier lists: registration (Data/API.lua v1.5)")
+--------------------------------------------------------------------------------
+
+do
+    local GuideStore = ns.GuideStore
+    check(GuideStore:GetTrinkets(9601) == nil, "GetTrinkets returns nil for a spec with nothing registered")
+
+    local ok = GuideStore:RegisterTrinkets(9601, { unavailable = "no sims for this spec" })
+    check(ok == true, "RegisterTrinkets accepts the unavailable shape")
+    check(GuideStore:GetTrinkets(9601).unavailable == "no sims for this spec", "the unavailable reason round-trips")
+
+    ok = GuideStore:RegisterTrinkets(9602, {
+        source = "test fixture", patch = "12.1",
+        lists = {
+            { title = "Single Target", fightStyle = "castingpatchwerk", list = {
+                { itemID = 19019, name = "Thunderfury, Blessed Blade of the Windseeker", ilvl = 344, gain = 10.5, tier = "S", source = "Raid", onUse = false },
+                { itemID = 777001, name = "Uncached Test Trinket", ilvl = 334, gain = 8.1, tier = "A", source = "Dungeon", onUse = true },
+            }},
+            { title = "5 Targets", fightStyle = "castingpatchwerk5", list = {
+                { itemID = 777001, name = "Uncached Test Trinket", ilvl = 334, gain = 12.0, tier = "S", source = "Dungeon", onUse = true },
+            }},
+        },
+    })
+    check(ok == true, "RegisterTrinkets accepts a valid two-list registration")
+    check(#GuideStore:GetTrinkets(9602).lists == 2, "both fight-style lists round-trip")
+
+    local _, bad = silently(function() return GuideStore:RegisterTrinkets(9603, { lists = {} }) end)
+    check(bad == false, "RegisterTrinkets rejects an empty lists array")
+    _, bad = silently(function()
+        return GuideStore:RegisterTrinkets(9603, { lists = { { title = "ST", list = { { itemID = "nope", name = "x", tier = "S", gain = 1 } } } } })
+    end)
+    check(bad == false, "RegisterTrinkets rejects a non-numeric itemID")
+    _, bad = silently(function()
+        return GuideStore:RegisterTrinkets(9603, { lists = { { title = "ST", list = { { itemID = 1, name = "x", tier = "Z", gain = 1 } } } } })
+    end)
+    check(bad == false, "RegisterTrinkets rejects an unknown tier letter")
+    _, bad = silently(function() return GuideStore:RegisterTrinkets("spec", { unavailable = "x" }) end)
+    check(bad == false, "RegisterTrinkets rejects a non-number specID")
+    check(GuideStore:GetTrinkets(9603) == nil, "a rejected registration stores nothing")
+
+    -- Optional gear[].itemID (v1.5): a number is accepted, anything else is not.
+    ok = GuideStore:RegisterSpec("MAGE", 9604, {
+        specName = "Linked Gear", role = "DAMAGER",
+        gear = { { slot = "Trinket", text = "The classic pick", itemID = 19019 } },
+    })
+    check(ok == true, "RegisterSpec accepts a numeric gear[].itemID")
+    _, bad = silently(function()
+        return GuideStore:RegisterSpec("MAGE", 9605, {
+            specName = "Bad Linked Gear", role = "DAMAGER",
+            gear = { { slot = "Trinket", text = "x", itemID = "19019" } },
+        })
+    end)
+    check(bad == false, "RegisterSpec rejects a non-numeric gear[].itemID")
+end
+
+--------------------------------------------------------------------------------
+section("Trinket tier lists: shipped data (Data/Trinkets.lua)")
+--------------------------------------------------------------------------------
+
+do
+    local GuideStore = ns.GuideStore
+    local withLists, unavailable, total = 0, 0, 0
+    local VALID_TIER = { S = true, A = true, B = true, C = true }
+    for _, classEntry in ipairs(GuideStore:GetClasses()) do
+        for _, specID in ipairs(GuideStore:GetClassSpecs(classEntry.token)) do
+            if specID < 9000 then
+                total = total + 1
+                local data = GuideStore:GetTrinkets(specID)
+                check(data ~= nil, format("shipped spec %d has a trinket registration (list or unavailable reason)", specID))
+                if data and data.unavailable then
+                    unavailable = unavailable + 1
+                elseif data then
+                    withLists = withLists + 1
+                    local sorted = true
+                    for _, listEntry in ipairs(data.lists) do
+                        for i = 2, #listEntry.list do
+                            if listEntry.list[i].gain > listEntry.list[i - 1].gain then sorted = false end
+                        end
+                        check(#listEntry.list > 0 and #listEntry.list <= 15,
+                            format("spec %d '%s' list has 1-15 rows", specID, listEntry.title), #listEntry.list)
+                        check(listEntry.list[1] and listEntry.list[1].tier == "S",
+                            format("spec %d '%s' top trinket is tier S", specID, listEntry.title))
+                    end
+                    check(sorted, format("spec %d trinket lists are sorted by gain, best first", specID))
+                end
+            end
+        end
+    end
+    check(total == 40, "all 40 shipped specs were checked", total)
+    check(withLists == 27, "27 specs ship a bloodmallet-derived trinket list", withLists)
+    check(unavailable == 13, "13 specs (6 healers + 7 without a current SimC profile) ship an unavailable reason", unavailable)
+end
+
+--------------------------------------------------------------------------------
+section("Codex: BiS tab trinket tier list and clickable item links (v1.5)")
+--------------------------------------------------------------------------------
+
+do
+    -- MAGE 9604 (registered above) has one gear entry with an itemID and no
+    -- trinket registration of its own; give it the 9602 fixture's lists.
+    ns.GuideStore:RegisterTrinkets(9604, ns.GuideStore:GetTrinkets(9602))
+    Codex.trinketListIndex = 1
+    Codex:Open("MAGE", 9604)
+    Codex:SelectTab("BiS")
+
+    local function shownTrinketRows()
+        local n = 0
+        for _, row in ipairs(Codex.trinketRowPool) do
+            if row:IsShown() then n = n + 1 end
+        end
+        return n
+    end
+
+    check(shownTrinketRows() == 2, "the Single Target list renders one row per trinket", shownTrinketRows())
+    local first = Codex.trinketRowPool[1]
+    check(first.tag:GetText() == "S", "the top trinket row carries its S tier tag", first.tag:GetText())
+    check(first.itemID == 19019, "the trinket row knows its itemID", first.itemID)
+    check(first.text:GetText():find("Thunderfury", 1, true) ~= nil,
+        "a cached trinket shows the client's item name", first.text:GetText())
+    check(first.text:GetText():find("ilvl 344", 1, true) ~= nil, "the row shows the simmed item level")
+    check(first.gain:GetText() == "+10.5%", "the row shows the sim gain", first.gain:GetText())
+    local second = Codex.trinketRowPool[2]
+    check(second.text:GetText():find("Uncached Test Trinket", 1, true) ~= nil,
+        "an uncached trinket falls back to the sim's own name", second.text:GetText())
+    check(second.text:GetText():find("on%-use") ~= nil, "an on-use trinket is tagged as such")
+    local requested = false
+    for _, id in ipairs(mock.itemLoadRequests) do if id == 777001 then requested = true end end
+    check(requested, "an uncached trinket queues a RequestLoadItemDataByID call")
+    check(Codex.trinketToggle:IsShown() and Codex.trinketToggle:GetText() == "Single Target",
+        "the fight-style toggle shows the active list's title", Codex.trinketToggle:GetText())
+
+    -- Hover and click behave like an item link.
+    first:GetScript("OnEnter")(first)
+    check(GameTooltip.itemID == 19019, "hovering a trinket row shows its item tooltip", GameTooltip.itemID)
+    first:GetScript("OnLeave")(first)
+    mock.itemRefClicks = {}
+    first:GetScript("OnMouseUp")(first, "LeftButton")
+    check(#mock.itemRefClicks == 1 and mock.itemRefClicks[1].link:find("item:19019", 1, true) ~= nil,
+        "clicking a trinket row opens it as an item link via SetItemRef",
+        mock.itemRefClicks[1] and mock.itemRefClicks[1].link)
+
+    -- Toggling cycles to the next list and wraps.
+    Codex:CycleTrinketList()
+    check(Codex.trinketToggle:GetText() == "5 Targets", "the toggle cycles to the next fight style", Codex.trinketToggle:GetText())
+    check(shownTrinketRows() == 1, "the 5 Targets list renders its own row count", shownTrinketRows())
+    Codex:CycleTrinketList()
+    check(Codex.trinketToggle:GetText() == "Single Target", "the toggle wraps back to the first list")
+
+    -- A gear guidance entry with an itemID renders as a clickable link row.
+    local gearRow = Codex.pools.bis[1]
+    check(gearRow.itemID == 19019, "a gear entry with an itemID makes its line row clickable", gearRow.itemID)
+    check(gearRow.text:GetText():find("[Thunderfury", 1, true) ~= nil,
+        "the gear line appends the linked item's name", gearRow.text:GetText())
+    mock.itemRefClicks = {}
+    gearRow:GetScript("OnMouseUp")(gearRow, "LeftButton")
+    check(#mock.itemRefClicks == 1, "clicking the gear line opens its item link")
+
+    -- Once the uncached trinket resolves, GET_ITEM_INFO_RECEIVED re-renders it.
+    mock.items[777001] = { name = "Now Cached Trinket", quality = 4 }
+    mock.Fire("GET_ITEM_INFO_RECEIVED", 777001)
+    check(Codex.trinketRowPool[2].text:GetText():find("Now Cached Trinket", 1, true) ~= nil,
+        "a trinket row re-renders with the real name once the item loads", Codex.trinketRowPool[2].text:GetText())
+    mock.items[777001] = nil
+
+    -- A spec with an unavailable reason shows it and no rows or toggle.
+    Codex:Open("MAGE", 9005)
+    ns.GuideStore:RegisterTrinkets(9005, { unavailable = "no sims for this spec" })
+    Codex:SelectTab("BiS")
+    check(shownTrinketRows() == 0, "an unavailable spec renders no trinket rows")
+    check(not Codex.trinketToggle:IsShown(), "an unavailable spec hides the fight-style toggle")
+    local found = false
+    for _, row in ipairs(Codex.pools.bis) do
+        if row:IsShown() and row.text:GetText() == "no sims for this spec" then found = true end
+    end
+    check(found, "the unavailable reason is rendered as a line")
+
+    -- Leaving the tab hides the trinket widgets.
+    Codex:SelectTab("Overview")
+    check(shownTrinketRows() == 0 and not Codex.trinketToggle:IsShown(), "leaving the BiS tab hides the trinket rows and toggle")
+
+    -- Personal checklist rows are clickable too.
+    local BiSCodex = ns:GetModule("BiS")
+    BiSCodex:Add(9604, "Weapon", "19019")
+    Codex:Open("MAGE", 9604)
+    Codex:SelectTab("BiS")
+    local checklistRow = Codex.bisRowPool[#BiSCodex:GetForSpec(9604)]
+    mock.itemRefClicks = {}
+    checklistRow:GetScript("OnMouseUp")(checklistRow, "LeftButton")
+    check(#mock.itemRefClicks == 1, "clicking a personal checklist row opens its item link")
+end
+
+--------------------------------------------------------------------------------
+section("Item stat ranks on tooltips (Modules/ItemRanks.lua)")
+--------------------------------------------------------------------------------
+
+do
+    local ItemRanks = ns:GetModule("ItemRanks")
+    check(ItemRanks ~= nil, "ItemRanks module registered at load time")
+    check(ItemRanks.hooked == "TooltipDataProcessor", "ItemRanks hooks through TooltipDataProcessor when it exists", ItemRanks.hooked)
+    check(ns.db.itemStatRanks == true, "stat ranks default to on")
+
+    -- The player is Unholy (252): haste, mastery, crit, versatility.
+    local ranks, count = ItemRanks:GetRankTable(252)
+    check(ranks and ranks.haste == 1 and ranks.versatility == 4 and count == 4,
+        "GetRankTable ranks only the secondary stats, primary excluded", ranks and ranks.haste)
+    check(ItemRanks:GetRankTable(9999) == nil, "GetRankTable returns nil for a spec with no guide")
+
+    mock.items[880001] = { name = "Haste/Vers Test Bracers", quality = 3,
+        stats = { ITEM_MOD_HASTE_RATING_SHORT = 512, ITEM_MOD_VERSATILITY = 380, ITEM_MOD_STAMINA_SHORT = 900 } }
+    mock.items[880002] = { name = "Statless Test Trinket", quality = 3, stats = { ITEM_MOD_STAMINA_SHORT = 900 } }
+
+    local lines = ItemRanks:Describe("item:880001", 252)
+    check(lines and #lines == 2, "Describe returns one line per ranked stat on the item", lines and #lines)
+    check(lines and lines[1].stat == "haste" and lines[1].rank == 1, "the best-ranked stat comes first")
+    check(lines and lines[2].stat == "versatility" and lines[2].rank == 4, "versatility ranks #4 for Unholy")
+    check(ItemRanks:Describe("item:880002", 252) == nil, "an item with no secondary stats yields nothing")
+
+    -- Fire the tooltip pipeline the way the client does.
+    GameTooltip:SetOwner(nil, "ANCHOR_NONE")
+    mock.FireTooltipItem(GameTooltip, 880001)
+    local dump = table.concat(GameTooltip:Dump(), "\n")
+    check(dump:find("SpecSage stat ranks (Unholy):", 1, true) ~= nil, "the tooltip gains a SpecSage rank header", dump)
+    check(dump:find("Haste #1 of 4", 1, true) ~= nil, "the tooltip lists Haste as #1 of 4", dump)
+    check(dump:find("Versatility #4 of 4", 1, true) ~= nil, "the tooltip lists Versatility as #4 of 4", dump)
+
+    GameTooltip:SetOwner(nil, "ANCHOR_NONE")
+    mock.FireTooltipItem(GameTooltip, 880002)
+    check(table.concat(GameTooltip:Dump(), "\n"):find("SpecSage", 1, true) == nil,
+        "an item with no secondaries adds no rank lines")
+
+    ns.db.itemStatRanks = false
+    GameTooltip:SetOwner(nil, "ANCHOR_NONE")
+    mock.FireTooltipItem(GameTooltip, 880001)
+    check(table.concat(GameTooltip:Dump(), "\n"):find("SpecSage", 1, true) == nil,
+        "turning the option off suppresses the rank lines")
+    ns.db.itemStatRanks = true
+
+    -- The option is exposed through the shared schema (Codex Options tab and
+    -- the Settings panel both read ns.OPTION_GROUPS).
+    local exposed = false
+    for _, group in ipairs(ns.OPTION_GROUPS) do
+        for _, entry in ipairs(group.options) do
+            if entry.key == "itemStatRanks" and entry.scope == "db" then exposed = true end
+        end
+    end
+    check(exposed, "the stat-ranks option is in ns.OPTION_GROUPS")
+
+    mock.items[880001], mock.items[880002] = nil, nil
+end
 
 --------------------------------------------------------------------------------
 section("Codex: close")

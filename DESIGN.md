@@ -178,7 +178,9 @@ gear = {
 Valid `slot` values: `Head, Neck, Shoulder, Back, Chest, Wrist, Hands,
 Waist, Legs, Feet, Ring, Trinket, Weapon, Off-hand` (validated by
 `Data/API.lua` like statPriority keys; a guide may repeat a slot, e.g. two
-Trinket lines).
+Trinket lines). Since v1.5 an entry may also carry a numeric `itemID`; the
+Codex then appends the item as a clickable, quality-coloured link after the
+guidance text (see the v1.5 addendum below). No shipped guide sets one yet.
 
 **2. Personal BiS checklist** (`Modules/BiS.lua`, module name "BiS") — the
 user builds their own list from whatever source they trust, and the addon
@@ -212,6 +214,112 @@ frame width minus both rails, their gaps, and its own 8px side margins - and
 8 tabs at the existing 84/86 width/stride need 686px; +60 alone left that
 16px short, clipping the last tab past the frame's right edge. +84 covers
 it with a small margin.)
+
+### v1.5 addendum: clickable item links
+
+Every concrete item the BiS tab shows is now an item link, not just text:
+a trinket tier-list row (below), a gear guidance entry that carries the
+optional `itemID` (see the schema section), and a personal checklist entry
+with an itemID. Hover shows the item tooltip (`GameTooltip:SetItemByID`, as
+before); a click runs the same path a chat link does — `HandleModifiedItemClick`
+first (shift-click inserts into chat, ctrl-click opens the dressing room),
+then `SetItemRef` for a plain click, which opens the standard `ItemRefTooltip`
+the player can move and close. Both are pcall-wrapped (`ClickItemLink` in
+UI/Codex.lua). The link itself is `C_Item.GetItemInfo`'s when the item is
+cached and a bare `item:<id>` otherwise, which `SetItemRef` still resolves.
+
+## Trinket tier lists (v1.5)
+
+The one slot where "what to look for" is not enough: trinkets are discrete,
+wildly uneven, and the only defensible ranking is a sim. `Data/Trinkets.lua`
+ships one per spec, **generated** by `tools/fetch_trinkets.py` from
+bloodmallet.com's public chart JSON (`/chart/get/trinkets/<fight style>/
+<class>/<spec>`) — bloodmallet runs SimulationCraft's trinket sims for every
+spec SimC has a current-tier profile for, and the JSON carries each trinket's
+simulated DPS per item level, its itemID, source (Raid/Dungeon/Profession/
+PvP) and whether it is on-use. This is the same "credit SimC's public data,
+not a guide site's editorial" sourcing `mplusLoadout` uses, so it needed no
+policy change; the guide-site rule was lifted anyway (see the skill file).
+
+Registration, separate from the guide table so the generated file never
+touches the hand-written guides and a third-party pack can ship its own:
+
+```lua
+ns.GuideStore:RegisterTrinkets(specID, {
+  source = "bloodmallet.com trinket sims, SimulationCraft build f869791 (MID2 tier), ...",
+  patch = "12.1",
+  lists = {
+    { title = "Single Target", fightStyle = "castingpatchwerk", list = {
+        { itemID = 270173, name = "Zul'jin's Guillotine Technique", ilvl = 344,
+          gain = 10.16, tier = "S", source = "Raid", onUse = false },
+        ...
+    }},
+    { title = "3 Targets", ... }, { title = "5 Targets", ... },
+  },
+})
+-- or, for a spec with nothing to rank:
+ns.GuideStore:RegisterTrinkets(specID, { unavailable = "<why>" })
+ns.GuideStore:GetTrinkets(specID)   -- -> either table, or nil
+```
+
+`Data/API.lua` validates: `unavailable` is a non-empty string, or `lists` is
+a non-empty array of `{ title, list }` whose rows each have a numeric
+`itemID`, non-empty `name`, `tier` in S/A/B/C and numeric `gain`; anything
+else prints one warning and is skipped, like a bad guide.
+
+What the numbers mean (and the Codex says so under the list): `gain` is the
+trinket's simulated DPS over the spec's no-trinket baseline, at the highest
+item level bloodmallet simulated it at (raid trinkets sim at 344, dungeon at
+334, profession at 331 — a deliberate "each at its own best" comparison, the
+same default view bloodmallet shows). The tier is that gain as a share of the
+best trinket's gain in the same list: S ≥ 90%, A ≥ 78%, B ≥ 62%, C below.
+Top 15 per list. It is a Patchwerk-style sim ranking, not a verdict for any
+particular fight, and the row text says so.
+
+Coverage, as of 2026-09-02: 27 of 40 specs have lists. The 13 without ship an
+`unavailable` reason instead so the tab explains itself: the 6 healers
+(SimC has no healing model, so nobody sims them) and the 7 specs SimC has not
+published a current-tier (MID2) profile for yet — Retribution, all four
+Druid specs, all three Evoker specs. Re-running the script picks those up the
+day they appear. The script needs a browser-like User-Agent (bloodmallet
+403s Python's default); it sets one.
+
+Codex BiS tab layout, top to bottom: shipped gear guidance rows (as before),
+then a **Trinket Tier List** header with a fight-style toggle button beside
+it (cycles Single Target / 3 Targets / 5 Targets; hidden when only one list
+exists), one row per trinket — tier tag (S orange, A purple, B blue, C
+green) | quality-coloured item name with `ilvl · source · on-use` detail |
+`+x.x%` gain — and a muted attribution line, then the Personal Checklist as
+before. Rows are clickable item links (addendum above). An uncached item shows
+the sim's own name, queues `C_Item.RequestLoadItemDataByID`, and re-renders
+on `GET_ITEM_INFO_RECEIVED` the same way checklist entries do.
+
+## Item stat ranks (v1.5, Modules/ItemRanks.lua)
+
+Every item tooltip in the game gets a line ranking the item's secondary
+stats against the player's *current spec's* Codex `statPriority`, so a
+Haste/Versatility piece reads, for an Unholy DK, as `Haste #1 of 4 ·
+Versatility #4 of 4`. Ranks count only rankable stats (crit, haste,
+mastery, versatility, leech, avoidance, speed) — primary stat, stamina and
+armor are on every piece for its slot and rank nothing — so a guide listing
+primary first still ranks its best secondary as #1. A stat on the item that
+the guide's priority does not mention shows as "unranked" rather than being
+silently dropped. Colours run green → yellow → orange from #1 down.
+
+Hook: `TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, ...)`
+on modern clients (one call covers GameTooltip, ItemRefTooltip and the
+compare tooltips); `OnTooltipSetItem` HookScript on GameTooltip/ItemRefTooltip
+as the fallback. The link comes from the post-call's `data.hyperlink` first
+and `tooltip:GetItem()` second. Stats come from `C_Item.GetItemStats(link)`
+(`GetItemStats` fallback), keyed `ITEM_MOD_<STAT>_RATING_SHORT` /
+`ITEM_MOD_VERSATILITY`. Everything that touches the tooltip is pcall-wrapped:
+an error inside a tooltip post-call breaks *every* item tooltip in the
+client, not just ours. `ItemRanks:Describe(link, specID)` is the pure,
+tooltip-free half tests drive directly.
+
+Setting: `SpecSageDB.itemStatRanks` (default on), exposed as "Stat ranks on
+item tooltips" under a new **Codex** group in `ns.OPTION_GROUPS`, so both
+the Codex Options tab and the Settings panel carry it.
 
 A later pass (options-in-Codex work, not otherwise documented in this file)
 added a 9th tab, **Options**, and widened the frame again to 984 -> 1070

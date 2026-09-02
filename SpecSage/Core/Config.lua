@@ -129,6 +129,13 @@ local function BuildOptionGroups()
           buttonText = "Reset position", tooltip = "Move the overlay back to its default spot." },
     }
 
+    local codex = {
+        { kind = "check", scope = "db", key = "itemStatRanks",
+          variable = "SpecSage_itemStatRanks", label = "Stat ranks on item tooltips",
+          tooltip = "Add a line to every item tooltip ranking its secondary stats (#1, #2, ...) "
+              .. "against your current spec's stat priority from the Codex." },
+    }
+
     local stats = {
         { kind = "check", scope = "stats", key = "enabled",
           variable = "SpecSage_stats", label = "Show stats section" },
@@ -183,6 +190,7 @@ local function BuildOptionGroups()
 
     return {
         { title = "Display", options = display },
+        { title = "Codex", options = codex },
         { title = "Stats (this character)", options = stats },
         { title = "Combat", options = combat },
         { title = "Procs", options = procs },
@@ -204,6 +212,10 @@ local DEFAULTS = {
     showHeaders = true,
     hideOutOfCombat = false,
     tooltips = true,
+
+    -- Modules/ItemRanks.lua: rank an item tooltip's secondary stats against
+    -- the player's current spec's Codex stat priority.
+    itemStatRanks = true,
 
     -- Pinned tooltips, keyed by "section:key", each { section, key, custom,
     -- point, relPoint, x, y }. Only dragged pins carry a position; the rest

@@ -2,10 +2,10 @@
 ## Title: SpecSage
 ## Notes: All-in-one class guides, talent loadouts, stat overlay, combat metrics, and proc tracking.
 ## Author: lonezebra
-## Version: 1.0.1
+## Version: 1.1.0
 ## SavedVariables: SpecSageDB
 ## SavedVariablesPerCharacter: SpecSageCharDB
-## IconTexture: Interface\Icons\INV_Misc_Book_09
+## IconTexture: Interface\Icons\INV_Misc_Book_11
 ## Category-enUS: Combat
 
 Core\Init.lua
@@ -24,6 +24,7 @@ Data\Guides_Monk.lua
 Data\Guides_Druid.lua
 Data\Guides_DemonHunter.lua
 Data\Guides_Evoker.lua
+Data\Trinkets.lua
 UI\Overlay.lua
 UI\Tooltips.lua
 UI\Codex.lua
@@ -32,6 +33,7 @@ Modules\Combat.lua
 Modules\Procs.lua
 Modules\Loadouts.lua
 Modules\BiS.lua
+Modules\ItemRanks.lua
 Modules\Notes.lua
 Core\Options.lua
 Core\Commands.lua

@@ -110,6 +110,64 @@ local function ValidateGear(gear)
         if type(entry.text) ~= "string" or entry.text == "" then
             return false, format("gear[%d] must have non-empty text", index)
         end
+        -- Optional (v1.5): a concrete item the Codex renders as a clickable
+        -- item link beside the guidance text.
+        if entry.itemID ~= nil and type(entry.itemID) ~= "number" then
+            return false, format("gear[%d].itemID must be a number when present", index)
+        end
+    end
+
+    return true
+end
+
+-- Trinket tier lists (v1.5, DESIGN.md's "Trinket tier lists" section). A
+-- registration is either { unavailable = "<reason>" } (the Codex shows the
+-- reason) or { source, patch, lists = { { title, fightStyle, list = { row,
+-- ... } }, ... } } where every row is a concrete item: itemID, name, tier
+-- (S/A/B/C), gain (percent over baseline), and optional ilvl/source/onUse.
+local VALID_TIERS = { S = true, A = true, B = true, C = true }
+
+local function ValidateTrinkets(data)
+    if type(data) ~= "table" then
+        return false, "trinkets must be a table"
+    end
+
+    if data.unavailable ~= nil then
+        if type(data.unavailable) ~= "string" or data.unavailable == "" then
+            return false, "trinkets.unavailable must be a non-empty string"
+        end
+        return true
+    end
+
+    if type(data.lists) ~= "table" or #data.lists == 0 then
+        return false, "trinkets.lists must be a non-empty array"
+    end
+
+    for listIndex, listEntry in ipairs(data.lists) do
+        if type(listEntry) ~= "table" or type(listEntry.title) ~= "string" or listEntry.title == "" then
+            return false, format("trinkets.lists[%d] must have a title", listIndex)
+        end
+        if type(listEntry.list) ~= "table" or #listEntry.list == 0 then
+            return false, format("trinkets.lists[%d].list must be a non-empty array", listIndex)
+        end
+        for rowIndex, row in ipairs(listEntry.list) do
+            local where = format("trinkets.lists[%d].list[%d]", listIndex, rowIndex)
+            if type(row) ~= "table" then
+                return false, where .. " must be a table"
+            end
+            if type(row.itemID) ~= "number" then
+                return false, where .. ".itemID must be a number"
+            end
+            if type(row.name) ~= "string" or row.name == "" then
+                return false, where .. ".name must be a non-empty string"
+            end
+            if type(row.tier) ~= "string" or not VALID_TIERS[row.tier] then
+                return false, where .. ".tier must be S, A, B or C"
+            end
+            if type(row.gain) ~= "number" then
+                return false, where .. ".gain must be a number"
+            end
+        end
     end
 
     return true
@@ -231,6 +289,34 @@ function GuideStore:RegisterSpec(classToken, specID, guide)
     end
 
     return true
+end
+
+-- Trinket tier lists (v1.5): kept apart from the guide table so the
+-- generated Data/Trinkets.lua can register them without touching the
+-- hand-written guide files, and so a third-party pack can ship its own.
+local trinkets = {}   -- specID -> trinkets table
+
+-- Registers (or overwrites) a spec's trinket tier lists. Same validate-and-
+-- skip contract as RegisterSpec: returns true, or prints one warning and
+-- returns false. The spec does not need a guide registered first.
+function GuideStore:RegisterTrinkets(specID, data)
+    if type(specID) ~= "number" then
+        ns.Print(format("|cffff4444trinkets rejected|r (spec=%s): specID must be a number", tostring(specID)))
+        return false
+    end
+    local ok, err = ValidateTrinkets(data)
+    if not ok then
+        ns.Print(format("|cffff4444trinkets rejected|r (spec=%s): %s", tostring(specID), err))
+        return false
+    end
+    trinkets[specID] = data
+    return true
+end
+
+-- Returns the trinkets table for a specID (either shape RegisterTrinkets
+-- accepts), or nil if none is registered.
+function GuideStore:GetTrinkets(specID)
+    return trinkets[specID]
 end
 
 -- Returns the guide table for a specID, or nil if none is registered.
