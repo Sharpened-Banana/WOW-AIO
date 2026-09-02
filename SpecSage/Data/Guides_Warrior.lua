@@ -55,6 +55,20 @@ local ADDON, ns = ...
 -- call ns.GuideStore:RegisterSpec(classToken, specID, guideTable) from any
 -- addon that loads after SpecSage; see Data/API.lua for validation rules.
 
+-- Consumables/gear pass (2026-09-01, same session as the rotation-guide
+-- enrichment above): every spec's Flask/Food/Potion/Augment Rune entries
+-- were refreshed to the current Season 2 consumable system (stat-matched
+-- "Flask of Tempered <X>" flasks rather than the old generic "Flask of
+-- Alchemical Chaos" placeholder used everywhere; current food/potion/
+-- augment-rune names), and specs with concrete Season 2 tier-set 2pc/4pc
+-- effects (per the same guide-site sources) had that detail appended to
+-- their Head gear entry - specs the sources gave no specific tier numbers
+-- for were left with their existing generic tier-set mention rather than
+-- inventing specifics. statPriority was deliberately NOT touched in this
+-- pass either: stat-priority orderings are exactly the kind of contested
+-- judgment call (not a mechanically-determined fact) this repo's policy
+-- says to flag rather than silently adopt, and neither source gave a
+-- confident order clearly better than what already shipped.
 if not ns.GuideStore then return end
 
 ns.GuideStore:RegisterSpec("WARRIOR", 71, {
@@ -116,15 +130,16 @@ ns.GuideStore:RegisterSpec("WARRIOR", 71, {
     { spellID = 97462, text = "Rallying Cry — raid-wide defensive cooldown for group survival checks" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Strength)" },
-    { slot = "Food", text = "A Strength-focused feast or food buff" },
-    { slot = "Potion", text = "Tempered Potion, used inside your Colossus Smash burst window" },
+    { slot = "Flask", text = "Flask of Tempered Aggression — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used inside your Colossus Smash burst window. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Ironclaw Whetstone or the current-tier weapon oil" },
     { slot = "Enchants", text = "Weapon enchant for Strength/Crit; ring enchants for secondary stats" },
     { slot = "Gems", text = "Strength or Strength/secondary hybrid gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "Tier set piece — the set bonus usually reshapes your Colossus Smash burst more than a small item-level gap does" },
+    { slot = "Head", text = "Tier set piece — the set bonus usually reshapes your Colossus Smash burst more than a small item-level gap does. Season 2's set bonus boosts Mortal Strike/Execute and gives Slam a small cleave, with the four-piece boosting Overpower and having it buff your next Slam, stacking." },
     { slot = "Neck", text = "Favor Crit and Mastery over Haste and Versatility to match Arms' stat priority" },
     { slot = "Back", text = "Treat it like any other armor slot — secondary stat weighting matters more than the base stat total" },
     { slot = "Legs", text = "Another tier slot when available; otherwise the highest item level piece with Crit and Mastery" },
@@ -217,15 +232,16 @@ ns.GuideStore:RegisterSpec("WARRIOR", 72, {
     { spellID = 97462, text = "Rallying Cry — raid-wide defensive utility cooldown" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Strength)" },
-    { slot = "Food", text = "A Strength-focused feast or food buff" },
-    { slot = "Potion", text = "Tempered Potion, used with Recklessness for burst" },
+    { slot = "Flask", text = "Flask of Tempered Swiftness — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used with Recklessness for burst. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Ironclaw Whetstone or the current-tier weapon oil on both weapons" },
     { slot = "Enchants", text = "Weapon enchant for Strength/Crit; ring enchants for secondary stats" },
     { slot = "Gems", text = "Strength or Strength/secondary hybrid gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "Tier set piece — the set bonus is usually worth more than a small item-level upgrade" },
+    { slot = "Head", text = "Tier set piece — the set bonus is usually worth more than a small item-level upgrade. Season 2's set bonus boosts Raging Blow and lets it extend Recklessness, with the four-piece boosting Bloodthirst and its crit bonus during Recklessness — check your tooltip for the exact current numbers, they vary by source." },
     { slot = "Neck", text = "Favor Haste to keep the global cooldown fast and Enrage uptime near-permanent" },
     { slot = "Back", text = "Pick up secondary stats matching Haste and Mastery over a raw item-level chase" },
     { slot = "Legs", text = "Another tier slot when possible; otherwise the highest item level piece with Haste and Mastery" },
@@ -325,15 +341,16 @@ ns.GuideStore:RegisterSpec("WARRIOR", 73, {
     { spellID = 97462, text = "Rallying Cry — group-wide defensive cooldown for raid damage checks" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Stamina)" },
-    { slot = "Food", text = "A Stamina-focused feast or food buff" },
-    { slot = "Potion", text = "A Stamina or defensive potion for dangerous pulls/phases" },
+    { slot = "Flask", text = "Flask of Tempered Mastery — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "A Stamina or defensive potion for dangerous pulls/phases. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Ironclaw Whetstone or the current-tier weapon oil" },
     { slot = "Enchants", text = "Weapon enchant for Stamina/mitigation; ring enchants for secondary stats" },
     { slot = "Gems", text = "Stamina or Stamina/secondary hybrid gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "Tier set piece — mitigation- and threat-relevant set bonuses often outweigh raw item level for a tank" },
+    { slot = "Head", text = "Tier set piece — mitigation- and threat-relevant set bonuses often outweigh raw item level for a tank. Season 2's set bonus boosts free Revenge procs and buffs your next Shield Slam, with the four-piece adding a bleed to Ravager and free Revenges and cutting Ravager's cooldown." },
     { slot = "Neck", text = "Balance Stamina for a survivability buffer against Mastery for block value" },
     { slot = "Back", text = "Prioritize Stamina and secondary stats over a pure item-level trade" },
     { slot = "Legs", text = "Another tier slot when possible; otherwise the highest item level piece with Stamina and Mastery" },

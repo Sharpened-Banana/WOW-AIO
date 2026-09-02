@@ -61,6 +61,20 @@ local ADDON, ns = ...
 -- the relevant array. Keep this file data-only — no logic beyond the calls
 -- below. See DESIGN.md "Guide data schema" for the full table shape.
 
+-- Consumables/gear pass (2026-09-01, same session as the rotation-guide
+-- enrichment above): every spec's Flask/Food/Potion/Augment Rune entries
+-- were refreshed to the current Season 2 consumable system (stat-matched
+-- "Flask of Tempered <X>" flasks rather than the old generic "Flask of
+-- Alchemical Chaos" placeholder used everywhere; current food/potion/
+-- augment-rune names), and specs with concrete Season 2 tier-set 2pc/4pc
+-- effects (per the same guide-site sources) had that detail appended to
+-- their Head gear entry - specs the sources gave no specific tier numbers
+-- for were left with their existing generic tier-set mention rather than
+-- inventing specifics. statPriority was deliberately NOT touched in this
+-- pass either: stat-priority orderings are exactly the kind of contested
+-- judgment call (not a mechanically-determined fact) this repo's policy
+-- says to flag rather than silently adopt, and neither source gave a
+-- confident order clearly better than what already shipped.
 if not ns.GuideStore then return end
 
 -- Affliction ---------------------------------------------------------------
@@ -117,15 +131,16 @@ ns.GuideStore:RegisterSpec("WARLOCK", 265, {
     { text = "Mortal Coil / Howl of Terror — utility CC, situational" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Intellect)" },
-    { slot = "Food", text = "A feast or personal Intellect food for the encounter" },
-    { slot = "Potion", text = "Tempered Potion, used during a burst window" },
+    { slot = "Flask", text = "Flask of Tempered Swiftness — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used during a burst window. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Not applicable" },
     { slot = "Enchants", text = "Max-rank Intellect enchants on cloak and rings" },
     { slot = "Gems", text = "Intellect/secondary stat gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "One of your tier-set slots — the four-piece bonus is worth chasing since it reinforces your dot-and-shard-spender damage engine" },
+    { slot = "Head", text = "One of your tier-set slots — the four-piece bonus is worth chasing since it reinforces your dot-and-shard-spender damage engine. Season 2's set bonus boosts Corruption and Agony, and rewards a heavier Unstable Affliction build (each active UA adds a stacking damage bonus, and Seed of Corruption now applies a partial UA too) at four pieces." },
     { slot = "Chest", text = "A large stat budget and often your other tier piece — lean into Haste first to smooth dot ticks and shard generation" },
     { slot = "Neck", text = "Usually has a socket — fill it and prioritize Haste, then Mastery, over Critical Strike" },
     { slot = "Ring", text = "No set bonus tying you down — use rings to round out Haste and Mastery wherever your gear is thin" },
@@ -213,15 +228,16 @@ ns.GuideStore:RegisterSpec("WARLOCK", 266, {
     { spellID = 104773, text = "Unending Resolve — major defensive, use against heavy incoming damage" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Intellect)" },
-    { slot = "Food", text = "A feast or personal Intellect food for the encounter" },
-    { slot = "Potion", text = "Tempered Potion, used during a Demonic Tyrant window" },
+    { slot = "Flask", text = "Flask of Tempered Swiftness — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used during a Demonic Tyrant window. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Not applicable" },
     { slot = "Enchants", text = "Max-rank Intellect enchants on cloak and rings" },
     { slot = "Gems", text = "Intellect/secondary stat gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "One of your tier-set slots — the four-piece bonus is built around your demon-summon burst, so it's usually worth prioritizing over raw item level" },
+    { slot = "Head", text = "One of your tier-set slots — the four-piece bonus is built around your demon-summon burst, so it's usually worth prioritizing over raw item level. Season 2's set bonus boosts Wild Imp damage and Implosion, with the four-piece giving depleted Wild Imps a chance to Implode on their own — exact numbers have moved in hotfixes, check your current tooltip." },
     { slot = "Chest", text = "A big stat budget and likely your other tier piece — lean Haste first to shorten the ramp into each Demonic Tyrant window" },
     { slot = "Neck", text = "Usually carries a socket — fill it and favor Haste, then Mastery" },
     { slot = "Ring", text = "No set bonus attached — use rings to top up Haste and Mastery wherever you're light" },
@@ -309,15 +325,16 @@ ns.GuideStore:RegisterSpec("WARLOCK", 267, {
     { spellID = 104773, text = "Unending Resolve — major defensive, use against heavy incoming damage" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Intellect)" },
-    { slot = "Food", text = "A feast or personal Intellect food for the encounter" },
-    { slot = "Potion", text = "Tempered Potion, used with Summon Infernal" },
+    { slot = "Flask", text = "Flask of Tempered Aggression — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used with Summon Infernal. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Not applicable" },
     { slot = "Enchants", text = "Max-rank Intellect enchants on cloak and rings" },
     { slot = "Gems", text = "Intellect/secondary stat gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "One of your tier-set slots — the four-piece bonus meaningfully strengthens your Chaos Bolt burst windows, so it's usually worth the set piece" },
+    { slot = "Head", text = "One of your tier-set slots — the four-piece bonus meaningfully strengthens your Chaos Bolt burst windows, so it's usually worth the set piece. Season 2's set bonus boosts Incinerate and gives it a chance to evoke Echo of Sargeras, with the four-piece making Echo of Sargeras targets take extra damage from your other spells briefly." },
     { slot = "Chest", text = "A large stat budget and often your other tier piece — push Critical Strike first since it directly scales your biggest hits" },
     { slot = "Neck", text = "Usually has a socket — prioritize Critical Strike, then Haste for more shard generation" },
     { slot = "Ring", text = "No set bonus tying you down — use rings to round out Critical Strike and Haste" },

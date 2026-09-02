@@ -43,6 +43,20 @@ local ADDON, ns = ...
 -- the relevant array. Keep this file data-only — no logic beyond the calls
 -- below. See DESIGN.md "Guide data schema" for the full table shape.
 
+-- Consumables/gear pass (2026-09-01, same session as the rotation-guide
+-- enrichment above): every spec's Flask/Food/Potion/Augment Rune entries
+-- were refreshed to the current Season 2 consumable system (stat-matched
+-- "Flask of Tempered <X>" flasks rather than the old generic "Flask of
+-- Alchemical Chaos" placeholder used everywhere; current food/potion/
+-- augment-rune names), and specs with concrete Season 2 tier-set 2pc/4pc
+-- effects (per the same guide-site sources) had that detail appended to
+-- their Head gear entry - specs the sources gave no specific tier numbers
+-- for were left with their existing generic tier-set mention rather than
+-- inventing specifics. statPriority was deliberately NOT touched in this
+-- pass either: stat-priority orderings are exactly the kind of contested
+-- judgment call (not a mechanically-determined fact) this repo's policy
+-- says to flag rather than silently adopt, and neither source gave a
+-- confident order clearly better than what already shipped.
 if not ns.GuideStore then return end
 
 -- Brewmaster -----------------------------------------------------------
@@ -110,12 +124,13 @@ ns.GuideStore:RegisterSpec("MONK", 268, {
     { spellID = 132578, text = "Invoke Niuzao (talent) — major cooldown for extended (25s+) high-threat or high-damage windows" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Agility, tank stat variant)" },
-    { slot = "Food", text = "A feast or personal Stamina/Agility food for the encounter" },
-    { slot = "Potion", text = "Tempered Potion or a Stamina/defensive potion for survival cooldowns" },
+    { slot = "Flask", text = "Flask of Tempered Versatility — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion or a Stamina/defensive potion for survival cooldowns. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Ironclaw Whetstone or the current-tier weapon enchant" },
     { slot = "Enchants", text = "Max-rank Stamina/Agility enchants on cloak and rings" },
     { slot = "Gems", text = "Stamina/Agility gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
     { slot = "Head", text = "One of your tier-set slots — the four-piece bonus strengthens your Stagger/Purifying Brew loop, worth prioritizing over a raw item-level gap" },
@@ -225,12 +240,13 @@ ns.GuideStore:RegisterSpec("MONK", 270, {
     { spellID = 1243287, text = "Diffuse Magic — personal defensive against magic damage" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Intellect)" },
-    { slot = "Food", text = "A feast or personal Intellect food for the encounter" },
-    { slot = "Potion", text = "Tempered Potion or a healing-oriented potion for a big damage phase" },
+    { slot = "Flask", text = "Flask of Tempered Swiftness for pure throughput, or Flask of Saving Graces if you'd rather have the healer-focused option" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion or a healing-oriented potion for a big damage phase. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Not applicable" },
     { slot = "Enchants", text = "Max-rank Intellect enchants on cloak and rings" },
     { slot = "Gems", text = "Intellect/secondary stat gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
     { slot = "Head", text = "One of your tier-set slots — the four-piece bonus adds real throughput to your Renewing Mist/Vivify loop, worth prioritizing" },
@@ -320,12 +336,13 @@ ns.GuideStore:RegisterSpec("MONK", 269, {
     { spellID = 1243287, text = "Diffuse Magic — personal defensive against magic damage" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Agility)" },
-    { slot = "Food", text = "A feast or personal Agility food for the encounter" },
-    { slot = "Potion", text = "Tempered Potion, used inside your cooldown window" },
+    { slot = "Flask", text = "Flask of Tempered Aggression — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used inside your cooldown window. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Ironclaw Whetstone or the current-tier weapon enchant" },
     { slot = "Enchants", text = "Max-rank Agility enchants on cloak and rings" },
     { slot = "Gems", text = "Agility/secondary stat gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
     { slot = "Head", text = "One of your tier-set slots — the four-piece bonus is built around your Chi/combo-strike burst windows, worth prioritizing over raw item level" },

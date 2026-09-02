@@ -28,6 +28,20 @@ local ADDON, ns = ...
 -- call ns.GuideStore:RegisterSpec(classToken, specID, guideTable) from any
 -- addon that loads after SpecSage; see Data/API.lua for validation rules.
 
+-- Consumables/gear pass (2026-09-01, same session as the rotation-guide
+-- enrichment above): every spec's Flask/Food/Potion/Augment Rune entries
+-- were refreshed to the current Season 2 consumable system (stat-matched
+-- "Flask of Tempered <X>" flasks rather than the old generic "Flask of
+-- Alchemical Chaos" placeholder used everywhere; current food/potion/
+-- augment-rune names), and specs with concrete Season 2 tier-set 2pc/4pc
+-- effects (per the same guide-site sources) had that detail appended to
+-- their Head gear entry - specs the sources gave no specific tier numbers
+-- for were left with their existing generic tier-set mention rather than
+-- inventing specifics. statPriority was deliberately NOT touched in this
+-- pass either: stat-priority orderings are exactly the kind of contested
+-- judgment call (not a mechanically-determined fact) this repo's policy
+-- says to flag rather than silently adopt, and neither source gave a
+-- confident order clearly better than what already shipped.
 if not ns.GuideStore then return end
 
 -- Holy (65): revised for 12.1 from Blizzard patch-note content reached via
@@ -84,15 +98,16 @@ ns.GuideStore:RegisterSpec("PALADIN", 65, {
     { spellID = 6940, text = "Blessing of Sacrifice — redirect damage from an ally to yourself" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Intellect)" },
-    { slot = "Food", text = "An Intellect-focused feast or food buff" },
-    { slot = "Potion", text = "A mana or Intellect potion for extended healing-heavy fights" },
+    { slot = "Flask", text = "Flask of Tempered Aggression for pure throughput, or Flask of Saving Graces if you'd rather have the healer-focused option" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "A mana or Intellect potion for extended healing-heavy fights. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Shadowcore Oil or the current-tier weapon oil" },
     { slot = "Enchants", text = "Weapon enchant for Intellect/haste; ring enchants for secondary stats" },
     { slot = "Gems", text = "Intellect or Intellect/secondary hybrid gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "Tier set piece — the set bonus usually shapes your Holy Shock/Holy Power cycle more than raw item level" },
+    { slot = "Head", text = "Tier set piece — the set bonus usually shapes your Holy Shock/Holy Power cycle more than raw item level. Season 2's set bonus specifically: Infusion of Light adds a large Flash of Light healing boost and a Greater Judgment absorb, with the four-piece adding a chance for Judgment to grant Infusion of Light and a guaranteed (pricier) proc from Holy Light." },
     { slot = "Neck", text = "Favor Crit and Haste to keep Holy Shock cycling and heals landing faster" },
     { slot = "Back", text = "Pick up Intellect and secondary stats over a pure item-level upgrade" },
     { slot = "Legs", text = "Another tier slot when possible; otherwise the highest item level piece leaning Crit and Haste" },
@@ -191,15 +206,16 @@ ns.GuideStore:RegisterSpec("PALADIN", 66, {
     { spellID = 31884, text = "Avenging Wrath — damage and self-healing cooldown, weave in during sustained damage" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Stamina)" },
-    { slot = "Food", text = "A Stamina-focused feast or food buff" },
-    { slot = "Potion", text = "A Stamina or defensive potion for dangerous pulls/phases" },
+    { slot = "Flask", text = "Flask of Tempered Swiftness — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "A Stamina or defensive potion for dangerous pulls/phases. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Shadowcore Oil or the current-tier weapon oil" },
     { slot = "Enchants", text = "Weapon enchant for Stamina/mitigation; ring enchants for secondary stats" },
     { slot = "Gems", text = "Stamina or Stamina/secondary hybrid gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "Tier set piece — Shield of the Righteous uptime and Holy Power flow usually benefit more than a small item-level gap" },
+    { slot = "Head", text = "Tier set piece — Shield of the Righteous uptime and Holy Power flow usually benefit more than a small item-level gap. Season 2's set bonus specifically: Consecration grows and grants bonus crit chance against enemies standing in it, with the four-piece adding bonus Holy damage to Judgment/Blessed Hammer that doubles on a crit." },
     { slot = "Neck", text = "Balance Stamina for survivability with Haste for faster Holy Power generation" },
     { slot = "Back", text = "Prioritize Stamina and secondary stats over a pure item-level trade" },
     { slot = "Legs", text = "Another tier slot when possible; otherwise the highest item level piece leaning Haste and Mastery" },
@@ -291,15 +307,16 @@ ns.GuideStore:RegisterSpec("PALADIN", 70, {
     { spellID = 1022, text = "Blessing of Protection — utility defensive cooldown for yourself or an ally" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Strength)" },
-    { slot = "Food", text = "A Strength-focused feast or food buff" },
-    { slot = "Potion", text = "Tempered Potion, used inside your main burst window" },
+    { slot = "Flask", text = "Flask of Tempered Swiftness — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used inside your main burst window. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Ironclaw Whetstone or the current-tier weapon oil" },
     { slot = "Enchants", text = "Weapon enchant for Strength/Crit; ring enchants for secondary stats" },
     { slot = "Gems", text = "Strength or Strength/secondary hybrid gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "Tier set piece — the set bonus usually reshapes Holy Power flow more than a small item-level gap" },
+    { slot = "Head", text = "Tier set piece — the set bonus usually reshapes Holy Power flow more than a small item-level gap. Season 2's set bonus increases your Divine Purpose proc rate and boosts whichever Holy Power spender follows a proc — weave Divine Storm on single target or Final Verdict in AoE right after one." },
     { slot = "Neck", text = "Favor Haste to keep Holy Power generators and Templar's Verdict casts flowing" },
     { slot = "Back", text = "Secondary stats matching Haste and Crit outweigh a pure item-level chase" },
     { slot = "Legs", text = "Another tier slot when possible; otherwise the highest item level piece leaning Haste and Crit" },

@@ -33,6 +33,20 @@ local ADDON, ns = ...
 -- call ns.GuideStore:RegisterSpec(classToken, specID, guideTable) from any
 -- addon that loads after SpecSage; see Data/API.lua for validation rules.
 
+-- Consumables/gear pass (2026-09-01, same session as the rotation-guide
+-- enrichment above): every spec's Flask/Food/Potion/Augment Rune entries
+-- were refreshed to the current Season 2 consumable system (stat-matched
+-- "Flask of Tempered <X>" flasks rather than the old generic "Flask of
+-- Alchemical Chaos" placeholder used everywhere; current food/potion/
+-- augment-rune names), and specs with concrete Season 2 tier-set 2pc/4pc
+-- effects (per the same guide-site sources) had that detail appended to
+-- their Head gear entry - specs the sources gave no specific tier numbers
+-- for were left with their existing generic tier-set mention rather than
+-- inventing specifics. statPriority was deliberately NOT touched in this
+-- pass either: stat-priority orderings are exactly the kind of contested
+-- judgment call (not a mechanically-determined fact) this repo's policy
+-- says to flag rather than silently adopt, and neither source gave a
+-- confident order clearly better than what already shipped.
 if not ns.GuideStore then return end
 
 -- Discipline (256): revised for 12.1 from Blizzard patch-note content reached
@@ -91,12 +105,13 @@ ns.GuideStore:RegisterSpec("PRIEST", 256, {
     { spellID = 34433, text = "Shadowfiend (Voidwraith for Voidweaver) — mana return plus extra Atonement-feeding damage" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Intellect)" },
-    { slot = "Food", text = "An Intellect-focused feast or food buff" },
-    { slot = "Potion", text = "A mana or Intellect potion for extended healing-heavy fights" },
+    { slot = "Flask", text = "Flask of Tempered Aggression for pure throughput, or Flask of Saving Graces if you'd rather have the healer-focused option" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "A mana or Intellect potion for extended healing-heavy fights. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Shadowcore Oil or the current-tier weapon oil" },
     { slot = "Enchants", text = "Weapon enchant for Intellect/haste; ring enchants for secondary stats" },
     { slot = "Gems", text = "Intellect or Intellect/secondary hybrid gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
     { slot = "Head", text = "Tier set piece — the set bonus usually matters more than a small item-level gap" },
@@ -185,15 +200,16 @@ ns.GuideStore:RegisterSpec("PRIEST", 257, {
     { spellID = 73325, text = "Leap of Faith — utility cooldown to pull an ally out of danger" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Intellect)" },
-    { slot = "Food", text = "An Intellect-focused feast or food buff" },
-    { slot = "Potion", text = "A mana or Intellect potion for extended healing-heavy fights" },
+    { slot = "Flask", text = "Flask of Tempered Aggression for pure throughput, or Flask of Saving Graces if you'd rather have the healer-focused option" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "A mana or Intellect potion for extended healing-heavy fights. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Shadowcore Oil or the current-tier weapon oil" },
     { slot = "Enchants", text = "Weapon enchant for Intellect/haste; ring enchants for secondary stats" },
     { slot = "Gems", text = "Intellect or Intellect/secondary hybrid gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "Tier set piece — the set bonus usually matters more than a small item-level gap" },
+    { slot = "Head", text = "Tier set piece — the set bonus usually matters more than a small item-level gap. Season 2's set bonus specifically: each Renew target grants you a stacking crit bonus, with the four-piece boosting Renew's healing and having Light's Resurgence leave a Renew on your first Prayer of Mending target." },
     { slot = "Neck", text = "Favor Crit and Haste to speed up Holy Word cooldown reduction" },
     { slot = "Back", text = "Pick up Intellect and secondary stats over a pure item-level upgrade" },
     { slot = "Legs", text = "Another tier slot when possible; otherwise the highest item level piece leaning Crit and Mastery" },
@@ -275,15 +291,16 @@ ns.GuideStore:RegisterSpec("PRIEST", 258, {
     { spellID = 15487, text = "Silence — interrupt/utility cooldown, use on dangerous casts" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Intellect)" },
-    { slot = "Food", text = "An Intellect-focused feast or food buff" },
-    { slot = "Potion", text = "Tempered Potion, used inside your burst window" },
+    { slot = "Flask", text = "Flask of Tempered Swiftness — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used inside your burst window. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Shadowcore Oil or the current-tier weapon oil" },
     { slot = "Enchants", text = "Weapon enchant for Intellect/haste; ring enchants for secondary stats" },
     { slot = "Gems", text = "Intellect or Intellect/secondary hybrid gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "Tier set piece — the set bonus usually matters more than a small item-level gap" },
+    { slot = "Head", text = "Tier set piece — the set bonus usually matters more than a small item-level gap. Season 2's set bonus specifically: Tentacle Slam's cooldown drops and its damage rises, with the four-piece giving it a guaranteed free, full-power Void Volley." },
     { slot = "Neck", text = "Favor Haste to speed up DoT ticks and Insanity generation" },
     { slot = "Back", text = "Secondary stats matching Haste and Mastery outweigh a pure item-level chase" },
     { slot = "Legs", text = "Another tier slot when possible; otherwise the highest item level piece leaning Haste and Mastery" },

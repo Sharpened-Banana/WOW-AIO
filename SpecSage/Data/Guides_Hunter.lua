@@ -46,6 +46,20 @@ local ADDON, ns = ...
 -- call ns.GuideStore:RegisterSpec(classToken, specID, guideTable) from any
 -- addon that loads after SpecSage; see Data/API.lua for validation rules.
 
+-- Consumables/gear pass (2026-09-01, same session as the rotation-guide
+-- enrichment above): every spec's Flask/Food/Potion/Augment Rune entries
+-- were refreshed to the current Season 2 consumable system (stat-matched
+-- "Flask of Tempered <X>" flasks rather than the old generic "Flask of
+-- Alchemical Chaos" placeholder used everywhere; current food/potion/
+-- augment-rune names), and specs with concrete Season 2 tier-set 2pc/4pc
+-- effects (per the same guide-site sources) had that detail appended to
+-- their Head gear entry - specs the sources gave no specific tier numbers
+-- for were left with their existing generic tier-set mention rather than
+-- inventing specifics. statPriority was deliberately NOT touched in this
+-- pass either: stat-priority orderings are exactly the kind of contested
+-- judgment call (not a mechanically-determined fact) this repo's policy
+-- says to flag rather than silently adopt, and neither source gave a
+-- confident order clearly better than what already shipped.
 if not ns.GuideStore then return end
 
 ns.GuideStore:RegisterSpec("HUNTER", 253, {
@@ -97,15 +111,16 @@ ns.GuideStore:RegisterSpec("HUNTER", 253, {
     { spellID = 5384, text = "Feign Death — drop threat/aggro or avoid certain mechanics" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Agility)" },
-    { slot = "Food", text = "An Agility-focused feast or food buff" },
-    { slot = "Potion", text = "Tempered Potion, used inside Bestial Wrath" },
+    { slot = "Flask", text = "Flask of Tempered Aggression — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used inside Bestial Wrath. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Not typically enchanted — check current-tier weapon oil availability" },
     { slot = "Enchants", text = "Weapon enchant for Agility/Crit; ring enchants for secondary stats" },
     { slot = "Gems", text = "Agility or Agility/secondary hybrid gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "Tier set piece — the set bonus usually matters more than a small item-level gap" },
+    { slot = "Head", text = "Tier set piece — the set bonus usually matters more than a small item-level gap. Season 2's set bonus specifically: Barbed Shot makes your pet Stomp an extra time, and the four-piece has that Stomp empower your next Cobra Shot — a bigger boost in AoE, a smaller but still real one on single target." },
     { slot = "Neck", text = "Favor Crit and Mastery, since Mastery boosts pet damage directly for Beast Mastery" },
     { slot = "Back", text = "Secondary stats matching Crit and Mastery outweigh a pure item-level trade" },
     { slot = "Legs", text = "Another tier slot when possible; otherwise the highest item level piece leaning Crit and Mastery" },
@@ -189,12 +204,13 @@ ns.GuideStore:RegisterSpec("HUNTER", 254, {
     { spellID = 5384, text = "Feign Death — drop threat/aggro or avoid certain mechanics" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Agility)" },
-    { slot = "Food", text = "An Agility-focused feast or food buff" },
-    { slot = "Potion", text = "Tempered Potion, used inside Trueshot" },
+    { slot = "Flask", text = "Flask of Tempered Aggression — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used inside Trueshot. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Not typically enchanted — check current-tier weapon oil availability" },
     { slot = "Enchants", text = "Weapon enchant for Agility/Crit; ring enchants for secondary stats" },
     { slot = "Gems", text = "Agility or Agility/secondary hybrid gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
     { slot = "Head", text = "Tier set piece — the set bonus usually outweighs a small item-level gap" },
@@ -283,12 +299,13 @@ ns.GuideStore:RegisterSpec("HUNTER", 255, {
     { spellID = 5384, text = "Feign Death — drop threat/aggro or avoid certain mechanics" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Agility)" },
-    { slot = "Food", text = "An Agility-focused feast or food buff" },
-    { slot = "Potion", text = "Tempered Potion, used inside a Takedown window" },
+    { slot = "Flask", text = "Flask of Tempered Swiftness — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used inside a Takedown window. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Ironclaw Whetstone or the current-tier weapon oil" },
     { slot = "Enchants", text = "Weapon enchant for Agility/Crit; ring enchants for secondary stats" },
     { slot = "Gems", text = "Agility or Agility/secondary hybrid gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
     { slot = "Head", text = "Tier set piece — the set bonus usually matters more than a small item-level gap" },

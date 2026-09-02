@@ -32,6 +32,20 @@ local ADDON, ns = ...
 -- call ns.GuideStore:RegisterSpec(classToken, specID, guideTable) from any
 -- addon that loads after SpecSage; see Data/API.lua for validation rules.
 
+-- Consumables/gear pass (2026-09-01, same session as the rotation-guide
+-- enrichment above): every spec's Flask/Food/Potion/Augment Rune entries
+-- were refreshed to the current Season 2 consumable system (stat-matched
+-- "Flask of Tempered <X>" flasks rather than the old generic "Flask of
+-- Alchemical Chaos" placeholder used everywhere; current food/potion/
+-- augment-rune names), and specs with concrete Season 2 tier-set 2pc/4pc
+-- effects (per the same guide-site sources) had that detail appended to
+-- their Head gear entry - specs the sources gave no specific tier numbers
+-- for were left with their existing generic tier-set mention rather than
+-- inventing specifics. statPriority was deliberately NOT touched in this
+-- pass either: stat-priority orderings are exactly the kind of contested
+-- judgment call (not a mechanically-determined fact) this repo's policy
+-- says to flag rather than silently adopt, and neither source gave a
+-- confident order clearly better than what already shipped.
 if not ns.GuideStore then return end
 
 ns.GuideStore:RegisterSpec("DEATHKNIGHT", 250, {
@@ -98,15 +112,16 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 250, {
     { spellID = 61999, text = "Raise Ally — battle-resurrection utility on a personal cooldown" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Stamina)" },
-    { slot = "Food", text = "A Stamina-focused feast or food buff" },
-    { slot = "Potion", text = "A Stamina or defensive potion for dangerous pulls/phases" },
+    { slot = "Flask", text = "Flask of Tempered Swiftness — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "A Stamina or defensive potion for dangerous pulls/phases. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Ironclaw Whetstone or the current-tier weapon oil" },
     { slot = "Enchants", text = "Weapon enchant for Stamina/mitigation; ring enchants for secondary stats" },
     { slot = "Gems", text = "Stamina or Stamina/secondary hybrid gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "Tier set piece — the set bonus usually matters more than a small item-level gap for a tank" },
+    { slot = "Head", text = "Tier set piece — the set bonus usually matters more than a small item-level gap for a tank. Season 2's set bonus specifically: Death Strike builds a stacking Strength buff that empowers your next Marrowrend once it's stacked up, and the four-piece extends that same theme further." },
     { slot = "Neck", text = "Balance Stamina for a survivability buffer against Haste for Rune and Runic Power flow" },
     { slot = "Back", text = "Prioritize Stamina and secondary stats over a pure item-level trade" },
     { slot = "Legs", text = "Another tier slot when possible; otherwise the highest item level piece leaning Stamina and Haste" },
@@ -199,15 +214,16 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 251, {
     { spellID = 61999, text = "Raise Ally — battle-resurrection utility on a personal cooldown" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Strength)" },
-    { slot = "Food", text = "A Strength-focused feast or food buff" },
-    { slot = "Potion", text = "Tempered Potion, used inside Pillar of Frost" },
+    { slot = "Flask", text = "Flask of Tempered Aggression — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used inside Pillar of Frost. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Ironclaw Whetstone or the current-tier weapon oil" },
     { slot = "Enchants", text = "Weapon enchant for Strength/Crit; ring enchants for secondary stats" },
     { slot = "Gems", text = "Strength or Strength/secondary hybrid gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "Tier set piece — the set bonus usually matters more than a small item-level gap" },
+    { slot = "Head", text = "Tier set piece — the set bonus usually matters more than a small item-level gap. Season 2's set bonus specifically boosts your Shadowfrost/Exterminate damage." },
     { slot = "Neck", text = "Favor Crit and Haste to feed Killing Machine procs" },
     { slot = "Back", text = "Secondary stats matching Crit and Haste outweigh a pure item-level chase" },
     { slot = "Legs", text = "Another tier slot when possible; otherwise the highest item level piece leaning Crit and Haste" },
@@ -304,12 +320,13 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 252, {
     { spellID = 61999, text = "Raise Ally — battle-resurrection utility on a personal cooldown" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Strength)" },
-    { slot = "Food", text = "A Strength-focused feast or food buff" },
-    { slot = "Potion", text = "Tempered Potion, used inside your main burst window" },
+    { slot = "Flask", text = "Flask of Tempered Swiftness — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used inside your main burst window. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Ironclaw Whetstone or the current-tier weapon oil" },
     { slot = "Enchants", text = "Weapon enchant for Strength/Crit; ring enchants for secondary stats" },
     { slot = "Gems", text = "Strength or Strength/secondary hybrid gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
     { slot = "Head", text = "Tier set piece — the set bonus usually matters more than a small item-level gap" },

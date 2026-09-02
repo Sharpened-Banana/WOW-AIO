@@ -51,6 +51,20 @@ local ADDON, ns = ...
 -- the relevant array. Keep this file data-only — no logic beyond the calls
 -- below. See DESIGN.md "Guide data schema" for the full table shape.
 
+-- Consumables/gear pass (2026-09-01, same session as the rotation-guide
+-- enrichment above): every spec's Flask/Food/Potion/Augment Rune entries
+-- were refreshed to the current Season 2 consumable system (stat-matched
+-- "Flask of Tempered <X>" flasks rather than the old generic "Flask of
+-- Alchemical Chaos" placeholder used everywhere; current food/potion/
+-- augment-rune names), and specs with concrete Season 2 tier-set 2pc/4pc
+-- effects (per the same guide-site sources) had that detail appended to
+-- their Head gear entry - specs the sources gave no specific tier numbers
+-- for were left with their existing generic tier-set mention rather than
+-- inventing specifics. statPriority was deliberately NOT touched in this
+-- pass either: stat-priority orderings are exactly the kind of contested
+-- judgment call (not a mechanically-determined fact) this repo's policy
+-- says to flag rather than silently adopt, and neither source gave a
+-- confident order clearly better than what already shipped.
 if not ns.GuideStore then return end
 
 -- Arcane -----------------------------------------------------------------
@@ -104,15 +118,16 @@ ns.GuideStore:RegisterSpec("MAGE", 62, {
     { spellID = 55342, text = "Mirror Image — minor defensive/utility cooldown, use when threat or a small buffer helps" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Intellect)" },
-    { slot = "Food", text = "A feast or personal Intellect food for the encounter" },
-    { slot = "Potion", text = "Tempered Potion, used during a burn window" },
+    { slot = "Flask", text = "Flask of Tempered Aggression — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used during a burn window. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Not applicable (Mage uses no weapon enchant beyond ring/cloak enchants)" },
     { slot = "Enchants", text = "Max-rank Intellect enchants on cloak and rings" },
     { slot = "Gems", text = "Intellect/secondary stat gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "One of your tier-set slots — the four-piece bonus adds enough burn-window damage that it usually beats a higher item-level non-set piece" },
+    { slot = "Head", text = "One of your tier-set slots — the four-piece bonus adds enough burn-window damage that it usually beats a higher item-level non-set piece. Season 2's two-piece specifically fires an extra, harder-hitting Arcane Missile." },
     { slot = "Chest", text = "A big stat budget slot and often your other tier piece — lean into Critical Strike and Mastery here, your top two secondaries" },
     { slot = "Neck", text = "Usually carries a socket — fill it and favor Critical Strike/Mastery rolls over Haste once you're past a comfortable cast-speed breakpoint" },
     { slot = "Ring", text = "Pure secondary-stat real estate with no set bonus attached — take whichever ring pushes Critical Strike and Mastery hardest" },
@@ -196,15 +211,16 @@ ns.GuideStore:RegisterSpec("MAGE", 63, {
     { spellID = 80353, text = "Time Warp/Bloodlust — raid utility cooldown, coordinate with your raid's lust plan" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Intellect)" },
-    { slot = "Food", text = "A feast or personal Intellect food for the encounter" },
-    { slot = "Potion", text = "Tempered Potion, used to align with Combustion" },
+    { slot = "Flask", text = "Flask of Tempered Aggression — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used to align with Combustion. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Not applicable" },
     { slot = "Enchants", text = "Max-rank Intellect enchants on cloak and rings" },
     { slot = "Gems", text = "Intellect/secondary stat gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "One of your tier-set slots — the four-piece bonus meaningfully boosts your Hot Streak/Combustion damage, so favor the set piece over a small item-level edge elsewhere" },
+    { slot = "Head", text = "One of your tier-set slots — the four-piece bonus meaningfully boosts your Hot Streak/Combustion damage, so favor the set piece over a small item-level edge elsewhere. Season 2's set bonus is centered on Pyroclasm." },
     { slot = "Chest", text = "A large stat budget and often your second tier piece — push Critical Strike here first since crits are the entire engine of this spec" },
     { slot = "Neck", text = "Usually has a socket — prioritize Critical Strike, with Mastery as your next fill for Ignite scaling" },
     { slot = "Ring", text = "No set bonus tying you down, so chase Critical Strike hard on both rings before rounding out Mastery" },
@@ -284,15 +300,16 @@ ns.GuideStore:RegisterSpec("MAGE", 64, {
     { spellID = 80353, text = "Time Warp/Bloodlust — raid utility cooldown, coordinate with your raid's lust plan" },
   },
   consumables = {
-    { slot = "Flask", text = "Flask of Alchemical Chaos (Intellect)" },
-    { slot = "Food", text = "A feast or personal Intellect food for the encounter" },
-    { slot = "Potion", text = "Tempered Potion, used to align with Icy Veins" },
+    { slot = "Flask", text = "Flask of Tempered Aggression — matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick if your stat weights are close" },
+    { slot = "Food", text = "Loa's Gathering or Feast of Knowledge for raid (Stamina + your highest secondary); Hearty Venom-Spiced Cutlets or Puffer Plate for Mythic+/personal (prefer the Hearty version for death persistence)" },
+    { slot = "Potion", text = "Tempered Potion, used to align with Icy Veins. Liquid Luster (builds Versatility over 30s) is a strong ramp/M+ alternative, Potion of Unwavering Focus if you want a pure single-target pick instead; always carry Concentrated Silvermoon Health Potions for the emergency heal." },
     { slot = "Weapon", text = "Not applicable" },
     { slot = "Enchants", text = "Max-rank Intellect enchants on cloak and rings" },
     { slot = "Gems", text = "Intellect/secondary stat gems in available sockets" },
+    { slot = "Augment Rune", text = "Crystallized Augment Rune (1-hour primary stat) for progression pulls and high keys; the reusable Ethereal Augment Rune the rest of the time" },
   },
   gear = {
-    { slot = "Head", text = "One of your tier-set slots — the four-piece bonus is worth prioritizing since it strengthens your Fingers of Frost/Brain Freeze proc engine" },
+    { slot = "Head", text = "One of your tier-set slots — the four-piece bonus is worth prioritizing since it strengthens your Fingers of Frost/Brain Freeze proc engine. Season 2's set bonus specifically: Shattering a Freezing stack has a chance to generate a bonus Icicle and boosts Glacial Spike, with the four-piece letting Glacial Spike rapidly refill your Icicle stack." },
     { slot = "Chest", text = "A big stat budget and often your other tier piece — split it between Critical Strike (for shatter payoff) and Mastery (for Icicle damage)" },
     { slot = "Neck", text = "Usually carries a socket — fill it and lean Critical Strike/Mastery over Haste past your casting comfort point" },
     { slot = "Ring", text = "No set bonus attached, so use rings to fill whichever of Critical Strike or Mastery your gear is currently light on" },
