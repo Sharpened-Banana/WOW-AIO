@@ -143,9 +143,19 @@ local function AddHeader(layout, text)
     pcall(layout.AddInitializer, layout, CreateSettingsListSectionHeaderInitializer(text))
 end
 
+-- CreateSettingsButtonInitializer's 5th argument, addSearchTags, is
+-- asserted non-nil by the 12.1 client (Blizzard_SettingControls.lua:915,
+-- "assertion failed!"): a 4-argument call takes the whole panel down with
+-- it. `true` is what every Blizzard caller that wants the button findable
+-- in the settings search passes. The call also sits *inside* the pcall now:
+-- it used to be evaluated as an argument to it, so its own error escaped.
 local function AddButton(layout, name, buttonText, onClick, tooltip)
     if not CreateSettingsButtonInitializer then return end
-    pcall(layout.AddInitializer, layout, CreateSettingsButtonInitializer(name, buttonText, onClick, tooltip))
+    local ok, err = pcall(function()
+        local initializer = CreateSettingsButtonInitializer(name, buttonText, onClick, tooltip, true)
+        layout:AddInitializer(initializer)
+    end)
+    if not ok then RecordFailure(name .. " (button)", err) end
 end
 
 --------------------------------------------------------------------------------

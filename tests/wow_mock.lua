@@ -1070,8 +1070,13 @@ function CreateSettingsListSectionHeaderInitializer(text)
     return { kind = "header", text = text }
 end
 
-function CreateSettingsButtonInitializer(name, buttonText, onClick, tooltip)
-    return { kind = "button", name = name, text = buttonText, onClick = onClick, tooltip = tooltip }
+-- The 12.1 client asserts on a nil addSearchTags (Blizzard_SettingControls.lua
+-- line 915); the mock asserts the same way so a 4-argument call fails here
+-- first instead of only in the live client's options panel.
+function CreateSettingsButtonInitializer(name, buttonText, onClick, tooltip, addSearchTags)
+    assert(addSearchTags ~= nil, "assertion failed!")
+    return { kind = "button", name = name, text = buttonText, onClick = onClick, tooltip = tooltip,
+        addSearchTags = addSearchTags }
 end
 
 --------------------------------------------------------------------------------
