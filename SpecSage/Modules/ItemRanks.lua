@@ -51,6 +51,34 @@ local RANK_COLORS = {
 }
 
 local GetItemStatsAPI = (C_Item and C_Item.GetItemStats) or GetItemStats
+local GetItemInfoAPI = (C_Item and C_Item.GetItemInfo) or GetItemInfo
+
+-- Trinket tier colours, matching the Codex's tier tags (UI/Codex.lua).
+local TIER_COLORS = {
+    S = { 1.00, 0.55, 0.10 },
+    A = { 0.64, 0.21, 0.93 },
+    B = { 0.00, 0.60, 1.00 },
+    C = { 0.20, 0.80, 0.20 },
+    D = { 0.60, 0.60, 0.60 },
+}
+
+local function ColorCode(rgb)
+    return format("|cff%02x%02x%02x", math.floor(rgb[1] * 255 + 0.5), math.floor(rgb[2] * 255 + 0.5),
+        math.floor(rgb[3] * 255 + 0.5))
+end
+
+local function ItemIDFromLink(link)
+    if type(link) ~= "string" then return nil end
+    return tonumber(link:match("item:(%d+)"))
+end
+
+-- Whether the item is a trinket, so an unranked trinket can say "not in
+-- this spec's lists" rather than being indistinguishable from a non-trinket.
+local function IsTrinket(itemID)
+    if not GetItemInfoAPI or not itemID then return false end
+    local ok, _, _, _, _, _, _, _, _, equipLoc = pcall(GetItemInfoAPI, itemID)
+    return ok and equipLoc == "INVTYPE_TRINKET"
+end
 
 --------------------------------------------------------------------------------
 -- Pure logic (testable without a tooltip)
@@ -136,6 +164,27 @@ function ItemRanks:Describe(link, specID)
     return lines
 end
 
+-- Where `itemID` sits in the spec's trinket tier lists (Data/Trinkets.lua):
+-- an ordered array of { title, tier, gain } with one entry per list that
+-- ranks it, or nil when no list does. Public so the Codex or a test can ask
+-- without a tooltip.
+function ItemRanks:DescribeTrinket(itemID, specID)
+    local data = itemID and specID and ns.GuideStore and ns.GuideStore:GetTrinkets(specID)
+    if not data or type(data.lists) ~= "table" then return nil end
+
+    local found = {}
+    for _, listEntry in ipairs(data.lists) do
+        for _, row in ipairs(listEntry.list or {}) do
+            if row.itemID == itemID then
+                found[#found + 1] = { title = listEntry.title, tier = row.tier, gain = row.gain }
+                break
+            end
+        end
+    end
+    if #found == 0 then return nil end
+    return found
+end
+
 --------------------------------------------------------------------------------
 -- Tooltip hook
 --------------------------------------------------------------------------------
@@ -159,22 +208,49 @@ function ItemRanks:Annotate(tooltip, link)
     if not tooltip or type(link) ~= "string" then return false end
 
     local specID = PlayerSpecID()
-    local lines = self:Describe(link, specID)
-    if not lines then return false end
+    local specName = SpecName(specID)
+    local itemID = ItemIDFromLink(link)
 
-    local header = format("SpecSage stat ranks (%s):", SpecName(specID))
-    local parts = {}
-    for _, line in ipairs(lines) do
-        local rankText = line.rank and format("#%d of %d", line.rank, line.count) or "unranked"
-        parts[#parts + 1] = format("|cff%02x%02x%02x%s %s|r",
-            math.floor(line.r * 255 + 0.5), math.floor(line.g * 255 + 0.5), math.floor(line.b * 255 + 0.5),
-            line.label, rankText)
+    -- Trinket tier: one line per list that ranks it ("Single Target S
+    -- (+10.2%)", "Icy Veins A"), or, for a trinket no list ranks, a line
+    -- saying so - a trinket in your bags with no SpecSage line at all would
+    -- read as "the addon has no opinion" when it actually does.
+    local tierParts
+    local tiers = self:DescribeTrinket(itemID, specID)
+    if tiers then
+        tierParts = {}
+        for _, entry in ipairs(tiers) do
+            local color = TIER_COLORS[entry.tier] or TIER_COLORS.D
+            local gainText = entry.gain and format(" (+%.1f%%)", entry.gain) or ""
+            tierParts[#tierParts + 1] = format("%s %s%s|r%s", entry.title, ColorCode(color), entry.tier, gainText)
+        end
+    elseif IsTrinket(itemID) and ns.GuideStore and ns.GuideStore:GetTrinkets(specID) then
+        tierParts = { "not in this spec's trinket lists" }
     end
+
+    -- Stat ranks against the spec's priority.
+    local lines = self:Describe(link, specID)
+    local statParts
+    if lines then
+        statParts = {}
+        for _, line in ipairs(lines) do
+            local rankText = line.rank and format("#%d of %d", line.rank, line.count) or "unranked"
+            statParts[#statParts + 1] = format("%s%s %s|r", ColorCode({ line.r, line.g, line.b }), line.label, rankText)
+        end
+    end
+
+    if not tierParts and not statParts then return false end
 
     local ok = pcall(function()
         tooltip:AddLine(" ")
-        tooltip:AddLine(header, 0.776, 0.608, 0.427)
-        tooltip:AddLine(table.concat(parts, "  "), 1, 1, 1)
+        if tierParts then
+            tooltip:AddLine(format("SpecSage trinket tier (%s):", specName), 0.776, 0.608, 0.427)
+            tooltip:AddLine(table.concat(tierParts, "  "), 1, 1, 1)
+        end
+        if statParts then
+            tooltip:AddLine(format("SpecSage stat ranks (%s):", specName), 0.776, 0.608, 0.427)
+            tooltip:AddLine(table.concat(statParts, "  "), 1, 1, 1)
+        end
         if tooltip.Show then tooltip:Show() end
     end)
     return ok

@@ -331,10 +331,20 @@ before. Rows are clickable item links (addendum above). An uncached item shows
 the sim's own name, queues `C_Item.RequestLoadItemDataByID`, and re-renders
 on `GET_ITEM_INFO_RECEIVED` the same way checklist entries do.
 
-## Item stat ranks (v1.5, Modules/ItemRanks.lua)
+## Item stat ranks and trinket tiers on tooltips (v1.5, Modules/ItemRanks.lua)
 
-Every item tooltip in the game gets a line ranking the item's secondary
-stats against the player's *current spec's* Codex `statPriority`, so a
+Two annotations share one tooltip hook. **Trinket tier**: an item that
+appears in the player's current spec's trinket lists (Data/Trinkets.lua)
+gets a line naming every list that ranks it with its tier and, for sim
+lists, its gain — `Single Target S (+10.2%)  5 Targets A (+8.9%)  Icy Veins
+S` — so a trinket in your bags carries its tier on hover. A trinket
+(`INVTYPE_TRINKET`) that no list ranks says "not in this spec's trinket
+lists", since silence would read as "no opinion" when the addon does have
+lists for the spec; a non-trinket gets no tier line at all.
+`ItemRanks:DescribeTrinket(itemID, specID)` is the tooltip-free half.
+
+**Stat ranks**: every item tooltip in the game gets a line ranking the item's
+secondary stats against the player's *current spec's* Codex `statPriority`, so a
 Haste/Versatility piece reads, for an Unholy DK, as `Haste #1 of 4 ·
 Versatility #4 of 4`. Ranks count only rankable stats (crit, haste,
 mastery, versatility, leech, avoidance, speed) — primary stat, stamina and
@@ -354,9 +364,10 @@ an error inside a tooltip post-call breaks *every* item tooltip in the
 client, not just ours. `ItemRanks:Describe(link, specID)` is the pure,
 tooltip-free half tests drive directly.
 
-Setting: `SpecSageDB.itemStatRanks` (default on), exposed as "Stat ranks on
-item tooltips" under a new **Codex** group in `ns.OPTION_GROUPS`, so both
-the Codex Options tab and the Settings panel carry it.
+Setting: `SpecSageDB.itemStatRanks` (default on) governs both annotations,
+exposed as "Tier and stat ranks on item tooltips" under a new **Codex**
+group in `ns.OPTION_GROUPS`, so both the Codex Options tab and the Settings
+panel carry it.
 
 A later pass (options-in-Codex work, not otherwise documented in this file)
 added a 9th tab, **Options**, and widened the frame again to 984 -> 1070

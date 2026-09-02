@@ -2979,6 +2979,44 @@ do
         "turning the option off suppresses the rank lines")
     ns.db.itemStatRanks = true
 
+    -- Trinket tier on the tooltip: the player's spec (Unholy, 252) ships
+    -- real lists; pick its Single Target #1 and check every list that ranks
+    -- it is named, with its tier letter.
+    local unholy = ns.GuideStore:GetTrinkets(252)
+    local topRow = unholy.lists[1].list[1]
+    local tiers = ItemRanks:DescribeTrinket(topRow.itemID, 252)
+    check(tiers and #tiers >= 2 and tiers[1].title == "Single Target" and tiers[1].tier == "S",
+        "DescribeTrinket finds the spec's top single-target trinket as S in the Single Target list", tiers and #tiers)
+    local sawIcyVeins = false
+    for _, entry in ipairs(tiers or {}) do
+        if entry.title == "Icy Veins" then sawIcyVeins = true end
+    end
+    check(sawIcyVeins, "DescribeTrinket also reports the Icy Veins list's tier for the same trinket")
+    check(ItemRanks:DescribeTrinket(19019, 252) == nil, "DescribeTrinket returns nil for an item no list ranks")
+
+    mock.items[topRow.itemID] = { name = topRow.name, quality = 4, equipLoc = "INVTYPE_TRINKET" }
+    GameTooltip:SetOwner(nil, "ANCHOR_NONE")
+    mock.FireTooltipItem(GameTooltip, topRow.itemID)
+    dump = table.concat(GameTooltip:Dump(), "\n")
+    check(dump:find("SpecSage trinket tier (Unholy):", 1, true) ~= nil, "a ranked trinket's tooltip gains a trinket tier header", dump)
+    check(dump:find("Single Target |cff", 1, true) ~= nil and dump:find("S|r (+", 1, true) ~= nil,
+        "the trinket tier line names the list, the tier and the sim gain", dump)
+    check(dump:find("Icy Veins |cff", 1, true) ~= nil, "the trinket tier line includes Icy Veins' tier", dump)
+    check(dump:find("stat ranks", 1, true) == nil, "a trinket with no secondary stats adds no stat-rank lines")
+    mock.items[topRow.itemID] = nil
+
+    -- A trinket no list ranks says so; a non-trinket no list ranks says nothing.
+    mock.items[880003] = { name = "Obscure Trinket", quality = 2, equipLoc = "INVTYPE_TRINKET" }
+    GameTooltip:SetOwner(nil, "ANCHOR_NONE")
+    mock.FireTooltipItem(GameTooltip, 880003)
+    check(table.concat(GameTooltip:Dump(), "\n"):find("not in this spec's trinket lists", 1, true) ~= nil,
+        "an unranked trinket's tooltip says it is not in the spec's lists")
+    mock.items[880003] = nil
+    GameTooltip:SetOwner(nil, "ANCHOR_NONE")
+    mock.FireTooltipItem(GameTooltip, 880002)
+    check(table.concat(GameTooltip:Dump(), "\n"):find("trinket", 1, true) == nil,
+        "a non-trinket with nothing to rank gets no trinket line")
+
     -- The option is exposed through the shared schema (Codex Options tab and
     -- the Settings panel both read ns.OPTION_GROUPS).
     local exposed = false

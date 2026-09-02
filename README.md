@@ -12,9 +12,11 @@ class guides, talent loadouts, and live character tracking in one place:
   3/5-target, every row a clickable item link), plus a personal best-in-slot
   checklist: paste item links from whatever guide site you trust and SpecSage
   tracks live which pieces you have equipped, in your bags, or still missing.
-- **Stat ranks on item tooltips** — every item tooltip gets a line ranking
-  its secondary stats (#1, #2, …) against your current spec's stat priority,
-  so you can tell at a glance whether a Haste/Versatility drop is for you.
+- **Tier and stat ranks on item tooltips** — a trinket's tooltip shows its
+  tier in your current spec's trinket lists (Single Target S, Icy Veins A,
+  …), and every item tooltip gets a line ranking its secondary stats (#1,
+  #2, …) against your spec's stat priority, so you can tell at a glance
+  whether a drop in your bags is for you.
 - **Talent Loadout Vault** — save, label, import, and export talent loadout
   strings per spec, organised by content type (Raid, Mythic+, Delves, PvP).
 - **Personal Notes** — free-text notes per spec, kept between sessions.

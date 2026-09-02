@@ -131,9 +131,10 @@ local function BuildOptionGroups()
 
     local codex = {
         { kind = "check", scope = "db", key = "itemStatRanks",
-          variable = "SpecSage_itemStatRanks", label = "Stat ranks on item tooltips",
-          tooltip = "Add a line to every item tooltip ranking its secondary stats (#1, #2, ...) "
-              .. "against your current spec's stat priority from the Codex." },
+          variable = "SpecSage_itemStatRanks", label = "Tier and stat ranks on item tooltips",
+          tooltip = "Add lines to every item tooltip: a trinket's tier in your current spec's trinket "
+              .. "lists (Single Target S, Icy Veins A, ...) and each secondary stat's rank (#1, #2, ...) "
+              .. "against your spec's stat priority from the Codex." },
     }
 
     local stats = {
