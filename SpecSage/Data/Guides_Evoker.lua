@@ -36,6 +36,22 @@ local ADDON, ns = ...
 -- and where SimC's profile set truly has no such branch, or ships no
 -- profile for the spec at all, the note says so honestly instead of
 -- inventing a rotation change.
+-- Later pass (2026-09-01): as of this date guide sites (Wowhead, Icy
+-- Veins, Maxroll, Method, Boostmatch) are a permitted source for rotation
+-- logic, hero-talent recommendations, and stat priorities. Devastation,
+-- Preservation, and Augmentation's overview/rotation/cooldowns/tips were
+-- rewritten this pass with real opener sequences, single-target/AoE
+-- priority splits, and hero-talent-caused differences pulled from those
+-- sites, cross-checked against current spell data for spell IDs. One
+-- correction worth flagging: a compendium synthesized from those sites
+-- for this pass named "Engulf" as a Flameshaper cooldown for Devastation;
+-- direct lookup confirmed Engulf was removed from the game entirely in
+-- Midnight (12.1) - Flameshaper's healing-side signature ability, not a
+-- Devastation tool to begin with, and gone either way - so it was left
+-- out rather than reintroduced. Survival's own file has a similar note
+-- for Butchery -> Raptor Swipe. statPriority fields were left untouched
+-- throughout, since the sources didn't give a confident order beyond
+-- what was already there.
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -52,7 +68,8 @@ ns.GuideStore:RegisterSpec("EVOKER", 1467, {
   role = "DAMAGER",
   overview = {
     "Devastation Evoker is a ranged caster spec that blends direct blue-dragonflight spellcasting with red-dragonflight breath attacks, managing Essence as its resource while empowered spells (channel-and-release casts with multiple power levels) add a layer of cast-time tactics.",
-    "The core mechanic is Essence, spent on Disintegrate and Pyre and regenerated over time, plus Empower spells (Fire Breath, Eternity Surge) that you can hold longer for a stronger effect at the cost of a longer cast. Dragonrage is the main burst window, dramatically increasing damage and refunding some Essence spending.",
+    "The core mechanic is Essence, spent on Disintegrate and Pyre and regenerated over time, plus Empower spells (Fire Breath, Eternity Surge) that you can hold longer for a stronger effect at the cost of a longer cast. Dragonrage is the main burst window, dramatically increasing damage; if you're talented into Animosity, casting Fire Breath and Eternity Surge while it's active extends the window further, and Shattering Star adds a debuff that makes those casts hit harder.",
+    "Devastation's two hero trees genuinely change the priority list, not just the flavor: Scalecommander adds the Deep Breath cooldown and spreads Bombardments through the Mass Disintegrate talent, while Flameshaper leans into a second Fire Breath charge. Both still run the same Essence/empower core described above.",
     "Bring Devastation when you want strong ranged burst damage with excellent AoE via Pyre/Fire Breath, good mobility via Hover, and a rotation that rewards judging empower levels correctly for the situation.",
   },
   statPriority = {
@@ -64,30 +81,37 @@ ns.GuideStore:RegisterSpec("EVOKER", 1467, {
   },
   rotation = {
     { title = "Opener", steps = {
-        { spellID = 361469, text = "Living Flame while closing distance to build initial Essence" },
-        { text = "Fire Breath (empowered) to apply its damage-over-time before burst" },
-        { spellID = 375087, text = "Dragonrage once dots are applied, to open the main burst window" },
+        { spellID = 361469, text = "Pre-cast Living Flame just before the pull to have some Essence banked" },
+        { spellID = 375087, text = "Dragonrage right on pull — delay it a beat if Bloodlust/Heroism is about to go out so the window lines up" },
+        { spellID = 370452, text = "Shattering Star to crack the target's defenses before your empowered spells land" },
+        { spellID = 357208, text = "Fire Breath, using Tip the Scales to fire it off instantly at full empower" },
+        { spellID = 359073, text = "Eternity Surge at rank 1 — tempo matters more than empower level this early" },
+        { spellID = 356995, text = "Disintegrate until Essence runs dry" },
+        { spellID = 361469, text = "Living Flame as filler once you're out of other resources" },
         { text = "Opener Notes: Devastation splits along the Flameshaper and Scalecommander hero trees — Scalecommander's Mass Disintegrate talent turns your next Disintegrate into a multi-target strike, giving it a genuinely different priority list from Flameshaper, so check which one your loadout uses" },
     }},
     { title = "Single Target", steps = {
-        { spellID = 361469, text = "Living Flame as a mobile filler and Essence generator" },
-        { spellID = 356995, text = "Disintegrate to spend Essence on strong single-target damage" },
-        { text = "Fire Breath on cooldown, empowering to at least level 2-3 depending on the situation" },
-        { text = "Eternity Surge on cooldown for additional burst" },
-        { text = "Don't let Essence sit capped — spend it before it overflows" },
+        { spellID = 356995, text = "Disintegrate as your primary Essence spender — inside Dragonrage it's fine to clip the channel a few ticks early instead of always running it to completion, so you fit in more casts" },
+        { spellID = 357208, text = "Fire Breath on cooldown — with Animosity talented, this and Eternity Surge both extend Dragonrage, so don't skip them for filler" },
+        { spellID = 359073, text = "Eternity Surge on cooldown for the same Dragonrage-extension reason" },
+        { spellID = 370452, text = "Shattering Star on cooldown" },
+        { spellID = 361469, text = "Living Flame on Burnout procs, or as filler when nothing else is up" },
+        { text = "Don't let Essence or Essence Burst sit capped — spend it before it overflows" },
     }},
     { title = "AoE", steps = {
-        { text = "Pyre as your primary AoE Essence spender" },
-        { text = "Fire Breath, empowered fully when stationary, to apply damage-over-time across the pack" },
-        { text = "Eternity Surge (empowered) to hit multiple targets with strong burst damage" },
-        { spellID = 361469, text = "Living Flame to top up Essence between AoE spenders" },
+        { spellID = 357211, text = "Pyre replaces Disintegrate as your Essence spender once you're hitting 3+ targets, thanks to Volatility" },
+        { spellID = 362969, text = "Azure Strike replaces Living Flame as filler at the same target count" },
+        { spellID = 357208, text = "Fire Breath, empowered fully when stationary, to spread its damage-over-time across the pack" },
+        { spellID = 359073, text = "Eternity Surge, roughly matching the empower level to how many targets you're hitting" },
         { spellID = 375087, text = "Time Dragonrage for when the full pack is engaged" },
+        { text = "Scalecommander spreads Bombardments through Mass Disintegrate — another reason that hero tree wants Disintegrate/Pyre uptime kept up" },
     }},
   },
   cooldowns = {
-    { spellID = 375087, text = "Dragonrage — main burst cooldown, use once dots are applied and align with raid cooldowns" },
-    { text = "Fire Breath — empowered breath, hold for a higher empower level when stationary and safe to do so" },
-    { text = "Eternity Surge — empowered burst spell, similar empower-level tradeoff as Fire Breath" },
+    { spellID = 375087, text = "Dragonrage — main burst cooldown, open with it on pull (delaying slightly to catch Bloodlust) or just ahead of your next Fire Breath/Eternity Surge" },
+    { spellID = 357208, text = "Fire Breath — empowered breath, hold for a higher empower level when stationary and safe to do so; also extends Dragonrage if you're talented into Animosity" },
+    { spellID = 359073, text = "Eternity Surge — empowered burst spell, same empower-level tradeoff as Fire Breath and the same Dragonrage-extension value" },
+    { spellID = 357210, text = "Deep Breath — Scalecommander hero-tree cooldown, use it on cooldown rather than saving it" },
     { spellID = 363916, text = "Obsidian Scales — defensive, reduces damage taken" },
     { text = "Zephyr / Renewing Blaze (talent-dependent) — situational defensive/mobility cooldowns" },
   },
@@ -130,8 +154,9 @@ ns.GuideStore:RegisterSpec("EVOKER", 1467, {
   },
   tips = {
     "Only hold an empowered cast to a higher level when it's safe to stand still that long — a lower, on-time empower often beats a perfect one that gets interrupted by movement.",
-    "Enter Dragonrage with dots already applied so the window isn't spent ramping up.",
-    "Don't let Essence sit at cap — Living Flame and Disintegrate exist to keep it flowing.",
+    "Open Dragonrage close to pull rather than saving it — line it up with Bloodlust if you can, but don't delay it far past its own cooldown chasing a perfect setup.",
+    "Don't let Essence or Essence Burst sit at cap — Living Flame, Disintegrate, and Pyre all exist to keep it flowing.",
+    "If you're talented into Animosity, treat Fire Breath and Eternity Surge as Dragonrage-extenders, not just damage — skipping them shortens your burst window.",
     "Use Hover proactively for movement-heavy mechanics rather than eating a cast interruption.",
   },
 })
@@ -152,8 +177,9 @@ ns.GuideStore:RegisterSpec("EVOKER", 1468, {
   role = "HEALER",
   overview = {
     "Preservation Evoker heals through a mix of direct heals, the Echo mechanic (which doubles a future heal on the same target), and strong cooldown-driven raid healing via Dream Breath and Rewind/Time Dilation-style talents.",
-    "The core mechanic is Essence for spending on abilities like Living Flame and Dream Breath, plus Echo — placing a marker on a target so your next heal on them heals for extra, rewarding pre-planning rather than purely reactive healing.",
+    "The core mechanic is Essence for spending on abilities like Living Flame and Dream Breath, plus Echo — placing a marker on a target (mostly generated by Temporal Anomaly) so your next heal on them heals for extra, rewarding pre-planning rather than purely reactive healing. Fire Breath doubles as a healing tool: its damage-over-time procs Leaping Flames and generates Essence Burst, which pays for extra Emerald Blossom casts.",
     "Patch 12.1 pushed extra healing into Preservation's single-target/triage tools rather than its group cooldowns: Living Flame and Verdant Embrace both hit noticeably harder, and Consume Flame (if talented) converts more of Fire Breath's damage-over-time into healing. That makes spot-healing between Dream Breath windows meaningfully stronger than in prior tiers.",
+    "Preservation's two hero trees push the kit in different directions: Flameshaper adds a second Dream Breath charge and leans on Consume Flame, while Chronowarden trades some of that group-cooldown focus for Primacy's haste-per-active-HoT stacking and a Living Flame/Chrono Flame-based filler.",
     "Bring Preservation when you want a healer with excellent raid cooldown throughput (Dream Breath, Rewind), useful damage-mitigation utility like Blessing of the Bronze and Time Dilation, and a rotation that rewards proactive Echo placement.",
   },
   statPriority = {
@@ -165,28 +191,34 @@ ns.GuideStore:RegisterSpec("EVOKER", 1468, {
   },
   rotation = {
     { title = "Priorities", steps = {
-        { spellID = 364343, text = "Echo on tanks or high-priority targets ahead of expected damage" },
+        { text = "Ramp pattern for a damage phase: Dream Breath into Merithra's Blessing, then Temporal Anomaly, spend the Echoes it generates, Emerald Blossom on the Essence Burst proc, and close with another Merithra's Blessing" },
+        { spellID = 373861, text = "Temporal Anomaly on cooldown outside a planned ramp too — it's your main Echo engine and a group-wide shield in one cast" },
         { spellID = 355936, text = "Dream Breath (empowered) on cooldown for strong group-wide healing" },
+        { spellID = 366155, text = "Reversion to spend Echoes on your priority targets, or Merithra's Blessing (if talented) to spend them on whoever is lowest" },
+        { spellID = 360995, text = "Verdant Embrace on cooldown to reposition to and top off an ally at range — buffed 25% in 12.1" },
+        { spellID = 357208, text = "Fire Breath on cooldown — procs Leaping Flames and Essence Burst, which pays for a free Emerald Blossom" },
         { spellID = 361469, text = "Living Flame for efficient single-target healing (or damage when topped off) — buffed 20% in 12.1, a stronger filler than before" },
-        { spellID = 360995, text = "Verdant Embrace to reposition to and top off an ally at range — buffed 25% in 12.1" },
         { spellID = 367226, text = "Spiritbloom for strong burst healing on a cluster of injured allies" },
-        { spellID = 366155, text = "Reversion to maintain a rolling HoT on the tank or a focus target" },
     }},
     { title = "Cooldown usage", steps = {
-        { spellID = 363534, text = "Rewind (talent) to retroactively heal the raid after a damage spike" },
-        { text = "Dream Flight / Stasis (talent-dependent) for a big raid-wide cooldown window" },
+        { spellID = 363534, text = "Rewind (talent) — your strongest cooldown, heals all damage the raid took in the last several seconds, so use it right after a spike lands rather than before" },
+        { text = "Dream Flight for a big raid-wide cooldown window" },
+        { spellID = 370537, text = "Stasis (talent) to bank 3 spell casts and unleash them together for an extra burst window" },
+        { text = "Tip the Scales for an on-demand, fully-empowered Dream Breath or Fire Breath outside your normal cooldown timing" },
         { spellID = 357170, text = "Time Dilation to reduce damage taken by an ally proactively" },
         { text = "Emerald Communion for sustained healing and mana regeneration on a long fight" },
         { text = "If talented into Consume Flame, weave it in after Fire Breath's dot has ticked for a while — it now converts a larger share (240%) of the remaining damage into healing" },
         { spellID = 364343, text = "Pre-place Echo on multiple raid members before a known damage phase" },
     }},
     { title = "Opener Notes", steps = {
-        { text = "Preservation's two hero talent trees are Flameshaper (also Devastation's) and Chronowarden (also Augmentation's) — check which one your loadout uses; SimC does not yet publish a Preservation profile to source specific rotation branching from, so this note names the trees without claiming a specific rotation change for either" },
+        { text = "Preservation's two hero talent trees are Flameshaper (also Devastation's) and Chronowarden (also Augmentation's) — check which one your loadout uses" },
+        { text = "Flameshaper adds a second Dream Breath charge and leans on Consume Flame to convert Fire Breath's damage into healing; Chronowarden leans on Primacy (haste per active HoT, up to 3) and shifts your filler toward Living Flame/Chrono Flame, running its own version of the ramp above" },
     }},
   },
   cooldowns = {
+    { spellID = 363534, text = "Rewind (talent) — the strongest cooldown available, heals all damage the raid took in the last several seconds; use it right after unavoidable burst damage lands rather than before" },
     { spellID = 359816, text = "Dream Flight — raid-wide healing cooldown, use for a scripted heavy damage phase" },
-    { spellID = 363534, text = "Rewind (talent) — retroactive raid heal, use right after unavoidable burst damage lands" },
+    { spellID = 370537, text = "Stasis (talent) — banks 3 spell casts to unleash together for an extra burst window" },
     { text = "Emerald Communion — channel for strong sustained self/group healing and mana return" },
     { spellID = 363916, text = "Obsidian Scales — personal defensive, reduces damage taken" },
     { spellID = 357170, text = "Time Dilation — proactive damage reduction for an ally about to take a hit" },
@@ -226,6 +258,7 @@ ns.GuideStore:RegisterSpec("EVOKER", 1468, {
     "Save Rewind for right after a big, already-landed damage spike since it heals retroactively.",
     "Blessing of the Bronze and similar buffs are raid utility — keep them refreshed on the group.",
     "Living Flame and Verdant Embrace both got real healing buffs in 12.1 — use them more freely for single-target/triage healing between Dream Breath windows rather than treating them as pure filler.",
+    "Spend Essence Burst procs on Emerald Blossom when the group needs healing, or Disintegrate when it doesn't — don't let the proc sit unused either way.",
   },
 })
 
@@ -249,8 +282,9 @@ ns.GuideStore:RegisterSpec("EVOKER", 1473, {
   role = "DAMAGER",
   overview = {
     "Augmentation Evoker is a support-damage hybrid, not a conventional DPS spec: most of its value doesn't come from its own damage meter position, it comes from making everyone else's damage bigger. It casts a moderate amount of direct damage itself, but its actual job is buffing allies through Ebon Might and Prescience.",
-    "The core mechanic is applying and refreshing Ebon Might — a damage-and-versatility buff shared with you and nearby allies — and placing Prescience — a crit-chance buff — on specific allies, both timed around when those allies' own cooldowns are active so the buff amplifies a bigger number. Direct damage from Living Flame, Upheaval, and Eruption fills the gaps and generates Essence, but it is secondary to buff uptime.",
+    "The core mechanic is applying and refreshing Ebon Might — a damage-and-versatility buff shared with you and nearby allies — and placing Prescience — a crit-chance buff, capped at two allies — on specific targets, both timed around when those allies' own cooldowns are active so the buff amplifies a bigger number. Direct damage from Living Flame, Upheaval, and Eruption fills the gaps and generates Essence, but it is secondary to buff uptime; Eruption in particular is what keeps Ebon Might itself topped up, and empower spells like Fire Breath and Upheaval are only worth casting while Ebon Might is actually active.",
     "Patch 12.1's one documented change specific to this spec touches the Double-time talent: the bonus stats an ally gains when your Ebon Might crits now last a flat 15 seconds and refresh if you reapply Ebon Might while that buff is still active, so a well-timed refresh keeps the bonus rolling continuously instead of needing to be re-triggered by a fresh crit.",
+    "Augmentation's two hero trees split it further: Chronowarden pushes buff strength and favors Critical Strike, while Scalecommander redirects more of the kit's value into your own Deep Breath and empowered casts.",
     "Bring Augmentation when your group wants a force-multiplier spec that boosts the whole raid's damage output, especially in coordinated cooldown-stacking compositions, rather than pure personal damage.",
   },
   statPriority = {
@@ -262,28 +296,35 @@ ns.GuideStore:RegisterSpec("EVOKER", 1473, {
   },
   rotation = {
     { title = "Priorities", steps = {
-        { spellID = 395152, text = "Ebon Might on yourself and key allies, timed to line up with their damage cooldowns" },
-        { spellID = 409311, text = "Prescience on two allies (typically high-damage or cooldown-heavy players), keep it refreshed" },
+        { spellID = 395152, text = "Refresh Ebon Might on yourself and key allies once it has about 4 seconds or less remaining — don't clip it early" },
+        { text = "Breath of Eons on cooldown" },
+        { spellID = 357210, text = "Deep Breath on cooldown (Scalecommander)" },
+        { spellID = 409311, text = "Prescience on cooldown, capped at two allies — typically high-damage or cooldown-heavy players" },
+        { spellID = 370553, text = "Tip the Scales, generally paired with Fire Breath, otherwise used on cooldown" },
+        { spellID = 357208, text = "Fire Breath at its highest available rank — only while Ebon Might is active" },
+        { spellID = 408092, text = "Upheaval, same rule — only while Ebon Might is active" },
+        { spellID = 395160, text = "Eruption once you're at 2 Essence or holding Essence Burst — this is also what maintains Ebon Might, so don't let it sit unspent" },
         { spellID = 361469, text = "Living Flame as filler direct damage and Essence generation" },
-        { text = "Upheaval / Eruption on cooldown for direct damage and utility" },
-        { text = "Breath of Eons / Black Attunement-style major cooldowns aligned with raid burst windows" },
         { spellID = 395152, text = "If talented into Double-time, time your Ebon Might refresh to land while the previous crit's stat buff is still active — it extends cleanly instead of resetting" },
     }},
     { title = "AoE / Cooldown usage", steps = {
-        { text = "Prioritize applying Ebon Might/Prescience to the group before your own direct damage in AoE" },
+        { text = "The single-target priority above barely changes in AoE — the job is still maximizing Ebon Might uptime on the group" },
+        { text = "Breath of Eons is worth prioritizing even more here since it applies a Temporal Wound to every enemy it flies through" },
+        { text = "Prioritize applying Ebon Might/Prescience to the group before your own direct damage" },
         { text = "Time Ebon Might/Prescience with allies' cooldown windows rather than a fixed rotation — this is the spec's actual damage output, not a buff bolted onto a DPS rotation" },
-        { text = "Use your empower spells (Upheaval) on cooldown for both damage and utility knockback control" },
-        { text = "Coordinate Breath of Eons-style major cooldowns with the raid's planned burst window" },
+        { text = "Coordinate Breath of Eons roughly every 2 minutes, paired with allies' own DPS cooldowns rather than used in isolation" },
         { text = "Keep moving to reposition buffs efficiently across a spread-out raid" },
     }},
     { title = "Opener Notes", steps = {
-        { text = "Augmentation's two hero talent trees are Chronowarden (also Preservation's) and Scalecommander (also Devastation's) — check which one your loadout uses; SimC does not yet publish an Augmentation profile to source specific rotation branching from, so this note names the trees without claiming a specific rotation change for either" },
+        { text = "Augmentation's two hero talent trees are Chronowarden (also Preservation's) and Scalecommander (also Devastation's) — check which one your loadout uses" },
+        { text = "Chronowarden pushes buff strength further and favors Critical Strike, while Scalecommander shifts more of the spec's own damage onto Deep Breath and empowered casts — the Ebon Might/Prescience priority above holds for both" },
     }},
   },
   cooldowns = {
-    { spellID = 395152, text = "Ebon Might — core damage-sharing buff, refresh on cooldown and time with allies' burst windows" },
-    { text = "Breath of Eons (talent) — major raid-wide burst cooldown, coordinate with the raid's cooldown plan" },
-    { spellID = 409311, text = "Prescience — crit buff for two allies, prioritize players with strong burst cooldowns of their own" },
+    { spellID = 395152, text = "Ebon Might — core damage-sharing buff, refresh once it has ~4 seconds left and time it with allies' burst windows" },
+    { spellID = 403631, text = "Breath of Eons — major raid-wide burst cooldown on roughly a 2-minute cycle, coordinate with allies' own cooldowns" },
+    { spellID = 409311, text = "Prescience — crit buff capped at two allies, prioritize players with strong burst cooldowns of their own" },
+    { spellID = 357210, text = "Deep Breath — Scalecommander hero-tree cooldown, use it on cooldown" },
     { spellID = 363916, text = "Obsidian Scales — personal defensive, reduces damage taken" },
   },
   consumables = {
@@ -321,5 +362,7 @@ ns.GuideStore:RegisterSpec("EVOKER", 1473, {
     "Reapply Prescience before it expires, and consider swapping targets if a different ally's cooldown window is coming up.",
     "Coordinate your major cooldowns with the raid's overall burst plan rather than using them purely on cooldown.",
     "If you've talented Double-time, refresh Ebon Might while its crit-triggered stat buff is still active rather than letting it lapse — since 12.1 the refresh extends the buff cleanly instead of forcing a new crit to restart it.",
+    "Spend Essence and Essence Burst on Eruption rather than banking it — Eruption is what keeps Ebon Might rolling, so treat it as maintenance, not just damage.",
+    "Only fire off Fire Breath or Upheaval while Ebon Might is active; casting them outside the window gives up their scaling.",
   },
 })

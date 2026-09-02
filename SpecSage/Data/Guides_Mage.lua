@@ -30,6 +30,19 @@ local ADDON, ns = ...
 -- now names Arcane Orb alone; Phoenix Flames has zero references in either
 -- Fire profile (removed from Fire's kit) so every mention was dropped,
 -- leaving Fire Blast as the sole instant Heating Up/Hot Streak generator.
+-- Later pass (2026-09-01): as of this date guide sites (Wowhead, Icy
+-- Veins, Maxroll, Method, Boostmatch) are a permitted source for rotation
+-- logic, hero-talent recommendations, and stat priorities. Arcane and
+-- Fire's overview/rotation/cooldowns/tips were rewritten this pass with
+-- real opener sequences, single-target/AoE priority splits, and
+-- hero-talent-caused differences pulled from those sites, cross-checked
+-- against current spell data for the spell IDs added. Both specs'
+-- corrected mechanics from the prior pass (no Nether Tempest, no Phoenix
+-- Flames) were independently confirmed by the same sites and were not
+-- reintroduced. Frost was left untouched this pass beyond what the prior
+-- pass already fixed. statPriority fields were left untouched throughout,
+-- since the sources didn't give a confident order beyond what was
+-- already there.
 -- This is community-maintained, conventional guidance (keep-it-simple stat
 -- priorities, long-standing rotation patterns) and is NOT a claim of
 -- sim-perfect or bleeding-edge optimal play.
@@ -46,7 +59,8 @@ ns.GuideStore:RegisterSpec("MAGE", 62, {
   role = "DAMAGER",
   overview = {
     "Arcane Mage is a burst-window spec built around managing the Arcane Charges resource and the mana tied to it. You alternate between a mana-conserving 'Arcane Blast/Barrage' setup phase and short, extremely high-damage burn windows fueled by Arcane Surge and trinkets/cooldowns.",
-    "The core mechanic is Arcane Charges (0-4, stacking from Arcane Blast and Arcane Barrage): each charge increases Arcane Blast damage and mana cost while also increasing Arcane Barrage's damage when you dump them. Clearcasting procs from Arcane Barrage let you cast free, no-mana spells to extend burn windows.",
+    "The core mechanic is Arcane Charges (0-4, stacking from Arcane Blast and Arcane Barrage): each charge increases Arcane Blast damage and mana cost while also increasing Arcane Barrage's damage when you dump them. Clearcasting procs from Arcane Barrage let you cast free, no-mana spells to extend burn windows. Arcane Charges reset to 0 whenever you dump them with Arcane Barrage, and also on entering combat, so there's nothing to gain from building charges before a pull.",
+    "Arcane's two hero trees, Sunfury and Spellslinger, both revolve around the same Arcane Blast/Barrage/Surge loop but track a different resource on top of it: Sunfury times Touch of the Magi around its own Arcane Soul windows, while Spellslinger builds Arcane Salvo stacks and dumps them with Arcane Barrage once they're high.",
     "Bring Arcane when you want strong burst damage aligned to boss windows (bloodlust, execute phases, add spawns) and are comfortable with a rotation that rewards careful cooldown and mana planning over simple button-pressing.",
   },
   statPriority = {
@@ -58,29 +72,34 @@ ns.GuideStore:RegisterSpec("MAGE", 62, {
   },
   rotation = {
     { title = "Opener", steps = {
-        { text = "Pre-cast Arcane Blast to land as combat starts" },
-        { spellID = 365350, text = "Arcane Surge to open the burn phase" },
-        { spellID = 44425, text = "Arcane Barrage at 4 charges to dump and reset" },
-        { text = "Opener Notes: your rotation splits along the Sunfury and Spellslinger hero trees — both still center on the Blast/Barrage/Surge loop above, just with different burst-window shaping" },
+        { text = "Pop any trinket or potion with a 15+ second duration before the pull, so it's already running when Arcane Surge goes off" },
+        { spellID = 365350, text = "Arcane Surge right as combat starts to open the burn phase" },
+        { text = "Short-duration racials/potions immediately after" },
+        { spellID = 150741, text = "Arcane Missiles" },
+        { spellID = 44425, text = "Arcane Barrage" },
+        { spellID = 321507, text = "Touch of the Magi just before that Barrage lands" },
+        { text = "Opener Notes: your rotation splits along the Sunfury and Spellslinger hero trees — both still center on the Blast/Barrage/Surge loop above, just with different burst-window shaping; re-use Touch of the Magi again about 45 seconds later, exactly half of Arcane Surge's cooldown, and don't let that timing drift" },
     }},
     { title = "Single Target", steps = {
-        { spellID = 30451, text = "Arcane Blast to build Arcane Charges" },
-        { text = "Use Clearcasting procs on free Arcane Missiles/Blast before they expire" },
-        { spellID = 44425, text = "Arcane Barrage at 4 charges or when mana is low" },
-        { text = "Weave in Arcane Orb / Touch of the Magi per talent build for extra charges and burst" },
-        { text = "Save Arcane Surge and trinkets for your next planned burn window" },
+        { spellID = 44425, text = "Arcane Barrage at 4 Arcane Charges and high Arcane Salvo stacks, or whenever Arcane Soul is active" },
+        { spellID = 150741, text = "Arcane Missiles on Clearcasting procs — use them before they expire" },
+        { spellID = 153626, text = "Arcane Orb at 0 Arcane Charges to start building back up" },
+        { spellID = 205025, text = "Presence of Mind to get a moving Arcane Blast off without losing charge-building time" },
+        { spellID = 12051, text = "Evocation when you're out of mana" },
+        { spellID = 30451, text = "Arcane Blast as your filler and Arcane Charge builder" },
     }},
     { title = "AoE", steps = {
-        { text = "Arcane Explosion to build charges while enemies are stacked" },
-        { spellID = 44425, text = "Arcane Barrage to spread damage and reset charges" },
-        { text = "Use Arcane Orb (if talented) to cleave charge generation — Nether Tempest was removed from the talent tree" },
+        { text = "The AoE priority still revolves around Arcane Barrage, much like single target" },
+        { text = "Arcane Pulse whenever it's up" },
+        { spellID = 153626, text = "Arcane Orb whenever it's available — Nether Tempest was removed from the talent tree entirely, so Orb is your main AoE charge generator now" },
         { text = "Prioritize Clearcasting procs into AoE spenders" },
         { text = "Line up burn cooldowns with add waves for maximum value" },
     }},
   },
   cooldowns = {
-    { spellID = 365350, text = "Arcane Surge — opens your main burn window, use on cooldown around boss burst phases" },
-    { text = "Touch of the Magi (talent) — line up before dumping Arcane Barrage for extra damage" },
+    { spellID = 365350, text = "Arcane Surge — opens your main burn window on a 90-second cooldown; pair it with Touch of the Magi for your 'big burn'" },
+    { spellID = 321507, text = "Touch of the Magi (talent) — line up right before dumping Arcane Barrage; also used standalone roughly every 45 seconds (exactly half of Arcane Surge's cooldown) between burn windows — don't let that timing drift" },
+    { spellID = 80353, text = "Time Warp — use on pull or per your raid's Bloodlust assignment" },
     { spellID = 45438, text = "Ice Block — defensive, use to survive unavoidable burst damage" },
     { spellID = 55342, text = "Mirror Image — minor defensive/utility cooldown, use when threat or a small buffer helps" },
   },
@@ -120,8 +139,9 @@ ns.GuideStore:RegisterSpec("MAGE", 62, {
   },
   tips = {
     "Track your mana closely — running out mid-burn wastes the window; running out too early forces a weak conserve phase.",
-    "Pre-cast your first Arcane Blast before the pull timer hits zero for a free head start.",
+    "Arcane Charges cap at 4 and reset to 0 the moment you enter combat (and again whenever Arcane Barrage fires) — there's no benefit to hard-casting Arcane Blast before the pull, since it won't carry a charge into combat.",
     "Never let a Clearcasting proc expire unused — it's free damage.",
+    "Keep Touch of the Magi on its own ~45-second rhythm (half of Arcane Surge's cooldown) even between burn windows — delaying it desyncs your whole cooldown plan.",
     "Plan burn windows around raid cooldowns and boss vulnerability phases rather than using them purely on cooldown.",
   },
 })
@@ -131,8 +151,9 @@ ns.GuideStore:RegisterSpec("MAGE", 63, {
   specName = "Fire",
   role = "DAMAGER",
   overview = {
-    "Fire Mage is a crit-and-execute spec centered on stacking Heating Up and Hot Streak procs to fire off instant, guaranteed-crit Pyroblasts. Damage is spiky, with big cooldown-aligned burst windows via Combustion.",
-    "The core loop is: Fire Blast and Fireball/Scorch build Heating Up, two crits in a row (or a Fire Blast consuming Heating Up) grant Hot Streak, and Hot Streak is spent on a free, instant Pyroblast. Ignite (a damage-over-time spread from crits) rewards keeping crit up and hitting multiple targets.",
+    "Fire Mage is a crit-and-execute spec centered on stacking Heating Up and Hot Streak procs to fire off instant, guaranteed-crit Pyroblasts. Damage is spiky, with big cooldown-aligned burst windows via Combustion — roughly a 2-minute cooldown that becomes your entire burst plan, stacked with trinkets, potions, and racials rather than spread out.",
+    "The core loop is: Fire Blast and Fireball/Scorch build Heating Up, two crits in a row (or a Fire Blast consuming Heating Up) grant Hot Streak, and Hot Streak is spent on a free, instant Pyroblast. Fire Blast is a guaranteed crit, which makes it your most reliable way to force that conversion when RNG isn't cooperating. Ignite (a damage-over-time spread from crits) rewards keeping crit up and hitting multiple targets.",
+    "Fire's two hero trees change less about the core loop than Devastation's or Augmentation's do for their classes: Frostfire simply swaps your filler spell to Frostfire Bolt in place of Fireball, while Sunfury builds Spellfire Spheres and Arcane Phoenix stacks for extra haste and Fire Blast charges — the Heating Up/Hot Streak/Combustion loop above is identical either way.",
     "Bring Fire when you want a spec that shines in short, well-timed burst windows and cleave/AoE fights, and you're willing to manage Fire Blast charges tightly around Combustion.",
   },
   statPriority = {
@@ -144,27 +165,32 @@ ns.GuideStore:RegisterSpec("MAGE", 63, {
   },
   rotation = {
     { title = "Opener", steps = {
-        { text = "Pre-cast Pyroblast (or Scorch while moving) to enter combat with a head start" },
-        { spellID = 190319, text = "Combustion once you have Heating Up or Hot Streak banked, aligned with damage cooldowns" },
-        { spellID = 108853, text = "Fire Blast to convert Heating Up into Hot Streak during Combustion" },
-        { text = "Opener Notes: Fire splits along the Frostfire and Sunfury hero trees — Frostfire folds in Frostfire Bolt casts, Sunfury leans harder on Meteor-timed Combustion windows, but the Heating Up/Hot Streak loop above holds either way" },
+        { text = "Ideally start the pull with a Hot Streak already banked from your pre-pot sequence" },
+        { text = "Use your racial right before combat starts, if it's an offensive one" },
+        { spellID = 153561, text = "Meteor on your target" },
+        { spellID = 190319, text = "Combustion" },
+        { spellID = 108853, text = "Fire Blast into Pyroblast, repeated through the rest of the Combustion window" },
+        { text = "Opener Notes: Fire splits along the Frostfire and Sunfury hero trees — Frostfire swaps your filler to Frostfire Bolt in place of Fireball and otherwise plays the same, while Sunfury builds Spellfire Spheres and Arcane Phoenix stacks for extra haste and Fire Blast charges; the Heating Up/Hot Streak loop below holds either way" },
     }},
     { title = "Single Target", steps = {
-        { spellID = 133, text = "Fireball as your default filler to build Heating Up" },
-        { spellID = 108853, text = "Fire Blast to convert Heating Up into Hot Streak" },
         { spellID = 11366, text = "Pyroblast whenever Hot Streak is active" },
+        { text = "Hardcast Pyroblast on a Pyroclasm proc, even outside Hot Streak" },
+        { spellID = 108853, text = "Fire Blast to convert Heating Up into Hot Streak" },
+        { spellID = 2948, text = "Scorch when you have Heat Shimmer up, or whenever you're moving or in an execute phase" },
+        { spellID = 133, text = "Fireball (or Frostfire Bolt, if you're playing the Frostfire hero talent) as your default filler to build Heating Up" },
         { text = "Never cap Fire Blast charges — spend before overflowing. Phoenix Flames was removed from Fire's kit in Midnight, so Fire Blast alone now carries this load" },
     }},
     { title = "AoE", steps = {
-        { spellID = 2120, text = "Flamestrike (with Hot Streak) as your primary AoE spender" },
-        { text = "Fire Blast to generate Hot Streak procs quickly" },
+        { text = "Under 4 targets, just run the single-target priority above" },
+        { spellID = 2120, text = "At 4+ targets, spend Hot Streak and Pyroclasm procs on Flamestrike instead of Pyroblast" },
+        { spellID = 108853, text = "Fire Blast to generate Hot Streak procs quickly" },
         { spellID = 31661, text = "Dragon's Breath to group and daze adds when appropriate" },
         { text = "Let Ignite spread damage across the pack rather than single-target dumping" },
         { text = "Time Combustion for when the full pack is engaged" },
     }},
   },
   cooldowns = {
-    { spellID = 190319, text = "Combustion — main burst window, line up with Hot Streak/Heating Up banked and other raid cooldowns" },
+    { spellID = 190319, text = "Combustion — your entire burst window on a roughly 2-minute cooldown; stack every trinket, potion, and racial you have into it rather than spreading them out" },
     { spellID = 108853, text = "Fire Blast — instant proc conversion, weave throughout and especially during Combustion" },
     { spellID = 45438, text = "Ice Block — defensive, negates incoming damage entirely" },
     { spellID = 80353, text = "Time Warp/Bloodlust — raid utility cooldown, coordinate with your raid's lust plan" },
@@ -208,6 +234,7 @@ ns.GuideStore:RegisterSpec("MAGE", 63, {
     "Never overcap Fire Blast charges — that's wasted proc generation.",
     "Use Scorch while moving to keep building toward Heating Up instead of standing still doing nothing.",
     "Watch Ignite uptime on multi-target fights; spreading it well is a large chunk of your AoE damage.",
+    "Fire Blast is a guaranteed crit, so lean on it to force Heating Up into Hot Streak when you need the conversion and crit RNG isn't cooperating.",
   },
 })
 
