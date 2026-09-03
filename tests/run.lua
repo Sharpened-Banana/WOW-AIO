@@ -3690,8 +3690,9 @@ end
 section("Character sheet panel: sections (v1.6)")
 --------------------------------------------------------------------------------
 
--- The panel shows everything the Codex window does, picked from a dropdown
--- (a nine-tab strip needs about twice the panel's width). The Codex's own
+-- The panel shows everything the Codex window does, picked from icon tabs
+-- down its right edge (the Codex's strip needs about twice the panel's
+-- width). The Codex's own
 -- render methods draw it, running against a surface from Codex:NewSurface -
 -- so these check both that every section renders and that the two windows
 -- keep their frames, pools, widgets and view state apart.
@@ -3703,8 +3704,14 @@ do
                        "Consumables", "BiS", "Loadouts", "Notes", "Options" }
 
     check(Panel.surface ~= nil, "the panel owns a Codex rendering surface")
-    check(#Panel.frame.sectionMenu.items == #SECTIONS,
-        "the dropdown lists every section", #Panel.frame.sectionMenu.items)
+    check(#Panel.frame.sectionTabs == #SECTIONS,
+        "there is a side tab for every section", #Panel.frame.sectionTabs)
+    for i, sectionName in ipairs(SECTIONS) do
+        local tab = Panel.frame.sectionTabs[i]
+        check(tab.section == sectionName and Panel.frame.sectionTabByName[sectionName] == tab,
+            "tab " .. i .. " is " .. sectionName, tab.section)
+        check(tab.icon.texture ~= nil, "and carries an icon", tab.icon.texture)
+    end
 
     -- Nothing may be shared by reference with the Codex's own surface: a
     -- shared pool would have the two windows fighting over the same rows,
@@ -3775,21 +3782,25 @@ do
         ns.db.characterPanel.section)
     mock.ShowCharacterFrame(false)
     mock.ShowCharacterFrame(true)
-    check(Panel.frame.sectionButton:GetText() == "Overview",
-        "and restored when the character sheet is reopened", Panel.frame.sectionButton:GetText())
+    check(Panel.frame.sectionLabel:GetText() == "Overview",
+        "and restored when the character sheet is reopened", Panel.frame.sectionLabel:GetText())
 
-    -- The dropdown opens, picks, and closes.
-    check(Panel.frame.sectionMenu:IsShown() == false, "the section menu starts closed")
-    Panel.frame.sectionButton:GetScript("OnClick")(Panel.frame.sectionButton)
-    check(Panel.frame.sectionMenu:IsShown() == true, "clicking the section button opens the menu")
-    local bisItem
-    for _, item in ipairs(Panel.frame.sectionMenu.items) do
-        if item:GetText() == "BiS" then bisItem = item end
+    -- Clicking a side tab switches section, and only that tab lights up.
+    local function ActiveTabs()
+        local names = {}
+        for _, tab in ipairs(Panel.frame.sectionTabs) do
+            if tab.active then names[#names + 1] = tab.section end
+        end
+        return table.concat(names, ",")
     end
-    bisItem:GetScript("OnClick")(bisItem)
-    check(Panel.frame.sectionMenu:IsShown() == false, "picking a section closes the menu")
-    check(Panel.frame.sectionButton:GetText() == "BiS", "and the button names the new section",
-        Panel.frame.sectionButton:GetText())
+    check(ActiveTabs() == "Overview", "only the active section's tab is lit", ActiveTabs())
+    local bisTab = Panel.frame.sectionTabByName.BiS
+    bisTab:GetScript("OnClick")(bisTab)
+    check(Panel.frame.sectionLabel:GetText() == "BiS", "clicking a side tab switches section",
+        Panel.frame.sectionLabel:GetText())
+    check(ActiveTabs() == "BiS", "and moves the highlight with it", ActiveTabs())
+    check(bisTab.marker:IsShown() and not Panel.frame.sectionTabByName.Overview.marker:IsShown(),
+        "the active marker follows the selection")
 
     -- View state stays per-window: cycling the panel's BiS context must not
     -- move the Codex's, and vice versa.

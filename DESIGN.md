@@ -797,13 +797,23 @@ panel to the character tab.
 
 `UI/CharacterPanel.lua` is a frame parented to `CharacterFrame`, docked to
 its right edge and following it open and closed. It shows **everything the
-Codex window does**, one section at a time, picked from a dropdown.
+Codex window does**, one section at a time, picked from a column of icon
+tabs hung off its right edge.
 
-### Why a dropdown and not a tab strip
+### Why side tabs and not the Codex's strip
 
 The Codex needs ~86px per tab button and there are ten sections; that is
-roughly twice the whole panel's width. A wrapped three-row tab strip would
-eat a third of the panel before any content. A dropdown costs one row.
+roughly twice the whole panel's width, and a wrapped three-row strip would
+eat a third of the panel before any content. The first cut used a dropdown
+for that reason, and the owner rejected it: a dropdown hides nine of the
+ten choices and costs a click to see them. Blizzard's own character sheet
+solves the same problem with icon tabs hung down its side (titles,
+equipment sets), so the panel does the same: ten 32px icon buttons at a
+36px stride run 360px, inside the sheet's height, outside the panel's
+border, costing the content nothing. The section name lives in the tab's
+tooltip and in the panel header, right of the spec name. The active tab
+carries a class-coloured edge marker, matching the Codex's underline; the
+rest are desaturated.
 
 ### Sections
 

@@ -26,9 +26,9 @@ class guides, talent loadouts, and live character tracking in one place:
   the stat itself ("+512 Haste  #1") against your spec's stat priority, so
   you can tell at a glance whether a drop in your bags is for you.
 - **Docked panel** — an optional panel attached to the character sheet,
-  opening and closing with it, showing everything the Codex does: pick a
-  section from its dropdown for Overview, Stats, Rotation, Cooldowns,
-  Consumables, BiS, Loadouts, Notes or Options. Its own **Gear** section
+  opening and closing with it, showing everything the Codex does: icon
+  tabs down its right edge switch between Overview, Stats, Rotation,
+  Cooldowns, Consumables, BiS, Loadouts, Notes and Options. Its own **Gear** section
   reacts to the paper doll beside it: your stat priority with your live
   rating beside each stat, Wowhead's order for each hero talent tree, and the
   BiS item for whichever gear slot you hover, tagged equipped / owned /

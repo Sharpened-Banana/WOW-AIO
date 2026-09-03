@@ -255,7 +255,7 @@ local DEFAULTS = {
     characterPanel = {
         enabled = true,
         listIndex = 1,
-        -- Which section the dropdown is on. "Gear" is this panel's own view;
+        -- Which side tab is active. "Gear" is this panel's own view;
         -- every other value is one of the Codex's tabs, rendered by the
         -- Codex's own methods against the panel's surface.
         section = "Gear",

@@ -7,10 +7,13 @@
 -- picked up - so this puts the same data there, anchored to CharacterFrame's
 -- right edge and following it open and closed.
 --
--- It shows everything the Codex window does. A tab strip does not fit a
--- panel this narrow - nine tab buttons need roughly twice its width - so the
--- section is picked from a dropdown instead, and the panel renders one
--- section at a time down a single column.
+-- It shows everything the Codex window does, one section at a time down a
+-- single column. The sections are picked from a column of icon tabs hanging
+-- off the panel's right edge, the way Blizzard's own character sheet hangs
+-- its titles and equipment-set tabs off its side: the Codex's horizontal
+-- strip needs roughly twice this panel's width, but ten 32px icons stacked
+-- down the side fit comfortably inside the sheet's height and cost the
+-- content no room at all.
 --
 -- Sections are the Codex's own tabs plus one of this panel's own:
 --   * Gear  - the spec's stat priority with the player's live rating beside
@@ -46,8 +49,15 @@ local FALLBACK_WIDTH = 338
 local SCROLLBAR_INSET = 26
 local PADDING = 10
 local TITLE_HEIGHT = 20
-local DROPDOWN_HEIGHT = 20
 local FOOTER_HEIGHT = 24
+
+-- The side tabs: icon buttons hung off the panel's right edge, the size of
+-- Blizzard's own character-sheet side tabs. Ten of them at this stride run
+-- 360px, well inside the sheet's height.
+local TAB_SIZE = 32
+local TAB_STRIDE = 36
+local TAB_TOP_OFFSET = 30
+local TAB_ICON_INSET = 3
 
 -- The Codex's own tabs, plus this panel's Gear section in front of them.
 -- Gear is first because it is the reason to have the panel docked at all:
@@ -57,12 +67,28 @@ local SECTIONS = {
     GEAR_SECTION, "Overview", "Stats", "Rotation", "Cooldowns",
     "Consumables", "BiS", "Loadouts", "Notes", "Options",
 }
+
+-- One icon per section, from the client's own icon set. The section name is
+-- in the tab's tooltip and in the panel's header, so the icon only has to be
+-- recognisable, not self-explanatory.
+local SECTION_ICONS = {
+    Gear        = "Interface\\Icons\\INV_Chest_Plate16",
+    Overview    = "Interface\\Icons\\INV_Misc_Book_09",
+    Stats       = "Interface\\Icons\\Spell_Nature_EnchantArmor",
+    Rotation    = "Interface\\Icons\\Ability_Rogue_SliceDice",
+    Cooldowns   = "Interface\\Icons\\Spell_Holy_BorrowedTime",
+    Consumables = "Interface\\Icons\\INV_Potion_51",
+    BiS         = "Interface\\Icons\\INV_Misc_Bag_10_Blue",
+    Loadouts    = "Interface\\Icons\\Ability_Marksmanship",
+    Notes       = "Interface\\Icons\\INV_Misc_Note_01",
+    Options     = "Interface\\Icons\\Trade_Engineering",
+}
 local ROW_HEIGHT = 16
 local ROW_STEP = 18
 local SECTION_GAP = 10
 
 local PANEL_BACKDROP_COLOR = { 0.10, 0.13, 0.16, 0.97 }
-local MENU_BACKDROP_COLOR = { 0.07, 0.09, 0.12, 0.98 }
+local TAB_BACKDROP_COLOR = { 0.07, 0.09, 0.12, 0.98 }
 local PANEL_BORDER_COLOR = { 0.15, 0.18, 0.22, 1 }
 local HEADER_COLOR = { 0.388, 0.737, 0.902 }
 local MUTED_COLOR = { 0.392, 0.455, 0.541 }
@@ -125,8 +151,9 @@ local function ColorCode(rgb)
 end
 
 -- The class token the player is on. The Codex's renderers colour their
--- active-tab underline from it; the panel has no tab strip, but it is what
--- makes a surface self-contained rather than reading the Codex's selection.
+-- active-tab underline from it, and the panel's active side tab borrows the
+-- same colour; it is also what makes a surface self-contained rather than
+-- reading the Codex's selection.
 local function PlayerClassToken()
     if not UnitClass then return nil end
     local ok, _, token = pcall(UnitClass, "player")
@@ -246,48 +273,22 @@ function CharacterPanel:BuildFrame()
     title:SetTextColor(unpack(HEADER_COLOR))
     frame.title = title
 
-    -- Section picker. A tab strip does not fit: the Codex needs about 86px
-    -- per tab button and there are ten sections here, which is roughly twice
-    -- this panel's whole width.
-    local sectionButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    sectionButton:SetHeight(DROPDOWN_HEIGHT)
-    sectionButton:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING, -(PADDING + TITLE_HEIGHT))
-    sectionButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -PADDING, -(PADDING + TITLE_HEIGHT))
-    sectionButton:SetScript("OnClick", function() self:ToggleSectionMenu() end)
-    frame.sectionButton = sectionButton
+    -- Names the active section beside the spec name, since the side tabs
+    -- are icons.
+    local sectionLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    sectionLabel:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -PADDING, -(PADDING + 2))
+    sectionLabel:SetJustifyH("RIGHT")
+    sectionLabel:SetTextColor(unpack(TEXT_SECONDARY_COLOR))
+    frame.sectionLabel = sectionLabel
 
-    local menu = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-    menu:SetPoint("TOPLEFT", sectionButton, "BOTTOMLEFT", 0, -2)
-    menu:SetPoint("TOPRIGHT", sectionButton, "BOTTOMRIGHT", 0, -2)
-    menu:SetHeight(#SECTIONS * DROPDOWN_HEIGHT + 4)
-    pcall(menu.SetBackdrop, menu, {
-        bgFile = "Interface\\Buttons\\WHITE8X8",
-        edgeFile = "Interface\\Buttons\\WHITE8X8",
-        edgeSize = 1,
-    })
-    pcall(menu.SetBackdropColor, menu, unpack(MENU_BACKDROP_COLOR))
-    pcall(menu.SetBackdropBorderColor, menu, unpack(PANEL_BORDER_COLOR))
-    pcall(menu.SetFrameStrata, menu, "DIALOG")
-    menu:Hide()
-    menu.items = {}
-    for i, section in ipairs(SECTIONS) do
-        local item = CreateFrame("Button", nil, menu, "UIPanelButtonTemplate")
-        item:SetHeight(DROPDOWN_HEIGHT)
-        item:SetPoint("TOPLEFT", menu, "TOPLEFT", 2, -(2 + (i - 1) * DROPDOWN_HEIGHT))
-        item:SetPoint("TOPRIGHT", menu, "TOPRIGHT", -2, -(2 + (i - 1) * DROPDOWN_HEIGHT))
-        item:SetText(section)
-        item:SetScript("OnClick", function() self:SelectSection(section) end)
-        menu.items[i] = item
-    end
-    frame.sectionMenu = menu
+    self:BuildSideTabs(frame)
 
     -- Fixed height means the content can outrun the panel on almost any
     -- section, so it scrolls rather than being cut off. Named for the same
     -- reason the Codex's is (see UI/Codex.lua).
     local scrollFrame = CreateFrame("ScrollFrame", "SpecSageCharacterPanelScroll", frame,
         "UIPanelScrollFrameTemplate")
-    scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING,
-        -(PADDING + TITLE_HEIGHT + DROPDOWN_HEIGHT + 6))
+    scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING, -(PADDING + TITLE_HEIGHT + 4))
     scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -SCROLLBAR_INSET, FOOTER_HEIGHT)
 
     local scrollChild = CreateFrame("Frame", nil, scrollFrame)
@@ -321,6 +322,84 @@ function CharacterPanel:BuildFrame()
     self.surface = Codex and Codex:NewSurface(frame, scrollFrame, scrollChild, self:ContentWidth())
 
     return frame
+end
+
+-- The column of icon tabs down the panel's right edge, one per section,
+-- hung outside the panel's border the way the character sheet's own side
+-- tabs are. Each is a small backdrop button with the section's icon; the
+-- name is in its tooltip and in the panel header. frame.sectionTabs is the
+-- ordered list, frame.sectionTabByName the lookup UpdateTabHighlight uses.
+function CharacterPanel:BuildSideTabs(frame)
+    frame.sectionTabs = {}
+    frame.sectionTabByName = {}
+    for i, section in ipairs(SECTIONS) do
+        local tab = CreateFrame("Button", nil, frame, "BackdropTemplate")
+        tab:SetSize(TAB_SIZE, TAB_SIZE)
+        tab:SetPoint("TOPLEFT", frame, "TOPRIGHT", -1, -(TAB_TOP_OFFSET + (i - 1) * TAB_STRIDE))
+        pcall(tab.SetBackdrop, tab, {
+            bgFile = "Interface\\Buttons\\WHITE8X8",
+            edgeFile = "Interface\\Buttons\\WHITE8X8",
+            edgeSize = 1,
+        })
+        pcall(tab.SetBackdropColor, tab, unpack(TAB_BACKDROP_COLOR))
+        pcall(tab.SetBackdropBorderColor, tab, unpack(PANEL_BORDER_COLOR))
+
+        local icon = tab:CreateTexture(nil, "ARTWORK")
+        icon:SetPoint("TOPLEFT", tab, "TOPLEFT", TAB_ICON_INSET, -TAB_ICON_INSET)
+        icon:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", -TAB_ICON_INSET, TAB_ICON_INSET)
+        icon:SetTexture(SECTION_ICONS[section])
+        -- Trim the icon's baked-in border so it sits flush in the tab.
+        pcall(icon.SetTexCoord, icon, 0.08, 0.92, 0.08, 0.92)
+        tab.icon = icon
+
+        -- Active marker: a 2px bar down the tab's outer edge, coloured like
+        -- the Codex's active-tab underline.
+        local marker = tab:CreateTexture(nil, "OVERLAY")
+        marker:SetPoint("TOPRIGHT", tab, "TOPRIGHT", -1, -1)
+        marker:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", -1, 1)
+        marker:SetWidth(2)
+        marker:Hide()
+        tab.marker = marker
+
+        pcall(tab.SetHighlightTexture, tab, "Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
+
+        tab.section = section
+        tab:SetScript("OnClick", function() self:SelectSection(section) end)
+        tab:SetScript("OnEnter", function(button)
+            pcall(function()
+                GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
+                GameTooltip:SetText(section)
+                GameTooltip:Show()
+            end)
+        end)
+        tab:SetScript("OnLeave", function() pcall(function() GameTooltip:Hide() end) end)
+
+        frame.sectionTabs[i] = tab
+        frame.sectionTabByName[section] = tab
+    end
+end
+
+-- Lights the active tab and dims the rest. The marker takes the player's
+-- class colour when the client can say what it is, else the header blue.
+function CharacterPanel:UpdateTabHighlight(active)
+    local frame = self.frame
+    if not (frame and frame.sectionTabs) then return end
+
+    local r, g, b = HEADER_COLOR[1], HEADER_COLOR[2], HEADER_COLOR[3]
+    local token = PlayerClassToken()
+    local classColor = token and RAID_CLASS_COLORS and RAID_CLASS_COLORS[token]
+    if classColor and classColor.r then r, g, b = classColor.r, classColor.g, classColor.b end
+
+    for _, tab in ipairs(frame.sectionTabs) do
+        local isActive = tab.section == active
+        tab.active = isActive
+        tab.marker:SetShown(isActive)
+        if isActive then tab.marker:SetColorTexture(r, g, b) end
+        pcall(tab.icon.SetDesaturated, tab.icon, not isActive)
+        pcall(tab.icon.SetAlpha, tab.icon, isActive and 1 or 0.55)
+        pcall(tab.SetBackdropBorderColor, tab, isActive and r or PANEL_BORDER_COLOR[1],
+            isActive and g or PANEL_BORDER_COLOR[2], isActive and b or PANEL_BORDER_COLOR[3], 1)
+    end
 end
 
 -- The show/hide checkbox that lives on the character sheet itself, so the
@@ -530,13 +609,7 @@ end
 
 function CharacterPanel:SelectSection(section)
     Settings().section = section
-    if self.frame then self.frame.sectionMenu:Hide() end
     self:Update()
-end
-
-function CharacterPanel:ToggleSectionMenu()
-    if not self.frame then return end
-    self.frame.sectionMenu:SetShown(not self.frame.sectionMenu:IsShown())
 end
 
 -- Draws the active section. Gear is this file's own; everything else is the
@@ -552,7 +625,8 @@ function CharacterPanel:Render()
     if not frame then return end
 
     local section = self:ActiveSection()
-    frame.sectionButton:SetText(section)
+    frame.sectionLabel:SetText(section)
+    self:UpdateTabHighlight(section)
 
     -- The title names the spec on every section, not just Gear: the panel
     -- is always about the player's own character, and saying which spec the
