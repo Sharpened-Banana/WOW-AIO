@@ -25,6 +25,11 @@ class guides, talent loadouts, and live character tracking in one place:
   …), and every item tooltip gets each secondary stat's rank written next to
   the stat itself ("+512 Haste  #1") against your spec's stat priority, so
   you can tell at a glance whether a drop in your bags is for you.
+- **Docked gearing panel** — an optional panel attached to the character
+  sheet, opening and closing with it: your stat priority with your live
+  rating beside each stat, Wowhead's order for each hero talent tree, and the
+  BiS item for whichever gear slot you hover on the paper doll, tagged
+  equipped / owned / missing. A checkbox on the character sheet turns it off.
 - **Talent Loadout Vault** — save, label, import, and export talent loadout
   strings per spec, organised by content type (Raid, Mythic+, Delves, PvP).
   Ships with suggested builds per spec: SimulationCraft's default profile,

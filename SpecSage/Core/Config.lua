@@ -48,6 +48,7 @@ ns.OPTION_SCOPES = {
     combat = function() return ns.db.combat end,
     procs = function() return ns.db.procs end,
     statsShow = function() return ns.StatsShown() end,
+    characterPanel = function() return ns.db.characterPanel end,
 }
 
 -- Named side effects, kept out of the schema itself so it stays plain data.
@@ -152,6 +153,11 @@ local function BuildOptionGroups()
           tooltip = "Add lines to every item tooltip: a trinket's tier in your current spec's trinket "
               .. "lists (Single Target S, Icy Veins A, ...) and each secondary stat's rank (#1, #2, ...) "
               .. "against your spec's stat priority from the Codex." },
+        { kind = "check", scope = "characterPanel", key = "enabled",
+          variable = "SpecSage_characterPanel", label = "Dock gearing panel to the character sheet",
+          tooltip = "Show your stat priority, your live rating for each stat, Wowhead's order for "
+              .. "each hero talent tree, and the BiS item for whichever gear slot you hover - "
+              .. "attached to the character sheet, opening and closing with it." },
         { kind = "action", action = "feedback", label = "Feedback",
           buttonText = "Feedback / requests",
           tooltip = "Shows the link to SpecSage's GitHub Issues page, ready to copy, for bug reports "
@@ -238,6 +244,18 @@ local DEFAULTS = {
     -- Modules/ItemRanks.lua: rank an item tooltip's secondary stats against
     -- the player's current spec's Codex stat priority.
     itemStatRanks = true,
+
+    -- UI/CharacterPanel.lua: the gearing panel docked to the character
+    -- sheet. On by default - it only ever appears while the character sheet
+    -- is open, so it costs nothing until you go looking at your gear, and
+    -- the checkbox on the sheet itself turns it off in one click.
+    -- `listIndex` is which BiS context (Overall / Mythic+ / Raid / Wowhead)
+    -- its item rows come from, kept apart from the Codex's own so opening
+    -- the character sheet never changes what the Codex is showing.
+    characterPanel = {
+        enabled = true,
+        listIndex = 1,
+    },
 
     -- Pinned tooltips, keyed by "section:key", each { section, key, custom,
     -- point, relPoint, x, y }. Only dragged pins carry a position; the rest

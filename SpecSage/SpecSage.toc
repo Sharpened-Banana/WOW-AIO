@@ -32,6 +32,7 @@ Data\StatPriority.lua
 UI\Overlay.lua
 UI\Tooltips.lua
 UI\Codex.lua
+UI\CharacterPanel.lua
 Modules\Stats.lua
 Modules\Combat.lua
 Modules\Procs.lua

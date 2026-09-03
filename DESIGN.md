@@ -40,6 +40,7 @@ WOW-AIO/
     UI/Overlay.lua          overlay frame + row layout engine
     UI/Tooltips.lua         hover + pinnable tooltips for overlay rows
     UI/Codex.lua            the codex window (class/spec browser + tabs)
+    UI/CharacterPanel.lua   gearing panel docked to Blizzard's character sheet
     Modules/Stats.lua       character stats -> overlay rows + live stat lookup
     Modules/Combat.lua      combat log metrics
     Modules/Procs.lua       proc/cooldown tracking
@@ -785,6 +786,62 @@ verified rendering correctly in an actual game client** — `luac`/the test
 suite can check the Lua is valid, not that the visual result looks right;
 if the corners look wrong in-game, `ApplyRoundedCorners` is isolated and
 safe to revert independently of everything else in this file.
+
+## Character sheet panel (v1.6, UI/CharacterPanel.lua)
+
+The Codex holds the stat priority and the BiS lists, but it is a separate
+window you have to go and open. The one screen where that data actually gets
+used is the character sheet, with the drop you just picked up in front of
+you — so the owner asked for it docked there, the way other addons dock a
+panel to the character tab.
+
+`UI/CharacterPanel.lua` is a frame parented to `CharacterFrame`, anchored to
+its top-right and following it open and closed. Two halves:
+
+- **Stat Priority** — the spec's flat order with `Stats:GetStatValue` beside
+  each row, then Wowhead's per-hero-tree orders from `Data/StatPriority.lua`
+  under it (names only: those are alternatives to the order above, not more
+  of the player's own numbers).
+- **BiS: `<Slot>`** — the guide's item(s) for whichever paper doll slot the
+  mouse last touched, quality-coloured, tagged equipped/owned/missing via
+  `BiS:GetStatus`, with the drop source under it.
+
+Decisions worth keeping:
+
+- **Slot selection is by hover, and sticks.** Every paper doll slot button is
+  `HookScript`ed on `OnEnter` (a hook, so Blizzard's own item tooltip still
+  runs). The selection is *not* cleared on `OnLeave`: you have to move the
+  mouse off the doll to read the panel, and blanking it on the way there
+  would make it unreadable. Both ring buttons and both trinket buttons map
+  onto the single `Ring`/`Trinket` the guides use, so those slots show two
+  rows and every other slot shows one.
+- **Its own BiS context.** `db.characterPanel.listIndex` picks which list
+  (Overall / Mythic+ / Raid / Wowhead) the item rows come from, kept apart
+  from the Codex's `bisListIndex` so opening the character sheet never
+  quietly changes what the Codex is showing. A small button in the panel
+  header cycles it and names the active list.
+- **On by default, with the switch where you see it.** It only ever draws
+  while the character sheet is open, so it costs nothing until you go
+  looking at your gear. A checkbox on the sheet itself turns it off in one
+  click, and it writes the same `db.characterPanel.enabled` the entry in
+  `ns.OPTION_GROUPS` does, so the two surfaces cannot disagree.
+- **Rows are pooled here, not shared with the Codex.** The Codex's pools live
+  on its own frame and are sized to its layout; threading a second parent
+  through every one of its `Render*` paths would couple two windows that
+  only happen to draw similar rows today. What *is* shared is the thing that
+  would be a bug to duplicate: `ns.ItemString` moved from `UI/Codex.lua` to
+  `Core/Init.lua` so both surfaces build the same bonus-carrying item string
+  (see "Linked BiS lists").
+- **Redraws are gated on being visible.** `PLAYER_EQUIPMENT_CHANGED`,
+  `PLAYER_SPECIALIZATION_CHANGED` and `GET_ITEM_INFO_RECEIVED` all re-render,
+  but only when the frame is actually shown.
+
+The mock models `CharacterFrame` and the sixteen paper doll slot buttons
+with Blizzard's real names, defined independently of the panel's own
+`SLOT_BY_BUTTON` — the same anti-tautology rule `INVSLOT_*` follows — so a
+typo there surfaces as a hook that never fires rather than both sides
+agreeing on a wrong name. `mock.ShowCharacterFrame` and
+`mock.HoverPaperDollSlot` drive it the way a player would.
 
 ## Overlay port
 

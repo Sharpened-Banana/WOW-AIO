@@ -116,6 +116,34 @@ function ns.FormatNumber(value)
     return "-"
 end
 
+-- An item string the client resolves to the item the guide actually meant.
+--
+-- A bare itemID resolves to the item's *base* form, and on current-season
+-- gear that is not the item on the page: Icy Veins' Protection Paladin neck
+-- is "Strand of Warding Fangs" at item level 334, while item ID 273781 on
+-- its own is a level-48 rare with +8 Stamina. What separates them is the
+-- item's bonus-ID list, which puts it on its upgrade track, and which the
+-- generated data now carries (Data/BiS.lua's `bonus`). The full form is
+-- item:<id>:<enchant>:<4 gems>:<suffix>:<unique>:<linkLevel>:<specID>:
+-- <modifiersMask>:<itemContext>:<numBonusIDs>:<bonus...>, so the eleven
+-- fields between the ID and the bonus count are zeroed out.
+--
+-- Rows whose source publishes no bonus list (Wowhead's markup has none of
+-- its own; see Data/BiS.lua's header) pass the plain numeric ID through
+-- unchanged, which is what every API here took before.
+function ns.ItemString(itemID, bonus)
+    if type(itemID) ~= "number" then return nil end
+    if type(bonus) ~= "string" or bonus == "" then return itemID end
+
+    local count, ids = 0, {}
+    for id in bonus:gmatch("%d+") do
+        count = count + 1
+        ids[count] = id
+    end
+    if count == 0 then return itemID end
+    return string.format("item:%d:0:0:0:0:0:0:0:0:0:0:0:%d:%s", itemID, count, table.concat(ids, ":"))
+end
+
 function ns.FormatPercent(value)
     local ok, result = pcall(format, "%.2f%%", value or 0)
     if ok then return result end

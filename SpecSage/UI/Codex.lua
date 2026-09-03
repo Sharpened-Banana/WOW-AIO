@@ -278,33 +278,9 @@ end
 -- ItemRefTooltip, shift-click to insert into chat, ctrl-click to dress up.
 local GetItemInfoAPI = (C_Item and C_Item.GetItemInfo) or GetItemInfo
 
--- An item string the client resolves to the item the guide actually meant.
---
--- A bare itemID resolves to the item's *base* form, and on current-season
--- gear that is not the item on the page: Icy Veins' Protection Paladin neck
--- is "Strand of Warding Fangs" at item level 334, while item ID 273781 on
--- its own is a level-48 rare with +8 Stamina. What separates them is the
--- item's bonus-ID list, which puts it on its upgrade track, and which the
--- generated data now carries (Data/BiS.lua's `bonus`). The full form is
--- item:<id>:<enchant>:<4 gems>:<suffix>:<unique>:<linkLevel>:<specID>:
--- <modifiersMask>:<itemContext>:<numBonusIDs>:<bonus...>, so the eleven
--- fields between the ID and the bonus count are zeroed out.
---
--- Rows whose source publishes no bonus list (Wowhead's markup has none of
--- its own; see Data/BiS.lua's header) pass the plain numeric ID through
--- unchanged, which is what every API here took before.
-local function ItemString(itemID, bonus)
-    if type(itemID) ~= "number" then return nil end
-    if type(bonus) ~= "string" or bonus == "" then return itemID end
-
-    local count, ids = 0, {}
-    for id in bonus:gmatch("%d+") do
-        count = count + 1
-        ids[count] = id
-    end
-    if count == 0 then return itemID end
-    return format("item:%d:0:0:0:0:0:0:0:0:0:0:0:%d:%s", itemID, count, table.concat(ids, ":"))
-end
+-- Shared with UI/CharacterPanel.lua, which shows the same BiS rows docked to
+-- the character sheet: see Core/Init.lua for why a bare item ID is not enough.
+local ItemString = ns.ItemString
 
 -- The item's real link once the client has it cached (quality colour, full
 -- bonus data), else the item string itself, which the link-click path still

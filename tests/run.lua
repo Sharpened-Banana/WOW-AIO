@@ -55,6 +55,7 @@ local FILES = {
     "UI\\Overlay.lua",
     "UI\\Tooltips.lua",
     "UI\\Codex.lua",
+    "UI\\CharacterPanel.lua",
     "Modules\\Stats.lua",
     "Modules\\Combat.lua",
     "Modules\\Procs.lua",
@@ -3505,6 +3506,145 @@ do
     shownSite = 0
     for _, row in ipairs(Codex.siteLoadoutRowPool) do if row:IsShown() then shownSite = shownSite + 1 end end
     check(shownSite == 0, "leaving the Loadouts tab hides the site build rows")
+end
+
+--------------------------------------------------------------------------------
+section("Character sheet panel (v1.6, UI/CharacterPanel.lua)")
+--------------------------------------------------------------------------------
+
+do
+    local Panel = ns:GetModule("CharacterPanel")
+    check(Panel ~= nil, "CharacterPanel module registered at load time")
+
+    local function ShownText()
+        local out = {}
+        for _, row in ipairs(Panel.rows or {}) do
+            if row:IsShown() then out[#out + 1] = row.text:GetText() or "" end
+        end
+        return table.concat(out, "\n")
+    end
+    local function ShownRow(needle)
+        for _, row in ipairs(Panel.rows or {}) do
+            if row:IsShown() and (row.text:GetText() or ""):find(needle, 1, true) then return row end
+        end
+        return nil
+    end
+
+    -- The panel exists but stays hidden until the character sheet opens.
+    check(Panel.frame ~= nil, "the panel frame is built at enable time")
+    check(Panel.frame:IsShown() == false, "the panel is hidden while the character sheet is closed")
+    check(Panel.toggle ~= nil, "a show/hide checkbox is added to the character sheet")
+
+    -- Opening the character sheet shows and renders it. The mock's player is
+    -- Unholy (252), whose statPriority follows Wowhead's order.
+    mock.ShowCharacterFrame(true)
+    check(Panel.frame:IsShown() == true, "opening the character sheet shows the panel")
+    check(Panel.frame.title:GetText() == "Unholy", "the panel is titled with the player's own spec",
+        Panel.frame.title:GetText())
+    local dump = ShownText()
+    check(dump:find("Stat Priority", 1, true) ~= nil, "the panel has a stat priority section", dump)
+    check(dump:find("1. Primary", 1, true) ~= nil, "the priority is numbered in the spec's own order", dump)
+    check(dump:find("2. Crit", 1, true) ~= nil, "and follows Wowhead's order for the spec", dump)
+    local critRow = ShownRow("2. Crit")
+    check(critRow ~= nil and critRow.value:GetText() ~= "",
+        "each stat row carries the player's live rating", critRow and critRow.value:GetText())
+    check(dump:find("By Hero Talent Tree", 1, true) ~= nil, "the hero-tree orders are shown too", dump)
+    check(dump:find("San'layn", 1, true) ~= nil, "one row per hero tree", dump)
+
+    -- No slot hovered yet, so the BiS half asks for one.
+    check(dump:find("hover a gear slot", 1, true) ~= nil, "the BiS half prompts for a slot first", dump)
+
+    -- Hovering a paper doll slot fills the BiS half with that slot.
+    mock.HoverPaperDollSlot("CharacterNeckSlot")
+    dump = ShownText()
+    check(Panel.hoveredSlot == "Neck", "hovering the neck slot selects it", Panel.hoveredSlot)
+    check(dump:find("BiS: Neck", 1, true) ~= nil, "the BiS half names the hovered slot", dump)
+
+    -- The item shown is the one the spec's active BiS list has for that slot,
+    -- and it carries the bonus-carrying item string (v1.6) so hovering it
+    -- shows the upgraded item rather than the base one.
+    local bis = ns.GuideStore:GetBiS(252)
+    local wantNeck
+    for _, row in ipairs(bis.lists[ns.db.characterPanel.listIndex].list) do
+        if row.slot == "Neck" then wantNeck = row end
+    end
+    check(wantNeck ~= nil, "the spec's active BiS list has a neck")
+    local neckRow
+    for _, row in ipairs(Panel.rows) do
+        if row:IsShown() and row.itemID == wantNeck.itemID then neckRow = row end
+    end
+    check(neckRow ~= nil, "the panel shows a row for that item", wantNeck and wantNeck.itemID)
+    check(neckRow ~= nil and neckRow.itemLink == ns.ItemString(wantNeck.itemID, wantNeck.bonus),
+        "the row carries the bonus-carrying item string", neckRow and neckRow.itemLink)
+
+    -- A slot the guides list twice (Ring, Trinket) shows both rows, and both
+    -- ring buttons select the same "Ring" slot.
+    mock.HoverPaperDollSlot("CharacterFinger1Slot")
+    check(Panel.hoveredSlot == "Ring", "the second ring button selects the Ring slot too", Panel.hoveredSlot)
+    local ringRows = 0
+    for _, row in ipairs(Panel.rows) do
+        if row:IsShown() and row.itemID then ringRows = ringRows + 1 end
+    end
+    check(ringRows == 2, "both of the list's rings are shown", ringRows)
+
+    -- Clicking a row opens the item link, the same contract the Codex's rows have.
+    mock.HoverPaperDollSlot("CharacterNeckSlot")
+    local clickable
+    for _, row in ipairs(Panel.rows) do
+        if row:IsShown() and row.itemID then clickable = row end
+    end
+    mock.itemRefClicks = {}
+    clickable:GetScript("OnMouseUp")(clickable, "LeftButton")
+    check(#mock.itemRefClicks == 1, "clicking an item row opens its link")
+
+    -- The context toggle cycles the BiS list the rows come from, and does so
+    -- without touching the Codex's own list index.
+    local codexIndex = Codex.bisListIndex
+    local firstTitle = Panel.frame.listToggle:GetText()
+    Panel:CycleList()
+    check(Panel.frame.listToggle:GetText() ~= firstTitle, "the context toggle cycles to the next BiS list",
+        Panel.frame.listToggle:GetText())
+    check(Codex.bisListIndex == codexIndex, "and leaves the Codex's own list alone")
+    ns.db.characterPanel.listIndex = 1
+    Panel:Update()
+
+    -- The checkbox turns it off, and the choice is remembered.
+    Panel.toggle:SetChecked(false)
+    Panel.toggle:GetScript("OnClick")(Panel.toggle)
+    check(ns.db.characterPanel.enabled == false, "unchecking the box saves the setting off")
+    check(Panel.frame:IsShown() == false, "and hides the panel straight away")
+    mock.ShowCharacterFrame(false)
+    mock.ShowCharacterFrame(true)
+    check(Panel.frame:IsShown() == false, "reopening the character sheet keeps it off")
+
+    Panel.toggle:SetChecked(true)
+    Panel.toggle:GetScript("OnClick")(Panel.toggle)
+    check(ns.db.characterPanel.enabled == true, "checking it again saves the setting on")
+    check(Panel.frame:IsShown() == true, "and shows the panel again")
+
+    -- Closing the character sheet takes the panel with it.
+    mock.ShowCharacterFrame(false)
+    check(Panel.frame:IsShown() == false, "closing the character sheet hides the panel")
+
+    -- Equipping something while the sheet is open redraws; while closed it
+    -- must not (the panel is not even up to draw into).
+    mock.Fire("PLAYER_EQUIPMENT_CHANGED", 2)
+    check(Panel.frame:IsShown() == false, "an equipment change with the sheet closed shows nothing")
+    mock.ShowCharacterFrame(true)
+    check(pcall(function() mock.Fire("PLAYER_EQUIPMENT_CHANGED", 2) end),
+        "an equipment change with the sheet open redraws without error")
+
+    -- The setting is reachable from the options schema too, not only the box.
+    local found
+    for _, group in ipairs(ns.OPTION_GROUPS) do
+        for _, entry in ipairs(group.options) do
+            if entry.scope == "characterPanel" and entry.key == "enabled" then found = entry end
+        end
+    end
+    check(found ~= nil, "the panel has an entry in ns.OPTION_GROUPS")
+    check(found ~= nil and ns.GetOptionValue(found) == true, "which reads the same saved value")
+
+    mock.ShowCharacterFrame(false)
 end
 
 --------------------------------------------------------------------------------

@@ -38,6 +38,11 @@ read_globals = {
     "CreateFrame", "UIParent", "GameFontNormal", "GameFontNormalSmall",
     "GameFontHighlightSmall", "BackdropTemplateMixin", "GameTooltip",
 
+    -- UI/CharacterPanel.lua docks to Blizzard's character sheet; the paper
+    -- doll slot buttons it hooks are reached through _G by name, so only the
+    -- frame itself needs listing here.
+    "CharacterFrame",
+
     -- Settings API helpers
     "CreateSettingsListSectionHeaderInitializer", "CreateSettingsButtonInitializer",
 

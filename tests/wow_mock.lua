@@ -156,6 +156,8 @@ local KNOWN_TEMPLATES = {
     UIPanelButtonTemplate = true,
     InputBoxTemplate = true,
     GameTooltipTemplate = true,
+    -- UI/CharacterPanel.lua's show/hide checkbox on the character sheet.
+    UICheckButtonTemplate = true,
 }
 
 -- Button templates that wire up a label FontString, the same way the real
@@ -213,6 +215,11 @@ function CreateFrame(frameType, name, parent, template)
     function frame:SetClampedToScreen() end
     function frame:SetResizable() end
     function frame:EnableMouse(value) self.mouseEnabled = value end
+    -- CheckButton state. Modelled on every frame rather than only on the
+    -- CheckButton type because the mock has no per-type mixins; a Frame that
+    -- is never checked simply never has these called.
+    function frame:SetChecked(value) self.checked = value and true or false end
+    function frame:GetChecked() return self.checked and true or false end
     function frame:SetPropagateMouseClicks(value) self.propagateClicks = value end
     function frame:SetPropagateMouseMotion(value) self.propagateMotion = value end
     function frame:StartMoving() end
@@ -367,6 +374,43 @@ function CreateFrame(frameType, name, parent, template)
 end
 
 UIParent = CreateFrame("Frame", "UIParent")
+
+-- Blizzard's character sheet and its paper doll slot buttons, which
+-- UI/CharacterPanel.lua docks to and hooks. Only the surface the panel
+-- actually touches is modelled: show/hide, and an OnEnter per slot button.
+-- The button names are Blizzard's real ones, defined here independently of
+-- UI/CharacterPanel.lua's SLOT_BY_BUTTON so a typo there shows up as a hook
+-- that never fires rather than both sides agreeing on the same wrong name.
+CharacterFrame = CreateFrame("Frame", "CharacterFrame", UIParent)
+CharacterFrame:Hide()
+
+mock.paperDollSlots = {
+    "CharacterHeadSlot", "CharacterNeckSlot", "CharacterShoulderSlot",
+    "CharacterBackSlot", "CharacterChestSlot", "CharacterWristSlot",
+    "CharacterHandsSlot", "CharacterWaistSlot", "CharacterLegsSlot",
+    "CharacterFeetSlot", "CharacterFinger0Slot", "CharacterFinger1Slot",
+    "CharacterTrinket0Slot", "CharacterTrinket1Slot",
+    "CharacterMainHandSlot", "CharacterSecondaryHandSlot",
+}
+for _, slotName in ipairs(mock.paperDollSlots) do
+    CreateFrame("Button", slotName, CharacterFrame)
+end
+
+-- Opens or closes the character sheet the way a player would, firing the
+-- OnShow/OnHide the panel hooks.
+function mock.ShowCharacterFrame(shown)
+    CharacterFrame:SetShown(shown)
+    local script = CharacterFrame.scripts[shown and "OnShow" or "OnHide"]
+    if script then script(CharacterFrame) end
+end
+
+-- Moves the mouse onto one paper doll slot button.
+function mock.HoverPaperDollSlot(slotName)
+    local button = _G[slotName]
+    assert(button, "no such paper doll slot button: " .. tostring(slotName))
+    local script = button.scripts.OnEnter
+    if script then script(button) end
+end
 
 -- ESC closes any frame named here; the Codex registers itself into this so
 -- ESC works without the addon needing its own keybind for it.
