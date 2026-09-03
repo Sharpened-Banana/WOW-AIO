@@ -66,9 +66,9 @@ ns.GuideStore:RegisterSpec("ROGUE", 259, {
     "Assassination brings strong sustained single-target damage, solid AoE by opening a pull with Crimson Tempest to spread bleeds before settling into Fan of Knives, and good execute-phase scaling, making it a reliable pick for longer fights where consistent uptime matters more than burst windows.",
   },
   statPriority = {
-    { stat = "primary", note = "Agility, passive" },
-    { stat = "haste" },
+    { stat = "primary" },
     { stat = "crit" },
+    { stat = "haste" },
     { stat = "mastery" },
     { stat = "versatility" },
   },
@@ -171,11 +171,11 @@ ns.GuideStore:RegisterSpec("ROGUE", 260, {
     "Outlaw brings strong burst through Adrenaline Rush and Blade Flurry cleave, solid mobility via Grappling Hook and Sprint, and simple execute-phase scaling with Between the Eyes, making it a versatile pick for both single-target and cleave-heavy fights.",
   },
   statPriority = {
-    { stat = "primary", note = "Agility, passive" },
+    { stat = "primary" },
     { stat = "haste" },
-    { stat = "mastery" },
     { stat = "crit" },
     { stat = "versatility" },
+    { stat = "mastery" },
   },
   rotation = {
     { title = "Opener", steps = {
@@ -273,11 +273,11 @@ ns.GuideStore:RegisterSpec("ROGUE", 261, {
     "Subtlety brings strong burst damage inside cooldown windows, good AoE through Black Powder, and useful utility (Shroud of Concealment, Distract), making it a good pick for fights with clear burst phases or add windows to dump cooldowns into.",
   },
   statPriority = {
-    { stat = "primary", note = "Agility, passive" },
-    { stat = "haste" },
-    { stat = "crit" },
+    { stat = "primary" },
     { stat = "mastery" },
+    { stat = "haste" },
     { stat = "versatility" },
+    { stat = "crit" },
   },
   rotation = {
     { title = "Opener", steps = {

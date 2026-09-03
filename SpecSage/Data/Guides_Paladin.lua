@@ -60,10 +60,10 @@ ns.GuideStore:RegisterSpec("PALADIN", 65, {
     "Herald of the Sun and Lightsmith are the two hero talent paths. Herald of the Sun boosts Avenging Wrath's healing and adds passive throughput via Dawnlight; Lightsmith's Hammer and Anvil triggers from Judgment. Holy Paladin brings strong raid cooldowns (Avenging Wrath, Aura Mastery), solid AoE healing through Light of Dawn and Holy Prism-style tools, and reliable tank healing via beacon uptime.",
   },
   statPriority = {
-    { stat = "primary", note = "Intellect, passive" },
-    { stat = "crit" },
-    { stat = "haste", note = "smooths cast times and Holy Power generation" },
+    { stat = "primary" },
     { stat = "mastery" },
+    { stat = "haste" },
+    { stat = "crit" },
     { stat = "versatility" },
   },
   rotation = {
@@ -147,12 +147,11 @@ ns.GuideStore:RegisterSpec("PALADIN", 66, {
     "Protection Paladin brings smooth, consistent physical mitigation, strong self-healing from Holy Power spenders, and solid AoE threat, making it a reliable tank choice for both sustained raid tanking and Mythic+ pulls where consistent uptime on Shield of the Righteous matters.",
   },
   statPriority = {
-    { stat = "stamina", note = "for survivability buffer" },
-    { stat = "primary", note = "Strength, passive" },
-    { stat = "haste", note = "faster Holy Power generation and Shield of the Righteous uptime" },
+    { stat = "primary" },
+    { stat = "haste" },
     { stat = "mastery" },
-    { stat = "versatility" },
     { stat = "crit" },
+    { stat = "versatility" },
   },
   rotation = {
     { title = "Opener", steps = {
@@ -263,10 +262,10 @@ ns.GuideStore:RegisterSpec("PALADIN", 70, {
     "Retribution brings strong burst windows, useful raid utility (Blessing of Protection/Sacrifice, Lay on Hands), and solid cleave through Divine Storm, making it a good pick when you want a melee spec with reliable defensive and offensive utility on top of its damage.",
   },
   statPriority = {
-    { stat = "primary", note = "Strength, passive" },
+    { stat = "primary" },
+    { stat = "mastery" },
     { stat = "haste" },
     { stat = "crit" },
-    { stat = "mastery" },
     { stat = "versatility" },
   },
   rotation = {

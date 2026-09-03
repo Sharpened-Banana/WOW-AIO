@@ -1,0 +1,179 @@
+{
+  "_readme": [
+    "Per-spec stat priorities transcribed from Wowhead's own stat-priority guide",
+    "page for each spec (the URL in each record). tools/wowhead_harvest.js's",
+    "__harvestStats reads the machine-parseable pages directly; the rest of the",
+    "pages state their priorities in prose or in list items Wowhead writes as",
+    "free text ('Mastery to 1200 rating', 'Haste (~700 Haste)', 'Crit = Mastery'),",
+    "so this file is the reviewed transcription of all 40 and the single source",
+    "tools/fetch_stats.py generates SpecSage/Data/StatPriority.lua from.",
+    "`heroSplit` says whether Wowhead splits the priority by hero talent tree.",
+    "Where it splits by something else instead (a tank's survivability/DPS goal,",
+    "a healer's raid/Mythic+ content), the title names both hero trees so every",
+    "hero spec is still covered explicitly rather than silently omitted.",
+    "`stats` uses Data/API.lua's statPriority vocabulary; anything Wowhead ranks",
+    "that is not a character stat (item level, weapon damage) goes in `note`."
+  ],
+  "specs": {
+    "62": { "url": "https://www.wowhead.com/guide/classes/mage/arcane/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Spellslinger", "stats": ["primary", "haste", "mastery", "crit", "versatility"] },
+      { "title": "Sunfury", "stats": ["primary", "haste", "versatility", "crit", "mastery"] }
+    ]},
+    "63": { "url": "https://www.wowhead.com/guide/classes/mage/fire/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Sunfury", "stats": ["primary", "haste", "mastery", "versatility", "crit"] },
+      { "title": "Frostfire", "stats": ["primary", "haste", "mastery", "versatility", "crit"] }
+    ]},
+    "64": { "url": "https://www.wowhead.com/guide/classes/mage/frost/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Frostfire", "stats": ["primary", "mastery", "crit", "haste", "versatility"] },
+      { "title": "Spellslinger", "stats": ["primary", "mastery", "crit", "haste", "versatility"] }
+    ]},
+    "65": { "url": "https://www.wowhead.com/guide/classes/paladin/holy/stat-priority-pve-healer", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Herald of the Sun", "stats": ["primary", "mastery", "haste", "crit", "versatility"], "note": "Haste and Crit are ranked equal; item level beats optimising secondaries until you are near max item level" },
+      { "title": "Lightsmith", "stats": ["primary", "mastery", "haste", "crit", "versatility"], "note": "Haste and Crit are ranked equal" }
+    ]},
+    "66": { "url": "https://www.wowhead.com/guide/classes/paladin/protection/stat-priority-pve-tank", "updated": "2026/08/12", "heroSplit": false, "variants": [
+      { "title": "Lightsmith / Templar - Survivability", "stats": ["primary", "haste", "mastery", "crit", "versatility"], "note": "Wowhead splits Protection Paladin by goal, not hero tree; both hero trees share these orders" },
+      { "title": "Lightsmith / Templar - DPS", "stats": ["primary", "haste", "crit", "mastery", "versatility"] }
+    ]},
+    "70": { "url": "https://www.wowhead.com/guide/classes/paladin/retribution/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Templar", "stats": ["primary", "mastery", "haste", "crit", "versatility"] },
+      { "title": "Herald of the Sun", "stats": ["primary", "mastery", "haste", "crit", "versatility"] }
+    ]},
+    "71": { "url": "https://www.wowhead.com/guide/classes/warrior/arms/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Colossus", "stats": ["primary", "crit", "haste", "mastery", "versatility"] },
+      { "title": "Slayer", "stats": ["primary", "crit", "haste", "mastery", "versatility"] }
+    ]},
+    "72": { "url": "https://www.wowhead.com/guide/classes/warrior/fury/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Mountain Thane", "stats": ["primary", "haste", "mastery", "crit", "versatility"] },
+      { "title": "Slayer", "stats": ["primary", "haste", "mastery", "crit", "versatility"] }
+    ]},
+    "73": { "url": "https://www.wowhead.com/guide/classes/warrior/protection/stat-priority-pve-tank", "updated": "2026/08/12", "heroSplit": false, "variants": [
+      { "title": "Colossus / Mountain Thane - Survivability", "stats": ["primary", "haste", "crit", "versatility", "mastery"], "note": "Wowhead splits Protection Warrior by goal, not hero tree, and gives both goals the same order; Crit may pass Haste if your Crit is unusually low or your Haste unusually high" },
+      { "title": "Colossus / Mountain Thane - DPS", "stats": ["primary", "haste", "crit", "versatility", "mastery"] }
+    ]},
+    "102": { "url": "https://www.wowhead.com/guide/classes/druid/balance/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Keeper of the Grove", "stats": ["primary", "mastery", "haste", "crit", "versatility"], "note": "Haste and Crit are ranked equal" },
+      { "title": "Elune's Chosen", "stats": ["primary", "mastery", "haste", "crit", "versatility"] }
+    ]},
+    "103": { "url": "https://www.wowhead.com/guide/classes/druid/feral/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Druid of the Claw", "stats": ["primary", "mastery", "haste", "crit", "versatility"] },
+      { "title": "Wildstalker", "stats": ["primary", "mastery", "crit", "haste", "versatility"] }
+    ]},
+    "104": { "url": "https://www.wowhead.com/guide/classes/druid/guardian/stat-priority-pve-tank", "updated": "2026/08/12", "heroSplit": false, "variants": [
+      { "title": "Druid of the Claw / Elune's Chosen - Survivability", "stats": ["primary", "haste", "versatility", "crit", "mastery"], "note": "Wowhead splits Guardian by goal, not hero tree, and gives both goals the same order; all four secondaries are close offensively" },
+      { "title": "Druid of the Claw / Elune's Chosen - DPS", "stats": ["primary", "haste", "versatility", "crit", "mastery"] }
+    ]},
+    "105": { "url": "https://www.wowhead.com/guide/classes/druid/restoration/stat-priority-pve-healer", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Keeper of the Grove", "stats": ["primary", "haste", "mastery", "versatility", "crit"] },
+      { "title": "Wildstalker", "stats": ["primary", "haste", "mastery", "versatility", "crit"] }
+    ]},
+    "250": { "url": "https://www.wowhead.com/guide/classes/death-knight/blood/stat-priority-pve-tank", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "San'layn", "stats": ["primary", "haste", "mastery", "crit", "versatility"], "note": "Wowhead ranks Mastery, Crit and Versatility equal below Haste" },
+      { "title": "Deathbringer", "stats": ["primary", "crit", "mastery", "versatility", "haste"], "note": "Wowhead ranks Mastery and Versatility equal, with Haste last" }
+    ]},
+    "251": { "url": "https://www.wowhead.com/guide/classes/death-knight/frost/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Deathbringer", "stats": ["primary", "crit", "mastery", "haste", "versatility"] },
+      { "title": "Rider of the Apocalypse", "stats": ["primary", "crit", "mastery", "haste", "versatility"] }
+    ]},
+    "252": { "url": "https://www.wowhead.com/guide/classes/death-knight/unholy/stat-priority-pve-dps", "updated": "2026/08/17", "heroSplit": true, "variants": [
+      { "title": "San'layn", "stats": ["primary", "crit", "mastery", "haste", "versatility"] },
+      { "title": "Rider of the Apocalypse", "stats": ["primary", "crit", "mastery", "haste", "versatility"] }
+    ]},
+    "253": { "url": "https://www.wowhead.com/guide/classes/hunter/beast-mastery/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Pack Leader", "stats": ["primary", "mastery", "crit", "haste", "versatility"], "note": "Wowhead ranks weapon damage ahead of Agility; this order holds in every situation" },
+      { "title": "Dark Ranger", "stats": ["primary", "crit", "mastery", "haste", "versatility"], "note": "Single-target order; in AoE swap to Mastery ahead of Crit, and the gap down to Haste widens. Weapon damage is ranked ahead of Agility" }
+    ]},
+    "254": { "url": "https://www.wowhead.com/guide/classes/hunter/marksmanship/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Sentinel", "stats": ["primary", "crit", "mastery", "versatility", "haste"] },
+      { "title": "Dark Ranger", "stats": ["primary", "crit", "mastery", "versatility", "haste"] }
+    ]},
+    "255": { "url": "https://www.wowhead.com/guide/classes/hunter/survival/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Pack Leader", "stats": ["primary", "mastery", "crit", "haste", "versatility"], "note": "Wowhead ranks Crit and Haste equal here, with Pack Leader wanting slightly more Haste than Sentinel" },
+      { "title": "Sentinel", "stats": ["primary", "mastery", "crit", "haste", "versatility"] }
+    ]},
+    "256": { "url": "https://www.wowhead.com/guide/classes/priest/discipline/stat-priority-pve-healer", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Oracle", "stats": ["primary", "haste", "mastery", "crit", "versatility"], "note": "Wowhead states neither hero tree changes the priority in raid or Mythic+; everything below Haste is close, so favour item level" },
+      { "title": "Voidweaver", "stats": ["primary", "haste", "mastery", "crit", "versatility"], "note": "Wowhead's raid box lists Haste ahead of Intellect for Voidweaver; its Mythic+ box and its own text put Intellect first, which is the order used here" }
+    ]},
+    "257": { "url": "https://www.wowhead.com/guide/classes/priest/holy/stat-priority-pve-healer", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Archon", "stats": ["primary", "versatility", "crit", "haste", "mastery"] },
+      { "title": "Oracle", "stats": ["primary", "versatility", "crit", "haste", "mastery"] }
+    ]},
+    "258": { "url": "https://www.wowhead.com/guide/classes/priest/shadow/stat-priority-pve-dps", "updated": "2026/08/31", "heroSplit": true, "variants": [
+      { "title": "Archon", "stats": ["primary", "haste", "mastery", "crit", "versatility"] },
+      { "title": "Voidweaver", "stats": ["primary", "haste", "mastery", "crit", "versatility"] }
+    ]},
+    "259": { "url": "https://www.wowhead.com/guide/classes/rogue/assassination/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Fatebound", "stats": ["primary", "crit", "haste", "mastery", "versatility"] },
+      { "title": "Deathstalker", "stats": ["primary", "crit", "haste", "mastery", "versatility"] }
+    ]},
+    "260": { "url": "https://www.wowhead.com/guide/classes/rogue/outlaw/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Trickster", "stats": ["primary", "haste", "crit", "versatility", "mastery"] },
+      { "title": "Fatebound", "stats": ["primary", "haste", "crit", "versatility", "mastery"] }
+    ]},
+    "261": { "url": "https://www.wowhead.com/guide/classes/rogue/subtlety/stat-priority-pve-dps", "updated": "2026/08/19", "heroSplit": true, "variants": [
+      { "title": "Deathstalker", "stats": ["primary", "mastery", "haste", "versatility", "crit"], "note": "Haste only to roughly 700 rating; more targets or Mythic+ push more of the budget into Mastery, pure single target wants some Crit" },
+      { "title": "Trickster", "stats": ["primary", "mastery", "haste", "versatility", "crit"], "note": "Haste only to roughly 700 rating" }
+    ]},
+    "262": { "url": "https://www.wowhead.com/guide/classes/shaman/elemental/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Farseer", "stats": ["mastery", "haste", "crit", "versatility", "primary"], "note": "Wowhead ranks Mastery to about 1200 rating first and lists Intellect last; Haste and Crit are ranked equal, and Mastery is near-useless past the 100% overload cap (about 86% before embellishments)" },
+      { "title": "Stormbringer", "stats": ["mastery", "haste", "crit", "versatility", "primary"], "note": "Wowhead ranks Mastery to about 1200 rating first and lists Intellect last; Haste and Crit are ranked equal" }
+    ]},
+    "263": { "url": "https://www.wowhead.com/guide/classes/shaman/enhancement/stat-priority-pve-dps", "updated": "2026/08/22", "heroSplit": true, "variants": [
+      { "title": "Stormbringer", "stats": ["primary", "crit", "mastery", "haste", "versatility"], "note": "Crit and Mastery are ranked equal; the priority does not change between single and multi-target" },
+      { "title": "Totemic", "stats": ["primary", "mastery", "haste", "crit", "versatility"], "note": "Mastery and Haste are ranked equal" }
+    ]},
+    "264": { "url": "https://www.wowhead.com/guide/classes/shaman/restoration/stat-priority-pve-healer", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Farseer", "stats": ["primary", "crit", "haste", "versatility", "mastery"], "note": "Wowhead gives both hero trees the same order; Haste and Versatility are of similar value and Mastery is a distant last this season" },
+      { "title": "Totemic", "stats": ["primary", "crit", "haste", "versatility", "mastery"], "note": "Haste and Versatility are of similar value; Mastery is a distant last this season" }
+    ]},
+    "265": { "url": "https://www.wowhead.com/guide/classes/warlock/affliction/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Hellcaller", "stats": ["primary", "haste", "crit", "versatility", "mastery"] },
+      { "title": "Soul Harvester", "stats": ["primary", "haste", "crit", "versatility", "mastery"] }
+    ]},
+    "266": { "url": "https://www.wowhead.com/guide/classes/warlock/demonology/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Diabolist", "stats": ["primary", "haste", "crit", "mastery", "versatility"], "note": "Haste and Crit are ranked equal, and all stats are close enough that item level is effectively the best stat" },
+      { "title": "Soul Harvester", "stats": ["primary", "haste", "crit", "mastery", "versatility"], "note": "Haste and Crit are ranked equal" }
+    ]},
+    "267": { "url": "https://www.wowhead.com/guide/classes/warlock/destruction/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Diabolist", "stats": ["primary", "haste", "mastery", "crit", "versatility"], "note": "Mastery is ranked at or above Crit, and all stats are close enough that item level is effectively the best stat" },
+      { "title": "Hellcaller", "stats": ["primary", "haste", "mastery", "crit", "versatility"], "note": "Mastery is ranked at or above Crit" }
+    ]},
+    "268": { "url": "https://www.wowhead.com/guide/classes/monk/brewmaster/stat-priority-pve-tank", "updated": "2026/08/12", "heroSplit": false, "variants": [
+      { "title": "Shado-pan / Master of Harmony - Defensive", "stats": ["primary", "armor", "stamina", "versatility", "crit", "mastery", "haste"], "note": "Wowhead splits Brewmaster by goal and states both hero trees share these orders; item level, Agility, Armor and Stamina are ranked together first, then Versatility, Crit and Mastery equal, then Haste" },
+      { "title": "Shado-pan / Master of Harmony - Offensive", "stats": ["primary", "crit", "versatility", "mastery", "haste"], "note": "Item level and Agility first, then Crit, then Versatility and Mastery equal, then Haste" }
+    ]},
+    "269": { "url": "https://www.wowhead.com/guide/classes/monk/windwalker/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Shado-pan", "stats": ["primary", "haste", "crit", "mastery", "versatility"] },
+      { "title": "Conduit of the Celestials", "stats": ["primary", "haste", "mastery", "crit", "versatility"] }
+    ]},
+    "270": { "url": "https://www.wowhead.com/guide/classes/monk/mistweaver/stat-priority-pve-healer", "updated": "2026/08/12", "heroSplit": false, "variants": [
+      { "title": "Conduit of the Celestials / Master of Harmony - Raid", "stats": ["primary", "haste", "crit", "versatility", "mastery"], "note": "Wowhead splits Mistweaver by the celestial the build centres on and the content each is run in, not by hero tree; Haste is first in all content" },
+      { "title": "Conduit of the Celestials / Master of Harmony - Mythic+", "stats": ["primary", "haste", "mastery", "crit", "versatility"], "note": "Mastery moves ahead in Mythic+ for Yu'lon-centred builds" }
+    ]},
+    "577": { "url": "https://www.wowhead.com/guide/classes/demon-hunter/havoc/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Fel-Scarred", "stats": ["primary", "crit", "mastery", "haste", "versatility"] },
+      { "title": "Aldrachi Reaver", "stats": ["primary", "crit", "mastery", "haste", "versatility"] }
+    ]},
+    "581": { "url": "https://www.wowhead.com/guide/classes/demon-hunter/vengeance/stat-priority-pve-tank", "updated": "2026/08/25", "heroSplit": true, "variants": [
+      { "title": "Aldrachi Reaver", "stats": ["primary", "stamina", "haste", "crit", "versatility", "mastery"], "note": "Item level is ranked first with Agility and Stamina; below Haste all secondaries are close to equal. Offensively Wowhead expects Crit, Versatility, Haste, Mastery" },
+      { "title": "Annihilator", "stats": ["primary", "stamina", "haste", "crit", "versatility", "mastery"], "note": "Item level is ranked first with Agility and Stamina; below Haste all secondaries are close to equal" }
+    ]},
+    "1467": { "url": "https://www.wowhead.com/guide/classes/evoker/devastation/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Flameshaper", "stats": ["primary", "crit", "mastery", "haste", "versatility"] },
+      { "title": "Scalecommander", "stats": ["primary", "crit", "mastery", "haste", "versatility"] }
+    ]},
+    "1468": { "url": "https://www.wowhead.com/guide/classes/evoker/preservation/stat-priority-pve-healer", "updated": "2026/08/31", "heroSplit": false, "variants": [
+      { "title": "Flameshaper / Chronowarden - Raid", "stats": ["primary", "crit", "mastery", "haste", "versatility"], "note": "Wowhead splits Preservation by content, not hero tree; secondaries scale off each other, so avoid hard-stacking one" },
+      { "title": "Flameshaper / Chronowarden - Mythic+", "stats": ["primary", "crit", "haste", "mastery", "versatility"] }
+    ]},
+    "1473": { "url": "https://www.wowhead.com/guide/classes/evoker/augmentation/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Chronowarden", "stats": ["primary", "mastery", "crit", "haste", "versatility"] },
+      { "title": "Scalecommander", "stats": ["primary", "mastery", "crit", "haste", "versatility"] }
+    ]},
+    "1480": { "url": "https://www.wowhead.com/guide/classes/demon-hunter/devourer/stat-priority-pve-dps", "updated": "2026/08/12", "heroSplit": true, "variants": [
+      { "title": "Annihilator", "stats": ["primary", "haste", "mastery", "crit", "versatility"], "note": "Annihilator wants as much Haste as it can get" },
+      { "title": "Void-Scarred", "stats": ["primary", "haste", "crit", "mastery", "versatility"], "note": "Haste only to roughly 800 rating (about 18-20%) and no further - past that it is the worst stat; Crit and Mastery are close, with more Mastery in Mythic+ and more Crit in raid" }
+    ]}
+  }
+}

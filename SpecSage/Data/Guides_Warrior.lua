@@ -86,10 +86,10 @@ ns.GuideStore:RegisterSpec("WARRIOR", 71, {
     "Arms brings strong single-target cleave, self-sufficient defensives (Die by the Sword, Rallying Cry), and solid execute-phase damage, making it a reliable pick for raid progression and Mythic+ alike when you want consistent melee pressure without pet or DoT management.",
   },
   statPriority = {
-    { stat = "primary", note = "Strength, passive" },
+    { stat = "primary" },
     { stat = "crit" },
+    { stat = "haste" },
     { stat = "mastery" },
-    { stat = "haste", note = "to a comfortable breakpoint for rage flow" },
     { stat = "versatility" },
   },
   rotation = {
@@ -190,8 +190,8 @@ ns.GuideStore:RegisterSpec("WARRIOR", 72, {
     "Fury is a strong pick when you want simple positioning requirements, good sustained AoE from Whirlwind cleave, and consistent single-target damage without needing precise debuff-window timing — a good fit for both raid and Mythic+ content.",
   },
   statPriority = {
-    { stat = "primary", note = "Strength, passive" },
-    { stat = "haste", note = "smooths global cooldown and Enrage uptime" },
+    { stat = "primary" },
+    { stat = "haste" },
     { stat = "mastery" },
     { stat = "crit" },
     { stat = "versatility" },
@@ -291,13 +291,11 @@ ns.GuideStore:RegisterSpec("WARRIOR", 73, {
     "Protection brings strong sustained mitigation, good AoE threat via Thunder Clap and Revenge, and reliable cooldowns for both magic and physical damage spikes, making it a dependable tank for both raid bosses and Mythic+ trash-heavy pulls.",
   },
   statPriority = {
-    { stat = "stamina", note = "for survivability buffer" },
-    { stat = "primary", note = "Strength, passive" },
-    { stat = "mastery", note = "block value and chance" },
+    { stat = "primary" },
     { stat = "haste" },
-    { stat = "versatility" },
     { stat = "crit" },
-    { stat = "avoidance" },
+    { stat = "versatility" },
+    { stat = "mastery" },
   },
   rotation = {
     { title = "Opener", steps = {

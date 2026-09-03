@@ -69,11 +69,12 @@ ns.GuideStore:RegisterSpec("MONK", 268, {
     "Bring Brewmaster when you want a tank that smooths out burst damage into manageable ticks, has strong self-healing through Expel Harm and Celestial Brew, and provides solid AoE threat through Breath of Fire and Keg Smash.",
   },
   statPriority = {
-    { stat = "stamina" },
     { stat = "primary" },
+    { stat = "armor" },
+    { stat = "stamina" },
     { stat = "versatility" },
-    { stat = "mastery" },
     { stat = "crit" },
+    { stat = "mastery" },
     { stat = "haste" },
   },
   rotation = {
@@ -197,10 +198,10 @@ ns.GuideStore:RegisterSpec("MONK", 270, {
   },
   statPriority = {
     { stat = "primary" },
-    { stat = "haste", note = "smooths cast times and HoT ticks" },
-    { stat = "mastery", note = "Gust of Mist healing was increased in 12.1" },
+    { stat = "haste" },
     { stat = "crit" },
     { stat = "versatility" },
+    { stat = "mastery" },
   },
   rotation = {
     { title = "Priorities", steps = {
@@ -290,10 +291,10 @@ ns.GuideStore:RegisterSpec("MONK", 269, {
   },
   statPriority = {
     { stat = "primary" },
+    { stat = "haste" },
     { stat = "crit" },
     { stat = "mastery" },
     { stat = "versatility" },
-    { stat = "haste" },
   },
   rotation = {
     { title = "Opener", steps = {

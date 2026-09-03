@@ -57,12 +57,11 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 250, {
     "Blood brings excellent self-sustain, strong AoE threat through Death and Decay, and solid group utility (Anti-Magic Zone, grip), making it a reliable tank for both progression raiding and Mythic+ where consistent self-healing reduces external healer load. Its hero talents diverge more than most tank specs: Deathbringer layers Reaper's Mark's execute-style damage onto the core loop, while San'layn needs Bone Shield charges and its own resource banked before its Vampiric burst window opens.",
   },
   statPriority = {
-    { stat = "stamina", note = "for survivability buffer" },
-    { stat = "primary", note = "Strength, passive" },
+    { stat = "primary" },
     { stat = "haste" },
-    { stat = "mastery", note = "increases blood shield and death strike healing" },
-    { stat = "versatility" },
+    { stat = "mastery" },
     { stat = "crit" },
+    { stat = "versatility" },
   },
   rotation = {
     { title = "Opener", steps = {
@@ -166,10 +165,10 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 251, {
     "Frost brings strong burst through Pillar of Frost — paired with Reaper's Mark on the Deathbringer hero talent — and, on some builds, a Breath of Sindragosa channel that extends itself the more Killing Machine and Rime procs you spend during it, making it a strong pick for both progression raiding, where Rider of the Apocalypse's straightforward single-target focus shines, and burst-heavy Mythic+, where Deathbringer's AoE tools take over.",
   },
   statPriority = {
-    { stat = "primary", note = "Strength, passive" },
+    { stat = "primary" },
     { stat = "crit" },
+    { stat = "mastery" },
     { stat = "haste" },
-    { stat = "mastery", note = "increases Frost damage" },
     { stat = "versatility" },
   },
   rotation = {
@@ -269,10 +268,10 @@ ns.GuideStore:RegisterSpec("DEATHKNIGHT", 252, {
     "Unholy brings strong burst damage through cooldown windows, excellent sustained AoE via diseases and Death and Decay, and useful pet-based utility, making it a strong pick for fights with add phases or sustained multi-target damage requirements. San'layn needs Festering Scythe/Lesser Ghoul stacks already banked before its Dark Transformation window opens — walking in with 3 or fewer stacks noticeably underperforms — while Rider of the Apocalypse has no such setup requirement, making it the simpler of the two hero trees to pick up.",
   },
   statPriority = {
-    { stat = "primary", note = "Strength, passive" },
-    { stat = "haste" },
-    { stat = "mastery", note = "increases pet and disease damage" },
+    { stat = "primary" },
     { stat = "crit" },
+    { stat = "mastery" },
+    { stat = "haste" },
     { stat = "versatility" },
   },
   rotation = {

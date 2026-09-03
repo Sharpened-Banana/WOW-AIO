@@ -7,6 +7,11 @@ class guides, talent loadouts, and live character tracking in one place:
   stat priority, rotation priorities, cooldowns, consumables & enchants, and
   practical tips. Opens on your own spec, but you can read up on any class —
   teammates, enemies, or the alt you are levelling.
+- **Stat priority per hero talent tree** — the Stats tab shows your spec's
+  priority with your live values beside it, then Wowhead's own order for
+  *each* hero talent tree underneath, with their caveats ("Haste only to
+  roughly 800 rating", "Crit and Mastery are ranked equal") and a line saying
+  which page it came from and when, so you can see when it has gone stale.
 - **BiS & Gear** — per-spec gear guidance (what to look for in each slot),
   a sim-based **trinket tier list** per spec (S/A/B/C, single-target and
   3/5-target, every row a clickable item link), plus a personal best-in-slot

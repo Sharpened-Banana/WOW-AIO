@@ -79,9 +79,9 @@ ns.GuideStore:RegisterSpec("MAGE", 62, {
   },
   statPriority = {
     { stat = "primary" },
-    { stat = "crit" },
+    { stat = "haste" },
     { stat = "mastery" },
-    { stat = "haste", note = "to a comfortable breakpoint, then re-evaluate" },
+    { stat = "crit" },
     { stat = "versatility" },
   },
   rotation = {
@@ -172,11 +172,11 @@ ns.GuideStore:RegisterSpec("MAGE", 63, {
     "Bring Fire when you want a spec that shines in short, well-timed burst windows and cleave/AoE fights, and you're willing to manage Fire Blast charges tightly around Combustion.",
   },
   statPriority = {
-    { stat = "crit" },
     { stat = "primary" },
-    { stat = "mastery" },
     { stat = "haste" },
+    { stat = "mastery" },
     { stat = "versatility" },
+    { stat = "crit" },
   },
   rotation = {
     { title = "Opener", steps = {
@@ -265,8 +265,8 @@ ns.GuideStore:RegisterSpec("MAGE", 64, {
   },
   statPriority = {
     { stat = "primary" },
-    { stat = "crit" },
     { stat = "mastery" },
+    { stat = "crit" },
     { stat = "haste" },
     { stat = "versatility" },
   },

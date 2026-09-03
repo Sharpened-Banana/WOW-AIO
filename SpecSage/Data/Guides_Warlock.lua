@@ -94,10 +94,10 @@ ns.GuideStore:RegisterSpec("WARLOCK", 265, {
   },
   statPriority = {
     { stat = "primary" },
-    { stat = "haste", note = "smooths dot ticks and shard generation" },
-    { stat = "mastery" },
+    { stat = "haste" },
     { stat = "crit" },
     { stat = "versatility" },
+    { stat = "mastery" },
   },
   rotation = {
     { title = "Opener", steps = {
@@ -193,8 +193,8 @@ ns.GuideStore:RegisterSpec("WARLOCK", 266, {
   statPriority = {
     { stat = "primary" },
     { stat = "haste" },
-    { stat = "mastery" },
     { stat = "crit" },
+    { stat = "mastery" },
     { stat = "versatility" },
   },
   rotation = {
@@ -288,9 +288,9 @@ ns.GuideStore:RegisterSpec("WARLOCK", 267, {
   },
   statPriority = {
     { stat = "primary" },
-    { stat = "crit" },
     { stat = "haste" },
     { stat = "mastery" },
+    { stat = "crit" },
     { stat = "versatility" },
   },
   rotation = {

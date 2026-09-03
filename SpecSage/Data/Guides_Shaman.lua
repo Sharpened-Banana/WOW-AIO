@@ -68,11 +68,11 @@ ns.GuideStore:RegisterSpec("SHAMAN", 262, {
     "Elemental brings strong single-target damage and big-pull AoE via Earthquake and Chain Lightning, useful raid utility (Bloodlust, Hex), and burst through Storm Elemental/Fire Elemental-style cooldowns — though recent tuning nerfed those cooldowns, so damage is flatter across a fight than it used to be. It's noticeably weaker on small 2-3 target cleave than at pure single target or full-pull AoE, so weigh that when a fight sits in that awkward middle ground.",
   },
   statPriority = {
-    { stat = "primary", note = "Intellect, passive" },
-    { stat = "haste" },
     { stat = "mastery" },
+    { stat = "haste" },
     { stat = "crit" },
     { stat = "versatility" },
+    { stat = "primary" },
   },
   rotation = {
     { title = "Opener", steps = {
@@ -175,10 +175,10 @@ ns.GuideStore:RegisterSpec("SHAMAN", 263, {
     "Enhancement brings strong burst through Feral Spirit and Doom Winds-style cooldowns, solid AoE via Chain Lightning and Crash Lightning, and good self-sufficiency, making it a strong pick for fights that reward burst windows and consistent melee uptime. The Stormbringer hero talent in particular shines on 5-6 target packs, while Totemic plays a steadier totem-support game.",
   },
   statPriority = {
-    { stat = "primary", note = "Agility, passive" },
-    { stat = "haste" },
-    { stat = "mastery" },
+    { stat = "primary" },
     { stat = "crit" },
+    { stat = "mastery" },
+    { stat = "haste" },
     { stat = "versatility" },
   },
   rotation = {
@@ -280,11 +280,11 @@ ns.GuideStore:RegisterSpec("SHAMAN", 264, {
     "The two hero talent trees play differently: Totemic routes healing through your totems, with Surging Totem producing a Healing Rain effect without a cast; Farseer summons Ancestors that add extra cast-time healing. In 12.1 Farseer's Ancestors' Chain Heal was buffed. Restoration brings strong AoE healing through Healing Rain and Chain Heal, useful raid utility (Bloodlust, Tremor Totem), and solid single-target throughput.",
   },
   statPriority = {
-    { stat = "primary", note = "Intellect, passive" },
+    { stat = "primary" },
     { stat = "crit" },
     { stat = "haste" },
-    { stat = "mastery" },
     { stat = "versatility" },
+    { stat = "mastery" },
   },
   rotation = {
     { title = "Pre-Pull", steps = {

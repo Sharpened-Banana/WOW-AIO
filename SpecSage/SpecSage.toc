@@ -28,6 +28,7 @@ Data\Guides_Evoker.lua
 Data\Trinkets.lua
 Data\BiS.lua
 Data\SiteLoadouts.lua
+Data\StatPriority.lua
 UI\Overlay.lua
 UI\Tooltips.lua
 UI\Codex.lua

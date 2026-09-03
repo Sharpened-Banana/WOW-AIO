@@ -381,6 +381,59 @@ function GuideStore:GetBiS(specID)
     return bisLists[specID]
 end
 
+-- Wowhead stat priorities (v1.6, generated Data/StatPriority.lua):
+-- { source, url, patch, heroSplit, lists = { { title, note, list = { { stat },
+-- ... } }, ... } }. One list per hero talent tree (or, where Wowhead splits on
+-- something else, one per split with both hero trees named in the title).
+-- Kept apart from the guide's own flat `statPriority` for the same reason the
+-- BiS lists are: a regenerated site list never touches a hand-written guide,
+-- and Modules/ItemRanks.lua keeps ranking items off the one order the guide
+-- itself commits to.
+local statPriorities = {}
+
+local function ValidateStatPriorityData(data)
+    if type(data) ~= "table" then return false, "statPriority data must be a table" end
+    if type(data.lists) ~= "table" or #data.lists == 0 then
+        return false, "statPriority.lists must be a non-empty array"
+    end
+    for listIndex, listEntry in ipairs(data.lists) do
+        if type(listEntry) ~= "table" or type(listEntry.title) ~= "string" or listEntry.title == "" then
+            return false, format("statPriority.lists[%d] must have a title", listIndex)
+        end
+        if listEntry.note ~= nil and type(listEntry.note) ~= "string" then
+            return false, format("statPriority.lists[%d].note must be a string when present", listIndex)
+        end
+        if type(listEntry.list) ~= "table" or #listEntry.list == 0 then
+            return false, format("statPriority.lists[%d].list must be a non-empty array", listIndex)
+        end
+        -- Same per-entry check the guides' own flat list goes through, so
+        -- the two can never drift into different vocabularies.
+        local ok, err = ValidateStatPriority(listEntry.list)
+        if not ok then
+            return false, format("statPriority.lists[%d]: %s", listIndex, err)
+        end
+    end
+    return true
+end
+
+function GuideStore:RegisterStatPriority(specID, data)
+    if type(specID) ~= "number" then
+        ns.Print(format("|cffff4444stat priority rejected|r (spec=%s): specID must be a number", tostring(specID)))
+        return false
+    end
+    local ok, err = ValidateStatPriorityData(data)
+    if not ok then
+        ns.Print(format("|cffff4444stat priority rejected|r (spec=%s): %s", tostring(specID), err))
+        return false
+    end
+    statPriorities[specID] = data
+    return true
+end
+
+function GuideStore:GetStatPriority(specID)
+    return statPriorities[specID]
+end
+
 -- Guide-site talent builds (v1.5, generated Data/SiteLoadouts.lua):
 -- { source, patch, builds = { { label, string }, ... } }, each string an
 -- exact Blizzard export string. Kept apart from the guide's own

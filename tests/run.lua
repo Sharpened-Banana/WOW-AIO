@@ -51,6 +51,7 @@ local FILES = {
     "Data\\Trinkets.lua",
     "Data\\BiS.lua",
     "Data\\SiteLoadouts.lua",
+    "Data\\StatPriority.lua",
     "UI\\Overlay.lua",
     "UI\\Tooltips.lua",
     "UI\\Codex.lua",
@@ -1978,6 +1979,149 @@ for _, tabName in ipairs(TAB_NAMES) do
 end
 
 --------------------------------------------------------------------------------
+section("Stat priority: Wowhead per-hero-tree lists (v1.6)")
+--------------------------------------------------------------------------------
+
+-- Data/StatPriority.lua registers one table per spec, one list per hero
+-- talent tree (or, where Wowhead splits on something else, one per split
+-- with both hero trees named in the title). Every spec the guide files
+-- register must have one, and every list must use the same statPriority
+-- vocabulary Data/API.lua validates the guides' own flat list against.
+do
+    local VALID = {
+        primary = true, crit = true, haste = true, mastery = true, versatility = true,
+        leech = true, avoidance = true, speed = true, armor = true, stamina = true,
+    }
+    -- Earlier sections register throwaway specs of their own (9xxx); only
+    -- the 40 real ones ship stat data.
+    local function IsShippedSpec(specID) return specID < 9000 end
+    local specCount, missing, badStat, tooFewLists = 0, {}, {}, {}
+    for _, classEntry in ipairs(ns.GuideStore:GetClasses()) do
+        for _, specID in ipairs(ns.GuideStore:GetClassSpecs(classEntry.token) or {}) do
+          if IsShippedSpec(specID) then
+            specCount = specCount + 1
+            local data = ns.GuideStore:GetStatPriority(specID)
+            if not data then
+                missing[#missing + 1] = specID
+            else
+                if #data.lists < 2 then tooFewLists[#tooFewLists + 1] = specID end
+                for _, listEntry in ipairs(data.lists) do
+                    for _, entry in ipairs(listEntry.list) do
+                        if not VALID[entry.stat] then
+                            badStat[#badStat + 1] = specID .. ":" .. tostring(entry.stat)
+                        end
+                    end
+                end
+            end
+          end
+        end
+    end
+    check(specCount == 40, "all 40 specs are registered", specCount)
+    check(#missing == 0, "every spec has a Wowhead stat priority registered", table.concat(missing, ","))
+    check(#tooFewLists == 0, "every spec carries a list per hero talent tree, not just one",
+        table.concat(tooFewLists, ","))
+    check(#badStat == 0, "every stat key is in the Data/API.lua vocabulary", table.concat(badStat, ","))
+
+    -- Arcane (62) is the worked example in DESIGN.md: Wowhead's two hero
+    -- trees genuinely disagree below Haste, so the two lists must differ.
+    local arcane = ns.GuideStore:GetStatPriority(62)
+    check(arcane and arcane.lists[1].title == "Spellslinger" and arcane.lists[2].title == "Sunfury",
+        "Arcane's lists are titled after its two hero talent trees")
+    check(arcane and arcane.lists[1].list[3].stat == "mastery" and arcane.lists[2].list[3].stat == "versatility",
+        "Spellslinger and Sunfury diverge below Haste, as Wowhead has them")
+    check(arcane and arcane.source and arcane.source:find("Wowhead", 1, true) ~= nil,
+        "the table carries a Wowhead attribution line the Codex can show", arcane and arcane.source)
+    check(arcane and arcane.url and arcane.url:find("wowhead.com", 1, true) ~= nil,
+        "the table records the page it was read from", arcane and arcane.url)
+
+    -- The guide's own flat statPriority - the one Modules/ItemRanks.lua
+    -- ranks items against - must agree with the first Wowhead list rather
+    -- than drifting away from it.
+    local mismatched = {}
+    for _, classEntry in ipairs(ns.GuideStore:GetClasses()) do
+        for _, specID in ipairs(ns.GuideStore:GetClassSpecs(classEntry.token) or {}) do
+            local guide = IsShippedSpec(specID) and ns.GuideStore:GetGuide(specID) or nil
+            local data = ns.GuideStore:GetStatPriority(specID)
+            local flat, first = guide and guide.statPriority, data and data.lists[1].list
+            if flat and first then
+                if #flat ~= #first then
+                    mismatched[#mismatched + 1] = tostring(specID)
+                else
+                    for i = 1, #flat do
+                        if flat[i].stat ~= first[i].stat then
+                            mismatched[#mismatched + 1] = tostring(specID)
+                            break
+                        end
+                    end
+                end
+            end
+        end
+    end
+    check(#mismatched == 0, "each guide's flat statPriority matches its first Wowhead list",
+        table.concat(mismatched, ","))
+
+    -- A bad registration is rejected with a printed reason, not stored.
+    check(ns.GuideStore:RegisterStatPriority(999901, { lists = {} }) == false,
+        "an empty lists array is rejected")
+    check(ns.GuideStore:RegisterStatPriority(999901,
+        { lists = { { title = "X", list = { { stat = "nonsense" } } } } }) == false,
+        "an invalid stat key is rejected")
+    check(ns.GuideStore:RegisterStatPriority(999901,
+        { lists = { { list = { { stat = "haste" } } } } }) == false, "a list with no title is rejected")
+    check(ns.GuideStore:GetStatPriority(999901) == nil, "nothing rejected is left registered")
+    check(ns.GuideStore:RegisterStatPriority(999901,
+        { source = "test", lists = { { title = "X", note = "n", list = { { stat = "haste" } } } } }) == true,
+        "a well-formed table registers")
+    check(ns.GuideStore:GetStatPriority(999901) ~= nil, "and can be read back")
+end
+
+--------------------------------------------------------------------------------
+section("Codex: Stats tab renders the per-hero-tree lists (v1.6)")
+--------------------------------------------------------------------------------
+
+do
+    local function ShownText(pool)
+        local out = {}
+        for _, row in ipairs(pool) do
+            if row:IsShown() and row.text then out[#out + 1] = row.text:GetText() or "" end
+        end
+        return table.concat(out, "\n")
+    end
+
+    Codex:Open("MAGE", 62)
+    Codex:SelectTab("Stats")
+    local dump = ShownText(Codex.statLinePool)
+    check(dump:find("By Hero Talent Tree", 1, true) ~= nil, "the Stats tab has a hero-tree section", dump)
+    check(dump:find("Spellslinger: Primary Stat > Haste > Mastery > Crit > Versatility", 1, true) ~= nil,
+        "Spellslinger's order is spelled out in the Codex's own stat words", dump)
+    check(dump:find("Sunfury: Primary Stat > Haste > Versatility > Crit > Mastery", 1, true) ~= nil,
+        "Sunfury's order is listed separately", dump)
+    check(dump:find("Wowhead Arcane Mage stat priority guide", 1, true) ~= nil,
+        "the section is attributed to the Wowhead page it came from", dump)
+
+    -- A list's note (Wowhead's own caveat - a haste cap, a tie between two
+    -- stats) renders under it rather than being dropped.
+    Codex:Open("DEMONHUNTER", 1480)
+    Codex:SelectTab("Stats")
+    dump = ShownText(Codex.statLinePool)
+    check(dump:find("Void-Scarred:", 1, true) ~= nil, "Devourer lists its Void-Scarred order", dump)
+    check(dump:find("800 rating", 1, true) ~= nil, "Wowhead's haste-cap caveat rides along as a note", dump)
+
+    -- Leaving the tab hides the rows, the same contract every other tab's
+    -- own row pool has (HideOtherTabWidgets).
+    Codex:SelectTab("Rotation")
+    local shown = 0
+    for _, row in ipairs(Codex.statLinePool) do
+        if row:IsShown() then shown = shown + 1 end
+    end
+    check(shown == 0, "leaving the Stats tab hides the hero-tree rows", shown)
+
+    -- A spec with no stat priority registered still renders the tab.
+    Codex:Open("WARRIOR", 424242)
+    check(pcall(function() Codex:SelectTab("Stats") end), "the Stats tab renders for a spec with no stat data")
+end
+
+--------------------------------------------------------------------------------
 section("Codex: BiS tab")
 --------------------------------------------------------------------------------
 
@@ -2950,9 +3094,11 @@ do
     check(ItemRanks.hooked == "TooltipDataProcessor", "ItemRanks hooks through TooltipDataProcessor when it exists", ItemRanks.hooked)
     check(ns.db.itemStatRanks == true, "stat ranks default to on")
 
-    -- The player is Unholy (252): haste, mastery, crit, versatility.
+    -- The player is Unholy (252). Its statPriority follows Wowhead's order
+    -- for the spec (Data/StatPriority.lua's source line): crit, mastery,
+    -- haste, versatility once the primary stat is dropped.
     local ranks, count = ItemRanks:GetRankTable(252)
-    check(ranks and ranks.haste == 1 and ranks.versatility == 4 and count == 4,
+    check(ranks and ranks.crit == 1 and ranks.haste == 3 and ranks.versatility == 4 and count == 4,
         "GetRankTable ranks only the secondary stats, primary excluded", ranks and ranks.haste)
     check(ItemRanks:GetRankTable(9999) == nil, "GetRankTable returns nil for a spec with no guide")
 
@@ -2962,7 +3108,7 @@ do
 
     local lines = ItemRanks:Describe("item:880001", 252)
     check(lines and #lines == 2, "Describe returns one line per ranked stat on the item", lines and #lines)
-    check(lines and lines[1].stat == "haste" and lines[1].rank == 1, "the best-ranked stat comes first")
+    check(lines and lines[1].stat == "haste" and lines[1].rank == 3, "the best-ranked stat on the item comes first")
     check(lines and lines[2].stat == "versatility" and lines[2].rank == 4, "versatility ranks #4 for Unholy")
     check(ItemRanks:Describe("item:880002", 252) == nil, "an item with no secondary stats yields nothing")
 
@@ -2974,7 +3120,7 @@ do
     -- mock's Dump renders a line as "left=right"), not in a summary
     -- underneath, and not appended to the left text where they would sit at
     -- a different offset on every line.
-    check(dump:match("%+512 Haste=|cff%x+#1|r") ~= nil, "the Haste line's right column gains its #1 rank", dump)
+    check(dump:match("%+512 Haste=|cff%x+#3|r") ~= nil, "the Haste line's right column gains its #3 rank", dump)
     check(dump:match("%+380 Versatility=|cff%x+#4|r") ~= nil, "the Versatility line's right column gains its #4 rank", dump)
     check(dump:find("+512 Haste  ", 1, true) == nil, "the left text is not appended to when the right column is free", dump)
     check(GameTooltip.lines[2].rightShown or GameTooltip.lines[3].rightShown, "the right column FontString is shown")
@@ -2987,7 +3133,7 @@ do
     for _, line in ipairs(GameTooltip.lines) do line.right = "taken" end
     ItemRanks:Annotate(GameTooltip, "item:880001")
     local busy = table.concat(GameTooltip:Dump(), "\n")
-    check(busy:match("%+512 Haste  |cff%x+#1|r=taken") ~= nil,
+    check(busy:match("%+512 Haste  |cff%x+#3|r=taken") ~= nil,
         "a line whose right column is occupied gets the rank appended to its left text instead", busy)
     GameTooltip:SetOwner(nil, "ANCHOR_NONE")
     mock.FireTooltipItem(GameTooltip, 880001)
@@ -2999,7 +3145,7 @@ do
     -- more than once) does not double-annotate a line.
     ItemRanks:Annotate(GameTooltip, "item:880001")
     dump = table.concat(GameTooltip:Dump(), "\n")
-    check(select(2, dump:gsub("#1|r", "")) == 1, "re-annotating does not stack a second rank onto the line", dump)
+    check(select(2, dump:gsub("#3|r", "")) == 1, "re-annotating does not stack a second rank onto the line", dump)
 
     -- A tooltip whose lines cannot be reached (no name) falls back to the
     -- summary line.
@@ -3010,8 +3156,8 @@ do
     ItemRanks:Annotate(anon, "item:880001")
     dump = table.concat(anon:Dump(), "\n")
     check(dump:find("SpecSage stat ranks (Unholy):", 1, true) ~= nil, "an unnamed tooltip gets the summary header instead", dump)
-    check(dump:find("Haste #1 of 4", 1, true) ~= nil and dump:find("Versatility #4 of 4", 1, true) ~= nil,
-        "the summary lists Haste #1 of 4 and Versatility #4 of 4", dump)
+    check(dump:find("Haste #3 of 4", 1, true) ~= nil and dump:find("Versatility #4 of 4", 1, true) ~= nil,
+        "the summary lists Haste #3 of 4 and Versatility #4 of 4", dump)
 
     GameTooltip:SetOwner(nil, "ANCHOR_NONE")
     mock.FireTooltipItem(GameTooltip, 880002)

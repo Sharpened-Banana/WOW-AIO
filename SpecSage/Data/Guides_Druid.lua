@@ -74,8 +74,8 @@ ns.GuideStore:RegisterSpec("DRUID", 102, {
   },
   statPriority = {
     { stat = "primary" },
-    { stat = "haste" },
     { stat = "mastery" },
+    { stat = "haste" },
     { stat = "crit" },
     { stat = "versatility" },
   },
@@ -173,10 +173,10 @@ ns.GuideStore:RegisterSpec("DRUID", 103, {
   },
   statPriority = {
     { stat = "primary" },
-    { stat = "crit" },
     { stat = "mastery" },
-    { stat = "versatility" },
     { stat = "haste" },
+    { stat = "crit" },
+    { stat = "versatility" },
   },
   rotation = {
     { title = "Opener", steps = {
@@ -277,12 +277,11 @@ ns.GuideStore:RegisterSpec("DRUID", 104, {
     "Bring Guardian when you want a tank with high physical damage mitigation, strong self-healing through Frenzied Regeneration and Ursine Vigor-style passives, and solid AoE threat via Thrash and Swipe. Its hero talents change less than most specs': Druid of the Claw adds Ravage procs to consume on top of the core Mangle/Thrash loop, while Elune's Chosen leans on Lunar Beam uptime instead — both are viable with little rotational difference between them.",
   },
   statPriority = {
-    { stat = "stamina" },
     { stat = "primary" },
-    { stat = "versatility" },
-    { stat = "mastery" },
     { stat = "haste" },
+    { stat = "versatility" },
     { stat = "crit" },
+    { stat = "mastery" },
   },
   rotation = {
     { title = "Opener", steps = {
@@ -398,10 +397,10 @@ ns.GuideStore:RegisterSpec("DRUID", 105, {
   },
   statPriority = {
     { stat = "primary" },
-    { stat = "haste", note = "smooths HoT ticks and cast times" },
+    { stat = "haste" },
     { stat = "mastery" },
-    { stat = "crit" },
     { stat = "versatility" },
+    { stat = "crit" },
   },
   rotation = {
     { title = "Priorities", steps = {

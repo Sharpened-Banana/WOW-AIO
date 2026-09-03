@@ -8,7 +8,7 @@
 -- each site's editorial BiS at the time the script ran - it goes stale every
 -- patch, and the Codex says so - not a claim of the single best item for
 -- your character. See DESIGN.md's "Linked BiS lists".
--- Generated: 2026-09-02 20:07 UTC
+-- Generated: 2026-09-03 17:53 UTC
 
 local ADDON, ns = ...
 if not ns.GuideStore then return end
@@ -1606,7 +1606,7 @@ ns.GuideStore:RegisterBiS(263, {
 
 -- SHAMAN 264 (restoration-shaman)
 ns.GuideStore:RegisterBiS(264, {
-  source = "Icy Veins Restoration Shaman gear guide, updated Aug 26, 2026 - 4:20 PM; Wowhead Restoration Shaman gear guide, updated 2026/08/26",
+  source = "Icy Veins Restoration Shaman gear guide, updated Sep 2, 2026 - 2:20 PM; Wowhead Restoration Shaman gear guide, updated 2026/08/26",
   patch = "12.1",
   lists = {
     { title = "Icy Veins Overall", list = {
@@ -1618,7 +1618,7 @@ ns.GuideStore:RegisterBiS(264, {
       { slot = "Legs", itemID = 271482, name = "Leggings of the Ophidian Oracle", from = "Catalyst on the item from Temple of Sethraliss" },
       { slot = "Back", itemID = 268248, name = "Amani Summoning Shawl", from = "Nek'zali the Soulcoiler" },
       { slot = "Feet", itemID = 244577, name = "Farstrider's Razor Talons", from = "Crafted by Leatherworking" },
-      { slot = "Chest", itemID = 271486, name = "Fanged Raiment of the Ophidian Oracle", from = "Catalyst on the chest from Ula'tek" },
+      { slot = "Chest", itemID = 271486, name = "Fanged Raiment of the Ophidian Oracle", from = "Catalyst on the chest from King's Rest" },
       { slot = "Ring", itemID = 251136, name = "Signet of Snarling Servitude", from = "Murder Row" },
       { slot = "Ring", itemID = 268252, name = "Apex Brute's Claw Ring", from = "Sszorak" },
       { slot = "Trinket", itemID = 270162, name = "Soulcoiler Ritual Vessel", from = "Nek'zali the Soulcoiler" },
@@ -1850,15 +1850,15 @@ ns.GuideStore:RegisterBiS(64, {
   patch = "12.1",
   lists = {
     { title = "Icy Veins Overall", list = {
-      { slot = "Head", itemID = 271874, name = "Venomkeeper's Horrific Cowl", from = "Ula'tek" },
-      { slot = "Hands", itemID = 268243, name = "Grasps of the Eternal Shadow", from = "Coiled Altar" },
+      { slot = "Head", itemID = 271564, name = "Crown of the Primal Leywarden", from = "Catalyst from Ula'tek" },
+      { slot = "Hands", itemID = 271565, name = "Primal Leywarden's Manashapers", from = "Coiled Altar" },
       { slot = "Neck", itemID = 268265, name = "Aqirbane Reliquary", from = "Ula'tek" },
       { slot = "Waist", itemID = 239649, name = "Martyr's Waistwrap", from = "Crafted by Tailoring" },
-      { slot = "Shoulder", itemID = 239031, name = "Brood Cleanser's Amice", from = "Temple of Sethraliss" },
+      { slot = "Shoulder", itemID = 271562, name = "Primal Leywarden's Manaflux", from = "Catalyst from Temple of Sethraliss" },
       { slot = "Legs", itemID = 159234, name = "Down-Lined Breeches", from = "King's Rest" },
       { slot = "Back", itemID = 268253, name = "Silken Voodoo Drape", from = "Coiled Altar" },
       { slot = "Feet", itemID = 268255, name = "Cackling Soultreads", from = "Coiled Altar" },
-      { slot = "Chest", itemID = 273785, name = "Primordial Robe of Rites", from = "Altar of Fangs" },
+      { slot = "Chest", itemID = 271567, name = "Crest of the Primal Leywarden", from = "Catalyst from Altar of Fangs" },
       { slot = "Ring", itemID = 158366, name = "Charged Sandstone Band", from = "Temple of Sethraliss" },
       { slot = "Ring", itemID = 268249, name = "Vile Alchemist's Band", from = "Vashnik" },
       { slot = "Trinket", itemID = 270164, name = "Gebbo's Bottomless Bag", from = "Lost Explorers" },
@@ -1868,15 +1868,15 @@ ns.GuideStore:RegisterBiS(64, {
       { slot = "Off-hand", itemID = 245769, name = "Aln'hara Lantern", from = "Crafted by Inscription" },
     }},
     { title = "Icy Veins Mythic+", list = {
-      { slot = "Head", itemID = 251199, name = "Worldroot Canopy", from = "Blinding Vale" },
-      { slot = "Hands", itemID = 159247, name = "Handwraps of Oscillating Polarity", from = "Temple of Sethraliss" },
+      { slot = "Head", itemID = 271564, name = "Crown of the Primal Leywarden", from = "Catalyst from Blinding Vale" },
+      { slot = "Hands", itemID = 271565, name = "Primal Leywarden's Manashapers", from = "Temple of Sethraliss" },
       { slot = "Neck", itemID = 251234, name = "Graft of the Domanaar", from = "Voidscar Arena" },
       { slot = "Waist", itemID = 239649, name = "Martyr's Waistwrap", from = "Crafted by Tailoring" },
-      { slot = "Shoulder", itemID = 239031, name = "Brood Cleanser's Amice", from = "Temple of Sethraliss" },
+      { slot = "Shoulder", itemID = 271562, name = "Primal Leywarden's Manaflux", from = "Catalyst from Temple of Sethraliss" },
       { slot = "Legs", itemID = 193750, name = "Wind Soarer's Breeches", from = "Ruby Life Pools" },
       { slot = "Back", itemID = 251190, name = "Bloodthorn Burnous", from = "Blinding Vale" },
       { slot = "Feet", itemID = 251137, name = "Tempestuous Sandals", from = "Murder Row" },
-      { slot = "Chest", itemID = 159257, name = "Robes of the Reborn Serpent", from = "Temple of Sethraliss" },
+      { slot = "Chest", itemID = 271567, name = "Crest of the Primal Leywarden", from = "Catalyst from Temple of Sethraliss" },
       { slot = "Ring", itemID = 252258, name = "Sickening Signet of Atroxus", from = "Voidscar Arena" },
       { slot = "Ring", itemID = 158366, name = "Charged Sandstone Band", from = "Temple of Sethraliss" },
       { slot = "Trinket", itemID = 273794, name = "Knot of Writhing Serpents", from = "Altar of Fangs" },
@@ -1886,8 +1886,8 @@ ns.GuideStore:RegisterBiS(64, {
       { slot = "Off-hand", itemID = 245769, name = "Aln'hara Lantern", from = "Crafted by Inscription" },
     }},
     { title = "Icy Veins Raid", list = {
-      { slot = "Head", itemID = 271874, name = "Venomkeeper's Horrific Cowl", from = "Ula'tek" },
-      { slot = "Hands", itemID = 268243, name = "Grasps of the Eternal Shadow", from = "Coiled Altar" },
+      { slot = "Head", itemID = 271564, name = "Crown of the Primal Leywarden", from = "Catalyst from Ula'tek" },
+      { slot = "Hands", itemID = 271565, name = "Primal Leywarden's Manashapers", from = "Catalyst from Coiled Altar" },
       { slot = "Neck", itemID = 268265, name = "Aqirbane Reliquary", from = "Ula'tek" },
       { slot = "Waist", itemID = 239649, name = "Martyr's Waistwrap", from = "Crafted by Tailoring" },
       { slot = "Shoulder", itemID = 271562, name = "Primal Leywarden's Manaflux", from = "Lost Explorers" },
@@ -1955,7 +1955,7 @@ ns.GuideStore:RegisterBiS(265, {
       { slot = "Shoulder", itemID = 271544, name = "Spires of the Damned Necrolyte", from = "Catalyst" },
       { slot = "Legs", itemID = 271545, name = "Damned Necrolyte's Leg Bindings", from = "Catalyst" },
       { slot = "Back", itemID = 251132, name = "Speakeasy Shroud", from = "Murder Row" },
-      { slot = "Feet", itemID = 268255, name = "Cackling Soultreads", from = "Coiled Altar" },
+      { slot = "Feet", itemID = 251137, name = "Tempestuous Sandals", from = "Murder Row" },
       { slot = "Chest", itemID = 271549, name = "Damned Necrolyte's Rattling Robes", from = "Catalyst" },
       { slot = "Ring", itemID = 273792, name = "Band of the Amani Warlord", from = "Altar of Fangs" },
       { slot = "Ring", itemID = 251136, name = "Signet of Snarling Servitude", from = "Murder Row" },
@@ -2035,7 +2035,7 @@ ns.GuideStore:RegisterBiS(266, {
       { slot = "Shoulder", itemID = 271544, name = "Spires of the Damned Necrolyte", from = "Catalyst" },
       { slot = "Legs", itemID = 271545, name = "Damned Necrolyte's Leg Bindings", from = "Catalyst" },
       { slot = "Back", itemID = 251132, name = "Speakeasy Shroud", from = "Murder Row" },
-      { slot = "Feet", itemID = 268255, name = "Cackling Soultreads", from = "Coiled Altar" },
+      { slot = "Feet", itemID = 251137, name = "Tempestuous Sandals", from = "Murder Row" },
       { slot = "Chest", itemID = 271549, name = "Damned Necrolyte's Rattling Robes", from = "Catalyst" },
       { slot = "Ring", itemID = 158366, name = "Charged Sandstone Band", from = "Temple of Sethraliss" },
       { slot = "Ring", itemID = 251136, name = "Signet of Snarling Servitude", from = "Murder Row" },
@@ -2115,7 +2115,7 @@ ns.GuideStore:RegisterBiS(267, {
       { slot = "Shoulder", itemID = 271544, name = "Spires of the Damned Necrolyte", from = "Catalyst" },
       { slot = "Legs", itemID = 271545, name = "Damned Necrolyte's Leg Bindings", from = "Catalyst" },
       { slot = "Back", itemID = 251132, name = "Speakeasy Shroud", from = "Murder Row" },
-      { slot = "Feet", itemID = 268255, name = "Cackling Soultreads", from = "Coiled Altar" },
+      { slot = "Feet", itemID = 251137, name = "Tempestuous Sandals", from = "Murder Row" },
       { slot = "Chest", itemID = 271549, name = "Damned Necrolyte's Rattling Robes", from = "Catalyst" },
       { slot = "Ring", itemID = 158366, name = "Charged Sandstone Band", from = "Temple of Sethraliss" },
       { slot = "Ring", itemID = 251136, name = "Signet of Snarling Servitude", from = "Murder Row" },

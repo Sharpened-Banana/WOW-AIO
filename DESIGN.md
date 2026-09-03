@@ -47,6 +47,7 @@ WOW-AIO/
     Modules/Notes.lua       per-spec personal notes
     Data/API.lua            guide-pack registration API (ns.GuideStore)
     Data/Guides_Warrior.lua ... one file per class (13 files)
+    Data/StatPriority.lua   generated: Wowhead stat priority per hero tree
   tests/
     wow_mock.lua            strict WoW API mock (Lua 5.1)
     run.lua                 test driver: loads the addon in toc order, asserts
@@ -110,7 +111,9 @@ A guide table:
   overview = { "paragraph 1", "paragraph 2" },   -- plain strings
   statPriority = {
     -- ordered; statKey matches Modules/Stats keys so the Codex can show
-    -- the player's live value beside it (only for the player's own class)
+    -- the player's live value beside it (only for the player's own class).
+    -- Kept in step with the spec's first Data/StatPriority.lua list; the
+    -- per-hero-tree orders live there, not here (see "Stat priority")
     { stat = "haste",   note = "to ~20%" },
     { stat = "mastery" },
     { stat = "crit" },
@@ -352,6 +355,60 @@ personal checklist under that slot via `BiS:Add`), the trinket tier list,
 then the personal checklist. As of 2026-09-02 all 40 specs have all three
 contexts. One guide (Discipline) repeats its block; the parser keeps the
 first list per title.
+
+## Stat priority (v1.6, Data/StatPriority.lua)
+
+A guide's own `statPriority` is one flat, ordered list per spec. That was
+always a simplification: since hero talents shipped, most specs have two
+meaningfully different stat orders, one per hero tree, and the shipped lists
+had drifted from what the sites actually recommend (Arcane, for one, shipped
+Crit/Mastery first while Wowhead has had Haste first all season).
+
+Wowhead publishes exactly the missing thing — a stat priority per hero
+talent tree on each spec's `stat-priority-pve-<role>` page. Roughly two
+thirds of those pages state it as a plain ordered list of stat names, which
+`tools/wowhead_harvest.js`'s `__harvestStats` reads straight off the page.
+The rest write it as free text inside the list items ("Mastery to 1200
+rating", "Haste (~700 Haste)", "Crit = Mastery") or as prose, and no parser
+should be trusted to turn that into a ranking on its own. So the committed
+source of truth is `tools/wowhead_stats.json` — the reviewed transcription
+of all 40 pages, with each record's page URL and Wowhead's own updated date
+— and `tools/fetch_stats.py` only turns that into Lua. `__harvestStats` is
+how you find which pages moved since; re-read those by hand.
+
+`Data/StatPriority.lua` registers one
+`RegisterStatPriority(specID, { source, url, patch, heroSplit, lists = { {
+title, note, list = { { stat } } } } })` per spec. Rules the data follows:
+
+- **One list per hero talent tree**, titled with the tree's name. Where
+  Wowhead splits on something else instead — a tank's survivability vs DPS
+  goal, a healer's raid vs Mythic+ content — the title names *both* hero
+  trees (`"Lightsmith / Templar - Survivability"`), so every hero spec is
+  covered explicitly rather than silently dropped. `heroSplit` records which
+  of the two shapes a record is.
+- **Anything Wowhead ranks that is not a character stat** — item level,
+  weapon damage — goes in the list's `note`, never invented into the order.
+  Ties ("Haste = Crit"), rating caps and content caveats live there too.
+- **Stat keys are the same vocabulary** `Data/API.lua` validates the guides'
+  flat `statPriority` against, and `RegisterStatPriority` runs each list
+  through the same `ValidateStatPriority`, so the two can never drift into
+  different vocabularies.
+
+The guides' own flat `statPriority` was rewritten this pass to match each
+spec's *first* Wowhead list, and a test asserts the two stay in agreement.
+That flat list is still what `Modules/ItemRanks.lua` ranks items against —
+tooltips rank a single item for a single character, and picking which hero
+tree the player is in is not something the addon reads today. It skips
+primary/stamina/armor entirely, so a spec whose Wowhead order puts Intellect
+last (Elemental) ranks its secondaries the same as any other.
+
+Codex Stats tab order: the flat priority as before (numbered, with the
+player's live value beside each row for their own spec), then a **By Hero
+Talent Tree** section — one wrapping row per list, `Title: A > B > C > D`,
+each note indented under it in the condition colour — then the Wowhead
+attribution line. The section draws into its own `Codex.statLinePool` rather
+than `pools.stats`: those are label/value stat rows that do not wrap, and a
+note like "Haste only to roughly 800 rating" has to.
 
 ## Guide-site talent builds (v1.5, Data/SiteLoadouts.lua)
 

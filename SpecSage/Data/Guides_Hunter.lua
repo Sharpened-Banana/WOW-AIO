@@ -72,9 +72,9 @@ ns.GuideStore:RegisterSpec("HUNTER", 253, {
     "Beast Mastery is a strong pick for fights requiring constant movement, cleave-light single target, and simple resource management, making it a common choice for Mythic+ and progression pulls with heavy mechanics.",
   },
   statPriority = {
-    { stat = "primary", note = "Agility, passive" },
+    { stat = "primary" },
+    { stat = "mastery" },
     { stat = "crit" },
-    { stat = "mastery", note = "boosts pet damage directly" },
     { stat = "haste" },
     { stat = "versatility" },
   },
@@ -165,11 +165,11 @@ ns.GuideStore:RegisterSpec("HUNTER", 254, {
     "Marksmanship brings strong burst windows under Trueshot, good execute-phase damage, and solid ranged utility (traps, Concussive Shot), making it a good pick for fights that reward burst windows and have some downtime to cast in.",
   },
   statPriority = {
-    { stat = "primary", note = "Agility, passive" },
+    { stat = "primary" },
     { stat = "crit" },
     { stat = "mastery" },
-    { stat = "haste", note = "smooths cast time on Aimed Shot" },
     { stat = "versatility" },
+    { stat = "haste" },
   },
   rotation = {
     { title = "Single Target", steps = {
@@ -258,10 +258,10 @@ ns.GuideStore:RegisterSpec("HUNTER", 255, {
     "Survival brings strong sustained single-target damage, useful AoE via Wildfire Bomb, and melee utility (Muzzle interrupt, traps), making it a solid pick for fights where melee positioning is viable and you want pet-assisted burst.",
   },
   statPriority = {
-    { stat = "primary", note = "Agility, passive" },
-    { stat = "haste" },
-    { stat = "crit" },
+    { stat = "primary" },
     { stat = "mastery" },
+    { stat = "crit" },
+    { stat = "haste" },
     { stat = "versatility" },
   },
   rotation = {

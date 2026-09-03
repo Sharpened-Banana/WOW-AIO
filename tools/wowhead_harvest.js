@@ -18,6 +18,15 @@
 //   3. document.body.innerHTML = '<pre>' + JSON.stringify(window.__ss) + '</pre>'
 //      and save the page text as tools/wowhead_dump.json
 //
+// window.__harvestStats(from, to) is the same thing for the stat-priority
+// pages, into window.__sp. It only reads the pages that state the priority as
+// a plain ordered list of stat names; roughly a third of them write it as
+// free text inside the list items ("Mastery to 1200 rating", "Haste (~700
+// Haste)", "Crit = Mastery") or as prose, and those come back with no lists at
+// all rather than a guessed ranking. tools/wowhead_stats.json is the reviewed
+// transcription of all 40 - use this to spot the pages that changed since,
+// then re-read those by hand.
+//
 // Each spec's record: { updated, talentUpdated, bis: [ { title, rows: [ [slot,
 // itemID, name, from], ... ] } ], tiers: [ { tier, items: [ [itemID, source],
 // ... ] } ], builds: [ [group, label, code], ... ], err: [...] }. Slot/name
@@ -124,4 +133,40 @@ window.__harvest = async function (from, to) {
     log.push(`${spec}:${rec.bis.map(b => b.rows.length).join('/') || 0}b ${rec.tiers.length}t ${rec.builds.length}c${rec.err.length ? ' ERR ' + rec.err.join(';') : ''}`);
   }
   return log.join(' | ');
+};
+
+window.__sp = window.__sp || {};
+
+// Per-hero-tree stat priorities: every [ol]/[ul] on a spec's stat-priority
+// page whose items are all bare stat names, labelled with the nearest [b]
+// before it (Wowhead's own "<Hero Tree> Stat Priority" caption).
+window.__harvestStats = async function (from, to) {
+  const un = s => s.replace(/\\"/g, '"').replace(/\\\//g, '/').replace(/\\r\\n|\\n|\\t/g, ' ');
+  const plain = s => s.replace(/\[[^\]]*\]/g, '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  const STAT = /^(intellect|strength|agility|primary stat|stamina|armor|critical strike|crit|haste|mastery|versatility|leech|avoidance|speed)$/i;
+  const log = [];
+  for (let k = from; k < to && k < window.__specs.length; k++) {
+    const [spec, cls, sp, role] = window.__specs[k];
+    const rec = { lists: [], err: [] };
+    try {
+      let resp = null;
+      for (const r of (role === 'healing' ? ['healer', 'healing'] : [role])) {
+        rec.url = `/guide/classes/${cls}/${sp}/stat-priority-pve-${r}`;
+        resp = await fetch(rec.url, { credentials: 'same-origin' });
+        if (resp.status === 200) break;
+      }
+      const raw = un(await resp.text());
+      rec.updated = (raw.match(/Updated:\s*(?:<[^>]*>\s*)?([\d\/]+)/) || [])[1] || null;
+      for (const m of raw.matchAll(/\[(ol|ul)\]([\s\S]*?)\[\/\1\]/g)) {
+        const items = [...m[2].matchAll(/\[li\]([\s\S]*?)\[\/li\]/g)].map(x => plain(x[1]));
+        if (items.length < 3 || !items.every(t => STAT.test(t))) continue;
+        const before = raw.slice(Math.max(0, m.index - 400), m.index);
+        const bm = [...before.matchAll(/\[b\]([\s\S]*?)\[\/b\]/g)].pop();
+        rec.lists.push({ label: bm ? plain(bm[1]).slice(0, 60) : '', stats: items });
+      }
+    } catch (e) { rec.err.push(String(e).slice(0, 80)); }
+    window.__sp[spec] = rec;
+    log.push(`${spec}:${rec.lists.length}${rec.err.length ? ' ERR' : ''}`);
+  }
+  return log.join(' ');
 };

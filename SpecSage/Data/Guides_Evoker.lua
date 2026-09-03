@@ -89,8 +89,8 @@ ns.GuideStore:RegisterSpec("EVOKER", 1467, {
   statPriority = {
     { stat = "primary" },
     { stat = "crit" },
-    { stat = "haste" },
     { stat = "mastery" },
+    { stat = "haste" },
     { stat = "versatility" },
   },
   rotation = {
@@ -199,9 +199,9 @@ ns.GuideStore:RegisterSpec("EVOKER", 1468, {
   },
   statPriority = {
     { stat = "primary" },
-    { stat = "haste", note = "smooths cast times and HoT ticks" },
-    { stat = "mastery" },
     { stat = "crit" },
+    { stat = "mastery" },
+    { stat = "haste" },
     { stat = "versatility" },
   },
   rotation = {
@@ -305,9 +305,9 @@ ns.GuideStore:RegisterSpec("EVOKER", 1473, {
   },
   statPriority = {
     { stat = "primary" },
+    { stat = "mastery" },
     { stat = "crit" },
     { stat = "haste" },
-    { stat = "mastery", note = "Mastery: Timewalker extends and retroactively applies your buffs — don't undervalue it versus a DPS spec's usual priorities" },
     { stat = "versatility" },
   },
   rotation = {

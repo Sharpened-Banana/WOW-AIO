@@ -14,10 +14,40 @@
 "quality": 4,
 "slot": "Trinket"
 },
+"158370": {
+"name": "Twin-Strike Polearm",
+"quality": 4,
+"slot": "Weapon"
+},
+"158373": {
+"name": "Resonating Crystal Scimitar",
+"quality": 4,
+"slot": "Weapon"
+},
 "158374": {
 "name": "Tiny Electromental in a Jar",
 "quality": 4,
 "slot": "Trinket"
+},
+"159234": {
+"name": "Down-Lined Breeches",
+"quality": 4,
+"slot": "Legs"
+},
+"159259": {
+"name": "Sandswept Sandals",
+"quality": 4,
+"slot": "Feet"
+},
+"159263": {
+"name": "Bindings of the Slithering Current",
+"quality": 4,
+"slot": "Wrist"
+},
+"159301": {
+"name": "Primal Dinomancer's Belt",
+"quality": 4,
+"slot": "Waist"
 },
 "159304": {
 "name": "Goldfeather Boots",
@@ -44,6 +74,26 @@
 "quality": 4,
 "slot": "Feet"
 },
+"159409": {
+"name": "Embalmer's Steadying Bracers",
+"quality": 4,
+"slot": "Wrist"
+},
+"159412": {
+"name": "Auric Puddle Stompers",
+"quality": 4,
+"slot": "Feet"
+},
+"159418": {
+"name": "Girdle of Pestilent Purification",
+"quality": 4,
+"slot": "Waist"
+},
+"159442": {
+"name": "Sand-Scoured Greatbelt",
+"quality": 4,
+"slot": "Waist"
+},
 "159459": {
 "name": "Ritual Binder's Ring",
 "quality": 4,
@@ -69,10 +119,20 @@
 "quality": 4,
 "slot": "Off-hand"
 },
+"160216": {
+"name": "Crackling Jade Kilij",
+"quality": 4,
+"slot": "Weapon"
+},
 "162544": {
 "name": "Jade Ophidian Band",
 "quality": 4,
 "slot": "Ring"
+},
+"193691": {
+"name": "Sky Saddle Cord",
+"quality": 4,
+"slot": "Waist"
 },
 "193701": {
 "name": "Algeth'ar Puzzle Box",
@@ -84,10 +144,25 @@
 "quality": 4,
 "slot": "Trinket"
 },
+"193750": {
+"name": "Wind Soarer's Breeches",
+"quality": 4,
+"slot": "Legs"
+},
+"193755": {
+"name": "Backdraft Cleaver",
+"quality": 4,
+"slot": "Weapon"
+},
 "193757": {
 "name": "Ruby Whelp Shell",
 "quality": 4,
 "slot": "Trinket"
+},
+"193761": {
+"name": "Chillworn's Infusion Staff",
+"quality": 4,
+"slot": "Weapon"
 },
 "193762": {
 "name": "Blazebinder's Hoof",
@@ -98,6 +173,11 @@
 "name": "Fireproof Drape",
 "quality": 4,
 "slot": "Back"
+},
+"193767": {
+"name": "Havoc Crusher",
+"quality": 4,
+"slot": "Weapon"
 },
 "230639": {
 "name": "Astral Gladiator's Insignia of Alacrity",
@@ -153,6 +233,16 @@
 "name": "Martyr's Waistwrap",
 "quality": 4,
 "slot": "Waist"
+},
+"239656": {
+"name": "Adherent's Silken Shroud",
+"quality": 4,
+"slot": "Back"
+},
+"240949": {
+"name": "Masterwork Sin'dorei Band",
+"quality": 4,
+"slot": "Ring"
 },
 "241340": {
 "name": "Magister's Alchemist Stone",
@@ -344,10 +434,25 @@
 "quality": 4,
 "slot": "Feet"
 },
+"251127": {
+"name": "Nibbling Armbands",
+"quality": 4,
+"slot": "Wrist"
+},
 "251132": {
 "name": "Speakeasy Shroud",
 "quality": 4,
 "slot": "Back"
+},
+"251133": {
+"name": "Overseer's Vambraces",
+"quality": 4,
+"slot": "Wrist"
+},
+"251134": {
+"name": "Xathuux's Cleave",
+"quality": 4,
+"slot": "Weapon"
 },
 "251135": {
 "name": "Fury-fletched Armlets",
@@ -359,25 +464,85 @@
 "quality": 4,
 "slot": "Ring"
 },
+"251137": {
+"name": "Tempestuous Sandals",
+"quality": 4,
+"slot": "Feet"
+},
 "251142": {
 "name": "Pendant of Malefic Fury",
 "quality": 4,
 "slot": "Neck"
+},
+"251143": {
+"name": "Grim Harvest Gloves",
+"quality": 4,
+"slot": "Weapon"
 },
 "251148": {
 "name": "Pilfered Precious Band",
 "quality": 4,
 "slot": "Ring"
 },
+"251149": {
+"name": "Victor's Flashfrozen Blade",
+"quality": 4,
+"slot": "Weapon"
+},
+"251150": {
+"name": "Tempest's Shelter",
+"quality": 4,
+"slot": "Off-hand"
+},
 "251153": {
 "name": "Arctic Explorer's Legwraps",
 "quality": 4,
 "slot": "Feet"
 },
+"251154": {
+"name": "Winter's Embrace Bracers",
+"quality": 4,
+"slot": "Wrist"
+},
+"251155": {
+"name": "Tribal Defender's Cord",
+"quality": 4,
+"slot": "Waist"
+},
+"251156": {
+"name": "Fallen Speaker's Staff",
+"quality": 4,
+"slot": "Weapon"
+},
 "251159": {
 "name": "War Trial Vestments",
 "quality": 4,
 "slot": "Chest"
+},
+"251173": {
+"name": "Yoke of the Charging Bear",
+"quality": 4,
+"slot": "Neck"
+},
+"251181": {
+"name": "Pruning Lance",
+"quality": 4,
+"slot": "Weapon"
+},
+"251183": {
+"name": "Rootwarden Wraps",
+"quality": 4,
+"slot": "Wrist"
+},
+"251185": {
+"name": "Lightblossom Cinch",
+"quality": 4,
+"slot": "Waist"
+},
+"251186": {
+"name": "Thorntalon Edge",
+"quality": 4,
+"slot": "Weapon"
 },
 "251189": {
 "name": "Rootwalker Harness",
@@ -389,10 +554,90 @@
 "quality": 4,
 "slot": "Back"
 },
+"251191": {
+"name": "Luminescent Sprout",
+"quality": 4,
+"slot": "Off-hand"
+},
+"251192": {
+"name": "Branch of Pride",
+"quality": 4,
+"slot": "Weapon"
+},
 "251194": {
 "name": "Lightwarden's Bind",
 "quality": 4,
 "slot": "Ring"
+},
+"251195": {
+"name": "Thorned Reply",
+"quality": 4,
+"slot": "Weapon"
+},
+"251196": {
+"name": "Teldrassil's Sacrifice",
+"quality": 4,
+"slot": "Off-hand"
+},
+"251197": {
+"name": "Thornspike Gauntlets",
+"quality": 4,
+"slot": "Hands"
+},
+"251199": {
+"name": "Worldroot Canopy",
+"quality": 4,
+"slot": "Head"
+},
+"251214": {
+"name": "Bonds of the Hash'ura",
+"quality": 4,
+"slot": "Hands"
+},
+"251218": {
+"name": "Taz'Rah's Cosmic Edge",
+"quality": 4,
+"slot": "Weapon"
+},
+"251219": {
+"name": "Riftworn Stompers",
+"quality": 4,
+"slot": "Feet"
+},
+"251222": {
+"name": "Ethereal Netherwrap",
+"quality": 4,
+"slot": "Waist"
+},
+"251223": {
+"name": "Somber Spaulders",
+"quality": 4,
+"slot": "Shoulder"
+},
+"251224": {
+"name": "Hulking Handaxe",
+"quality": 4,
+"slot": "Weapon"
+},
+"251228": {
+"name": "Behemoth Waistband",
+"quality": 4,
+"slot": "Waist"
+},
+"251230": {
+"name": "Charonic Crescent",
+"quality": 4,
+"slot": "Weapon"
+},
+"251232": {
+"name": "Overseer's Diadem",
+"quality": 4,
+"slot": "Head"
+},
+"251234": {
+"name": "Graft of the Domanaar",
+"quality": 4,
+"slot": "Neck"
 },
 "251487": {
 "name": "Prismatic Focusing Iris",
@@ -509,6 +754,11 @@
 "quality": 4,
 "slot": "Weapon"
 },
+"268204": {
+"name": "Ancient Construct's Venomshiv",
+"quality": 4,
+"slot": "Weapon"
+},
 "268207": {
 "name": "Caustic Repose Greatbow",
 "quality": 4,
@@ -526,6 +776,11 @@
 },
 "268213": {
 "name": "Maze-roa, Warlord's Fury",
+"quality": 4,
+"slot": "Weapon"
+},
+"268214": {
+"name": "Malignant Toothed Edge",
 "quality": 4,
 "slot": "Weapon"
 },
@@ -554,10 +809,20 @@
 "quality": 4,
 "slot": "Legs"
 },
+"268228": {
+"name": "Venom-Singed Cuffs",
+"quality": 4,
+"slot": "Wrist"
+},
 "268231": {
 "name": "Soulslither Spaulders",
 "quality": 4,
 "slot": "Shoulder"
+},
+"268232": {
+"name": "Cincture of the Abyssal Grotto",
+"quality": 4,
+"slot": "Waist"
 },
 "268233": {
 "name": "Ferocious Scaleboots",
@@ -573,6 +838,11 @@
 "name": "Vestment of the Awakening",
 "quality": 4,
 "slot": "Chest"
+},
+"268236": {
+"name": "Initiate's Sacrificial Tights",
+"quality": 4,
+"slot": "Legs"
 },
 "268239": {
 "name": "Shellbound Bracers",
@@ -669,6 +939,11 @@
 "quality": 4,
 "slot": "Off-hand"
 },
+"268264": {
+"name": "Ravenous Feaster's Fang",
+"quality": 4,
+"slot": "Weapon"
+},
 "268265": {
 "name": "Aqirbane Reliquary",
 "quality": 4,
@@ -764,6 +1039,11 @@
 "quality": 4,
 "slot": "Trinket"
 },
+"270930": {
+"name": "Tomb-Creeper's Claw",
+"quality": 4,
+"slot": "Weapon"
+},
 "271092": {
 "name": "Jan'thrazet, the Soul Fang",
 "quality": 4,
@@ -773,6 +1053,11 @@
 "name": "Zatha'tek, Breath of Corruption",
 "quality": 4,
 "slot": "Weapon"
+},
+"271444": {
+"name": "Pauldrons of the Forgotten Sacrifice",
+"quality": 4,
+"slot": "Shoulder"
 },
 "271454": {
 "name": "Raging Pauldrons of the Jade Warlord",
@@ -828,6 +1113,11 @@
 "name": "Baleful Grave-Knight's Gibbets",
 "quality": 4,
 "slot": "Shoulder"
+},
+"271473": {
+"name": "Baleful Grave-Knight's Greaves",
+"quality": 4,
+"slot": "Legs"
 },
 "271474": {
 "name": "Baleful Grave-Knight's Casque",
@@ -1089,6 +1379,16 @@
 "quality": 4,
 "slot": "Chest"
 },
+"271680": {
+"name": "Sinseared Repeater",
+"quality": 4,
+"slot": "Weapon"
+},
+"271681": {
+"name": "Perennial Frostbound Charm",
+"quality": 4,
+"slot": "Off-hand"
+},
 "271874": {
 "name": "Venomkeeper's Horrific Cowl",
 "quality": 4,
@@ -1114,15 +1414,50 @@
 "quality": 4,
 "slot": "Trinket"
 },
+"273775": {
+"name": "Hydra Scale Wristguards",
+"quality": 4,
+"slot": "Wrist"
+},
 "273777": {
 "name": "Poison-Proof Stompers",
 "quality": 4,
 "slot": "Feet"
 },
+"273778": {
+"name": "Polished Lightwood Channeler",
+"quality": 4,
+"slot": "Weapon"
+},
 "273779": {
 "name": "Nocuous Focal Fang",
 "quality": 4,
 "slot": "Off-hand"
+},
+"273780": {
+"name": "Venom-Etched Crescent",
+"quality": 4,
+"slot": "Weapon"
+},
+"273781": {
+"name": "Strand of Warding Fangs",
+"quality": 4,
+"slot": "Neck"
+},
+"273782": {
+"name": "Vile Writhefang Glaive",
+"quality": 4,
+"slot": "Weapon"
+},
+"273783": {
+"name": "Toxin-Coated Warstaff",
+"quality": 4,
+"slot": "Weapon"
+},
+"273791": {
+"name": "Spare Speaker's Hood",
+"quality": 4,
+"slot": "Head"
 },
 "273792": {
 "name": "Band of the Amani Warlord",
@@ -1183,6 +1518,11 @@
 "name": "Toxiferous Transfusion",
 "quality": 4,
 "slot": "Trinket"
+},
+"275070": {
+"name": "Sharpened Lightwood Slasher",
+"quality": 4,
+"slot": "Weapon"
 },
 "280091": {
 "name": "Latent Purifier",

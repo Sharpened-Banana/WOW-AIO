@@ -68,8 +68,8 @@ ns.GuideStore:RegisterSpec("DEMONHUNTER", 577, {
   statPriority = {
     { stat = "primary" },
     { stat = "crit" },
-    { stat = "haste" },
     { stat = "mastery" },
+    { stat = "haste" },
     { stat = "versatility" },
   },
   rotation = {
@@ -162,12 +162,12 @@ ns.GuideStore:RegisterSpec("DEMONHUNTER", 581, {
     "Bring Vengeance when you want a tank with strong self-sustain through Soul Cleave healing, good burst AoE threat via Spirit Bomb/Fel Devastation, and a scheduled mitigation cooldown (Demon Spikes) that's easy to weave into any rotation. Aldrachi Reaver plays around that Reaver's Glaive combo, while Annihilator instead builds Voidfall stacks that you spend at 3.",
   },
   statPriority = {
-    { stat = "stamina" },
     { stat = "primary" },
-    { stat = "versatility" },
-    { stat = "mastery" },
+    { stat = "stamina" },
     { stat = "haste" },
     { stat = "crit" },
+    { stat = "versatility" },
+    { stat = "mastery" },
   },
   rotation = {
     { title = "Opener", steps = {
@@ -299,8 +299,8 @@ ns.GuideStore:RegisterSpec("DEMONHUNTER", 1480, {
   },
   statPriority = {
     { stat = "primary" },
-    { stat = "mastery" },
     { stat = "haste" },
+    { stat = "mastery" },
     { stat = "crit" },
     { stat = "versatility" },
   },

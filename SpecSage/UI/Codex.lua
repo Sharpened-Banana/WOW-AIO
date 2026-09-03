@@ -749,6 +749,8 @@ end
 function Codex:RenderStats(guide, specID)
     local parent, width = self.scrollChild, CONTENT_WIDTH
     local pool = self.pools.stats
+    self.statLinePool = self.statLinePool or {}
+    local linePool = self.statLinePool
     local y, index = -PADDING, 0
 
     local priorities = guide and guide.statPriority
@@ -770,6 +772,45 @@ function Codex:RenderStats(guide, specID)
     end
 
     self:FinishPool(pool, index, y)
+
+    -- Wowhead's own per-hero-tree priorities (v1.6, generated
+    -- Data/StatPriority.lua). Drawn into a second, wrapping pool below the
+    -- rows above: these are ordered text, not live values, and a note like
+    -- "Haste only to roughly 800 rating" needs to wrap rather than clip.
+    y = y - GROUP_GAP
+    local lineIndex = 0
+    local data = specID and ns.GuideStore:GetStatPriority(specID)
+    if data and data.lists and #data.lists > 0 then
+        lineIndex = lineIndex + 1
+        y = PlaceLine(linePool, lineIndex, parent, y, width, "By Hero Talent Tree",
+            { color = HEADER_COLOR, isHeader = true })
+        for _, listEntry in ipairs(data.lists) do
+            local names = {}
+            for order, entry in ipairs(listEntry.list) do
+                names[order] = STAT_LABELS[entry.stat] or entry.stat
+            end
+            lineIndex = lineIndex + 1
+            y = PlaceLine(linePool, lineIndex, parent, y, width,
+                format("%s: %s", listEntry.title, table.concat(names, " > ")))
+            if listEntry.note then
+                lineIndex = lineIndex + 1
+                y = PlaceLine(linePool, lineIndex, parent, y, width, listEntry.note,
+                    { color = CONDITION_COLOR, indent = CONDITION_INDENT })
+            end
+        end
+        -- Same attribution contract the BiS lists carry: whose editorial
+        -- order this is, and when it was read, so a stale season is visible
+        -- on the tab rather than assumed to be current.
+        if data.source then
+            y = y - LINE_GAP
+            lineIndex = lineIndex + 1
+            y = PlaceLine(linePool, lineIndex, parent, y, width, data.source, { color = MUTED_COLOR })
+        end
+    end
+
+    HidePoolFrom(linePool, lineIndex + 1)
+    self.scrollChild:SetHeight(math.max(-y, 10))
+    pcall(self.scrollFrame.UpdateScrollChildRect, self.scrollFrame)
 end
 
 function Codex:RenderRotation(guide)
@@ -2309,6 +2350,10 @@ function Codex:HideOtherTabWidgets(activeTab)
         if self.bisListToggle then self.bisListToggle:Hide() end
     end
 
+    if activeTab ~= "Stats" and self.statLinePool then
+        HidePoolFrom(self.statLinePool, 1)
+    end
+
     if activeTab ~= "Loadouts" then
         if self.loadoutButtons then
             self.loadoutButtons.save:Hide()
@@ -2668,6 +2713,9 @@ function Codex:BuildContentArea()
     self.scrollFrame = scrollFrame
     self.scrollChild = scrollChild
     self.pools = { overview = {}, stats = {}, rotation = {}, cooldowns = {}, consumables = {}, bis = {}, options = {} }
+    -- Stats tab's second, wrapping pool: the per-hero-tree priorities and
+    -- their notes, which are text rows rather than label/value stat rows.
+    self.statLinePool = {}
 end
 
 function Codex:BuildFrame()

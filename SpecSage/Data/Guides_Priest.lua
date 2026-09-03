@@ -65,10 +65,10 @@ ns.GuideStore:RegisterSpec("PRIEST", 256, {
     "Oracle's Penance changes (extra charge, overheal protection) and Voidweaver's Entropic Rift / Void Blast are the two hero talent paths. Entropic Rift's damage was buffed in 12.1; Void Blast is channeled, so it requires standing still. Voidweaver also adds Void Shield, which applies Atonement to three allies in one cast, and can summon a Voidwraith in place of Shadowfiend. Discipline brings strong damage-mitigation-as-healing through Power Word: Shield and Pain Suppression, solid raid cooldowns, and a unique playstyle that rewards good raid-damage prediction.",
   },
   statPriority = {
-    { stat = "primary", note = "Intellect, passive" },
-    { stat = "crit" },
+    { stat = "primary" },
     { stat = "haste" },
-    { stat = "mastery", note = "increases Atonement healing" },
+    { stat = "mastery" },
+    { stat = "crit" },
     { stat = "versatility" },
   },
   rotation = {
@@ -162,11 +162,11 @@ ns.GuideStore:RegisterSpec("PRIEST", 257, {
     "Oracle and Archon are the two hero talent paths. Oracle's healing was tuned up in 12.1. Archon builds around empowering Halo, with Spiritwell as a follow-up piece of that same kit. Holy Priest brings excellent raid-wide AoE healing, strong cooldowns (Apotheosis, Divine Hymn), and useful utility (Mass Dispel, Leap of Faith).",
   },
   statPriority = {
-    { stat = "primary", note = "Intellect, passive" },
+    { stat = "primary" },
+    { stat = "versatility" },
     { stat = "crit" },
     { stat = "haste" },
-    { stat = "mastery", note = "boosts Echo of Light-style residual healing" },
-    { stat = "versatility" },
+    { stat = "mastery" },
   },
   rotation = {
     { title = "Priorities", steps = {
@@ -249,8 +249,8 @@ ns.GuideStore:RegisterSpec("PRIEST", 258, {
     "Shadow Priest brings strong DoT-based cleave and AoE through Tentacle Slam, useful raid utility (Mass Dispel, Fade), and solid execute-independent scaling, making it a good pick for fights with multiple DoT-friendly targets or sustained add phases.",
   },
   statPriority = {
-    { stat = "primary", note = "Intellect, passive" },
-    { stat = "haste", note = "faster DoT ticks and Insanity generation" },
+    { stat = "primary" },
+    { stat = "haste" },
     { stat = "mastery" },
     { stat = "crit" },
     { stat = "versatility" },
