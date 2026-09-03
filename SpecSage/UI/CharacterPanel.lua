@@ -7,18 +7,24 @@
 -- picked up - so this puts the same data there, anchored to CharacterFrame's
 -- right edge and following it open and closed.
 --
--- Two halves, both about the slot in front of you:
---   * Stat Priority - the spec's order with the player's live rating beside
---     each stat, then Wowhead's per-hero-tree orders under it.
---   * BiS: <Slot>   - the guide's item(s) for whichever paper doll slot the
---     mouse last touched, with an equipped/owned/missing tag.
+-- It shows everything the Codex window does. A tab strip does not fit a
+-- panel this narrow - nine tab buttons need roughly twice its width - so the
+-- section is picked from a dropdown instead, and the panel renders one
+-- section at a time down a single column.
 --
--- Data comes from the same GuideStore this addon's Codex reads; nothing here
--- owns guide content. Rendering deliberately mirrors UI/Codex.lua's row
--- pooling rather than sharing it: the Codex's pools live on its own frame
--- and are sized to its layout, and threading a second parent through every
--- one of its Render* paths would couple two windows that only happen to draw
--- similar rows today.
+-- Sections are the Codex's own tabs plus one of this panel's own:
+--   * Gear  - the spec's stat priority with the player's live rating beside
+--     each stat, Wowhead's per-hero-tree orders, and the guide's item(s) for
+--     whichever paper doll slot the mouse last touched. The one view that
+--     only makes sense here, because only here is there a paper doll to
+--     hover. Rendered by this file.
+--   * Overview / Stats / Rotation / Cooldowns / Consumables / BiS /
+--     Loadouts / Notes / Options - rendered by UI/Codex.lua's own methods,
+--     not copies of them. Codex:NewSurface hands back a table carrying the
+--     per-window frames, row pools and view state those methods reach
+--     through `self`, with `__index` pointing at the Codex, so the same code
+--     draws into this panel's scroll area. Duplicating nine render paths so
+--     two windows could show the same guide was never going to stay correct.
 
 local ADDON, ns = ...
 
@@ -39,11 +45,24 @@ local CharacterPanel = ns:NewModule("CharacterPanel")
 local FALLBACK_WIDTH = 338
 local SCROLLBAR_INSET = 26
 local PADDING = 10
+local TITLE_HEIGHT = 20
+local DROPDOWN_HEIGHT = 20
+local FOOTER_HEIGHT = 24
+
+-- The Codex's own tabs, plus this panel's Gear section in front of them.
+-- Gear is first because it is the reason to have the panel docked at all:
+-- it is the only view that reacts to the paper doll next to it.
+local GEAR_SECTION = "Gear"
+local SECTIONS = {
+    GEAR_SECTION, "Overview", "Stats", "Rotation", "Cooldowns",
+    "Consumables", "BiS", "Loadouts", "Notes", "Options",
+}
 local ROW_HEIGHT = 16
 local ROW_STEP = 18
 local SECTION_GAP = 10
 
 local PANEL_BACKDROP_COLOR = { 0.10, 0.13, 0.16, 0.97 }
+local MENU_BACKDROP_COLOR = { 0.07, 0.09, 0.12, 0.98 }
 local PANEL_BORDER_COLOR = { 0.15, 0.18, 0.22, 1 }
 local HEADER_COLOR = { 0.388, 0.737, 0.902 }
 local MUTED_COLOR = { 0.392, 0.455, 0.541 }
@@ -103,6 +122,16 @@ end
 local function ColorCode(rgb)
     return format("|cff%02x%02x%02x", math.floor(rgb[1] * 255 + 0.5),
         math.floor(rgb[2] * 255 + 0.5), math.floor(rgb[3] * 255 + 0.5))
+end
+
+-- The class token the player is on. The Codex's renderers colour their
+-- active-tab underline from it; the panel has no tab strip, but it is what
+-- makes a surface self-contained rather than reading the Codex's selection.
+local function PlayerClassToken()
+    if not UnitClass then return nil end
+    local ok, _, token = pcall(UnitClass, "player")
+    if ok then return token end
+    return nil
 end
 
 -- The spec the player is actually on. The panel is always about the player's
@@ -217,13 +246,49 @@ function CharacterPanel:BuildFrame()
     title:SetTextColor(unpack(HEADER_COLOR))
     frame.title = title
 
-    -- Fixed height means the content can outrun the panel on a spec with a
-    -- long priority and two BiS rows, so it scrolls rather than being cut
-    -- off. Named for the same reason the Codex's is (see UI/Codex.lua).
+    -- Section picker. A tab strip does not fit: the Codex needs about 86px
+    -- per tab button and there are ten sections here, which is roughly twice
+    -- this panel's whole width.
+    local sectionButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    sectionButton:SetHeight(DROPDOWN_HEIGHT)
+    sectionButton:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING, -(PADDING + TITLE_HEIGHT))
+    sectionButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -PADDING, -(PADDING + TITLE_HEIGHT))
+    sectionButton:SetScript("OnClick", function() self:ToggleSectionMenu() end)
+    frame.sectionButton = sectionButton
+
+    local menu = CreateFrame("Frame", nil, frame, "BackdropTemplate")
+    menu:SetPoint("TOPLEFT", sectionButton, "BOTTOMLEFT", 0, -2)
+    menu:SetPoint("TOPRIGHT", sectionButton, "BOTTOMRIGHT", 0, -2)
+    menu:SetHeight(#SECTIONS * DROPDOWN_HEIGHT + 4)
+    pcall(menu.SetBackdrop, menu, {
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+        edgeFile = "Interface\\Buttons\\WHITE8X8",
+        edgeSize = 1,
+    })
+    pcall(menu.SetBackdropColor, menu, unpack(MENU_BACKDROP_COLOR))
+    pcall(menu.SetBackdropBorderColor, menu, unpack(PANEL_BORDER_COLOR))
+    pcall(menu.SetFrameStrata, menu, "DIALOG")
+    menu:Hide()
+    menu.items = {}
+    for i, section in ipairs(SECTIONS) do
+        local item = CreateFrame("Button", nil, menu, "UIPanelButtonTemplate")
+        item:SetHeight(DROPDOWN_HEIGHT)
+        item:SetPoint("TOPLEFT", menu, "TOPLEFT", 2, -(2 + (i - 1) * DROPDOWN_HEIGHT))
+        item:SetPoint("TOPRIGHT", menu, "TOPRIGHT", -2, -(2 + (i - 1) * DROPDOWN_HEIGHT))
+        item:SetText(section)
+        item:SetScript("OnClick", function() self:SelectSection(section) end)
+        menu.items[i] = item
+    end
+    frame.sectionMenu = menu
+
+    -- Fixed height means the content can outrun the panel on almost any
+    -- section, so it scrolls rather than being cut off. Named for the same
+    -- reason the Codex's is (see UI/Codex.lua).
     local scrollFrame = CreateFrame("ScrollFrame", "SpecSageCharacterPanelScroll", frame,
         "UIPanelScrollFrameTemplate")
-    scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, -(PADDING + 22))
-    scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -SCROLLBAR_INSET, PADDING)
+    scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING,
+        -(PADDING + TITLE_HEIGHT + DROPDOWN_HEIGHT + 6))
+    scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -SCROLLBAR_INSET, FOOTER_HEIGHT)
 
     local scrollChild = CreateFrame("Frame", nil, scrollFrame)
     scrollChild:SetWidth(self:ContentWidth())
@@ -232,17 +297,29 @@ function CharacterPanel:BuildFrame()
     frame.scrollFrame = scrollFrame
     frame.scrollChild = scrollChild
 
-    -- Cycles which BiS context the item rows come from (Overall / Mythic+ /
-    -- Raid / Wowhead). Its own setting rather than the Codex's, so opening
-    -- the character sheet never quietly changes what the Codex is showing.
+    -- Cycles which BiS context the Gear section's item rows come from
+    -- (Overall / Mythic+ / Raid / Wowhead). Its own setting rather than the
+    -- Codex's, so opening the character sheet never quietly changes what the
+    -- Codex is showing.
     local listToggle = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     listToggle:SetSize(110, 18)
-    listToggle:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -PADDING, -PADDING + 2)
+    listToggle:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -PADDING, PADDING - 2)
     listToggle:SetScript("OnClick", function() self:CycleList() end)
     frame.listToggle = listToggle
 
+    local footer = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    footer:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", PADDING, PADDING)
+    footer:SetTextColor(unpack(MUTED_COLOR))
+    frame.footer = footer
+
     self.frame = frame
     self.rows = {}
+
+    -- The Codex's own render methods, pointed at this panel's scroll area.
+    -- Built here rather than lazily so nothing can render before it exists.
+    local Codex = ns:GetModule("Codex")
+    self.surface = Codex and Codex:NewSurface(frame, scrollFrame, scrollChild, self:ContentWidth())
+
     return frame
 end
 
@@ -330,7 +407,9 @@ function CharacterPanel:RowsForSlot(specID, slot)
     return out, active.title
 end
 
-function CharacterPanel:Render()
+-- The Gear section: this panel's own view, and the only one the Codex has
+-- no equivalent of, because only here is there a paper doll to hover.
+function CharacterPanel:RenderGear()
     local frame = self.frame
     if not frame then return end
 
@@ -341,8 +420,6 @@ function CharacterPanel:Render()
     local specID = PlayerSpecID()
     local guide = specID and ns.GuideStore and ns.GuideStore:GetGuide(specID)
     local y, index = 0, 0
-
-    frame.title:SetText((guide and guide.specName) or "SpecSage")
 
     -- Stat priority, with the player's live rating beside each stat.
     local StatsModule = ns:GetModule("Stats")
@@ -440,6 +517,67 @@ function CharacterPanel:Render()
 end
 
 --------------------------------------------------------------------------------
+-- Sections
+--------------------------------------------------------------------------------
+
+function CharacterPanel:ActiveSection()
+    local wanted = Settings().section
+    for _, section in ipairs(SECTIONS) do
+        if section == wanted then return section end
+    end
+    return GEAR_SECTION
+end
+
+function CharacterPanel:SelectSection(section)
+    Settings().section = section
+    if self.frame then self.frame.sectionMenu:Hide() end
+    self:Update()
+end
+
+function CharacterPanel:ToggleSectionMenu()
+    if not self.frame then return end
+    self.frame.sectionMenu:SetShown(not self.frame.sectionMenu:IsShown())
+end
+
+-- Draws the active section. Gear is this file's own; everything else is the
+-- Codex's own render method running against this panel's surface.
+--
+-- Whichever half draws, the other's rows have to go: the two share one
+-- scroll child, so leftovers from the last section would sit under the new
+-- one. HideOtherTabWidgets("Gear") does that for the Codex side - "Gear" is
+-- not one of its tabs, so every pool and every tab-owned widget it knows
+-- about is hidden.
+function CharacterPanel:Render()
+    local frame = self.frame
+    if not frame then return end
+
+    local section = self:ActiveSection()
+    frame.sectionButton:SetText(section)
+
+    -- The title names the spec on every section, not just Gear: the panel
+    -- is always about the player's own character, and saying which spec the
+    -- guidance is for matters most on the sections that never mention it.
+    local specID = PlayerSpecID()
+    local guide = specID and ns.GuideStore and ns.GuideStore:GetGuide(specID)
+    frame.title:SetText((guide and guide.specName) or "SpecSage")
+
+    local surface = self.surface
+    if section == GEAR_SECTION then
+        if surface then surface:HideOtherTabWidgets(GEAR_SECTION) end
+        self:RenderGear()
+    else
+        HidePoolFrom(self.rows, 1)
+        frame.listToggle:Hide()
+        if surface then
+            surface.selectedSpecID = PlayerSpecID()
+            surface.selectedClass = PlayerClassToken()
+            surface.activeTab = section
+            surface:RenderActiveTab()
+        end
+    end
+end
+
+--------------------------------------------------------------------------------
 -- Visibility and events
 --------------------------------------------------------------------------------
 
@@ -466,6 +604,27 @@ function CharacterPanel:SyncSize()
     if ok and type(width) == "number" and width > 0 then
         self.frame:SetWidth(width)
     end
+    -- The Codex's renderers lay rows out against self.contentWidth, so the
+    -- surface has to be told too or a resized panel would keep drawing at
+    -- the old width.
+    local contentWidth = self:ContentWidth()
+    self.frame.scrollChild:SetWidth(contentWidth)
+    if self.surface then self.surface.contentWidth = contentWidth end
+end
+
+-- Version and patch, the way the reference panel carries its own. Says which
+-- build is talking and which patch the shipped guide data was written for,
+-- so a panel left over from a past season is visibly that.
+function CharacterPanel:FooterText()
+    local version = "?"
+    if C_AddOns and C_AddOns.GetAddOnMetadata then
+        local ok, value = pcall(C_AddOns.GetAddOnMetadata, ADDON, "Version")
+        if ok and type(value) == "string" and value ~= "" then version = value end
+    end
+    local specID = PlayerSpecID()
+    local bis = specID and ns.GuideStore and ns.GuideStore:GetBiS(specID)
+    local patch = bis and bis.patch
+    return patch and format("v%s  \194\183  patch %s", version, patch) or ("v" .. version)
 end
 
 -- The single place visibility is decided: the panel is shown when the
@@ -475,6 +634,7 @@ function CharacterPanel:Update()
     if not frame then return end
     if self.toggle then self.toggle:SetChecked(self:IsEnabled()) end
     self:SyncSize()
+    frame.footer:SetText(self:FooterText())
 
     local open = CharacterFrame and CharacterFrame:IsShown()
     if open and self:IsEnabled() then

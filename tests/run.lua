@@ -3687,6 +3687,128 @@ do
 end
 
 --------------------------------------------------------------------------------
+section("Character sheet panel: sections (v1.6)")
+--------------------------------------------------------------------------------
+
+-- The panel shows everything the Codex window does, picked from a dropdown
+-- (a nine-tab strip needs about twice the panel's width). The Codex's own
+-- render methods draw it, running against a surface from Codex:NewSurface -
+-- so these check both that every section renders and that the two windows
+-- keep their frames, pools, widgets and view state apart.
+do
+    local Panel = ns:GetModule("CharacterPanel")
+    mock.ShowCharacterFrame(true)
+
+    local SECTIONS = { "Gear", "Overview", "Stats", "Rotation", "Cooldowns",
+                       "Consumables", "BiS", "Loadouts", "Notes", "Options" }
+
+    check(Panel.surface ~= nil, "the panel owns a Codex rendering surface")
+    check(#Panel.frame.sectionMenu.items == #SECTIONS,
+        "the dropdown lists every section", #Panel.frame.sectionMenu.items)
+
+    -- Nothing may be shared by reference with the Codex's own surface: a
+    -- shared pool would have the two windows fighting over the same rows,
+    -- and a shared widget would put the panel's Notes text in the Codex's
+    -- edit box. This is the __index fallthrough Codex:NewSurface guards
+    -- against by listing every field explicitly.
+    local function CountShown()
+        local n = 0
+        for _, pool in pairs({ Panel.rows, Panel.surface.pools.overview, Panel.surface.pools.stats,
+                Panel.surface.pools.rotation, Panel.surface.pools.cooldowns,
+                Panel.surface.pools.consumables, Panel.surface.pools.bis,
+                Panel.surface.pools.options, Panel.surface.statLinePool,
+                Panel.surface.bisLinkRowPool, Panel.surface.trinketRowPool,
+                Panel.surface.loadoutRowPool, Panel.surface.siteLoadoutRowPool }) do
+            for _, row in ipairs(pool) do
+                if row:IsShown() then n = n + 1 end
+            end
+        end
+        return n
+    end
+
+    -- Every section renders without error, and actually draws something.
+    -- Notes is the one exception: it is an edit box, not rows.
+    for _, sectionName in ipairs(SECTIONS) do
+        local ok, err = pcall(function() Panel:SelectSection(sectionName) end)
+        check(ok, "section " .. sectionName .. " renders in the panel without error", err)
+        if ok and sectionName ~= "Notes" then
+            check(CountShown() > 0, "section " .. sectionName .. " draws rows", CountShown())
+        end
+    end
+
+    -- Having visited every section, the lazily-built widgets all exist, so
+    -- this is the point at which sharing would show up.
+    check(Panel.surface.pools ~= Codex.pools, "the panel's row pools are its own")
+    check(Panel.surface.scrollChild ~= Codex.scrollChild, "as is its scroll child")
+    check(Panel.surface.frame == Panel.frame and Panel.surface.frame ~= Codex.frame,
+        "the surface hosts widgets in the panel, not the Codex window")
+    check(Panel.surface.notesBox ~= Codex.notesBox, "the Notes box is the panel's own, not the Codex's")
+    check(Panel.surface.optionPools ~= Codex.optionPools, "as are the Options widgets")
+    check(Panel.surface.bisItemBox ~= Codex.bisItemBox, "and the BiS Add box")
+    check(Panel.surface.suggestedLoadoutRows ~= Codex.suggestedLoadoutRows,
+        "and the suggested loadout rows")
+    check(Panel.surface.contentWidth == Panel:ContentWidth(),
+        "the surface lays rows out at the panel's width, not the Codex's",
+        Panel.surface.contentWidth)
+
+    -- Switching sections must clear the previous one: both halves draw into
+    -- one scroll child, so leftovers would stack under the new section.
+    Panel:SelectSection("Rotation")
+    local rotationRows = CountShown()
+    Panel:SelectSection("Gear")
+    local gearRows = 0
+    for _, row in ipairs(Panel.rows) do
+        if row:IsShown() then gearRows = gearRows + 1 end
+    end
+    check(rotationRows > 0 and gearRows > 0, "both sections draw rows of their own")
+    check(CountShown() == gearRows, "switching to Gear leaves only the Gear rows shown",
+        CountShown() .. " vs " .. gearRows)
+    Panel:SelectSection("Overview")
+    local shownGear = 0
+    for _, row in ipairs(Panel.rows) do
+        if row:IsShown() then shownGear = shownGear + 1 end
+    end
+    check(shownGear == 0, "and switching away from Gear hides its rows", shownGear)
+
+    -- The chosen section is remembered.
+    check(ns.db.characterPanel.section == "Overview", "the chosen section is saved",
+        ns.db.characterPanel.section)
+    mock.ShowCharacterFrame(false)
+    mock.ShowCharacterFrame(true)
+    check(Panel.frame.sectionButton:GetText() == "Overview",
+        "and restored when the character sheet is reopened", Panel.frame.sectionButton:GetText())
+
+    -- The dropdown opens, picks, and closes.
+    check(Panel.frame.sectionMenu:IsShown() == false, "the section menu starts closed")
+    Panel.frame.sectionButton:GetScript("OnClick")(Panel.frame.sectionButton)
+    check(Panel.frame.sectionMenu:IsShown() == true, "clicking the section button opens the menu")
+    local bisItem
+    for _, item in ipairs(Panel.frame.sectionMenu.items) do
+        if item:GetText() == "BiS" then bisItem = item end
+    end
+    bisItem:GetScript("OnClick")(bisItem)
+    check(Panel.frame.sectionMenu:IsShown() == false, "picking a section closes the menu")
+    check(Panel.frame.sectionButton:GetText() == "BiS", "and the button names the new section",
+        Panel.frame.sectionButton:GetText())
+
+    -- View state stays per-window: cycling the panel's BiS context must not
+    -- move the Codex's, and vice versa.
+    local codexBefore = Codex.bisListIndex
+    Panel.surface.bisListIndex = 1
+    Panel.surface:CycleBiSList()
+    check(Panel.surface.bisListIndex ~= 1, "the panel's BiS context cycles",
+        Panel.surface.bisListIndex)
+    check(Codex.bisListIndex == codexBefore, "without moving the Codex window's")
+
+    -- The footer names the build and the patch the data was written for.
+    check((Panel.frame.footer:GetText() or ""):find("patch", 1, true) ~= nil,
+        "the footer names the patch the shipped data targets", Panel.frame.footer:GetText())
+
+    Panel:SelectSection("Gear")
+    mock.ShowCharacterFrame(false)
+end
+
+--------------------------------------------------------------------------------
 section("Codex: Feedback button")
 --------------------------------------------------------------------------------
 

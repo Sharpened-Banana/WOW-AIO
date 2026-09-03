@@ -796,15 +796,67 @@ you — so the owner asked for it docked there, the way other addons dock a
 panel to the character tab.
 
 `UI/CharacterPanel.lua` is a frame parented to `CharacterFrame`, docked to
-its right edge and following it open and closed. Two halves:
+its right edge and following it open and closed. It shows **everything the
+Codex window does**, one section at a time, picked from a dropdown.
 
-- **Stat Priority** — the spec's flat order with `Stats:GetStatValue` beside
-  each row, then Wowhead's per-hero-tree orders from `Data/StatPriority.lua`
-  under it (names only: those are alternatives to the order above, not more
-  of the player's own numbers).
-- **BiS: `<Slot>`** — the guide's item(s) for whichever paper doll slot the
-  mouse last touched, quality-coloured, tagged equipped/owned/missing via
-  `BiS:GetStatus`, with the drop source under it.
+### Why a dropdown and not a tab strip
+
+The Codex needs ~86px per tab button and there are ten sections; that is
+roughly twice the whole panel's width. A wrapped three-row tab strip would
+eat a third of the panel before any content. A dropdown costs one row.
+
+### Sections
+
+- **Gear** — this panel's own, and first, because it is the reason to dock
+  at all: the only view that reacts to the paper doll beside it. The spec's
+  stat priority with `Stats:GetStatValue` beside each row, Wowhead's
+  per-hero-tree orders from `Data/StatPriority.lua`, and the guide's item(s)
+  for whichever paper doll slot the mouse last touched — quality-coloured,
+  tagged equipped/owned/missing via `BiS:GetStatus`, drop source underneath.
+- **Overview / Stats / Rotation / Cooldowns / Consumables / BiS / Loadouts /
+  Notes / Options** — rendered by `UI/Codex.lua`'s own methods, not copies
+  of them.
+
+### Rendering surfaces
+
+The v1.6 first cut duplicated the Codex's row pooling, on the reasoning that
+threading a second parent through every `Render*` path would couple two
+windows that only happened to draw similar rows. Once the panel had to show
+all nine tabs that reasoning inverted: duplicating nine render paths so two
+windows could show the same guide was never going to stay correct.
+
+`Codex:NewSurface(host, scrollFrame, scrollChild, contentWidth)` returns a
+plain table carrying the per-window frames, row pools and view state, with
+`__index` pointing at the Codex. Every `Render*`/`Ensure*` method already
+reached those through `self`, so they run against it unchanged — the only
+edit to make it work was replacing the `CONTENT_WIDTH` upvalue with
+`self.contentWidth`. The Codex is its own surface (its fields live directly
+on the module), which is why no existing call site or test moved.
+
+**The `__index` hazard, and the `false` rule.** A field the surface forgets
+to set falls through and reads the Codex's. That is not theoretical — the
+first cut of `NewSurface` hit it twice: the panel's Notes tab wrote into the
+Codex window's edit box, and its Options tab drove the Codex's checkboxes,
+because `notesBox` and `optionPools` were left nil. Setting them to a
+ready-made `{}` breaks it the other way: every `Ensure*Widgets` opens with
+`if self.X then return end`, so a truthy value means the widgets are never
+built and the first render indexes nil — which is exactly how the Loadouts
+section crashed on `suggestedLoadoutRows`. `false` is the only value that is
+both non-nil (no fallthrough) and falsy (the guard still builds), so every
+lazily-built field is listed in `NewSurface` as `false`. Anything added to
+the Codex that an `Ensure*Widgets` creates has to be repeated there.
+
+Tests assert the two surfaces share nothing by reference — pools, scroll
+child, host frame, Notes box, Options pools, BiS Add box, suggested loadout
+rows — and that cycling the panel's BiS context leaves the Codex's alone.
+
+### Section switching
+
+Both halves draw into one scroll child, so the other's rows have to go or
+leftovers stack under the new section. `HideOtherTabWidgets("Gear")` does it
+for the Codex side: `"Gear"` is not one of its tabs, so every pool and
+tab-owned widget it knows about is hidden. The Gear pool is hidden directly
+when a Codex section is active.
 
 Decisions worth keeping:
 
@@ -836,13 +888,11 @@ Decisions worth keeping:
   looking at your gear. A checkbox on the sheet itself turns it off in one
   click, and it writes the same `db.characterPanel.enabled` the entry in
   `ns.OPTION_GROUPS` does, so the two surfaces cannot disagree.
-- **Rows are pooled here, not shared with the Codex.** The Codex's pools live
-  on its own frame and are sized to its layout; threading a second parent
-  through every one of its `Render*` paths would couple two windows that
-  only happen to draw similar rows today. What *is* shared is the thing that
-  would be a bug to duplicate: `ns.ItemString` moved from `UI/Codex.lua` to
-  `Core/Init.lua` so both surfaces build the same bonus-carrying item string
-  (see "Linked BiS lists").
+- **`ns.ItemString` lives in `Core/Init.lua`,** moved out of `UI/Codex.lua`
+  so the Gear section and the Codex build the same bonus-carrying item
+  string (see "Linked BiS lists").
+- **A footer names the build and the patch** the shipped guide data targets,
+  so a panel left over from a past season is visibly that.
 - **Redraws are gated on being visible.** `PLAYER_EQUIPMENT_CHANGED`,
   `PLAYER_SPECIALIZATION_CHANGED` and `GET_ITEM_INFO_RECEIVED` all re-render,
   but only when the frame is actually shown.

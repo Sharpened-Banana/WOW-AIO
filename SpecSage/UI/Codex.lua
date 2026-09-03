@@ -717,6 +717,91 @@ end
 
 -- Hides the unused tail of a pool and sizes the scroll child to fit what was
 -- actually drawn. `y` is the cursor value after the last row was placed.
+-- Builds a second rendering surface: a plain table the Render*/Ensure*
+-- methods below can run against, drawing into `host`'s own scroll area
+-- instead of the Codex window's.
+--
+-- `__index = Codex` is what makes those methods reachable, and is also the
+-- one hazard: a field the surface forgets to set falls through and reads the
+-- Codex's, which would silently share a row pool between two windows. Every
+-- per-surface field is therefore listed here explicitly, empty, rather than
+-- being created lazily on first use - if a new one is added to the Codex
+-- later, this table is the place it has to be repeated.
+--
+-- `host` is the frame interactive widgets anchor into (the Codex's own is
+-- Codex.frame); `scrollFrame`/`scrollChild`/`contentWidth` are the scroll
+-- area the rows are laid out in.
+function Codex:NewSurface(host, scrollFrame, scrollChild, contentWidth)
+    return setmetatable({
+        frame = host,
+        scrollFrame = scrollFrame,
+        scrollChild = scrollChild,
+        contentWidth = contentWidth,
+
+        -- One pool per tab that draws plain line rows, plus the extra pools
+        -- the richer tabs keep alongside them.
+        pools = { overview = {}, stats = {}, rotation = {}, cooldowns = {},
+                  consumables = {}, bis = {}, options = {} },
+        statLinePool = {},
+        bisRowPool = {},
+        bisLinkRowPool = {},
+        trinketRowPool = {},
+        loadoutRowPool = {},
+        siteLoadoutRowPool = {},
+
+        -- Per-surface view state. Scalars, so unlike the pools above these
+        -- cannot be shared by reference even in principle: each window
+        -- remembers its own BiS context, trinket fight style and Add slot.
+        activeTab = "Overview",
+        bisListIndex = 1,
+        trinketListIndex = 1,
+
+        -- Lazily-built widgets, and the pools an Ensure*Widgets builds
+        -- rather than the surface. `false`, deliberately, on both counts:
+        --
+        --   * nil would fall through __index to the Codex's own widget, so
+        --     the panel's Notes tab would write into the Codex window's edit
+        --     box and its Options tab would drive the Codex's checkboxes.
+        --   * a ready-made table would satisfy the "if self.X then return"
+        --     guard every Ensure*Widgets opens with, so the widgets would
+        --     never be built at all and the first render would index nil.
+        --
+        -- `false` is the only value that is both non-nil (no fallthrough)
+        -- and falsy (the guard still builds). Anything added to the Codex
+        -- that an Ensure*Widgets creates has to be repeated here the same
+        -- way.
+        bisButtons = false,
+        bisItemBox = false,
+        bisSlot = false,
+        bisListToggle = false,
+        trinketToggle = false,
+        loadoutButtons = false,
+        suggestedLoadoutRows = false,
+        notesBox = false,
+        notesBoxFrame = false,
+        optionPools = false,
+
+        -- UpdateTabHighlight iterates this; a surface with no tab strip of
+        -- its own gets an empty table rather than falling through to the
+        -- Codex's real buttons and highlighting the wrong window's tab.
+        tabButtons = {},
+    }, { __index = self })
+end
+
+-- Rendering surfaces.
+--
+-- Every Render*/Ensure* method below reaches its frames, row pools and
+-- per-window state through `self` rather than through an upvalue: `self`
+-- here is a *surface*, not necessarily the Codex module. The Codex is its
+-- own surface (Codex.frame, Codex.pools, Codex.contentWidth, ... all live
+-- directly on the module), and UI/CharacterPanel.lua builds a second one -
+-- a plain table carrying the same field names, with `__index = Codex` so
+-- these same methods run against it. Nothing here may close over the
+-- Codex's own frames or pools, or the docked panel would draw into the
+-- floating window; `self.contentWidth` rather than the CONTENT_WIDTH
+-- upvalue is that rule applied to the one number rendering needs.
+--
+-- Codex:NewSurface lists exactly what a surface must provide.
 function Codex:FinishPool(pool, usedCount, y)
     HidePoolFrom(pool, usedCount + 1)
     self.scrollChild:SetHeight(math.max(-y, 10))
@@ -732,7 +817,7 @@ end
 --------------------------------------------------------------------------------
 
 function Codex:RenderOverview(guide)
-    local parent, width = self.scrollChild, CONTENT_WIDTH
+    local parent, width = self.scrollChild, self.contentWidth
     local pool = self.pools.overview
     local y, index = -PADDING, 0
 
@@ -761,7 +846,7 @@ function Codex:RenderOverview(guide)
 end
 
 function Codex:RenderStats(guide, specID)
-    local parent, width = self.scrollChild, CONTENT_WIDTH
+    local parent, width = self.scrollChild, self.contentWidth
     local pool = self.pools.stats
     self.statLinePool = self.statLinePool or {}
     local linePool = self.statLinePool
@@ -828,7 +913,7 @@ function Codex:RenderStats(guide, specID)
 end
 
 function Codex:RenderRotation(guide)
-    local parent, width = self.scrollChild, CONTENT_WIDTH
+    local parent, width = self.scrollChild, self.contentWidth
     local pool = self.pools.rotation
     local y, index = -PADDING, 0
 
@@ -863,7 +948,7 @@ function Codex:RenderRotation(guide)
 end
 
 function Codex:RenderCooldowns(guide)
-    local parent, width = self.scrollChild, CONTENT_WIDTH
+    local parent, width = self.scrollChild, self.contentWidth
     local pool = self.pools.cooldowns
     local y, index = -PADDING, 0
 
@@ -887,7 +972,7 @@ function Codex:RenderCooldowns(guide)
 end
 
 function Codex:RenderConsumables(guide)
-    local parent, width = self.scrollChild, CONTENT_WIDTH
+    local parent, width = self.scrollChild, self.contentWidth
     local pool = self.pools.consumables
     local y, index = -PADDING, 0
 
@@ -1417,7 +1502,7 @@ end
 
 function Codex:RenderBiS(guide, specID)
     self:EnsureBiSWidgets()
-    local parent, width = self.scrollChild, CONTENT_WIDTH
+    local parent, width = self.scrollChild, self.contentWidth
     local pool = self.pools.bis
     local y, index = -PADDING, 0
 
@@ -1727,7 +1812,7 @@ end
 
 function Codex:RenderLoadouts(specID, guide)
     self:EnsureLoadoutWidgets()
-    local parent, width = self.scrollChild, CONTENT_WIDTH
+    local parent, width = self.scrollChild, self.contentWidth
     local y = -PADDING
 
     local buttons = self.loadoutButtons
@@ -2058,7 +2143,7 @@ end
 function Codex:EnsureNotesBox()
     if self.notesBox then return end
 
-    local backdrop, box = NewBackdropEditBox(self.scrollChild, CONTENT_WIDTH, 400)
+    local backdrop, box = NewBackdropEditBox(self.scrollChild, self.contentWidth, 400)
     pcall(box.SetJustifyH, box, "LEFT")
     box:SetScript("OnEditFocusLost", function(self2) self:SaveNotes(self2) end)
 
@@ -2072,7 +2157,7 @@ function Codex:RenderNotes(specID)
 
     backdrop:ClearAllPoints()
     backdrop:SetPoint("TOPLEFT", self.scrollChild, "TOPLEFT", 0, -PADDING)
-    backdrop:SetSize(CONTENT_WIDTH, 400)
+    backdrop:SetSize(self.contentWidth, 400)
     box.specID = specID
 
     local Notes = ns:GetModule("Notes")
@@ -2255,7 +2340,7 @@ end
 function Codex:RenderOptions()
     self:EnsureOptionWidgets()
 
-    local parent, width = self.scrollChild, CONTENT_WIDTH
+    local parent, width = self.scrollChild, self.contentWidth
     local pool = self.pools.options
     local pools = self.optionPools
     local y = -PADDING
@@ -2729,6 +2814,7 @@ function Codex:BuildContentArea()
 
     local scrollChild = CreateFrame("Frame", nil, scrollFrame)
     scrollChild:SetWidth(CONTENT_WIDTH)
+    self.contentWidth = CONTENT_WIDTH
     scrollChild:SetHeight(1)
     scrollFrame:SetScrollChild(scrollChild)
 
