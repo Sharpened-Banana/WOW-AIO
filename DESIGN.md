@@ -795,8 +795,8 @@ used is the character sheet, with the drop you just picked up in front of
 you — so the owner asked for it docked there, the way other addons dock a
 panel to the character tab.
 
-`UI/CharacterPanel.lua` is a frame parented to `CharacterFrame`, anchored to
-its top-right and following it open and closed. Two halves:
+`UI/CharacterPanel.lua` is a frame parented to `CharacterFrame`, docked to
+its right edge and following it open and closed. Two halves:
 
 - **Stat Priority** — the spec's flat order with `Stats:GetStatValue` beside
   each row, then Wowhead's per-hero-tree orders from `Data/StatPriority.lua`
@@ -808,6 +808,17 @@ its top-right and following it open and closed. Two halves:
 
 Decisions worth keeping:
 
+- **It matches the character sheet's dimensions, not its own content.** It
+  reads as a docked second page of that window, and a panel whose top and
+  bottom edges did not line up with the sheet's read as something floating
+  beside it. Height needs no arithmetic: anchoring both of the panel's left
+  corners to the sheet's right corners makes it match exactly and keep
+  matching. Only the width is pushed across by hand, re-read on every
+  `Update` rather than captured at build time, because Blizzard resizes the
+  sheet when its side tabs (titles, equipment sets) open. A fixed height
+  means the content can outrun the panel on a spec with a long priority and
+  two BiS rows, so the rows live in a scroll child inside a
+  `UIPanelScrollFrameTemplate` and it scrolls rather than being cut off.
 - **Slot selection is by hover, and sticks.** Every paper doll slot button is
   `HookScript`ed on `OnEnter` (a hook, so Blizzard's own item tooltip still
   runs). The selection is *not* cleared on `OnLeave`: you have to move the
@@ -836,7 +847,9 @@ Decisions worth keeping:
   `PLAYER_SPECIALIZATION_CHANGED` and `GET_ITEM_INFO_RECEIVED` all re-render,
   but only when the frame is actually shown.
 
-The mock models `CharacterFrame` and the sixteen paper doll slot buttons
+The mock gives `CharacterFrame` Blizzard's real default size (338x424) —
+a mock sheet with no size at all would let a panel that never reads
+`GetWidth` pass — and models the sixteen paper doll slot buttons
 with Blizzard's real names, defined independently of the panel's own
 `SLOT_BY_BUTTON` — the same anti-tautology rule `INVSLOT_*` follows — so a
 typo there surfaces as a hook that never fires rather than both sides

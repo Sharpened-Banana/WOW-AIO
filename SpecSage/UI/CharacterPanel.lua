@@ -28,12 +28,20 @@ local CharacterPanel = ns:NewModule("CharacterPanel")
 -- Layout and palette, matching UI/Codex.lua's "Blizzard Modern" pass
 --------------------------------------------------------------------------------
 
-local PANEL_WIDTH = 240
+-- The panel matches the character sheet's own dimensions rather than sizing
+-- itself to its content: it is a docked second page of that window, and a
+-- panel whose top and bottom edges did not line up with the sheet's read as
+-- something floating next to it. Both are taken from CharacterFrame at draw
+-- time - height through anchors on both corners, width through GetWidth -
+-- so it keeps matching when Blizzard resizes the sheet (its side tabs for
+-- titles and equipment sets do exactly that). The constants below are only
+-- the fallback for a client that reports no size at all.
+local FALLBACK_WIDTH = 338
+local SCROLLBAR_INSET = 26
 local PADDING = 10
 local ROW_HEIGHT = 16
 local ROW_STEP = 18
 local SECTION_GAP = 10
-local MIN_HEIGHT = 120
 
 local PANEL_BACKDROP_COLOR = { 0.10, 0.13, 0.16, 0.97 }
 local PANEL_BORDER_COLOR = { 0.15, 0.18, 0.22, 1 }
@@ -176,14 +184,25 @@ local function HidePoolFrom(pool, fromIndex)
     end
 end
 
+-- The width available to a row: the panel minus its padding and the room the
+-- scrollbar needs on the right.
+function CharacterPanel:ContentWidth()
+    local width = self.frame and self.frame:GetWidth() or 0
+    if not width or width <= 0 then width = FALLBACK_WIDTH end
+    return width - PADDING * 2 - SCROLLBAR_INSET
+end
+
 function CharacterPanel:BuildFrame()
     if self.frame then return self.frame end
     if not CharacterFrame then return nil end
 
     local frame = CreateFrame("Frame", "SpecSageCharacterPanel", CharacterFrame, "BackdropTemplate")
-    frame:SetWidth(PANEL_WIDTH)
-    frame:SetHeight(MIN_HEIGHT)
-    frame:SetPoint("TOPLEFT", CharacterFrame, "TOPRIGHT", -2, -12)
+    -- Anchoring both left corners to the sheet's right corners is what makes
+    -- the height match exactly and keep matching; only the width has to be
+    -- pushed across by hand (SyncSize, called on every Update).
+    frame:SetPoint("TOPLEFT", CharacterFrame, "TOPRIGHT", -2, 0)
+    frame:SetPoint("BOTTOMLEFT", CharacterFrame, "BOTTOMRIGHT", -2, 0)
+    frame:SetWidth(FALLBACK_WIDTH)
     pcall(frame.SetBackdrop, frame, {
         bgFile = "Interface\\Buttons\\WHITE8X8",
         edgeFile = "Interface\\Buttons\\WHITE8X8",
@@ -197,6 +216,21 @@ function CharacterPanel:BuildFrame()
     title:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING, -PADDING)
     title:SetTextColor(unpack(HEADER_COLOR))
     frame.title = title
+
+    -- Fixed height means the content can outrun the panel on a spec with a
+    -- long priority and two BiS rows, so it scrolls rather than being cut
+    -- off. Named for the same reason the Codex's is (see UI/Codex.lua).
+    local scrollFrame = CreateFrame("ScrollFrame", "SpecSageCharacterPanelScroll", frame,
+        "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, -(PADDING + 22))
+    scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -SCROLLBAR_INSET, PADDING)
+
+    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+    scrollChild:SetWidth(self:ContentWidth())
+    scrollChild:SetHeight(1)
+    scrollFrame:SetScrollChild(scrollChild)
+    frame.scrollFrame = scrollFrame
+    frame.scrollChild = scrollChild
 
     -- Cycles which BiS context the item rows come from (Overall / Mythic+ /
     -- Raid / Wowhead). Its own setting rather than the Codex's, so opening
@@ -246,15 +280,16 @@ end
 -- Rendering
 --------------------------------------------------------------------------------
 
-local function PlaceRow(pool, index, parent, y, text, opts)
+local function PlaceRow(pool, index, parent, width, y, text, opts)
     opts = opts or {}
     local row = AcquireRow(pool, index, parent)
+    local indent = opts.indent or 0
     row:ClearAllPoints()
-    row:SetPoint("TOPLEFT", parent, "TOPLEFT", PADDING + (opts.indent or 0), y)
-    row:SetSize(PANEL_WIDTH - PADDING * 2 - (opts.indent or 0), ROW_HEIGHT)
+    row:SetPoint("TOPLEFT", parent, "TOPLEFT", indent, y)
+    row:SetSize(width - indent, ROW_HEIGHT)
 
     local valueWidth = (opts.value and opts.value ~= "") and 62 or 0
-    row.text:SetWidth(PANEL_WIDTH - PADDING * 2 - (opts.indent or 0) - valueWidth)
+    row.text:SetWidth(width - indent - valueWidth)
     row.text:SetText(text or "")
     local color = opts.color or TEXT_PRIMARY_COLOR
     row.text:SetTextColor(color[1], color[2], color[3])
@@ -300,9 +335,12 @@ function CharacterPanel:Render()
     if not frame then return end
 
     local pool = self.rows
+    local child = frame.scrollChild
+    local width = self:ContentWidth()
+    child:SetWidth(width)
     local specID = PlayerSpecID()
     local guide = specID and ns.GuideStore and ns.GuideStore:GetGuide(specID)
-    local y, index = -PADDING - 20, 0
+    local y, index = 0, 0
 
     frame.title:SetText((guide and guide.specName) or "SpecSage")
 
@@ -310,15 +348,15 @@ function CharacterPanel:Render()
     local StatsModule = ns:GetModule("Stats")
     local priorities = guide and guide.statPriority
     index = index + 1
-    y = PlaceRow(pool, index, frame, y, "Stat Priority", { color = HEADER_COLOR })
+    y = PlaceRow(pool, index, child, width, y, "Stat Priority", { color = HEADER_COLOR })
     if not priorities or #priorities == 0 then
         index = index + 1
-        y = PlaceRow(pool, index, frame, y, "no stat priority for this spec", { color = MUTED_COLOR })
+        y = PlaceRow(pool, index, child, width, y, "no stat priority for this spec", { color = MUTED_COLOR })
     else
         for order, entry in ipairs(priorities) do
             local value = StatsModule and StatsModule:GetStatValue(entry.stat) or nil
             index = index + 1
-            y = PlaceRow(pool, index, frame, y,
+            y = PlaceRow(pool, index, child, width, y,
                 format("%d. %s", order, STAT_LABELS[entry.stat] or entry.stat),
                 { value = value })
         end
@@ -331,16 +369,16 @@ function CharacterPanel:Render()
     if statData and statData.lists then
         y = y - SECTION_GAP
         index = index + 1
-        y = PlaceRow(pool, index, frame, y, "By Hero Talent Tree", { color = HEADER_COLOR })
+        y = PlaceRow(pool, index, child, width, y, "By Hero Talent Tree", { color = HEADER_COLOR })
         for _, listEntry in ipairs(statData.lists) do
             local names = {}
             for order, entry in ipairs(listEntry.list) do
                 names[order] = STAT_LABELS[entry.stat] or entry.stat
             end
             index = index + 1
-            y = PlaceRow(pool, index, frame, y, listEntry.title, { color = CONDITION_COLOR })
+            y = PlaceRow(pool, index, child, width, y, listEntry.title, { color = CONDITION_COLOR })
             index = index + 1
-            y = PlaceRow(pool, index, frame, y, table.concat(names, " > "),
+            y = PlaceRow(pool, index, child, width, y, table.concat(names, " > "),
                 { color = TEXT_SECONDARY_COLOR, indent = 10 })
         end
     end
@@ -353,16 +391,16 @@ function CharacterPanel:Render()
     frame.listToggle:SetShown(listTitle ~= nil)
 
     index = index + 1
-    y = PlaceRow(pool, index, frame, y, slot and ("BiS: " .. slot) or "Best in Slot",
+    y = PlaceRow(pool, index, child, width, y, slot and ("BiS: " .. slot) or "Best in Slot",
         { color = HEADER_COLOR })
 
     if not slot then
         index = index + 1
-        y = PlaceRow(pool, index, frame, y, "hover a gear slot to see its BiS item",
+        y = PlaceRow(pool, index, child, width, y, "hover a gear slot to see its BiS item",
             { color = MUTED_COLOR })
     elseif not entries or #entries == 0 then
         index = index + 1
-        y = PlaceRow(pool, index, frame, y, format("no %s in this list", slot), { color = MUTED_COLOR })
+        y = PlaceRow(pool, index, child, width, y, format("no %s in this list", slot), { color = MUTED_COLOR })
     else
         local BiSModule = ns:GetModule("BiS")
         for _, entry in ipairs(entries) do
@@ -383,19 +421,22 @@ function CharacterPanel:Render()
             end
             local r, g, b = ItemQualityColor(quality)
             index = index + 1
-            y = PlaceRow(pool, index, frame, y,
+            y = PlaceRow(pool, index, child, width, y,
                 format("%s%s|r%s", ColorCode({ r, g, b }), name, statusText),
                 { itemID = entry.itemID, itemLink = (item ~= entry.itemID) and item or nil })
             if entry.from and entry.from ~= "" then
                 index = index + 1
-                y = PlaceRow(pool, index, frame, y, entry.from,
+                y = PlaceRow(pool, index, child, width, y, entry.from,
                     { color = MUTED_COLOR, indent = 10 })
             end
         end
     end
 
     HidePoolFrom(pool, index + 1)
-    frame:SetHeight(math.max(-y + PADDING, MIN_HEIGHT))
+    -- The panel's own height is fixed to the character sheet's; it is the
+    -- scroll child that grows with the content.
+    child:SetHeight(math.max(-y, 1))
+    pcall(frame.scrollFrame.UpdateScrollChildRect, frame.scrollFrame)
 end
 
 --------------------------------------------------------------------------------
@@ -415,12 +456,25 @@ function CharacterPanel:IsEnabled()
     return Settings().enabled ~= false
 end
 
+-- Pushes the character sheet's width across. Height needs nothing: the panel
+-- is anchored to both of the sheet's right-hand corners, so it already tracks
+-- any height the sheet takes. A sheet that reports no width yet (built but
+-- not laid out) leaves the fallback in place rather than collapsing to zero.
+function CharacterPanel:SyncSize()
+    if not (self.frame and CharacterFrame) then return end
+    local ok, width = pcall(CharacterFrame.GetWidth, CharacterFrame)
+    if ok and type(width) == "number" and width > 0 then
+        self.frame:SetWidth(width)
+    end
+end
+
 -- The single place visibility is decided: the panel is shown when the
 -- character sheet is open and the setting is on, and drawn only when shown.
 function CharacterPanel:Update()
     local frame = self:BuildFrame()
     if not frame then return end
     if self.toggle then self.toggle:SetChecked(self:IsEnabled()) end
+    self:SyncSize()
 
     local open = CharacterFrame and CharacterFrame:IsShown()
     if open and self:IsEnabled() then

@@ -3535,6 +3535,22 @@ do
     check(Panel.frame:IsShown() == false, "the panel is hidden while the character sheet is closed")
     check(Panel.toggle ~= nil, "a show/hide checkbox is added to the character sheet")
 
+    -- Dimensions come from the character sheet, not from the content: the
+    -- panel is a docked second page of that window, so its top and bottom
+    -- edges have to line up with the sheet's.
+    do
+        local byPoint = {}
+        for _, point in ipairs(Panel.frame.points) do byPoint[point[1]] = point end
+        check(byPoint.TOPLEFT ~= nil and byPoint.TOPLEFT[2] == CharacterFrame
+                and byPoint.TOPLEFT[3] == "TOPRIGHT",
+            "the panel's top-left is anchored to the character sheet's top-right")
+        check(byPoint.BOTTOMLEFT ~= nil and byPoint.BOTTOMLEFT[2] == CharacterFrame
+                and byPoint.BOTTOMLEFT[3] == "BOTTOMRIGHT",
+            "and its bottom-left to the sheet's bottom-right, so the height matches exactly")
+        check(Panel.frame.scrollFrame ~= nil,
+            "a fixed height means the content scrolls rather than being cut off")
+    end
+
     -- Opening the character sheet shows and renders it. The mock's player is
     -- Unholy (252), whose statPriority follows Wowhead's order.
     mock.ShowCharacterFrame(true)
@@ -3550,6 +3566,29 @@ do
         "each stat row carries the player's live rating", critRow and critRow.value:GetText())
     check(dump:find("By Hero Talent Tree", 1, true) ~= nil, "the hero-tree orders are shown too", dump)
     check(dump:find("San'layn", 1, true) ~= nil, "one row per hero tree", dump)
+
+    check(Panel.frame:GetWidth() == CharacterFrame:GetWidth(),
+        "the panel is exactly as wide as the character sheet",
+        Panel.frame:GetWidth() .. " vs " .. CharacterFrame:GetWidth())
+    check(Panel:ContentWidth() < Panel.frame:GetWidth(),
+        "with the row width inset for padding and the scrollbar", Panel:ContentWidth())
+
+    -- Blizzard resizes the sheet when its side tabs open, so the width has to
+    -- be re-read rather than captured once at build time.
+    CharacterFrame:SetSize(500, 600)
+    Panel:Update()
+    check(Panel.frame:GetWidth() == 500, "the panel follows the sheet when it is resized",
+        Panel.frame:GetWidth())
+    CharacterFrame:SetSize(338, 424)
+    Panel:Update()
+    check(Panel.frame:GetWidth() == 338, "and follows it back", Panel.frame:GetWidth())
+
+    -- The content lives in the scroll child, which is what grows; the panel
+    -- itself must never be resized to fit its rows.
+    check(Panel.frame.scrollChild:GetHeight() > 0, "the scroll child grows with the rendered rows",
+        Panel.frame.scrollChild:GetHeight())
+    check(Panel.frame.scrollChild:GetWidth() == Panel:ContentWidth(),
+        "and is as wide as a row", Panel.frame.scrollChild:GetWidth())
 
     -- No slot hovered yet, so the BiS half asks for one.
     check(dump:find("hover a gear slot", 1, true) ~= nil, "the BiS half prompts for a slot first", dump)

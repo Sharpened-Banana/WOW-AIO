@@ -382,6 +382,10 @@ UIParent = CreateFrame("Frame", "UIParent")
 -- UI/CharacterPanel.lua's SLOT_BY_BUTTON so a typo there shows up as a hook
 -- that never fires rather than both sides agreeing on the same wrong name.
 CharacterFrame = CreateFrame("Frame", "CharacterFrame", UIParent)
+-- Blizzard's real default character sheet size. UI/CharacterPanel.lua matches
+-- the sheet's dimensions rather than sizing to its content, so a mock sheet
+-- with no size at all would let a panel that never reads GetWidth pass.
+CharacterFrame:SetSize(338, 424)
 CharacterFrame:Hide()
 
 mock.paperDollSlots = {
