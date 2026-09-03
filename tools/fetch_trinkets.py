@@ -202,8 +202,25 @@ def parse_icy_veins(body):
 
 # --- output -----------------------------------------------------------------
 
+# itemID -> bonus-ID list, written by tools/fetch_bis.py from the bonus lists
+# Icy Veins puts on its BiS links. Neither trinket source publishes one (see
+# Data/BiS.lua's header for why they matter), so a trinket only gets one when
+# some spec's BiS guide names the same item; the rest stay bare.
+def _bonus_map():
+    try:
+        return {int(k): v for k, v in json.load(open("tools/item_bonus.json")).items()}
+    except (OSError, ValueError):
+        return {}
+
+
+BONUS_BY_ITEM = _bonus_map()
+
+
 def emit_row(r):
     parts = ["itemID = %d" % r["itemID"], "name = %s" % lua_str(r["name"])]
+    bonus = BONUS_BY_ITEM.get(r["itemID"])
+    if bonus:
+        parts.append("bonus = %s" % lua_str(bonus))
     if r.get("ilvl"):
         parts.append("ilvl = %d" % r["ilvl"])
     if r.get("gain") is not None:

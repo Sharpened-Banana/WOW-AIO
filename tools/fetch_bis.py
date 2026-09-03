@@ -9,10 +9,26 @@ spec: a list per tab, one row per slot, every row a concrete itemID the
 Codex renders as a clickable item link. Wowhead's guide pages are rendered
 client-side and refuse plain HTTP clients, so only Icy Veins is read.
 
+Bonus IDs matter as much as the item ID. Icy Veins links every BiS entry as
+"item=<id>&bonus=<a>:<b>...", and those bonus IDs are what put the item on
+its current-season upgrade track - drop them and the client resolves the
+bare item ID to the item's *base* form, which for a current dungeon neck is
+a level-48 rare rather than the item level 334 epic the guide means. So the
+bonus list rides along into Data/BiS.lua and the Codex builds a full item
+string from it. Icy Veins also appends "&original-item=<id>" to catalysed
+pieces (the token's pre-catalyst source); that is not part of the bonus
+list and is dropped.
+
+Wowhead's own guide markup carries bare "[item=<id>]" with no bonus list -
+the site applies a default upgrade context when it renders. Rather than
+invent one, Wowhead rows reuse the bonus list Icy Veins publishes for the
+*same item ID* where one exists, and stay bare where none does.
+
 Run from the repo root:  python3 tools/fetch_bis.py
 """
 import datetime
 import html
+import json
 import re
 import sys
 import time
@@ -36,6 +52,25 @@ SLOT_MAP = {
 
 def strip_tags(s):
     return html.unescape(re.sub(r"<[^>]+>", "", s)).strip()
+
+
+def parse_bonus(item_html):
+    """The item's bonus-ID list as "a:b:c", or "" when the link carries none.
+
+    Icy Veins writes the link as data-wowhead="item=<id>&amp;bonus=<a>:<b>"
+    and appends "&amp;original-item=<id>" on catalysed pieces, so the value
+    is unescaped and cut at the next parameter before it is read."""
+    m = re.search(r'data-wowhead="([^"]+)"', item_html)
+    if not m:
+        return ""
+    bm = re.search(r"bonus=([\d:]*)", html.unescape(m.group(1)))
+    if not bm:
+        return ""
+    # Icy Veins writes a leading empty element on the returning older-expansion
+    # dungeon pieces ("bonus=:12854" - no upgrade-track bonus, only a rank).
+    # Wowhead tolerates that; a game client item string does not, so the list
+    # is normalised to bare numbers here.
+    return ":".join(part for part in bm.group(1).split(":") if part)
 
 
 def parse_bis(body):
@@ -67,6 +102,7 @@ def parse_bis(body):
                 im = re.search(r'data-wowhead="item=(\d+)[^"]*"[^>]*>([^<]+)<', item)
             if not im:
                 continue
+            bonus = parse_bonus(item)
             sm = re.search(r'class="bis_item_slot">([^<]+)<', item)
             slot_raw = strip_tags(sm.group(1)).lower() if sm else ""
             slot = SLOT_MAP.get(slot_raw)
@@ -82,6 +118,7 @@ def parse_bis(body):
                 "slot": slot, "itemID": int(im.group(1)),
                 "name": html.unescape(im.group(2)).strip(),
                 "from": strip_tags(dm.group(1)) if dm else "",
+                "bonus": bonus,
             })
         title = titles.get(tab_id, tab_id)
         # Some guides repeat the whole block (Discipline's page carries it
@@ -89,6 +126,14 @@ def parse_bis(body):
         if rows and not any(t["title"] == title for t in tabs):
             tabs.append({"title": title, "rows": rows})
     return tabs or None
+
+
+def lua_row(r):
+    parts = ["slot = %s" % lua_str(r["slot"]), "itemID = %d" % r["itemID"],
+             "name = %s" % lua_str(r["name"]), "from = %s" % lua_str(r["from"])]
+    if r.get("bonus"):
+        parts.append("bonus = %s" % lua_str(r["bonus"]))
+    return "      { %s }," % ", ".join(parts)
 
 
 def main():
@@ -103,14 +148,27 @@ def main():
         "-- each site's editorial BiS at the time the script ran - it goes stale every",
         "-- patch, and the Codex says so - not a claim of the single best item for",
         "-- your character. See DESIGN.md's \"Linked BiS lists\".",
+        "--",
+        "-- A row's `bonus` is the item's bonus-ID list, \"a:b:c\", as Icy Veins links",
+        "-- it. It is what puts the item on its current-season upgrade track: without",
+        "-- it the client resolves the bare itemID to the item's base form, which for",
+        "-- a current dungeon piece can be a level-48 rare rather than the item level",
+        "-- 334 epic the guide means. Rows Wowhead lists carry the bonus list Icy",
+        "-- Veins states for the same item, since Wowhead's own markup has none.",
         "-- Generated: %s UTC" % datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M"),
         "",
         "local ADDON, ns = ...",
         "if not ns.GuideStore then return end",
         "",
     ]
-    ok_count = 0
     dump = wowhead.load()
+
+    # Pass 1: read every Icy Veins guide. The bonus lists have to be complete
+    # before any Wowhead row is written, since a Wowhead row borrows the bonus
+    # list Icy Veins publishes for that item - possibly from another spec's
+    # guide, which may not have been read yet in a single-pass loop.
+    scraped = {}
+    bonus_by_item = {}
     for classToken, specID, _, ivSlug, ivRole in SPECS:
         url = "https://www.icy-veins.com/wow/%s-pve-%s-gear-best-in-slot" % (ivSlug, ivRole)
         tabs, updated = None, None
@@ -120,6 +178,16 @@ def main():
         except Exception as exc:
             print("  %s: %s" % (url, exc), file=sys.stderr)
         time.sleep(0.5)
+        scraped[specID] = (tabs, updated)
+        for tab in tabs or []:
+            for r in tab["rows"]:
+                if r.get("bonus"):
+                    bonus_by_item.setdefault(r["itemID"], r["bonus"])
+
+    # Pass 2: write the file.
+    ok_count, borrowed, bare = 0, 0, 0
+    for classToken, specID, _, ivSlug, _ in SPECS:
+        tabs, updated = scraped[specID]
         spec_words = ivSlug.split("-")
         wh_lists = wowhead.bis_lists(dump, specID, spec_words)
         out.append("-- %s %d (%s)" % (classToken, specID, ivSlug))
@@ -138,20 +206,24 @@ def main():
         out.append('  patch = "12.1",')
         out.append("  lists = {")
         titles = []
-        for tab in tabs:
+        for tab in tabs or []:
             title = "Icy Veins " + tab["title"]
             titles.append("%s:%d" % (title, len(tab["rows"])))
             out.append("    { title = %s, list = {" % lua_str(title))
             for r in tab["rows"]:
-                out.append("      { slot = %s, itemID = %d, name = %s, from = %s }," % (
-                    lua_str(r["slot"]), r["itemID"], lua_str(r["name"]), lua_str(r["from"])))
+                out.append(lua_row(r))
             out.append("    }},")
         for title, rows in wh_lists:
             titles.append("%s:%d" % (title, len(rows)))
             out.append("    { title = %s, list = {" % lua_str(title))
             for r in rows:
-                out.append("      { slot = %s, itemID = %d, name = %s, from = %s }," % (
-                    lua_str(r["slot"]), r["itemID"], lua_str(r["name"]), lua_str(r["from"])))
+                if not r.get("bonus"):
+                    r["bonus"] = bonus_by_item.get(r["itemID"], "")
+                    if r["bonus"]:
+                        borrowed += 1
+                    else:
+                        bare += 1
+                out.append(lua_row(r))
             out.append("    }},")
         out.append("  },")
         out.append("})")
@@ -162,6 +234,16 @@ def main():
     with open(path, "w") as f:
         f.write("\n".join(out))
     print("wrote %s: %d specs" % (path, ok_count))
+    print("bonus lists: %d distinct items from Icy Veins; %d Wowhead rows borrowed one, %d left bare"
+          % (len(bonus_by_item), borrowed, bare))
+
+    # Shared with tools/fetch_trinkets.py, which has no bonus source of its
+    # own: bloodmallet reports bare item IDs and Icy Veins' Trinket Rankings
+    # table links bare item IDs too, so a trinket only gets a bonus list when
+    # some spec's BiS guide happens to name the same item.
+    with open("tools/item_bonus.json", "w") as f:
+        json.dump({str(k): v for k, v in sorted(bonus_by_item.items())}, f, indent=0, sort_keys=True)
+    print("wrote tools/item_bonus.json: %d items" % len(bonus_by_item))
 
 
 if __name__ == "__main__":

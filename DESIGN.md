@@ -356,6 +356,53 @@ then the personal checklist. As of 2026-09-02 all 40 specs have all three
 contexts. One guide (Discipline) repeats its block; the parser keeps the
 first list per title.
 
+### Bonus IDs (v1.6) — why the rows showed the wrong item
+
+The first version shipped only the item ID, and a bare item ID resolves to
+the item's **base** form. On current-season gear that is a different item
+from the one on the guide page: Protection Paladin's Mythic+ neck, item
+273781, renders in the client as a level-48 rare with +8 Stamina, where Icy
+Veins means the item level 334 epic. The addon looked wrong in exactly the
+way a stale list would, while the data was current.
+
+What separates them is the item's **bonus-ID list**, which puts it on its
+upgrade track. Icy Veins links every BiS entry as
+`item=<id>&bonus=<a>:<b>`, and `tools/fetch_bis.py` now carries that through
+as a row's `bonus` (validated optional, `"a:b:c"`). Details worth keeping:
+
+- Icy Veins appends `&original-item=<id>` to catalysed pieces — the token's
+  pre-catalyst source, not part of the bonus list. Dropped.
+- It writes a **leading empty element** on the returning older-expansion
+  dungeon pieces (`bonus=:12854`: no upgrade-track bonus, only a rank).
+  Wowhead tolerates that; a client item string does not, so the list is
+  normalised to bare numbers.
+- Wowhead's own guide markup carries bare `[item=<id>]` with no bonus list —
+  the site applies a default context when it renders. Rather than invent
+  one, a Wowhead row reuses the bonus list Icy Veins publishes for the
+  **same item ID**, which means `fetch_bis.py` reads every Icy Veins guide
+  before writing any row. 652 of 668 Wowhead rows get one that way; the 16
+  that no Icy Veins guide names stay bare.
+- The map is written to `tools/item_bonus.json` so `tools/fetch_trinkets.py`
+  can share it. Trinket coverage is much thinner (25 of 102 items) because
+  neither trinket source publishes bonus lists and only some trinkets appear
+  in a BiS guide; those rows stay bare until a better source turns up.
+
+On the addon side `UI/Codex.lua`'s `ItemString(itemID, bonus)` builds
+`item:<id>:0:0:0:0:0:0:0:0:0:0:0:<numBonusIDs>:<bonus...>` — the eleven
+fields between the ID and the bonus count zeroed — or returns the plain
+numeric ID when there is no bonus list, which is what every path took
+before. A row keeps its numeric `itemID` (that is what
+`GET_ITEM_INFO_RECEIVED` and the checklist match on) and gains an
+`itemLink` holding the string; hover, click and name/quality lookup all
+prefer `itemLink or itemID`. `GameTooltip:SetItemByID` takes a numeric ID
+only, so the hover path switches to `SetHyperlink` for a string — the mock
+now asserts that distinction rather than accepting either.
+
+The **Add** button still files the bare item ID on the personal checklist.
+That list answers "do I have this piece", which is matched by item ID
+against your bags and equipped slots; folding a guide's upgrade track into
+it would misreport what you actually own.
+
 ## Stat priority (v1.6, Data/StatPriority.lua)
 
 A guide's own `statPriority` is one flat, ordered list per spec. That was

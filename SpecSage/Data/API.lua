@@ -128,6 +128,20 @@ end
 -- D is only ever an editorial (guide-site) tier; the sim buckets stop at C.
 local VALID_TIERS = { S = true, A = true, B = true, C = true, D = true, F = true }
 
+-- A row's optional bonus-ID list, "a:b:c" (v1.6, on BiS and trinket rows).
+-- It is what puts the item on its current-season upgrade track: without it
+-- the client resolves the bare itemID to the item's base form, which for a
+-- current dungeon piece can be a level-48 rare instead of the item level 334
+-- epic the guide meant. Rows whose source publishes no bonus list stay bare,
+-- so nil must validate.
+local function ValidateBonus(bonus, where)
+    if bonus == nil then return true end
+    if type(bonus) ~= "string" or not bonus:match("^%d+[%d:]*$") then
+        return false, where .. ".bonus must be a colon-separated list of numbers"
+    end
+    return true
+end
+
 local function ValidateTrinkets(data)
     if type(data) ~= "table" then
         return false, "trinkets must be a table"
@@ -175,6 +189,8 @@ local function ValidateTrinkets(data)
             if row.whTier ~= nil and (type(row.whTier) ~= "string" or not VALID_TIERS[row.whTier]) then
                 return false, where .. ".whTier must be a tier letter when present"
             end
+            local bonusOK, bonusErr = ValidateBonus(row.bonus, where)
+            if not bonusOK then return false, bonusErr end
         end
     end
 
@@ -332,8 +348,10 @@ function GuideStore:GetTrinkets(specID)
 end
 
 -- Linked BiS lists (v1.5, generated Data/BiS.lua): { source, patch, lists =
--- { { title, list = { { slot, itemID, name, from }, ... } }, ... } }. Every
--- row is a concrete item in one of the 14 gear slots.
+-- { { title, list = { { slot, itemID, name, from, bonus }, ... } }, ... } }.
+-- Every row is a concrete item in one of the 14 gear slots. `bonus` (v1.6,
+-- optional) is the item's bonus-ID list as the guide site links it - see
+-- DESIGN.md's "Linked BiS lists".
 local bisLists = {}
 
 local function ValidateBiS(data)
@@ -358,6 +376,8 @@ local function ValidateBiS(data)
             if type(row.name) ~= "string" or row.name == "" then
                 return false, where .. ".name must be a non-empty string"
             end
+            local bonusOK, bonusErr = ValidateBonus(row.bonus, where)
+            if not bonusOK then return false, bonusErr end
         end
     end
     return true

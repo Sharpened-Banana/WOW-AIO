@@ -17,6 +17,9 @@ class guides, talent loadouts, and live character tracking in one place:
   3/5-target, every row a clickable item link), plus a personal best-in-slot
   checklist: paste item links from whatever guide site you trust and SpecSage
   tracks live which pieces you have equipped, in your bags, or still missing.
+  Linked BiS rows carry each item's upgrade-track bonus IDs, so hovering or
+  clicking one shows the item level the guide actually means rather than the
+  item's base form.
 - **Tier and stat ranks on item tooltips** — a trinket's tooltip shows its
   tier in your current spec's trinket lists (Single Target S, Icy Veins A,
   …), and every item tooltip gets each secondary stat's rank written next to

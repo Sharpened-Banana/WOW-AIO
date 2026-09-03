@@ -799,11 +799,39 @@ mock.items = {
     [42] = { name = "Champion's Dreadful Gladiator's Pendant of Alacrity", quality = 3 },
 }
 
+-- The real GetItemInfo takes either a numeric itemID or a full item string
+-- ("item:<id>:0:...:<numBonus>:<bonus...>"), and the two do NOT resolve to the
+-- same item: the bare ID gives the item's base form, while the bonus IDs put
+-- it on its current upgrade track. That difference is the whole point of
+-- UI/Codex.lua's ItemString, so the mock models it - a fixture may carry a
+-- `bonus` table keyed by the bonus list ("4786:12854") with its own name,
+-- quality and level, and a lookup by item string prefers it.
+local function ResolveItem(key)
+    if type(key) == "number" then return mock.items[key] end
+    if type(key) ~= "string" then return nil end
+    local itemID = tonumber(key:match("^item:(%d+)"))
+    if not itemID then return nil end
+    local base = mock.items[itemID]
+    if not base then return nil end
+    -- Everything after the bonus count, which is the 14th field.
+    local bonus = key:match("^item:%d+:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:%d+:(.+)$")
+    if bonus and base.bonus and base.bonus[bonus] then
+        local variant = base.bonus[bonus]
+        local merged = {}
+        for k, v in pairs(base) do merged[k] = v end
+        for k, v in pairs(variant) do merged[k] = v end
+        return merged
+    end
+    return base
+end
+
+mock.ResolveItem = ResolveItem
+
 C_Item = {
     GetItemInfo = function(itemID)
-        local item = mock.items[itemID]
+        local item = ResolveItem(itemID)
         if not item then return nil end
-        return item.name, item.link or ("item:" .. itemID), item.quality or 1, item.level or 1,
+        return item.name, item.link or ("item:" .. tostring(itemID)), item.quality or 1, item.level or 1,
             item.reqLevel or 1, item.itemType or "Miscellaneous", item.subType or "Junk",
             item.stackCount or 1, item.equipLoc or "", item.texture or 0, item.sellPrice or 0
     end,
@@ -932,10 +960,12 @@ local ITEM_MOD_LINE_LABELS = {
     ITEM_MOD_CR_SPEED_SHORT = "Speed", ITEM_MOD_STAMINA_SHORT = "Stamina",
 }
 
-function GameTooltip:SetItemByID(itemID)
-    self.itemID = itemID
-    local item = mock.items[itemID]
-    table.insert(self.lines, { left = item and item.name or ("Item " .. tostring(itemID)) })
+-- SetItemByID takes a numeric ID only; SetHyperlink is how a bonus-carrying
+-- item string reaches a tooltip. Both land here.
+local function FillItemTooltip(self, key)
+    self.itemID = key
+    local item = ResolveItem(key)
+    table.insert(self.lines, { left = item and item.name or ("Item " .. tostring(key)) })
     local keys = {}
     for key in pairs((item and item.stats) or {}) do keys[#keys + 1] = key end
     table.sort(keys)
@@ -943,6 +973,16 @@ function GameTooltip:SetItemByID(itemID)
         table.insert(self.lines, { left = format("+%d %s", item.stats[key], ITEM_MOD_LINE_LABELS[key] or key) })
     end
     mock.SyncTooltipFontStrings(self)
+end
+
+function GameTooltip:SetItemByID(itemID)
+    assert(type(itemID) == "number", "SetItemByID takes a numeric itemID; use SetHyperlink for an item string")
+    FillItemTooltip(self, itemID)
+end
+
+function GameTooltip:SetHyperlink(link)
+    assert(type(link) == "string", "SetHyperlink takes a link string")
+    FillItemTooltip(self, link)
 end
 
 function GameTooltip:Show() self.shown = true end

@@ -278,23 +278,53 @@ end
 -- ItemRefTooltip, shift-click to insert into chat, ctrl-click to dress up.
 local GetItemInfoAPI = (C_Item and C_Item.GetItemInfo) or GetItemInfo
 
+-- An item string the client resolves to the item the guide actually meant.
+--
+-- A bare itemID resolves to the item's *base* form, and on current-season
+-- gear that is not the item on the page: Icy Veins' Protection Paladin neck
+-- is "Strand of Warding Fangs" at item level 334, while item ID 273781 on
+-- its own is a level-48 rare with +8 Stamina. What separates them is the
+-- item's bonus-ID list, which puts it on its upgrade track, and which the
+-- generated data now carries (Data/BiS.lua's `bonus`). The full form is
+-- item:<id>:<enchant>:<4 gems>:<suffix>:<unique>:<linkLevel>:<specID>:
+-- <modifiersMask>:<itemContext>:<numBonusIDs>:<bonus...>, so the eleven
+-- fields between the ID and the bonus count are zeroed out.
+--
+-- Rows whose source publishes no bonus list (Wowhead's markup has none of
+-- its own; see Data/BiS.lua's header) pass the plain numeric ID through
+-- unchanged, which is what every API here took before.
+local function ItemString(itemID, bonus)
+    if type(itemID) ~= "number" then return nil end
+    if type(bonus) ~= "string" or bonus == "" then return itemID end
+
+    local count, ids = 0, {}
+    for id in bonus:gmatch("%d+") do
+        count = count + 1
+        ids[count] = id
+    end
+    if count == 0 then return itemID end
+    return format("item:%d:0:0:0:0:0:0:0:0:0:0:0:%d:%s", itemID, count, table.concat(ids, ":"))
+end
+
 -- The item's real link once the client has it cached (quality colour, full
--- bonus data), else a bare "item:ID" the link-click path still resolves.
-local function ItemLink(itemID)
+-- bonus data), else the item string itself, which the link-click path still
+-- resolves. `item` is whatever ItemString returned - an ID or a full string.
+local function ItemLink(item)
     if GetItemInfoAPI then
-        local ok, _, link = pcall(GetItemInfoAPI, itemID)
+        local ok, _, link = pcall(GetItemInfoAPI, item)
         if ok and type(link) == "string" and link ~= "" then return link end
     end
-    return "item:" .. tostring(itemID)
+    if type(item) == "string" then return item end
+    return "item:" .. tostring(item)
 end
 
 -- HandleModifiedItemClick covers the shift/ctrl modifiers (chat insert,
 -- dressing room) and returns true when it consumed the click; SetItemRef is
 -- what a plain click on a chat link runs, opening ItemRefTooltip. Both are
 -- pcall-wrapped since either has moved between client versions.
-local function ClickItemLink(itemID, button)
-    if type(itemID) ~= "number" then return false end
-    local link = ItemLink(itemID)
+local function ClickItemLink(item, button)
+    if type(item) ~= "number" and type(item) ~= "string" then return false end
+    local link = ItemLink(item)
     local ok = pcall(function()
         if HandleModifiedItemClick and HandleModifiedItemClick(link) then return end
         if SetItemRef then
@@ -305,10 +335,17 @@ local function ClickItemLink(itemID, button)
     return ok
 end
 
-local function ShowItemTooltip(owner, itemID)
+-- SetItemByID only takes a numeric ID, so a bonus-carrying item string has to
+-- go through SetHyperlink instead - otherwise the hover tooltip would show
+-- the base item while the row's text described the upgraded one.
+local function ShowItemTooltip(owner, item)
     pcall(function()
         GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
-        GameTooltip:SetItemByID(itemID)
+        if type(item) == "string" then
+            GameTooltip:SetHyperlink(item)
+        else
+            GameTooltip:SetItemByID(item)
+        end
         GameTooltip:Show()
     end)
 end
@@ -564,7 +601,7 @@ local function AcquireLineRow(pool, index, parent)
 
         row:SetScript("OnEnter", function(self)
             if self.itemID then
-                ShowItemTooltip(self, self.itemID)
+                ShowItemTooltip(self, self.itemLink or self.itemID)
                 return
             end
             if not self.spellID then return end
@@ -580,7 +617,7 @@ local function AcquireLineRow(pool, index, parent)
         -- A gear guidance line that names a concrete item (opts.itemID in
         -- PlaceLine) is a clickable item link; spell rows stay hover-only.
         row:SetScript("OnMouseUp", function(self, button)
-            if self.itemID then ClickItemLink(self.itemID, button) end
+            if self.itemID then ClickItemLink(self.itemLink or self.itemID, button) end
         end)
 
         pool[index] = row
@@ -613,6 +650,7 @@ local function PlaceLine(pool, index, parent, y, width, text, opts)
         row:EnableMouse(false)
     end
     row.itemID = opts.itemID
+    row.itemLink = opts.itemLink
     if opts.itemID then row:EnableMouse(true) end
     -- opts.indent (a step's condition sub-line) stacks with the spellID
     -- inset rather than replacing it, though the two are never combined in
@@ -937,14 +975,14 @@ local function AcquireBiSRow(pool, index, parent)
         -- has no pinning" per DESIGN.md).
         row:SetScript("OnEnter", function(self2)
             if not self2.itemID then return end
-            ShowItemTooltip(self2, self2.itemID)
+            ShowItemTooltip(self2, self2.itemLink or self2.itemID)
         end)
         row:SetScript("OnLeave", function()
             pcall(function() GameTooltip:Hide() end)
         end)
         -- A checklist entry with an itemID is a clickable item link (v1.5).
         row:SetScript("OnMouseUp", function(self2, button)
-            if self2.itemID then ClickItemLink(self2.itemID, button) end
+            if self2.itemID then ClickItemLink(self2.itemLink or self2.itemID, button) end
         end)
 
         pool[index] = row
@@ -982,13 +1020,13 @@ local function AcquireTrinketRow(pool, index, parent)
         row.gain:SetWidth(TRINKET_GAIN_WIDTH)
 
         row:SetScript("OnEnter", function(self2)
-            if self2.itemID then ShowItemTooltip(self2, self2.itemID) end
+            if self2.itemID then ShowItemTooltip(self2, self2.itemLink or self2.itemID) end
         end)
         row:SetScript("OnLeave", function()
             pcall(function() GameTooltip:Hide() end)
         end)
         row:SetScript("OnMouseUp", function(self2, button)
-            if self2.itemID then ClickItemLink(self2.itemID, button) end
+            if self2.itemID then ClickItemLink(self2.itemLink or self2.itemID, button) end
         end)
 
         pool[index] = row
@@ -1026,13 +1064,13 @@ local function AcquireBiSLinkRow(pool, index, parent)
         SkinButton(row.addButton)
 
         row:SetScript("OnEnter", function(self2)
-            if self2.itemID then ShowItemTooltip(self2, self2.itemID) end
+            if self2.itemID then ShowItemTooltip(self2, self2.itemLink or self2.itemID) end
         end)
         row:SetScript("OnLeave", function()
             pcall(function() GameTooltip:Hide() end)
         end)
         row:SetScript("OnMouseUp", function(self2, button)
-            if self2.itemID then ClickItemLink(self2.itemID, button) end
+            if self2.itemID then ClickItemLink(self2.itemLink or self2.itemID, button) end
         end)
 
         pool[index] = row
@@ -1103,12 +1141,17 @@ function Codex:RenderBiSLinkSection(pool, index, parent, width, y, specID)
         row.slot:SetText(entry.slot or "")
         row.slot:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])
 
+        -- Resolve through the bonus-carrying item string, not the bare ID:
+        -- the ID alone gives the item's base form (see ItemString).
+        local item = ItemString(entry.itemID, entry.bonus)
         local name, quality = entry.name
         if GetItemInfoAPI then
-            local ok, realName, _, realQuality = pcall(GetItemInfoAPI, entry.itemID)
+            local ok, realName, _, realQuality = pcall(GetItemInfoAPI, item)
             if ok and type(realName) == "string" and realName ~= "" then
                 name, quality = realName, realQuality
             elseif C_Item and C_Item.RequestLoadItemDataByID then
+                -- Always the numeric ID: loading the base item is what makes
+                -- the bonus-carrying string resolvable on the next pass.
                 pcall(C_Item.RequestLoadItemDataByID, entry.itemID)
             end
         end
@@ -1118,6 +1161,7 @@ function Codex:RenderBiSLinkSection(pool, index, parent, width, y, specID)
             math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5), name, fromText))
         row.text:SetTextColor(1, 1, 1)
         row.itemID = entry.itemID
+        row.itemLink = (item ~= entry.itemID) and item or nil
 
         row.addButton:SetText("Add")
         row.addButton:SetScript("OnClick", function(btn) self:OnAddBiSLinkClicked(btn, specID, entry) end)
@@ -1316,9 +1360,10 @@ function Codex:RenderTrinketSection(pool, index, parent, width, y, specID)
         -- Quality colour once the client knows the item; a not-yet-cached
         -- item shows the sim's own name in the default item colour and asks
         -- the client to fetch it (OnBiSItemInfoReceived re-renders).
+        local item = ItemString(entry.itemID, entry.bonus)
         local name, quality = entry.name
         if GetItemInfoAPI then
-            local ok, realName, _, realQuality = pcall(GetItemInfoAPI, entry.itemID)
+            local ok, realName, _, realQuality = pcall(GetItemInfoAPI, item)
             if ok and type(realName) == "string" and realName ~= "" then
                 name, quality = realName, realQuality
             elseif C_Item and C_Item.RequestLoadItemDataByID then
@@ -1350,6 +1395,7 @@ function Codex:RenderTrinketSection(pool, index, parent, width, y, specID)
             math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5), name, detailText))
         row.text:SetTextColor(1, 1, 1)
         row.itemID = entry.itemID
+        row.itemLink = (item ~= entry.itemID) and item or nil
 
         row.gain:SetText(entry.gain ~= nil and format("+%.1f%%", entry.gain) or "")
         row.gain:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])

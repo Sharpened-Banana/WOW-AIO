@@ -1979,6 +1979,123 @@ for _, tabName in ipairs(TAB_NAMES) do
 end
 
 --------------------------------------------------------------------------------
+section("BiS item bonus IDs (v1.6)")
+--------------------------------------------------------------------------------
+
+-- A bare itemID resolves to the item's *base* form. On current-season gear
+-- that is a different item from the one the guide means - the reported case
+-- was Protection Paladin's Mythic+ neck, item 273781, which the BiS tab
+-- showed as a level-48 rare with +8 Stamina rather than the item level 334
+-- epic on Icy Veins' page. The bonus-ID list is what separates them, so it
+-- ships alongside the item ID and the Codex builds a full item string.
+do
+    local rows, withBonus, badBonus = 0, 0, {}
+    for _, classEntry in ipairs(ns.GuideStore:GetClasses()) do
+        for _, specID in ipairs(ns.GuideStore:GetClassSpecs(classEntry.token)) do
+            if specID < 9000 then
+                for _, listEntry in ipairs(ns.GuideStore:GetBiS(specID).lists) do
+                    for _, row in ipairs(listEntry.list) do
+                        rows = rows + 1
+                        if row.bonus then
+                            withBonus = withBonus + 1
+                            if not row.bonus:match("^%d+[%d:]*$") then
+                                badBonus[#badBonus + 1] = tostring(row.itemID)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    check(#badBonus == 0, "every bonus list is colon-separated numbers only", table.concat(badBonus, ","))
+    check(withBonus > rows * 0.95, "nearly every BiS row carries its bonus list",
+        format("%d of %d", withBonus, rows))
+
+    -- The exact row from the bug report.
+    local neck
+    for _, listEntry in ipairs(ns.GuideStore:GetBiS(66).lists) do
+        if listEntry.title == "Icy Veins Mythic+" then
+            for _, row in ipairs(listEntry.list) do
+                if row.slot == "Neck" then neck = row end
+            end
+        end
+    end
+    check(neck ~= nil and neck.itemID == 273781, "Protection Paladin's Mythic+ neck is item 273781",
+        neck and neck.itemID)
+    check(neck ~= nil and neck.bonus ~= nil and neck.bonus ~= "",
+        "and it now carries the bonus list Icy Veins links it with", neck and neck.bonus)
+
+    -- A malformed bonus list is rejected rather than reaching the client.
+    local base = { lists = { { title = "T", list = {
+        { slot = "Neck", itemID = 1, name = "N", bonus = "4786:12854" } } } } }
+    check(ns.GuideStore:RegisterBiS(999902, base) == true, "a well-formed bonus list registers")
+    base.lists[1].list[1].bonus = ":12854"
+    check(ns.GuideStore:RegisterBiS(999903, base) == false, "a bonus list with an empty element is rejected")
+    base.lists[1].list[1].bonus = 4786
+    check(ns.GuideStore:RegisterBiS(999903, base) == false, "a non-string bonus list is rejected")
+    base.lists[1].list[1].bonus = nil
+    check(ns.GuideStore:RegisterBiS(999903, base) == true, "a row with no bonus list still registers")
+end
+
+--------------------------------------------------------------------------------
+section("Codex: BiS rows resolve the upgraded item, not its base form (v1.6)")
+--------------------------------------------------------------------------------
+
+do
+    -- The fixture models the real difference: item 880101 on its own is a
+    -- low-level rare, and only the bonus list gives the epic the guide meant.
+    mock.items[880101] = {
+        name = "Base Form Neck", quality = 3, level = 48,
+        bonus = { ["4786:12854"] = { name = "Upgraded Neck", quality = 4, level = 334 } },
+    }
+    ns.GuideStore:RegisterBiS(9604, { source = "test source", patch = "12.1", lists = { {
+        title = "Test", list = {
+            { slot = "Neck", itemID = 880101, name = "Shipped Name", from = "Somewhere",
+              bonus = "4786:12854" },
+            { slot = "Ring", itemID = 880101, name = "Shipped Name", from = "Somewhere" },
+        },
+    } } })
+    Codex.bisListIndex = 1
+    Codex:Open("MAGE", 9604)
+    Codex:SelectTab("BiS")
+
+    local linked = Codex.bisLinkRowPool[1]
+    check(linked ~= nil and linked.text:GetText():find("Upgraded Neck", 1, true) ~= nil,
+        "a row with a bonus list shows the upgraded item's name", linked and linked.text:GetText())
+    check(linked ~= nil and linked.itemLink == "item:880101:0:0:0:0:0:0:0:0:0:0:0:2:4786:12854",
+        "the row carries the full item string, bonus count and all", linked and linked.itemLink)
+
+    local bare = Codex.bisLinkRowPool[2]
+    check(bare ~= nil and bare.text:GetText():find("Base Form Neck", 1, true) ~= nil,
+        "a row with no bonus list still resolves the bare item", bare and bare.text:GetText())
+    check(bare ~= nil and bare.itemLink == nil, "and carries no item string of its own", bare and bare.itemLink)
+
+    -- Hovering must go through SetHyperlink for the bonus row: SetItemByID
+    -- takes a numeric ID and would show the base item instead.
+    linked:GetScript("OnEnter")(linked)
+    check(GameTooltip.itemID == "item:880101:0:0:0:0:0:0:0:0:0:0:0:2:4786:12854",
+        "hovering a bonus row opens the tooltip on the full item string", GameTooltip.itemID)
+    check(table.concat(GameTooltip:Dump(), "\n"):find("Upgraded Neck", 1, true) ~= nil,
+        "so the hover tooltip shows the upgraded item")
+    linked:GetScript("OnLeave")(linked)
+
+    GameTooltip:SetOwner(nil, "ANCHOR_NONE")
+    bare:GetScript("OnEnter")(bare)
+    check(GameTooltip.itemID == 880101, "hovering a bare row still uses the numeric itemID", GameTooltip.itemID)
+    bare:GetScript("OnLeave")(bare)
+
+    -- Clicking inserts the bonus-carrying link, so a shift-click into chat
+    -- links the item the guide meant.
+    mock.itemRefClicks = {}
+    linked:GetScript("OnMouseUp")(linked, "LeftButton")
+    check(#mock.itemRefClicks == 1 and mock.itemRefClicks[1].link:find("4786:12854", 1, true) ~= nil,
+        "clicking a bonus row opens the upgraded item's link",
+        mock.itemRefClicks[1] and mock.itemRefClicks[1].link)
+
+    mock.items[880101] = nil
+end
+
+--------------------------------------------------------------------------------
 section("Stat priority: Wowhead per-hero-tree lists (v1.6)")
 --------------------------------------------------------------------------------
 
