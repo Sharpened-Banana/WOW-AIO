@@ -2282,24 +2282,23 @@ local function CountShownRows(pool)
 end
 
 -- MAGE spec 9005 was registered in the GuideStore section above with a
--- 4-entry gear array; opening the Codex there exercises the shipped gear
--- guidance half of the BiS tab against real data.
+-- 4-entry gear array. That prose is no longer drawn on the BiS tab - it ran
+-- to a screenful before the first item - so the tab opens straight on the
+-- linked lists: the Trinket Tier List header + its "no data" reason line
+-- (9005 registers no trinkets) + the Personal Checklist header.
 Codex:Open("MAGE", 9005)
 Codex:SelectTab("BiS")
 check(Codex.activeTab == "BiS", "SelectTab switches to the BiS tab")
--- 4 gear rows + the Trinket Tier List header + its "no data" reason line
--- (9005 registers no trinkets) + the Personal Checklist header.
-check(CountShownRows(Codex.pools.bis) == 7,
-    "the BiS tab renders one row per shipped gear entry plus the trinket and checklist headers",
+check(CountShownRows(Codex.pools.bis) == 3,
+    "the BiS tab draws no gear prose, only the trinket and checklist headers",
     CountShownRows(Codex.pools.bis))
+for _, row in ipairs(Codex.pools.bis) do
+    check(not (row:IsShown() and (row.text:GetText() or ""):find("^Head:")),
+        "no per-slot prose row is drawn", row.text:GetText())
+end
 
--- MAGE spec 9004 (also registered above) has no gear key at all: the
--- guidance half falls back to the shared NO_DATA line, same as every other
--- tab.
 Codex:Open("MAGE", 9004)
 Codex:SelectTab("BiS")
-check(Codex.pools.bis[1]:IsShown() and Codex.pools.bis[1].text:GetText():find("no guide data", 1, true) ~= nil,
-    "a spec with no gear data renders the NO_DATA line", Codex.pools.bis[1].text:GetText())
 
 -- The Add row: cycling the slot button, typing into the editbox, and
 -- clicking Add stores a new personal checklist entry for the viewed spec.
@@ -3158,15 +3157,6 @@ do
     check(shownTrinketRows() == 1, "the 5 Targets list renders its own row count", shownTrinketRows())
     Codex:CycleTrinketList()
     check(Codex.trinketToggle:GetText() == "Single Target", "the toggle wraps back to the first list")
-
-    -- A gear guidance entry with an itemID renders as a clickable link row.
-    local gearRow = Codex.pools.bis[1]
-    check(gearRow.itemID == 19019, "a gear entry with an itemID makes its line row clickable", gearRow.itemID)
-    check(gearRow.text:GetText():find("[Thunderfury", 1, true) ~= nil,
-        "the gear line appends the linked item's name", gearRow.text:GetText())
-    mock.itemRefClicks = {}
-    gearRow:GetScript("OnMouseUp")(gearRow, "LeftButton")
-    check(#mock.itemRefClicks == 1, "clicking the gear line opens its item link")
 
     -- Once the uncached trinket resolves, GET_ITEM_INFO_RECEIVED re-renders it.
     mock.items[777001] = { name = "Now Cached Trinket", quality = 4 }

@@ -202,8 +202,8 @@ tracks progress live:
   `"owned"` (in bags, via `C_Container.GetContainerNumSlots`/`GetContainerItemID`
   fallback chain), or `"missing"` — only meaningful when the entry has an
   itemID and the viewed spec is the player's; pcall-wrap container/item APIs.
-- Codex **BiS** tab: shipped gear guidance rows on top (slot label +
-  text), then a divider, then the personal checklist — each row shows slot,
+- Codex **BiS** tab: the personal checklist (the shipped per-slot gear
+  prose was drawn above it until 2026-09-03; see "BiS tab prose" below) — each row shows slot,
   item name (item-quality colour when known), status tag
   (green "equipped" / yellow "in bags" / grey "missing", only for own spec
   with itemID), a Delete button, and item `GameTooltip:SetItemByID` on
@@ -325,8 +325,7 @@ accepted as a tier (editorial lists use it; sim buckets stop at C), and a
 top-level `note` is an optional non-empty string the Codex draws under the
 list.
 
-Codex BiS tab layout, top to bottom: shipped gear guidance rows (as before),
-then a **Trinket Tier List** header with a fight-style toggle button beside
+Codex BiS tab layout, top to bottom: a **Trinket Tier List** header with a fight-style toggle button beside
 it (cycles Single Target / 3 Targets / 5 Targets; hidden when only one list
 exists), one row per trinket — tier tag (S orange, A purple, B blue, C
 green) | quality-coloured item name with `ilvl · source · on-use` detail |
@@ -349,8 +348,7 @@ editorial list and the tab's attribution line says so — and says it goes
 stale every patch, which is the whole reason the shipped prose guidance and
 the personal checklist still exist alongside it.
 
-Codex BiS tab order is now: prose gear guidance, **Best in Slot (Icy
-Veins)** with a context toggle and one clickable row per slot (slot |
+Codex BiS tab order is now: **Best in Slot (Icy Veins)** with a context toggle and one clickable row per slot (slot |
 quality-coloured item + drop source | **Add**, which files the item on the
 personal checklist under that slot via `BiS:Add`), the trinket tier list,
 then the personal checklist. As of 2026-09-02 all 40 specs have all three
@@ -826,6 +824,15 @@ rest are desaturated.
 - **Overview / Stats / Rotation / Cooldowns / Consumables / BiS / Loadouts /
   Notes / Options** — rendered by `UI/Codex.lua`'s own methods, not copies
   of them.
+
+### BiS tab prose
+
+The guide schema's `gear` array (slot + a sentence on what to look for)
+was drawn at the top of the BiS tab from v1.5 on. Once every spec had
+linked BiS lists it was a screenful of prose before the first item, and
+the owner asked for it gone (2026-09-03). The data stays in the guide
+files - the schema and its round-trip tests still carry it - but nothing
+draws it.
 
 ### Rendering surfaces
 

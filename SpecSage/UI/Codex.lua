@@ -1360,13 +1360,6 @@ function Codex:OnBiSItemInfoReceived(itemID)
             return
         end
     end
-    local guide = ns.GuideStore:GetGuide(specID)
-    for _, entry in ipairs((guide and guide.gear) or {}) do
-        if entry.itemID == itemID then
-            self:RenderBiS(guide, specID)
-            return
-        end
-    end
 end
 
 -- Cycles the trinket tier list through the spec's registered fight styles.
@@ -1506,38 +1499,12 @@ function Codex:RenderBiS(guide, specID)
     local pool = self.pools.bis
     local y, index = -PADDING, 0
 
-    -- Shipped gear guidance (read-only, per DESIGN.md: "never a scraped item
-    -- list" — slot + our own words on what to look for).
-    local gear = guide and guide.gear
-    if not gear or #gear == 0 then
-        index = index + 1
-        y = PlaceLine(pool, index, parent, y, width, NO_DATA_TEXT, { color = MUTED_COLOR })
-    else
-        for _, entry in ipairs(gear) do
-            index = index + 1
-            local text = format("%s: %s", entry.slot or "?", entry.text or "")
-            -- A guidance entry naming a concrete item (v1.5) shows it as a
-            -- quality-coloured, clickable link after the text.
-            if entry.itemID then
-                local name, quality
-                if GetItemInfoAPI then
-                    local ok, realName, _, realQuality = pcall(GetItemInfoAPI, entry.itemID)
-                    if ok and type(realName) == "string" and realName ~= "" then
-                        name, quality = realName, realQuality
-                    elseif C_Item and C_Item.RequestLoadItemDataByID then
-                        pcall(C_Item.RequestLoadItemDataByID, entry.itemID)
-                    end
-                end
-                local r, g, b = ItemQualityColor(quality)
-                text = format("%s  |cff%02x%02x%02x[%s]|r", text,
-                    math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5),
-                    name or ("Item " .. tostring(entry.itemID)))
-            end
-            y = PlaceLine(pool, index, parent, y, width, text, { itemID = entry.itemID })
-        end
-    end
+    -- The shipped per-slot gear prose (guide.gear) is deliberately not drawn
+    -- here any more: it ran to a screenful before the first item, and the
+    -- linked BiS lists below say the same thing as a row per slot. The data
+    -- stays in the guide files (the schema and its round-trip tests still
+    -- carry it) but nothing draws it.
 
-    y = y - GROUP_GAP
     index, y = self:RenderBiSLinkSection(pool, index, parent, width, y, specID)
     index, y = self:RenderTrinketSection(pool, index, parent, width, y, specID)
 
