@@ -14,9 +14,7 @@ class guides, talent loadouts, and live character tracking in one place:
   which page it came from and when, so you can see when it has gone stale.
 - **BiS & Gear** — per-spec gear guidance (what to look for in each slot),
   a sim-based **trinket tier list** per spec (S/A/B/C, single-target and
-  3/5-target, every row a clickable item link), plus a personal best-in-slot
-  checklist: paste item links from whatever guide site you trust and SpecSage
-  tracks live which pieces you have equipped, in your bags, or still missing.
+  3/5-target, every row a clickable item link).
   Linked BiS rows carry each item's upgrade-track bonus IDs, so hovering or
   clicking one shows the item level the guide actually means rather than the
   item's base form.
@@ -76,8 +74,7 @@ BiS tab:
   Mythic+, Raid) and Wowhead (`tools/fetch_bis.py` regenerates
   `Data/BiS.lua`; Wowhead is harvested in a browser by
   `tools/wowhead_harvest.js`): one clickable item per slot with its drop
-  source, and an Add button that puts it straight on your personal
-  checklist. Each is one site's list at the time of the release, and it
+  source. Each is one site's list at the time of the release, and it
   goes stale every patch; the tab says so.
 - **A trinket tier list per spec**, from two sources side by side
   (`tools/fetch_trinkets.py` regenerates `Data/Trinkets.lua`): bloodmallet.com's
@@ -89,11 +86,6 @@ BiS tab:
   no current-patch profile for yet get the site lists only, and the tab
   says why. None of it is a verdict for your fight, and the tab says that
   too.
-- **A personal checklist** you fill from whichever source you trust: pick a
-  slot, shift-click an item link (or paste an item ID or name) from chat, a
-  guide, or the dungeon journal, and SpecSage marks each entry equipped /
-  in bags / missing as you gear up.
-
 Every item on the tab is a real item link: hover for the tooltip, click to
 open it, shift-click to put it in chat.
 

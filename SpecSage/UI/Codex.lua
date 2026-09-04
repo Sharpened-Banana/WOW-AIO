@@ -27,12 +27,9 @@ function Codex:OnInit()
     self.activeTab = self.activeTab or "Overview"
 end
 
--- Modules/BiS.lua queues a C_Item.RequestLoadItemDataByID call whenever a
--- checklist entry's item is still uncached; this is the other half of that
--- fix. Without it, a freshly-added entry whose item was not yet cached would
--- sit at its "Item 12345" placeholder (no quality colour, no live status)
--- until the player happened to switch tab or spec again - the async fetch
--- was queued, but nothing ever acted on it resolving.
+-- The BiS tab asks the client for every item it shows; each answer arrives
+-- as GET_ITEM_INFO_RECEIVED, and the row that was showing an "Item 12345"
+-- placeholder redraws with the real name and quality colour.
 function Codex:OnEnable()
     ns:RegisterEvent("GET_ITEM_INFO_RECEIVED", function(_, itemID)
         self:OnBiSItemInfoReceived(itemID)
@@ -83,7 +80,7 @@ local LINE_GAP = 5
 local PARAGRAPH_GAP = 10
 local GROUP_GAP = 16
 
--- Interactive list rows (BiS checklist, trinket tier list, loadouts): the
+-- Interactive list rows (BiS lists, trinket tier list, loadouts): the
 -- row frame's height and the y-cursor step between rows. Raised from 18/20
 -- in the 2026-09-02 readability pass, together with the font sizes below;
 -- the two must move together or text clips against the next row.
@@ -161,26 +158,10 @@ local SpecSageBoldFontSmall = CreateFont("SpecSageBoldFontSmall")
 SpecSageBoldFontSmall:SetFont(BODY_FONT_PATH, 13, "")
 SpecSageBoldFontSmall:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
 
--- BiS tab: status-tag colours (DESIGN.md: green/yellow/grey) and the default
--- item colour for an entry whose quality is not known yet (a plain-name
+-- BiS tab: the default
+-- item colour-- item colour for an entry whose quality is not known yet (a plain-name
 -- entry, or an itemID GetItemInfo has not resolved yet).
-local BIS_STATUS_COLOR = {
-    equipped = { 0.2, 0.9, 0.2 },
-    owned = { 0.95, 0.85, 0.2 },
-    missing = { 0.6, 0.6, 0.6 },
-}
-local BIS_STATUS_LABEL = {
-    equipped = "equipped",
-    owned = "in bags",
-    missing = "missing",
-}
 local DEFAULT_ITEM_COLOR = { 0.8, 0.8, 0.8 }
-
--- How much of a BiS row's width row.text is allowed to use: the remaining
--- 120px covers row.status (anchored at RIGHT -58, room for the widest
--- status label plus its own margin) and the 50px Delete button (anchored at
--- RIGHT 0) that sit to its right on the same row.
-local BIS_ROW_TEXT_WIDTH_INSET = 120
 
 -- Data/API.lua's statPriority vocabulary, in the Codex's own display words.
 local STAT_LABELS = {
@@ -272,8 +253,8 @@ local function ItemQualityColor(quality)
 end
 
 -- Clickable item links (DESIGN.md's "BiS / Gear" v1.5 addendum). Every
--- concrete item the BiS tab shows - a trinket tier-list row, a gear guidance
--- entry that names an item, a personal checklist entry - behaves like an item
+-- concrete item the BiS tab shows - a linked BiS row, a trinket tier-list
+-- row - behaves like an item
 -- link in chat: hover for the item tooltip, click for the standard clickable
 -- ItemRefTooltip, shift-click to insert into chat, ctrl-click to dress up.
 local GetItemInfoAPI = (C_Item and C_Item.GetItemInfo) or GetItemInfo
@@ -743,7 +724,6 @@ function Codex:NewSurface(host, scrollFrame, scrollChild, contentWidth)
         pools = { overview = {}, stats = {}, rotation = {}, cooldowns = {},
                   consumables = {}, bis = {}, options = {} },
         statLinePool = {},
-        bisRowPool = {},
         bisLinkRowPool = {},
         trinketRowPool = {},
         loadoutRowPool = {},
@@ -751,7 +731,7 @@ function Codex:NewSurface(host, scrollFrame, scrollChild, contentWidth)
 
         -- Per-surface view state. Scalars, so unlike the pools above these
         -- cannot be shared by reference even in principle: each window
-        -- remembers its own BiS context, trinket fight style and Add slot.
+        -- remembers its own BiS context and trinket fight style.
         activeTab = "Overview",
         bisListIndex = 1,
         trinketListIndex = 1,
@@ -770,9 +750,6 @@ function Codex:NewSurface(host, scrollFrame, scrollChild, contentWidth)
         -- and falsy (the guard still builds). Anything added to the Codex
         -- that an Ensure*Widgets creates has to be repeated here the same
         -- way.
-        bisButtons = false,
-        bisItemBox = false,
-        bisSlot = false,
         bisListToggle = false,
         trinketToggle = false,
         loadoutButtons = false,
@@ -993,63 +970,12 @@ end
 --------------------------------------------------------------------------------
 -- BiS tab
 --
--- Two halves sharing one scroll child: shipped gear guidance (read-only text
--- rows, drawn into self.pools.bis the same way Consumables draws into
--- self.pools.consumables) on top, then a divider, then the player's own
--- interactive checklist (its own row pool, like Loadouts' loadoutRowPool)
--- and an Add row below it. Positions continue down the same `y` cursor
--- across both halves so nothing overlaps.
+-- Read-only: the linked BiS lists and the trinket tier list, drawn into
+-- self.pools.bis plus their own row pools. The personal checklist that used
+-- to sit under them (its rows, Add row and per-row Add buttons) was pulled
+-- on 2026-09-03 at the owner's request; Modules/BiS.lua still holds the
+-- saved entries so nothing is lost if it comes back.
 --------------------------------------------------------------------------------
-
-local function AcquireBiSRow(pool, index, parent)
-    local row = pool[index]
-    if not row then
-        row = CreateFrame("Frame", nil, parent)
-        row:EnableMouse(true)
-
-        row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        row.text:SetFontObject(SpecSageBodyFontSmall)
-        row.text:SetJustifyH("LEFT")
-        row.text:SetPoint("LEFT", row, "LEFT", 0, 0)
-        -- Bounded and non-wrapping: row.text is arbitrary user text (a
-        -- plain-name entry has no length limit of its own), and a
-        -- FontString does not clip to its parent frame - without a width
-        -- and SetWordWrap(false), a long name draws straight through
-        -- row.status and row.deleteButton instead of eliding. Guarded since
-        -- SetWordWrap is not on every FontString method surface (including
-        -- the test mock's).
-        pcall(row.text.SetWordWrap, row.text, false)
-
-        row.status = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        row.status:SetFontObject(SpecSageBodyFontSmall)
-        row.status:SetJustifyH("RIGHT")
-        row.status:SetPoint("RIGHT", row, "RIGHT", -58, 0)
-
-        row.deleteButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-        row.deleteButton:SetSize(50, 18)
-        row.deleteButton:SetText("Delete")
-        row.deleteButton:SetPoint("RIGHT", row, "RIGHT", 0, 0)
-        SkinButton(row.deleteButton, { variant = "danger" })
-
-        -- Real spell tooltip on hover, the same shared-GameTooltip approach
-        -- AcquireLineRow uses for rotation/cooldown spell icons ("the Codex
-        -- has no pinning" per DESIGN.md).
-        row:SetScript("OnEnter", function(self2)
-            if not self2.itemID then return end
-            ShowItemTooltip(self2, self2.itemLink or self2.itemID)
-        end)
-        row:SetScript("OnLeave", function()
-            pcall(function() GameTooltip:Hide() end)
-        end)
-        -- A checklist entry with an itemID is a clickable item link (v1.5).
-        row:SetScript("OnMouseUp", function(self2, button)
-            if self2.itemID then ClickItemLink(self2.itemLink or self2.itemID, button) end
-        end)
-
-        pool[index] = row
-    end
-    return row
-end
 
 -- One trinket tier-list row: tier tag | item name (quality-coloured, a
 -- clickable item link) with its ilvl/source/on-use detail | sim gain.
@@ -1096,8 +1022,7 @@ local function AcquireTrinketRow(pool, index, parent)
 end
 
 -- One linked-BiS row (Data/BiS.lua): slot tag | quality-coloured item name
--- (a clickable item link) with its drop source | an Add button that puts the
--- item on the personal checklist below.
+-- (a clickable item link) with its drop source.
 local BIS_LINK_SLOT_WIDTH = 64
 
 local function AcquireBiSLinkRow(pool, index, parent)
@@ -1117,12 +1042,6 @@ local function AcquireBiSLinkRow(pool, index, parent)
         row.text:SetJustifyH("LEFT")
         row.text:SetPoint("LEFT", row, "LEFT", BIS_LINK_SLOT_WIDTH, 0)
         pcall(row.text.SetWordWrap, row.text, false)
-
-        row.addButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-        row.addButton:SetSize(50, 18)
-        row.addButton:SetText("Add")
-        row.addButton:SetPoint("RIGHT", row, "RIGHT", 0, 0)
-        SkinButton(row.addButton)
 
         row:SetScript("OnEnter", function(self2)
             if self2.itemID then ShowItemTooltip(self2, self2.itemLink or self2.itemID) end
@@ -1146,23 +1065,6 @@ function Codex:CycleBiSList()
     local count = (data and data.lists and #data.lists) or 1
     self.bisListIndex = ((self.bisListIndex or 1) % count) + 1
     if self.activeTab == "BiS" then self:RenderActiveTab() end
-end
-
--- "Add" on a linked BiS row: puts the item on the personal checklist for the
--- viewed spec under the row's slot, then re-renders so it appears below.
-function Codex:OnAddBiSLinkClicked(button, specID, entry)
-    local BiSModule = ns:GetModule("BiS")
-    if not BiSModule or not specID or not entry then return end
-    local ok, err = BiSModule:Add(specID, entry.slot, tostring(entry.itemID))
-    if ok then
-        button:SetText("Added!")
-        C_Timer.After(2, function()
-            pcall(button.SetText, button, "Add")
-            if self.activeTab == "BiS" then self:RenderActiveTab() end
-        end)
-    else
-        ns.Print("could not add BiS entry: " .. tostring(err))
-    end
 end
 
 -- The linked Best-in-Slot section of the BiS tab (Data/BiS.lua): header
@@ -1197,7 +1099,7 @@ function Codex:RenderBiSLinkSection(pool, index, parent, width, y, specID)
         row:ClearAllPoints()
         row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
         row:SetSize(width, ROW_HEIGHT)
-        row.text:SetWidth(width - BIS_LINK_SLOT_WIDTH - 58)
+        row.text:SetWidth(width - BIS_LINK_SLOT_WIDTH)
 
         row.slot:SetText(entry.slot or "")
         row.slot:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])
@@ -1224,8 +1126,6 @@ function Codex:RenderBiSLinkSection(pool, index, parent, width, y, specID)
         row.itemID = entry.itemID
         row.itemLink = (item ~= entry.itemID) and item or nil
 
-        row.addButton:SetText("Add")
-        row.addButton:SetScript("OnClick", function(btn) self:OnAddBiSLinkClicked(btn, specID, entry) end)
         row:Show()
         y = y - ROW_STEP
     end
@@ -1233,7 +1133,7 @@ function Codex:RenderBiSLinkSection(pool, index, parent, width, y, specID)
 
     index = index + 1
     y = PlaceLine(pool, index, parent, y, width,
-        format("One site's list (%s), and it goes stale every patch: %s. Click an item for its link; Add puts it on your checklist.",
+        format("One site's list (%s), and it goes stale every patch: %s. Click an item for its link.",
             active.title or "", data.source or "source unknown"),
         { color = MUTED_COLOR })
 
@@ -1241,7 +1141,7 @@ function Codex:RenderBiSLinkSection(pool, index, parent, width, y, specID)
 end
 
 function Codex:EnsureBiSWidgets()
-    if self.bisButtons then return end
+    if self.bisListToggle then return end
 
     local parent = self.scrollChild
 
@@ -1264,80 +1164,12 @@ function Codex:EnsureBiSWidgets()
     self.trinketRowPool = {}
     self.trinketListIndex = self.trinketListIndex or 1
 
-    local slotButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-    slotButton:SetSize(90, 20)
-    slotButton:SetScript("OnClick", function() self:CycleBiSSlot() end)
-    SkinButton(slotButton)
-
-    local itemBox = CreateFrame("EditBox", nil, parent, "InputBoxTemplate")
-    itemBox:SetSize(300, 20)
-    itemBox:SetAutoFocus(false)
-    -- A plain-name entry has no other length limit (see row.text's own
-    -- width bound above), so an unbounded box lets a player type something
-    -- that would overflow the checklist row it renders into.
-    itemBox:SetMaxLetters(255)
-    itemBox:SetScript("OnEscapePressed", function(self2) self2:ClearFocus() end)
-    itemBox:SetScript("OnEnterPressed", function() self:OnBiSAddClicked() end)
-
-    local addButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-    addButton:SetSize(60, 20)
-    addButton:SetText("Add")
-    addButton:SetScript("OnClick", function() self:OnBiSAddClicked() end)
-    SkinButton(addButton)
-
-    self.bisButtons = { slotButton = slotButton, addButton = addButton }
-    self.bisItemBox = itemBox
-    self.bisRowPool = {}
-
-    local BiSModule = ns:GetModule("BiS")
-    self.bisSlot = (BiSModule and BiSModule.SLOT_ORDER and BiSModule.SLOT_ORDER[1]) or "Head"
-    slotButton:SetText(self.bisSlot)
-end
-
-function Codex:CycleBiSSlot()
-    local BiSModule = ns:GetModule("BiS")
-    local order = (BiSModule and BiSModule.SLOT_ORDER) or { "Head" }
-
-    local currentIndex = 1
-    for i, slot in ipairs(order) do
-        if slot == self.bisSlot then
-            currentIndex = i
-            break
-        end
-    end
-
-    self.bisSlot = order[(currentIndex % #order) + 1]
-    self.bisButtons.slotButton:SetText(self.bisSlot)
-end
-
-function Codex:OnBiSAddClicked()
-    local BiSModule = ns:GetModule("BiS")
-    local specID = self.selectedSpecID
-    if not BiSModule or not specID then return end
-
-    local itemText = self.bisItemBox:GetText()
-    if not itemText or itemText:match("^%s*$") then
-        -- An empty/whitespace box (a stray click, or Enter on an untouched
-        -- box) is a silent no-op, not a "could not add BiS entry" chat
-        -- message - BiS:Add's rejection is only interesting when the player
-        -- actually typed something.
-        return
-    end
-
-    local ok, err = BiSModule:Add(specID, self.bisSlot, itemText)
-    if ok then
-        self.bisItemBox:SetText("")
-        if self.activeTab == "BiS" then self:RenderActiveTab() end
-    else
-        ns.Print("could not add BiS entry: " .. tostring(err))
-    end
 end
 
 -- Fired (via Codex:OnEnable) on GET_ITEM_INFO_RECEIVED. Re-renders only the
 -- BiS tab's own pool/rows (RenderBiS), not the whole Codex, and only when
--- the resolved itemID actually belongs to an entry on the spec currently
--- being viewed - an item info event for some unrelated addon's lookup, or
--- for a spec the player is not looking at right now, is a no-op.
+-- the resolved itemID is on a row the tab is showing - an item info event
+-- for some unrelated addon's lookup is a no-op.
 function Codex:OnBiSItemInfoReceived(itemID)
     if type(itemID) ~= "number" then return end
     -- A closed Codex left on its BiS tab must not redraw for every item
@@ -1345,13 +1177,12 @@ function Codex:OnBiSItemInfoReceived(itemID)
     if not self.frame or not self.frame:IsShown() or self.activeTab ~= "BiS" then return end
 
     local specID = self.selectedSpecID
-    local BiSModule = ns:GetModule("BiS")
-    if not BiSModule or not specID then return end
+    if not specID then return end
 
-    -- Anything on the tab showing that item re-renders: a checklist entry,
-    -- a trinket tier-list row, or a gear guidance line naming the item.
-    for _, entry in ipairs(BiSModule:GetForSpec(specID)) do
-        if entry.itemID == itemID then
+    -- Anything on the tab showing that item re-renders: a linked BiS row or
+    -- a trinket tier-list row.
+    for _, row in ipairs(self.bisLinkRowPool or {}) do
+        if row.itemID == itemID and row:IsShown() then
             self:RenderBiS(ns.GuideStore:GetGuide(specID), specID)
             return
         end
@@ -1476,25 +1307,6 @@ function Codex:RenderTrinketSection(pool, index, parent, width, y, specID)
     return index, y
 end
 
--- Same two-click confirm as Codex:OnDeleteLoadoutClicked (see its comment for
--- why the timer callback resets to the idle label unconditionally).
-function Codex:OnDeleteBiSClicked(button, specID, index)
-    if button.armed then
-        local BiSModule = ns:GetModule("BiS")
-        BiSModule:Delete(specID, index)
-        button.armed = false
-        if self.activeTab == "BiS" then self:RenderActiveTab() end
-        return
-    end
-
-    button.armed = true
-    button:SetText("Confirm?")
-    C_Timer.After(4, function()
-        button.armed = false
-        pcall(button.SetText, button, "Delete")
-    end)
-end
-
 function Codex:RenderBiS(guide, specID)
     self:EnsureBiSWidgets()
     local parent, width = self.scrollChild, self.contentWidth
@@ -1510,94 +1322,7 @@ function Codex:RenderBiS(guide, specID)
     index, y = self:RenderBiSLinkSection(pool, index, parent, width, y, specID)
     index, y = self:RenderTrinketSection(pool, index, parent, width, y, specID)
 
-    y = y - GROUP_GAP
-    index = index + 1
-    y = PlaceLine(pool, index, parent, y, width, "Personal Checklist", { color = HEADER_COLOR, isHeader = true })
     self:FinishPool(pool, index, y)
-
-    y = y - LINE_GAP
-
-    -- Personal checklist. Status tags only make sense for the player's own
-    -- viewed spec with a resolvable itemID (DESIGN.md).
-    local BiSModule = ns:GetModule("BiS")
-    local list = (BiSModule and specID) and BiSModule:GetForSpec(specID) or {}
-    local rowPool = self.bisRowPool
-    local isOwnSpec = IsPlayersSpec(specID)
-
-    -- Bag contents are scanned once per render, here, rather than once per
-    -- row inside BiS:GetStatus - a full checklist used to mean N x 5 bags x
-    -- ~36 slots of C_Container reads on every render. Status tags (and so
-    -- this scan) only ever matter for the player's own viewed spec.
-    local bagSet = (isOwnSpec and BiSModule) and BiSModule:ScanBags() or nil
-
-    if #list == 0 then
-        local empty = AcquireBiSRow(rowPool, 1, parent)
-        empty:ClearAllPoints()
-        empty:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
-        empty:SetSize(width, ROW_HEIGHT)
-        empty.text:SetWidth(width - BIS_ROW_TEXT_WIDTH_INSET)
-        empty.text:SetText("no BiS entries yet - add one below")
-        empty.text:SetTextColor(MUTED_COLOR[1], MUTED_COLOR[2], MUTED_COLOR[3])
-        empty.status:SetText("")
-        empty.itemID = nil
-        empty.deleteButton:Hide()
-        empty:Show()
-        y = y - ROW_STEP
-        HidePoolFrom(rowPool, 2)
-    else
-        for i, entry in ipairs(list) do
-            local row = AcquireBiSRow(rowPool, i, parent)
-            row:ClearAllPoints()
-            row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
-            row:SetSize(width, ROW_HEIGHT)
-            row.text:SetWidth(width - BIS_ROW_TEXT_WIDTH_INSET)
-
-            local displayName, quality = BiSModule:ResolveDisplay(entry)
-            local r, g, b = ItemQualityColor(quality)
-            row.text:SetText(format("[%s] %s", entry.slot or "?", displayName or entry.name or "?"))
-            row.text:SetTextColor(r, g, b)
-            row.itemID = entry.itemID
-
-            if isOwnSpec and entry.itemID then
-                local status = BiSModule:GetStatus(entry, bagSet) or "missing"
-                local color = BIS_STATUS_COLOR[status] or BIS_STATUS_COLOR.missing
-                row.status:SetText(BIS_STATUS_LABEL[status] or status)
-                row.status:SetTextColor(color[1], color[2], color[3])
-            else
-                row.status:SetText("")
-            end
-
-            row.deleteButton.armed = false
-            row.deleteButton:SetText("Delete")
-            row.deleteButton:Show()
-            row.deleteButton:SetScript("OnClick", function(btn)
-                self:OnDeleteBiSClicked(btn, specID, i)
-            end)
-
-            row:Show()
-            y = y - ROW_STEP
-        end
-        HidePoolFrom(rowPool, #list + 1)
-    end
-
-    y = y - GROUP_GAP
-
-    -- Add row: slot cycler + editbox + Add button, own spec or any viewed
-    -- spec (the checklist is per viewed specID, per DESIGN.md).
-    local buttons = self.bisButtons
-    buttons.slotButton:ClearAllPoints()
-    buttons.slotButton:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
-    buttons.slotButton:Show()
-
-    self.bisItemBox:ClearAllPoints()
-    self.bisItemBox:SetPoint("LEFT", buttons.slotButton, "RIGHT", 8, 0)
-    self.bisItemBox:Show()
-
-    buttons.addButton:ClearAllPoints()
-    buttons.addButton:SetPoint("LEFT", self.bisItemBox, "RIGHT", 8, 0)
-    buttons.addButton:Show()
-
-    y = y - 24
 
     self.scrollChild:SetHeight(math.max(-y, 10))
     pcall(self.scrollFrame.UpdateScrollChildRect, self.scrollFrame)
@@ -2407,19 +2132,6 @@ function Codex:HideOtherTabWidgets(activeTab)
     end
 
     if activeTab ~= "BiS" then
-        if self.bisButtons then
-            self.bisButtons.slotButton:Hide()
-            self.bisButtons.addButton:Hide()
-        end
-        -- ClearFocus before Hide: a focused EditBox that is hidden without
-        -- releasing keyboard focus is a long-standing source of "my
-        -- keybinds stopped working" reports (same fix as self.notesBox
-        -- below).
-        if self.bisItemBox then
-            self.bisItemBox:ClearFocus()
-            self.bisItemBox:Hide()
-        end
-        if self.bisRowPool then HidePoolFrom(self.bisRowPool, 1) end
         if self.trinketRowPool then HidePoolFrom(self.trinketRowPool, 1) end
         if self.trinketToggle then self.trinketToggle:Hide() end
         if self.bisLinkRowPool then HidePoolFrom(self.bisLinkRowPool, 1) end
@@ -2641,15 +2353,6 @@ function Codex:SelectSpec(specID)
     self:SaveNotes()
     self:HideAddDialog()
     if self.copyDialog then self.copyDialog:Hide() end
-    -- The BiS Add row gets the same treatment as Notes/the Add dialog:
-    -- clicking a spec-rail button does not clear an EditBox's focus in WoW,
-    -- so a half-typed item would otherwise silently land against whichever
-    -- spec is selected when Add is next clicked, not the one it was typed
-    -- while viewing.
-    if self.bisItemBox then
-        self.bisItemBox:ClearFocus()
-        self.bisItemBox:SetText("")
-    end
 
     self.selectedSpecID = specID
     self:UpdateSpecHighlight()
@@ -2667,10 +2370,6 @@ function Codex:SelectTab(tabName)
     self:SaveNotes()
     self:HideAddDialog()
     if self.copyDialog then self.copyDialog:Hide() end
-    if self.bisItemBox then
-        self.bisItemBox:ClearFocus()
-        self.bisItemBox:SetText("")
-    end
 
     self.activeTab = tabName
     if self.scrollFrame then self.scrollFrame:SetVerticalScroll(0) end

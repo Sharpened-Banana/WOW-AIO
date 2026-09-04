@@ -2285,13 +2285,16 @@ end
 -- 4-entry gear array. That prose is no longer drawn on the BiS tab - it ran
 -- to a screenful before the first item - so the tab opens straight on the
 -- linked lists: the Trinket Tier List header + its "no data" reason line
--- (9005 registers no trinkets) + the Personal Checklist header.
+-- (9005 registers no trinkets). The personal checklist that used to follow
+-- was pulled on 2026-09-03 at the owner's request.
 Codex:Open("MAGE", 9005)
 Codex:SelectTab("BiS")
 check(Codex.activeTab == "BiS", "SelectTab switches to the BiS tab")
-check(CountShownRows(Codex.pools.bis) == 3,
-    "the BiS tab draws no gear prose, only the trinket and checklist headers",
+check(CountShownRows(Codex.pools.bis) == 2,
+    "the BiS tab draws no gear prose and no checklist, only the trinket header and its reason",
     CountShownRows(Codex.pools.bis))
+check(Codex.bisRowPool == nil and Codex.bisItemBox == nil and Codex.bisButtons == nil,
+    "no checklist rows, Add box or Add row are built")
 for _, row in ipairs(Codex.pools.bis) do
     check(not (row:IsShown() and (row.text:GetText() or ""):find("^Head:")),
         "no per-slot prose row is drawn", row.text:GetText())
@@ -2300,203 +2303,15 @@ end
 Codex:Open("MAGE", 9004)
 Codex:SelectTab("BiS")
 
--- The Add row: cycling the slot button, typing into the editbox, and
--- clicking Add stores a new personal checklist entry for the viewed spec.
-local beforeBiSCount = #BiSCodexModule:GetForSpec(9004)
-Codex:CycleBiSSlot()
-local cycledSlot = Codex.bisSlot
-check(Codex.bisButtons.slotButton:GetText() == cycledSlot, "cycling the slot button updates its label", cycledSlot)
-
-Codex.bisItemBox:SetText("A Test BiS Item")
-Codex:OnBiSAddClicked()
-
-local afterBiS = BiSCodexModule:GetForSpec(9004)
-check(#afterBiS == beforeBiSCount + 1, "the Add row's Add button stores exactly one new entry", #afterBiS)
-check(afterBiS[#afterBiS].name == "A Test BiS Item", "the new entry keeps the typed text as its name",
-    afterBiS[#afterBiS].name)
-check(afterBiS[#afterBiS].slot == cycledSlot, "the new entry uses the cycled slot", afterBiS[#afterBiS].slot)
-check(Codex.bisItemBox:GetText() == "", "the editbox clears itself after a successful add")
-
--- Pressing Enter in the item editbox also adds an entry, not just the Add
--- button.
-local beforeEnterCount = #BiSCodexModule:GetForSpec(9004)
-Codex.bisItemBox:SetText("Added Via Enter")
-Codex.bisItemBox:GetScript("OnEnterPressed")()
-check(#BiSCodexModule:GetForSpec(9004) == beforeEnterCount + 1,
-    "pressing Enter in the item editbox also adds an entry")
-
--- Status tags: shown only for the player's own viewed spec (252, per the
--- mock) with a resolvable itemID.
-mock.equipped = {}
-mock.bags = {}
-BiSCodexModule:Add(252, "Head", "55010")
-mock.equipped[INVSLOT_HEAD] = 55010
-
-Codex:Open("DEATHKNIGHT", 252)
-Codex:SelectTab("BiS")
-
-local ownList = BiSCodexModule:GetForSpec(252)
-local ownRow = Codex.bisRowPool[#ownList]
-check(ownRow ~= nil, "the checklist row for the player's own spec exists")
-check(ownRow.status:GetText() == "equipped", "an equipped item on the player's own spec shows the equipped status tag",
-    ownRow.status:GetText())
-
--- Not the player's own spec: no status tag at all, even with a resolvable
--- itemID.
-BiSCodexModule:Add(71, "Head", "55010")
-Codex:Open("WARRIOR", 71)
-Codex:SelectTab("BiS")
-local otherList = BiSCodexModule:GetForSpec(71)
-local otherRow = Codex.bisRowPool[#otherList]
-check(otherRow ~= nil, "the checklist row for a non-own spec exists")
-check(otherRow.status:GetText() == "", "a non-own spec's entry shows no status tag even with an itemID",
-    otherRow.status:GetText())
-
-mock.equipped = {}
-mock.bags = {}
-
--- "owned" status also flows through the render-time bag cache (Medium #6:
--- Codex:RenderBiS now builds one BiS:ScanBags() bagSet per render and hands
--- it into GetStatus instead of GetStatus rescanning bags itself per row).
-BiSCodexModule:Add(252, "Trinket", "55011")
-mock.bags[0] = { [1] = 55011 }
-Codex:Open("DEATHKNIGHT", 252)
-Codex:SelectTab("BiS")
-local ownedList = BiSCodexModule:GetForSpec(252)
-local ownedRow = Codex.bisRowPool[#ownedList]
-check(ownedRow ~= nil, "the checklist row for the owned-but-not-equipped entry exists")
-check(ownedRow.status:GetText() == "in bags",
-    "an owned-but-not-equipped item on the player's own spec shows the 'in bags' status tag via the render-time bag cache",
-    ownedRow.status:GetText())
-
-mock.equipped = {}
-mock.bags = {}
-
 --------------------------------------------------------------------------------
-section("Codex: BiS row text width is bounded (Medium #4)")
+section("Codex: leaving a tab clears its edit box focus")
 --------------------------------------------------------------------------------
 
--- Real item names are short enough to be safe, but a plain-name entry is
--- arbitrary user text with no length limit of its own - without a width
--- bound, a long name draws straight through row.status and
--- row.deleteButton instead of stopping short of them.
-check(Codex.bisItemBox.maxLetters == 255,
-    "the BiS Add editbox caps input length so a pasted/typed entry cannot be unbounded",
-    Codex.bisItemBox.maxLetters)
-
-Codex:Open("MAGE", 9005)
-Codex:SelectTab("BiS")
-BiSCodexModule:Add(9005, "Trinket", string.rep("Extremely Long Hand-Typed Item Name ", 10))
-Codex:SelectTab("BiS") -- re-render so the new row exists in the pool
-local longNameList = BiSCodexModule:GetForSpec(9005)
-local longNameRow = Codex.bisRowPool[#longNameList]
-check(longNameRow ~= nil, "a row exists for the overlong plain-name entry")
-check(longNameRow.text:GetWidth() == Codex.scrollChild:GetWidth() - 120,
-    "the row's text FontString has a fixed width leaving room for the status tag and Delete button",
-    longNameRow.text:GetWidth())
-
--- Delete is a two-click confirm, same as Loadouts.
-Codex:Open("MAGE", 9004)
-Codex:SelectTab("BiS")
-local deleteCountBefore = #BiSCodexModule:GetForSpec(9004)
-local firstRow = Codex.bisRowPool[1]
-firstRow.deleteButton:GetScript("OnClick")(firstRow.deleteButton)
-check(firstRow.deleteButton.armed == true, "the first Delete click arms the confirm")
-check(#BiSCodexModule:GetForSpec(9004) == deleteCountBefore, "the first Delete click does not remove anything yet")
-firstRow.deleteButton:GetScript("OnClick")(firstRow.deleteButton)
-check(#BiSCodexModule:GetForSpec(9004) == deleteCountBefore - 1, "the second Delete click removes the entry")
-
--- Hover shows the real item tooltip via GameTooltip:SetItemByID (pcall
--- wrapped), the same shared-tooltip approach rotation/cooldown spell icons
--- use.
-Codex:Open("MAGE", 9005)
-Codex:SelectTab("BiS")
-BiSCodexModule:Add(9005, "Neck", "42")
-Codex:SelectTab("BiS") -- re-render to build a row for the entry just added
-local hoverRow = Codex.bisRowPool[#BiSCodexModule:GetForSpec(9005)]
-check(hoverRow ~= nil, "a row exists for the item-linked entry to hover")
-check(pcall(function() hoverRow:GetScript("OnEnter")(hoverRow) end), "hovering a BiS row does not error")
-check(GameTooltip.itemID == 42, "hovering a BiS row shows the real item tooltip via SetItemByID", GameTooltip.itemID)
-hoverRow:GetScript("OnLeave")(hoverRow)
-
---------------------------------------------------------------------------------
-section("Codex: BiS row updates on GET_ITEM_INFO_RECEIVED (Medium #2)")
---------------------------------------------------------------------------------
-
--- An itemID the item cache does not know about yet: Add stores the "Item
--- <id>" placeholder (Modules/BiS.lua's ParseItemText), and Modules/BiS.lua's
--- ResolveItemInfo queues a C_Item.RequestLoadItemDataByID call for it.
-mock.items[888888] = nil
-mock.itemLoadRequests = {}
-BiSCodexModule:Add(9005, "Wrist", "888888")
-Codex:Open("MAGE", 9005)
-Codex:SelectTab("BiS")
-
-local asyncList = BiSCodexModule:GetForSpec(9005)
-local asyncRow = Codex.bisRowPool[#asyncList]
-check(asyncRow ~= nil, "a row exists for the not-yet-cached entry")
-check(asyncRow.text:GetText():find("Item 888888", 1, true) ~= nil,
-    "the row shows the placeholder name before the item is cached", asyncRow.text:GetText())
-
-local requestedLoad = false
-for _, itemID in ipairs(mock.itemLoadRequests) do
-    if itemID == 888888 then requestedLoad = true end
-end
-check(requestedLoad, "an unresolved entry queues a C_Item.RequestLoadItemDataByID request", mock.itemLoadRequests)
-
--- The item becomes cached (a test fixture appears, same as the real client
--- caching it server-side) and the client fires GET_ITEM_INFO_RECEIVED for
--- it. The row must update on its own - no explicit re-render, tab switch,
--- or spec switch needed - which is the bug this finding is about: nothing
--- previously listened for this event at all.
-mock.items[888888] = { name = "Freshly Cached Wristguard", quality = 3 }
-mock.Fire("GET_ITEM_INFO_RECEIVED", 888888)
-
-local updatedRow = Codex.bisRowPool[#asyncList]
-check(updatedRow.text:GetText():find("Freshly Cached Wristguard", 1, true) ~= nil,
-    "the row's text updates to the real name once GET_ITEM_INFO_RECEIVED fires, with no explicit re-render",
-    updatedRow.text:GetText())
-
--- An item-info event for an itemID that is not on the currently viewed
--- spec's checklist at all must not error and must not touch anything.
-check(pcall(function() mock.Fire("GET_ITEM_INFO_RECEIVED", 55) end),
-    "GET_ITEM_INFO_RECEIVED for an unrelated itemID does not error")
-
-mock.items[888888] = nil
-
---------------------------------------------------------------------------------
-section("Codex: the BiS Add box does not survive a spec or tab switch (Medium #5)")
---------------------------------------------------------------------------------
-
--- Mirrors "Codex: notes survive a spec switch" above: clicking a spec-rail
--- button does not clear an EditBox's focus in WoW, so SelectSpec must flush
--- (here: clear, since there is nothing to save) the BiS Add box itself
--- before a later Add can land against the wrong spec.
+-- HideOtherTabWidgets clears focus before hiding self.notesBox: a focused
+-- EditBox hidden without releasing keyboard focus is the classic "my
+-- keybinds stopped working" report.
 Codex:Open("WARRIOR", 72)
-Codex:SelectTab("BiS")
-Codex.bisItemBox:SetText("Half-typed entry meant for Fury (72)")
-Codex.bisItemBox:SetFocus()
-check(Codex.bisItemBox.focused == true, "sanity: the BiS Add box can be focused while its tab is active")
-
-local specSwitchAddCountBefore = #BiSCodexModule:GetForSpec(71)
-Codex:SelectSpec(71) -- Arms: a different spec, same class, BiS tab stays open
-check(Codex.bisItemBox:GetText() == "", "switching spec clears the half-typed BiS Add box")
-check(Codex.bisItemBox.focused == false, "switching spec also clears the BiS Add box's focus")
-
-Codex:OnBiSAddClicked() -- the box is now empty; must be a silent no-op (Low #11)
-check(#BiSCodexModule:GetForSpec(71) == specSwitchAddCountBefore,
-    "the emptied box after a spec switch adds nothing to the newly selected spec")
-
--- Same guarantee for a tab switch away from BiS (not just a spec switch).
-Codex:Open("WARRIOR", 72)
-Codex:SelectTab("BiS")
-Codex.bisItemBox:SetText("Half-typed entry, tab switch this time")
-Codex:SelectTab("Notes")
-check(Codex.bisItemBox:GetText() == "", "switching tab away from BiS clears the half-typed Add box")
-
--- The one-line notesBox fix from the same finding: HideOtherTabWidgets now
--- clears focus before hiding self.notesBox too, not just self.bisItemBox.
-Codex:SelectTab("Notes")
+Codex:SelectTab("Notes")Codex:SelectTab("Notes")
 Codex.notesBox:SetFocus()
 check(Codex.notesBox.focused == true, "sanity: the notes box can be focused while its tab is active")
 Codex:SelectTab("BiS")
@@ -3181,15 +2996,6 @@ do
     Codex:SelectTab("Overview")
     check(shownTrinketRows() == 0 and not Codex.trinketToggle:IsShown(), "leaving the BiS tab hides the trinket rows and toggle")
 
-    -- Personal checklist rows are clickable too.
-    local BiSCodex = ns:GetModule("BiS")
-    BiSCodex:Add(9604, "Weapon", "19019")
-    Codex:Open("MAGE", 9604)
-    Codex:SelectTab("BiS")
-    local checklistRow = Codex.bisRowPool[#BiSCodex:GetForSpec(9604)]
-    mock.itemRefClicks = {}
-    checklistRow:GetScript("OnMouseUp")(checklistRow, "LeftButton")
-    check(#mock.itemRefClicks == 1, "clicking a personal checklist row opens its item link")
 end
 
 --------------------------------------------------------------------------------
@@ -3426,7 +3232,7 @@ do
     _, bad = silently(function() return GuideStore:RegisterSiteLoadouts(9701, { patch = "12.1", builds = { { label = "x", string = "" } } }) end)
     check(bad == false, "RegisterSiteLoadouts rejects an empty string")
 
-    -- BiS tab: rows, toggle, link click, Add-to-checklist.
+    -- BiS tab: rows, toggle, link click.
     GuideStore:RegisterBiS(9604, {
         source = "test", patch = "12.1",
         lists = {
@@ -3455,13 +3261,7 @@ do
     linkRow:GetScript("OnMouseUp")(linkRow, "LeftButton")
     check(#mock.itemRefClicks == 1, "clicking a BiS row opens its item link")
 
-    local BiSMod = ns:GetModule("BiS")
-    local before = #BiSMod:GetForSpec(9604)
-    linkRow.addButton:GetScript("OnClick")(linkRow.addButton)
-    local after = BiSMod:GetForSpec(9604)
-    check(#after == before + 1 and after[#after].itemID == 19019 and after[#after].slot == "Weapon",
-        "Add on a BiS row puts the item on the personal checklist under its slot", #after)
-    check(linkRow.addButton:GetText() == "Added!", "the Add button confirms")
+    check(linkRow.addButton == nil, "a BiS row has no Add button (the checklist was pulled)")
 
     Codex:CycleBiSList()
     check(Codex.bisListToggle:GetText() == "Raid" and shownLinkRows() == 1, "the toggle cycles to the Raid list", shownLinkRows())
@@ -3746,7 +3546,7 @@ do
         "the surface hosts widgets in the panel, not the Codex window")
     check(Panel.surface.notesBox ~= Codex.notesBox, "the Notes box is the panel's own, not the Codex's")
     check(Panel.surface.optionPools ~= Codex.optionPools, "as are the Options widgets")
-    check(Panel.surface.bisItemBox ~= Codex.bisItemBox, "and the BiS Add box")
+    check(Panel.surface.bisListToggle ~= Codex.bisListToggle, "and the BiS list toggle")
     check(Panel.surface.suggestedLoadoutRows ~= Codex.suggestedLoadoutRows,
         "and the suggested loadout rows")
     check(Panel.surface.contentWidth == Panel:ContentWidth(),

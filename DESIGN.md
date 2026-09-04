@@ -825,6 +825,18 @@ rest are desaturated.
   Notes / Options** — rendered by `UI/Codex.lua`'s own methods, not copies
   of them.
 
+### BiS tab checklist
+
+The personal checklist (its rows with equipped / in bags / missing tags,
+the slot + editbox + Add row under it, and the per-row **Add** button on
+the linked BiS lists) was pulled from the Codex on 2026-09-03 at the
+owner's request: on the docked panel a column of Add buttons was the most
+prominent thing on the tab and the owner had no use for it. `Modules/BiS.lua`
+(storage, `GetStatus`, `ScanBags`) is untouched - the docked panel's Gear
+section still tags the hovered slot's item with it, and saved entries
+survive - so the UI can come back without a data migration. Anything in
+this file describing the checklist on the BiS tab predates that.
+
 ### BiS tab prose
 
 The guide schema's `gear` array (slot + a sentence on what to look for)
