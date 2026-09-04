@@ -46,6 +46,10 @@ local CharacterPanel = ns:NewModule("CharacterPanel")
 -- titles and equipment sets do exactly that). The constants below are only
 -- the fallback for a client that reports no size at all.
 local FALLBACK_WIDTH = 338
+-- Space between the sheet's right edge and the panel's left. It used to
+-- overlap the sheet by 2px to read as one window; the owner wanted it set
+-- off to the right instead, clear of the sheet's own side tabs.
+local DOCK_GAP = 8
 local SCROLLBAR_INSET = 26
 local PADDING = 10
 local TITLE_HEIGHT = 20
@@ -263,8 +267,8 @@ function CharacterPanel:BuildFrame()
     -- Anchoring both left corners to the sheet's right corners is what makes
     -- the height match exactly and keep matching; only the width has to be
     -- pushed across by hand (SyncSize, called on every Update).
-    frame:SetPoint("TOPLEFT", CharacterFrame, "TOPRIGHT", -2, 0)
-    frame:SetPoint("BOTTOMLEFT", CharacterFrame, "BOTTOMRIGHT", -2, 0)
+    frame:SetPoint("TOPLEFT", CharacterFrame, "TOPRIGHT", DOCK_GAP, 0)
+    frame:SetPoint("BOTTOMLEFT", CharacterFrame, "BOTTOMRIGHT", DOCK_GAP, 0)
     frame:SetWidth(FALLBACK_WIDTH)
     pcall(frame.SetBackdrop, frame, {
         bgFile = "Interface\\Buttons\\WHITE8X8",
