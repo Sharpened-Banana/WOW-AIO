@@ -2073,22 +2073,22 @@ do
 
     -- Hovering must go through SetHyperlink for the bonus row: SetItemByID
     -- takes a numeric ID and would show the base item instead.
-    linked:GetScript("OnEnter")(linked)
+    linked.hit:GetScript("OnEnter")(linked.hit)
     check(GameTooltip.itemID == "item:880101:0:0:0:0:0:0:0:0:0:0:0:2:4786:12854",
         "hovering a bonus row opens the tooltip on the full item string", GameTooltip.itemID)
     check(table.concat(GameTooltip:Dump(), "\n"):find("Upgraded Neck", 1, true) ~= nil,
         "so the hover tooltip shows the upgraded item")
-    linked:GetScript("OnLeave")(linked)
+    linked.hit:GetScript("OnLeave")(linked.hit)
 
     GameTooltip:SetOwner(nil, "ANCHOR_NONE")
-    bare:GetScript("OnEnter")(bare)
+    bare.hit:GetScript("OnEnter")(bare.hit)
     check(GameTooltip.itemID == 880101, "hovering a bare row still uses the numeric itemID", GameTooltip.itemID)
-    bare:GetScript("OnLeave")(bare)
+    bare.hit:GetScript("OnLeave")(bare.hit)
 
     -- Clicking inserts the bonus-carrying link, so a shift-click into chat
     -- links the item the guide meant.
     mock.itemRefClicks = {}
-    linked:GetScript("OnMouseUp")(linked, "LeftButton")
+    linked.hit:GetScript("OnMouseUp")(linked.hit, "LeftButton")
     check(#mock.itemRefClicks == 1 and mock.itemRefClicks[1].link:find("4786:12854", 1, true) ~= nil,
         "clicking a bonus row opens the upgraded item's link",
         mock.itemRefClicks[1] and mock.itemRefClicks[1].link)
@@ -2956,12 +2956,18 @@ do
     check(Codex.trinketToggle:IsShown() and Codex.trinketToggle:GetText() == "Single Target",
         "the fight-style toggle shows the active list's title", Codex.trinketToggle:GetText())
 
-    -- Hover and click behave like an item link.
-    first:GetScript("OnEnter")(first)
-    check(GameTooltip.itemID == 19019, "hovering a trinket row shows its item tooltip", GameTooltip.itemID)
-    first:GetScript("OnLeave")(first)
+    -- Hover and click behave like an item link - on the item text only. The
+    -- row itself is inert, so scrolling the list past the mouse does not
+    -- pop a tooltip on every line.
+    check(first:GetScript("OnEnter") == nil and not first.mouseEnabled,
+        "the trinket row itself takes no mouse")
+    check(first.hit ~= nil and first.hit:IsShown() and (first.hit.width or 0) <= (first.text.width or 0),
+        "the item text carries a hit area no wider than the text", first.hit and first.hit.width)
+    first.hit:GetScript("OnEnter")(first.hit)
+    check(GameTooltip.itemID == 19019, "hovering a trinket row's item shows its tooltip", GameTooltip.itemID)
+    first.hit:GetScript("OnLeave")(first.hit)
     mock.itemRefClicks = {}
-    first:GetScript("OnMouseUp")(first, "LeftButton")
+    first.hit:GetScript("OnMouseUp")(first.hit, "LeftButton")
     check(#mock.itemRefClicks == 1 and mock.itemRefClicks[1].link:find("item:19019", 1, true) ~= nil,
         "clicking a trinket row opens it as an item link via SetItemRef",
         mock.itemRefClicks[1] and mock.itemRefClicks[1].link)
@@ -3258,8 +3264,9 @@ do
         "a BiS row shows the item name and drop source", linkRow.text:GetText())
     check(Codex.bisListToggle:IsShown() and Codex.bisListToggle:GetText() == "Overall", "the BiS context toggle shows the active list")
     mock.itemRefClicks = {}
-    linkRow:GetScript("OnMouseUp")(linkRow, "LeftButton")
-    check(#mock.itemRefClicks == 1, "clicking a BiS row opens its item link")
+    check(linkRow:GetScript("OnMouseUp") == nil and linkRow.hit ~= nil, "a BiS row's mouse lives on its item text")
+    linkRow.hit:GetScript("OnMouseUp")(linkRow.hit, "LeftButton")
+    check(#mock.itemRefClicks == 1, "clicking a BiS row's item opens its link")
 
     check(linkRow.addButton == nil, "a BiS row has no Add button (the checklist was pulled)")
 
@@ -3640,6 +3647,43 @@ do
 
     mock.ShowCharacterFrame(true)
     Panel:SelectSection("Gear")
+
+    -- The grip drags the panel right and down from its docked spot, the
+    -- offset is saved and re-applied, and right-click resets it.
+    local grip = Panel.frame.grip
+    check(grip ~= nil, "the panel has a drag grip")
+    local function Anchor()
+        local p = Panel.frame.points[1]
+        return p and p[1], p and p[4], p and p[5]
+    end
+    local _, ax, ay = Anchor()
+    check(ax == 16 and ay == 0, "the panel starts DOCK_GAP right of the sheet with no offset", ax .. "," .. ay)
+    mock.cursor = { x = 100, y = 100 }
+    grip:GetScript("OnMouseDown")(grip, "LeftButton")
+    mock.cursor = { x = 140, y = 70 }
+    grip:GetScript("OnUpdate")(grip)
+    _, ax, ay = Anchor()
+    check(ax == 56 and ay == -30, "dragging the grip moves the panel by the cursor delta", ax .. "," .. ay)
+    grip:GetScript("OnMouseUp")(grip, "LeftButton")
+    check(grip:GetScript("OnUpdate") == nil, "releasing the grip stops tracking the cursor")
+    check(ns.db.characterPanel.offsetX == 40 and ns.db.characterPanel.offsetY == -30,
+        "the offset is saved", tostring(ns.db.characterPanel.offsetX) .. "," .. tostring(ns.db.characterPanel.offsetY))
+    check(#Panel.frame.points == 2 and Panel.frame.points[2][1] == "BOTTOMLEFT",
+        "both left corners stay anchored so the height keeps tracking the sheet")
+    -- Left or up of the docked spot is clamped: the panel may not cover
+    -- the sheet.
+    mock.cursor = { x = 0, y = 0 }
+    grip:GetScript("OnMouseDown")(grip, "LeftButton")
+    mock.cursor = { x = -200, y = 200 }
+    grip:GetScript("OnUpdate")(grip)
+    grip:GetScript("OnMouseUp")(grip, "LeftButton")
+    _, ax, ay = Anchor()
+    check(ax == 16 and ay == 0, "dragging left or up stops at the docked spot", ax .. "," .. ay)
+    Panel:SetDockOffset(25, -10)
+    grip:GetScript("OnMouseUp")(grip, "RightButton")
+    _, ax, ay = Anchor()
+    check(ax == 16 and ay == 0 and ns.db.characterPanel.offsetX == 0, "right-clicking the grip puts the panel back", ax .. "," .. ay)
+
     mock.ShowCharacterFrame(false)
 end
 

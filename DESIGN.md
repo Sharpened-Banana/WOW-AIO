@@ -825,6 +825,22 @@ rest are desaturated.
   Notes / Options** — rendered by `UI/Codex.lua`'s own methods, not copies
   of them.
 
+### Docked panel grip
+
+The panel sits `DOCK_GAP` (16px) right of the sheet. A grip in its top-left
+corner drags it further right or down (`characterPanel.offsetX >= 0`,
+`offsetY <= 0`, clamped so it can never cover the sheet or its side tabs);
+right-click resets. The panel is anchored to the sheet on both left corners
+so `StartMoving` is out - the grip tracks `GetCursorPosition` itself in an
+`OnUpdate` while held and feeds the delta into the anchor offset.
+
+### List-row hit areas
+
+Trinket and linked-BiS rows used to take the mouse across their full width,
+so scrolling a list past the cursor popped a tooltip on every line. The row
+is now inert; a child button fitted to the item text (`AttachItemHit` /
+`SizeItemHit`, via `GetStringWidth`) carries hover and click.
+
 ### BiS tab checklist
 
 The personal checklist (its rows with equipped / in bags / missing tags,

@@ -259,6 +259,10 @@ local DEFAULTS = {
         -- every other value is one of the Codex's tabs, rendered by the
         -- Codex's own methods against the panel's surface.
         section = "Gear",
+        -- How far the grip has dragged the panel right (>= 0) and down
+        -- (<= 0) from its docked spot beside the sheet.
+        offsetX = 0,
+        offsetY = 0,
     },
 
     -- Pinned tooltips, keyed by "section:key", each { section, key, custom,

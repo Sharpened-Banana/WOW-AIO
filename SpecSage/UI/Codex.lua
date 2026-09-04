@@ -977,6 +977,39 @@ end
 -- saved entries so nothing is lost if it comes back.
 --------------------------------------------------------------------------------
 
+-- The item-link hit area of a list row. Hover and click used to be on the
+-- whole row, so the tooltip popped up whenever the mouse crossed the list -
+-- scrolling through it meant a tooltip on every line. The row is now inert
+-- and a child button the width of the item text takes the mouse instead:
+-- hover the name for its tooltip, click it for the link, and the rest of
+-- the row is just text. SizeItemHit fits the button to the text after each
+-- SetText (GetStringWidth; the text's own width bound is the ceiling).
+local function AttachItemHit(row)
+    local hit = CreateFrame("Button", nil, row)
+    hit:SetPoint("TOPLEFT", row.text, "TOPLEFT", 0, 2)
+    hit:SetPoint("BOTTOMLEFT", row.text, "BOTTOMLEFT", 0, -2)
+    hit:SetWidth(1)
+    hit:SetScript("OnEnter", function()
+        if row.itemID then ShowItemTooltip(row, row.itemLink or row.itemID) end
+    end)
+    hit:SetScript("OnLeave", function()
+        pcall(function() GameTooltip:Hide() end)
+    end)
+    hit:SetScript("OnMouseUp", function(_, button)
+        if row.itemID then ClickItemLink(row.itemLink or row.itemID, button) end
+    end)
+    row.hit = hit
+end
+
+local function SizeItemHit(row)
+    local bound = row.text:GetWidth() or 0
+    local ok, measured = pcall(row.text.GetStringWidth, row.text)
+    local width = (ok and type(measured) == "number" and measured > 0) and measured or bound
+    if bound > 0 and width > bound then width = bound end
+    row.hit:SetWidth(math.max(width, 1))
+    row.hit:SetShown(row.itemID ~= nil)
+end
+
 -- One trinket tier-list row: tier tag | item name (quality-coloured, a
 -- clickable item link) with its ilvl/source/on-use detail | sim gain.
 local TRINKET_TAG_WIDTH = 22
@@ -986,7 +1019,6 @@ local function AcquireTrinketRow(pool, index, parent)
     local row = pool[index]
     if not row then
         row = CreateFrame("Frame", nil, parent)
-        row:EnableMouse(true)
 
         row.tag = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         row.tag:SetFontObject(SpecSageBoldFontSmall)
@@ -1006,15 +1038,7 @@ local function AcquireTrinketRow(pool, index, parent)
         row.gain:SetPoint("RIGHT", row, "RIGHT", 0, 0)
         row.gain:SetWidth(TRINKET_GAIN_WIDTH)
 
-        row:SetScript("OnEnter", function(self2)
-            if self2.itemID then ShowItemTooltip(self2, self2.itemLink or self2.itemID) end
-        end)
-        row:SetScript("OnLeave", function()
-            pcall(function() GameTooltip:Hide() end)
-        end)
-        row:SetScript("OnMouseUp", function(self2, button)
-            if self2.itemID then ClickItemLink(self2.itemLink or self2.itemID, button) end
-        end)
+        AttachItemHit(row)
 
         pool[index] = row
     end
@@ -1029,7 +1053,6 @@ local function AcquireBiSLinkRow(pool, index, parent)
     local row = pool[index]
     if not row then
         row = CreateFrame("Frame", nil, parent)
-        row:EnableMouse(true)
 
         row.slot = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         row.slot:SetFontObject(SpecSageBoldFontSmall)
@@ -1043,15 +1066,7 @@ local function AcquireBiSLinkRow(pool, index, parent)
         row.text:SetPoint("LEFT", row, "LEFT", BIS_LINK_SLOT_WIDTH, 0)
         pcall(row.text.SetWordWrap, row.text, false)
 
-        row:SetScript("OnEnter", function(self2)
-            if self2.itemID then ShowItemTooltip(self2, self2.itemLink or self2.itemID) end
-        end)
-        row:SetScript("OnLeave", function()
-            pcall(function() GameTooltip:Hide() end)
-        end)
-        row:SetScript("OnMouseUp", function(self2, button)
-            if self2.itemID then ClickItemLink(self2.itemLink or self2.itemID, button) end
-        end)
+        AttachItemHit(row)
 
         pool[index] = row
     end
@@ -1125,6 +1140,7 @@ function Codex:RenderBiSLinkSection(pool, index, parent, width, y, specID)
         row.text:SetTextColor(1, 1, 1)
         row.itemID = entry.itemID
         row.itemLink = (item ~= entry.itemID) and item or nil
+        SizeItemHit(row)
 
         row:Show()
         y = y - ROW_STEP
@@ -1283,6 +1299,7 @@ function Codex:RenderTrinketSection(pool, index, parent, width, y, specID)
         row.text:SetTextColor(1, 1, 1)
         row.itemID = entry.itemID
         row.itemLink = (item ~= entry.itemID) and item or nil
+        SizeItemHit(row)
 
         row.gain:SetText(entry.gain ~= nil and format("+%.1f%%", entry.gain) or "")
         row.gain:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])

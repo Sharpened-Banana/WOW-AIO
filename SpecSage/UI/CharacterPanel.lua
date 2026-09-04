@@ -50,6 +50,12 @@ local FALLBACK_WIDTH = 338
 -- overlap the sheet by 2px to read as one window; the owner wanted it set
 -- off to the right instead, clear of the sheet's own side tabs.
 local DOCK_GAP = 16
+-- The grip in the panel's top-left corner. Dragging it moves the panel
+-- right or down from its docked spot (never left or up, so it cannot cover
+-- the sheet or its side tabs); the offset is saved and the panel keeps
+-- following the sheet from there. Right-click puts it back.
+local GRIP_SIZE = 16
+local GRIP_TEXTURE = "Interface\\CURSOR\\UI-Cursor-Move"
 local SCROLLBAR_INSET = 26
 local PADDING = 10
 local TITLE_HEIGHT = 20
@@ -267,9 +273,9 @@ function CharacterPanel:BuildFrame()
     -- Anchoring both left corners to the sheet's right corners is what makes
     -- the height match exactly and keep matching; only the width has to be
     -- pushed across by hand (SyncSize, called on every Update).
-    frame:SetPoint("TOPLEFT", CharacterFrame, "TOPRIGHT", DOCK_GAP, 0)
-    frame:SetPoint("BOTTOMLEFT", CharacterFrame, "BOTTOMRIGHT", DOCK_GAP, 0)
     frame:SetWidth(FALLBACK_WIDTH)
+    self.frame = frame
+    self:ApplyDockOffset()
     pcall(frame.SetBackdrop, frame, {
         bgFile = "Interface\\Buttons\\WHITE8X8",
         edgeFile = "Interface\\Buttons\\WHITE8X8",
@@ -279,8 +285,10 @@ function CharacterPanel:BuildFrame()
     pcall(frame.SetBackdropBorderColor, frame, unpack(PANEL_BORDER_COLOR))
     frame:Hide()
 
+    self:BuildGrip(frame)
+
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    title:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING, -PADDING)
+    title:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING + GRIP_SIZE + 4, -PADDING)
     title:SetTextColor(unpack(HEADER_COLOR))
     frame.title = title
 
@@ -324,7 +332,6 @@ function CharacterPanel:BuildFrame()
     footer:SetTextColor(unpack(MUTED_COLOR))
     frame.footer = footer
 
-    self.frame = frame
     self.rows = {}
 
     -- The Codex's own render methods, pointed at this panel's scroll area.
@@ -333,6 +340,95 @@ function CharacterPanel:BuildFrame()
     self.surface = Codex and Codex:NewSurface(frame, scrollFrame, scrollChild, self:ContentWidth())
 
     return frame
+end
+
+-- Where the panel sits relative to the sheet: DOCK_GAP to the right of its
+-- right edge, plus whatever the grip has been dragged. Both left corners
+-- are anchored so the height keeps tracking the sheet's.
+function CharacterPanel:DockOffset()
+    local settings = Settings()
+    local x = tonumber(settings.offsetX) or 0
+    local y = tonumber(settings.offsetY) or 0
+    if x < 0 then x = 0 end
+    if y > 0 then y = 0 end
+    return x, y
+end
+
+function CharacterPanel:ApplyDockOffset()
+    local frame = self.frame
+    if not (frame and CharacterFrame) then return end
+    local x, y = self:DockOffset()
+    frame:ClearAllPoints()
+    frame:SetPoint("TOPLEFT", CharacterFrame, "TOPRIGHT", DOCK_GAP + x, y)
+    frame:SetPoint("BOTTOMLEFT", CharacterFrame, "BOTTOMRIGHT", DOCK_GAP + x, y)
+end
+
+function CharacterPanel:SetDockOffset(x, y)
+    local settings = Settings()
+    settings.offsetX = math.max(0, math.floor((tonumber(x) or 0) + 0.5))
+    settings.offsetY = math.min(0, math.floor((tonumber(y) or 0) + 0.5))
+    self:ApplyDockOffset()
+end
+
+-- Cursor position in the sheet's coordinate space, so a drag delta can be
+-- added straight onto the anchor offset.
+local function CursorPosition()
+    if not GetCursorPosition then return nil end
+    local ok, cx, cy = pcall(GetCursorPosition)
+    if not ok or type(cx) ~= "number" then return nil end
+    local scale = 1
+    if UIParent and UIParent.GetEffectiveScale then
+        local ok2, s = pcall(UIParent.GetEffectiveScale, UIParent)
+        if ok2 and type(s) == "number" and s > 0 then scale = s end
+    end
+    return cx / scale, cy / scale
+end
+
+function CharacterPanel:BuildGrip(frame)
+    local grip = CreateFrame("Button", nil, frame)
+    grip:SetSize(GRIP_SIZE, GRIP_SIZE)
+    grip:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING - 2, -(PADDING - 2))
+    pcall(grip.RegisterForClicks, grip, "LeftButtonUp", "RightButtonUp")
+
+    local icon = grip:CreateTexture(nil, "ARTWORK")
+    icon:SetAllPoints(grip)
+    icon:SetTexture(GRIP_TEXTURE)
+    pcall(icon.SetAlpha, icon, 0.7)
+    grip.icon = icon
+    pcall(grip.SetHighlightTexture, grip, "Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
+
+    -- The panel is anchored to the sheet, so it cannot use StartMoving;
+    -- the grip tracks the cursor itself and feeds the delta into the
+    -- anchor offset while the button is held.
+    grip:SetScript("OnMouseDown", function(button, mouseButton)
+        if mouseButton ~= "LeftButton" then return end
+        local cx, cy = CursorPosition()
+        if not cx then return end
+        local ox, oy = self:DockOffset()
+        button.drag = { cx = cx, cy = cy, ox = ox, oy = oy }
+        button:SetScript("OnUpdate", function(b)
+            local d = b.drag
+            local nx, ny = CursorPosition()
+            if not (d and nx) then return end
+            self:SetDockOffset(d.ox + (nx - d.cx), d.oy + (ny - d.cy))
+        end)
+    end)
+    grip:SetScript("OnMouseUp", function(button, mouseButton)
+        button:SetScript("OnUpdate", nil)
+        button.drag = nil
+        if mouseButton == "RightButton" then self:SetDockOffset(0, 0) end
+    end)
+    grip:SetScript("OnEnter", function(button)
+        pcall(function()
+            GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
+            GameTooltip:SetText("Move panel")
+            GameTooltip:AddLine("Drag to move it right or down. Right-click to put it back.", 1, 1, 1, true)
+            GameTooltip:Show()
+        end)
+    end)
+    grip:SetScript("OnLeave", function() pcall(function() GameTooltip:Hide() end) end)
+
+    frame.grip = grip
 end
 
 -- The column of icon tabs down the panel's right edge, one per section,

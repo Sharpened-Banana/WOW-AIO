@@ -374,6 +374,12 @@ function CreateFrame(frameType, name, parent, template)
 end
 
 UIParent = CreateFrame("Frame", "UIParent")
+function UIParent:GetEffectiveScale() return 1 end
+
+-- Where the mouse is, for drag tests. Set mock.cursor and fire the
+-- widget's own OnMouseDown / OnUpdate / OnMouseUp scripts.
+mock.cursor = { x = 0, y = 0 }
+function GetCursorPosition() return mock.cursor.x, mock.cursor.y end
 
 -- Blizzard's character sheet and its paper doll slot buttons, which
 -- UI/CharacterPanel.lua docks to and hooks. Only the surface the panel
