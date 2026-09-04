@@ -713,10 +713,15 @@ function CharacterPanel:RenderGear()
     local y, index = 0, 0
 
     -- Stat priority, with the player's live rating beside each stat.
+    -- Wowhead's order for the hero tree the player is in, when the client
+    -- can say which; else the guide's flat order (GuideStore).
     local StatsModule = ns:GetModule("Stats")
-    local priorities = guide and guide.statPriority
+    local priorities, activeTitle
+    if ns.GuideStore then priorities, activeTitle = ns.GuideStore:GetActiveStatPriority(specID) end
     index = index + 1
-    y = PlaceRow(pool, index, child, width, y, "Stat Priority", { color = HEADER_COLOR })
+    y = PlaceRow(pool, index, child, width, y,
+        activeTitle and format("Stat Priority \194\183 %s", activeTitle) or "Stat Priority",
+        { color = HEADER_COLOR })
     if not priorities or #priorities == 0 then
         index = index + 1
         y = PlaceRow(pool, index, child, width, y, "no stat priority for this spec", { color = MUTED_COLOR })
@@ -743,8 +748,10 @@ function CharacterPanel:RenderGear()
             for order, entry in ipairs(listEntry.list) do
                 names[order] = STAT_LABELS[entry.stat] or entry.stat
             end
+            local isCurrent = activeTitle ~= nil and listEntry.title == activeTitle
             index = index + 1
-            y = PlaceRow(pool, index, child, width, y, listEntry.title, { color = CONDITION_COLOR })
+            y = PlaceRow(pool, index, child, width, y, listEntry.title .. (isCurrent and "  (you)" or ""),
+                { color = isCurrent and HEADER_COLOR or CONDITION_COLOR })
             index = index + 1
             y = PlaceRow(pool, index, child, width, y, table.concat(names, " > "),
                 { color = TEXT_SECONDARY_COLOR, indent = 10 })
@@ -999,5 +1006,8 @@ end
 function CharacterPanel:OnInit()
     ns:RegisterEvent("PLAYER_EQUIPMENT_CHANGED", function() self:QueueRender() end)
     ns:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", function() self:QueueRender() end)
+    -- A hero tree swap changes which stat order is the player's.
+    ns:RegisterEvent("TRAIT_CONFIG_UPDATED", function() self:QueueRender() end)
+    ns:RegisterEvent("PLAYER_TALENT_UPDATE", function() self:QueueRender() end)
     ns:RegisterEvent("GET_ITEM_INFO_RECEIVED", function() self:QueueRender() end)
 end

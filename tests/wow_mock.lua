@@ -738,9 +738,15 @@ end
 
 mock.activeConfigID = 1
 
+-- The hero talent tree the player is in: a sub-tree ID, named through
+-- C_Traits.GetSubTreeInfo the way the real client does. nil = none chosen.
+mock.heroSubTreeID = nil
+mock.heroTrees = { [1] = "San'layn", [2] = "Rider of the Apocalypse", [3] = "Lightsmith" }
+
 C_ClassTalents = {
     GetActiveConfigID = function() return mock.activeConfigID end,
     GetLastSelectedSavedConfigID = function() return mock.activeConfigID end,
+    GetActiveHeroTalentSpec = function() return mock.heroSubTreeID end,
 }
 
 mock.exportString = "SpecSage-mock-export-string"
@@ -751,6 +757,11 @@ C_Traits = {
         return { id = configID, name = "Active" }
     end,
     GenerateInspectImportString = function() return mock.exportString end,
+    GetSubTreeInfo = function(configID, subTreeID)
+        local name = mock.heroTrees[subTreeID]
+        if configID ~= mock.activeConfigID or not name then return nil end
+        return { ID = subTreeID, name = name }
+    end,
     -- The current retail export API; Modules/Loadouts.lua tries this before
     -- falling back to GenerateInspectImportString, so both are defined here.
     GenerateImportString = function() return mock.exportString end,

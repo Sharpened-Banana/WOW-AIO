@@ -34,6 +34,16 @@ function Codex:OnEnable()
     ns:RegisterEvent("GET_ITEM_INFO_RECEIVED", function(_, itemID)
         self:OnBiSItemInfoReceived(itemID)
     end)
+    -- Swapping hero tree (or spec) changes which stat order is the
+    -- player's; an open Stats tab redraws to match.
+    local function OnTalentsChanged()
+        if self.frame and self.frame:IsShown() and self.activeTab == "Stats" then
+            self:RenderActiveTab()
+        end
+    end
+    ns:RegisterEvent("TRAIT_CONFIG_UPDATED", OnTalentsChanged)
+    ns:RegisterEvent("PLAYER_TALENT_UPDATE", OnTalentsChanged)
+    ns:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", OnTalentsChanged)
 end
 
 -- Retail has been moving specialization lookups into C_SpecializationInfo;
@@ -829,7 +839,10 @@ function Codex:RenderStats(guide, specID)
     local linePool = self.statLinePool
     local y, index = -PADDING, 0
 
-    local priorities = guide and guide.statPriority
+    -- For the player's own spec this is Wowhead's order for the hero tree
+    -- they are in (activeTitle names it); for any other spec, or when the
+    -- tree cannot be read, the guide's flat order.
+    local priorities, activeTitle = ns.GuideStore:GetActiveStatPriority(specID)
     if not priorities or #priorities == 0 then
         index = index + 1
         y = PlaceStatRow(pool, index, parent, y, width, NO_DATA_TEXT, nil, true)
@@ -844,6 +857,11 @@ function Codex:RenderStats(guide, specID)
             local value = StatsModule and StatsModule:GetStatValue(entry.stat) or nil
             index = index + 1
             y = PlaceStatRow(pool, index, parent, y, width, label, value)
+        end
+        if activeTitle then
+            index = index + 1
+            y = PlaceStatRow(pool, index, parent, y, width,
+                format("for your hero tree: %s", activeTitle), nil, true)
         end
     end
 
@@ -865,9 +883,11 @@ function Codex:RenderStats(guide, specID)
             for order, entry in ipairs(listEntry.list) do
                 names[order] = STAT_LABELS[entry.stat] or entry.stat
             end
+            local isCurrent = activeTitle ~= nil and listEntry.title == activeTitle
             lineIndex = lineIndex + 1
             y = PlaceLine(linePool, lineIndex, parent, y, width,
-                format("%s: %s", listEntry.title, table.concat(names, " > ")))
+                format("%s%s: %s", listEntry.title, isCurrent and "  (you)" or "", table.concat(names, " > ")),
+                isCurrent and { color = HEADER_COLOR } or nil)
             if listEntry.note then
                 lineIndex = lineIndex + 1
                 y = PlaceLine(linePool, lineIndex, parent, y, width, listEntry.note,

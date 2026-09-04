@@ -454,6 +454,74 @@ function GuideStore:GetStatPriority(specID)
     return statPriorities[specID]
 end
 
+-- The hero talent tree the player is in, by name ("Slayer", "San'layn"),
+-- or nil when the client cannot say (no hero tree chosen, pre-70, an API
+-- that is not there). C_ClassTalents.GetActiveHeroTalentSpec gives the
+-- sub-tree ID; C_Traits.GetSubTreeInfo names it. Every call is pcall'd:
+-- this runs from tooltips.
+function GuideStore:GetActiveHeroTree()
+    if not (C_ClassTalents and C_ClassTalents.GetActiveHeroTalentSpec) then return nil end
+    local ok, subTreeID = pcall(C_ClassTalents.GetActiveHeroTalentSpec)
+    if not ok or type(subTreeID) ~= "number" then return nil end
+    if not (C_Traits and C_Traits.GetSubTreeInfo and C_ClassTalents.GetActiveConfigID) then return nil end
+    local ok2, configID = pcall(C_ClassTalents.GetActiveConfigID)
+    if not ok2 or type(configID) ~= "number" then return nil end
+    local ok3, info = pcall(C_Traits.GetSubTreeInfo, configID, subTreeID)
+    if not ok3 or type(info) ~= "table" or type(info.name) ~= "string" or info.name == "" then return nil end
+    return info.name
+end
+
+local function PlayerSpecIDForHero()
+    if not (GetSpecialization and GetSpecializationInfo) then return nil end
+    local ok, index = pcall(GetSpecialization)
+    if not ok or not index then return nil end
+    local ok2, specID = pcall(GetSpecializationInfo, index)
+    if ok2 then return specID end
+    return nil
+end
+
+-- The stat-priority list for a hero tree by name: the list titled exactly
+-- that, or else the first whose title names it as one of a pair
+-- ("Lightsmith / Templar - Survivability" for either Lightsmith or
+-- Templar). Returns the list entry and its index, or nil.
+function GuideStore:GetStatPriorityForHero(specID, heroName)
+    local data = statPriorities[specID]
+    if not data or not data.lists or type(heroName) ~= "string" or heroName == "" then return nil end
+    for index, entry in ipairs(data.lists) do
+        if entry.title == heroName then return entry, index end
+    end
+    local wanted = heroName:lower()
+    for index, entry in ipairs(data.lists) do
+        local title = (entry.title or ""):lower()
+        -- Split off any " - goal" suffix, then match a whole "A / B" part.
+        local trees = title:match("^(.-)%s+%-%s+") or title
+        for part in trees:gmatch("[^/]+") do
+            if part:match("^%s*(.-)%s*$") == wanted then return entry, index end
+        end
+    end
+    return nil
+end
+
+-- The priority the addon should show and rank against for a spec: for the
+-- player's own spec, the Wowhead list for the hero tree they are in; for
+-- any other spec (or when the tree is unknown, or Wowhead has no list for
+-- it) the guide's flat statPriority. Returns the list plus, when a hero
+-- list was chosen, its title - so a caller can say which tree the order is
+-- for. Wowhead and Icy Veins both split their priorities by hero tree; a
+-- flat order was only ever a stand-in for that.
+function GuideStore:GetActiveStatPriority(specID)
+    local guide = guides[specID]
+    local flat = guide and guide.statPriority
+    if specID and specID == PlayerSpecIDForHero() then
+        local hero = self:GetActiveHeroTree()
+        local entry = hero and self:GetStatPriorityForHero(specID, hero)
+        if entry and entry.list and #entry.list > 0 then
+            return entry.list, entry.title, hero
+        end
+    end
+    return flat, nil, nil
+end
+
 -- Guide-site talent builds (v1.5, generated Data/SiteLoadouts.lua):
 -- { source, patch, builds = { { label, string }, ... } }, each string an
 -- exact Blizzard export string. Kept apart from the guide's own

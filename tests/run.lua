@@ -3311,6 +3311,108 @@ do
 end
 
 --------------------------------------------------------------------------------
+section("Hero talent tree detection (GuideStore:GetActiveStatPriority)")
+--------------------------------------------------------------------------------
+
+-- Wowhead and Icy Veins both split their stat priorities by hero tree. The
+-- addon reads which tree the player is in (C_ClassTalents +
+-- C_Traits.GetSubTreeInfo) and shows / ranks against that tree's order for
+-- the player's own spec; every other spec, and a player whose tree cannot
+-- be read, gets the guide's flat order as before.
+do
+    local GuideStore = ns.GuideStore
+    local ItemRanks = ns:GetModule("ItemRanks")
+    local original = GuideStore:GetStatPriority(252)
+    -- Two trees with visibly different orders, so the choice shows.
+    GuideStore:RegisterStatPriority(252, {
+        source = "test", url = "https://example.invalid", patch = "12.1", heroSplit = true,
+        lists = {
+            { title = "San'layn",
+              list = { { stat = "primary" }, { stat = "crit" }, { stat = "mastery" }, { stat = "haste" }, { stat = "versatility" } } },
+            { title = "Rider of the Apocalypse",
+              list = { { stat = "primary" }, { stat = "haste" }, { stat = "versatility" }, { stat = "crit" }, { stat = "mastery" } } },
+        },
+    })
+
+    mock.heroSubTreeID = nil
+    check(GuideStore:GetActiveHeroTree() == nil, "no hero tree chosen reads as nil")
+    local list, title = GuideStore:GetActiveStatPriority(252)
+    check(title == nil and list == GuideStore:GetGuide(252).statPriority,
+        "with no tree readable the player's spec falls back to the guide's flat order", title)
+
+    mock.heroSubTreeID = 2
+    check(GuideStore:GetActiveHeroTree() == "Rider of the Apocalypse",
+        "the active hero tree is read by name", GuideStore:GetActiveHeroTree())
+    list, title = GuideStore:GetActiveStatPriority(252)
+    check(title == "Rider of the Apocalypse" and list[2].stat == "haste",
+        "the player's spec gets the list for the tree they are in", title)
+    local other = GuideStore:GetActiveStatPriority(62)
+    check(other == GuideStore:GetGuide(62).statPriority, "another spec still gets its flat order")
+
+    -- A page that splits by goal instead of tree names both trees in one
+    -- title; either tree matches it.
+    local entry, index = GuideStore:GetStatPriorityForHero(66, "Templar")
+    check(entry ~= nil and index == 1 and entry.title:find("Templar", 1, true) ~= nil,
+        "a 'A / B - goal' title matches either tree", entry and entry.title)
+    check(GuideStore:GetStatPriorityForHero(66, "Slayer") == nil, "a tree the page does not name matches nothing")
+
+    -- Tooltip ranks follow the tree: Haste is #1 for Rider here, not #3.
+    local ranks = ItemRanks:GetRankTable(252)
+    check(ranks and ranks.haste == 1 and ranks.crit == 3, "item stat ranks use the hero tree's order", ranks and ranks.haste)
+
+    -- The Codex Stats tab numbers the tree's order, says which tree, and
+    -- marks it in the hero-tree section.
+    local function ShownText(pool)
+        local out = {}
+        for _, row in ipairs(pool) do
+            if row:IsShown() then
+                local fs = row.label or row.text
+                out[#out + 1] = (fs and fs:GetText()) or ""
+            end
+        end
+        return table.concat(out, "\n")
+    end
+    Codex:Open("DEATHKNIGHT", 252)
+    Codex:SelectTab("Stats")
+    local statsDump = ShownText(Codex.pools.stats)
+    check(statsDump:find("2. Haste", 1, true) ~= nil, "the numbered priority is the hero tree's order", statsDump)
+    check(statsDump:find("for your hero tree: Rider of the Apocalypse", 1, true) ~= nil,
+        "and says which tree it is for", statsDump)
+    local lineDump = ShownText(Codex.statLinePool)
+    check(lineDump:find("Rider of the Apocalypse  (you):", 1, true) ~= nil,
+        "the hero-tree section marks the player's tree", lineDump)
+    check(lineDump:find("San'layn  (you)", 1, true) == nil, "and only that one")
+
+    -- Swapping trees redraws an open Stats tab.
+    mock.heroSubTreeID = 1
+    mock.Fire("TRAIT_CONFIG_UPDATED", 1)
+    statsDump = ShownText(Codex.pools.stats)
+    check(statsDump:find("for your hero tree: San'layn", 1, true) ~= nil
+        and statsDump:find("2. Crit", 1, true) ~= nil, "a hero tree swap redraws the Stats tab", statsDump)
+    Codex:Toggle()
+
+    -- The docked panel's Gear section does the same.
+    mock.heroSubTreeID = 2
+    local Panel = ns:GetModule("CharacterPanel")
+    Panel:SelectSection("Gear")
+    mock.ShowCharacterFrame(true)
+    local panelDump = {}
+    for _, row in ipairs(Panel.rows) do
+        if row:IsShown() then panelDump[#panelDump + 1] = row.text:GetText() or "" end
+    end
+    panelDump = table.concat(panelDump, "\n")
+    check(panelDump:find("Stat Priority \194\183 Rider of the Apocalypse", 1, true) ~= nil,
+        "the panel's Stat Priority header names the player's hero tree", panelDump)
+    check(panelDump:find("2. Haste", 1, true) ~= nil, "and its rows follow that tree's order", panelDump)
+    check(panelDump:find("Rider of the Apocalypse  (you)", 1, true) ~= nil,
+        "and the hero-tree list marks it", panelDump)
+    mock.ShowCharacterFrame(false)
+
+    mock.heroSubTreeID = nil
+    GuideStore:RegisterStatPriority(252, original)
+end
+
+--------------------------------------------------------------------------------
 section("Character sheet panel (v1.6, UI/CharacterPanel.lua)")
 --------------------------------------------------------------------------------
 

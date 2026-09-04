@@ -21,14 +21,16 @@ class guides, talent loadouts, and live character tracking in one place:
 - **Tier and stat ranks on item tooltips** — a trinket's tooltip shows its
   tier in your current spec's trinket lists (Single Target S, Icy Veins A,
   …), and every item tooltip gets each secondary stat's rank written next to
-  the stat itself ("+512 Haste  #1") against your spec's stat priority, so
+  the stat itself ("+512 Haste  #1") against the stat priority for the hero
+  talent tree you are in, so
   you can tell at a glance whether a drop in your bags is for you.
 - **Docked panel** — an optional panel attached to the character sheet,
   opening and closing with it, showing everything the Codex does: icon
   tabs down its right edge switch between Overview, Stats, Rotation,
   Cooldowns, Consumables, BiS, Loadouts, Notes and Options. Its own **Gear** section
-  reacts to the paper doll beside it: your stat priority with your live
-  rating beside each stat, Wowhead's order for each hero talent tree, and the
+  reacts to the paper doll beside it: your stat priority for the hero
+  talent tree you are in, with your live rating beside each stat, Wowhead's
+  order for every hero tree, and the
   BiS item for whichever gear slot you hover, tagged equipped / owned /
   missing. A checkbox on the character sheet turns it off, and the grip in
   its top-left corner drags it further right or down if it is in the way,

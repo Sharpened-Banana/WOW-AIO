@@ -442,11 +442,33 @@ title, note, list = { { stat } } } } })` per spec. Rules the data follows:
 
 The guides' own flat `statPriority` was rewritten this pass to match each
 spec's *first* Wowhead list, and a test asserts the two stay in agreement.
-That flat list is still what `Modules/ItemRanks.lua` ranks items against —
-tooltips rank a single item for a single character, and picking which hero
-tree the player is in is not something the addon reads today. It skips
-primary/stamina/armor entirely, so a spec whose Wowhead order puts Intellect
-last (Elemental) ranks its secondaries the same as any other.
+
+### Which list is "yours" (2026-09-04)
+
+The addon now reads the hero tree the player is in:
+`GuideStore:GetActiveHeroTree()` goes through
+`C_ClassTalents.GetActiveHeroTalentSpec()` and names the sub-tree with
+`C_Traits.GetSubTreeInfo(activeConfigID, subTreeID).name`, all pcall'd
+since it runs from tooltips. `GetStatPriorityForHero(specID, name)` finds
+that tree's list — an exact title match first, else the first
+`"A / B - goal"` title naming it — and `GetActiveStatPriority(specID)` is
+the one call every consumer uses: for the **player's own spec** it returns
+the hero tree's list (plus its title), for any other spec, or when the tree
+cannot be read or Wowhead has no list for it, the guide's flat order.
+
+Consumers: the Codex Stats tab's numbered list (with a muted "for your hero
+tree: X" row and an "(you)" mark in the hero-tree section), the docked
+panel's Gear section (header "Stat Priority · X", same mark), and
+`Modules/ItemRanks.lua`'s tooltip ranks. `TRAIT_CONFIG_UPDATED` /
+`PLAYER_TALENT_UPDATE` redraw an open Stats tab and the docked panel.
+ItemRanks still skips primary/stamina/armor entirely, so a spec whose
+Wowhead order puts Intellect last (Elemental) ranks its secondaries the
+same as any other.
+
+Only Wowhead's per-tree orders are shipped. Icy Veins splits by hero tree
+too but its pages are not harvested; adding them means a second
+`RegisterStatPriority`-shaped source and a source toggle, the way the BiS
+and trinket lists carry both sites.
 
 Codex Stats tab order: the flat priority as before (numbered, with the
 player's live value beside each row for their own spec), then a **By Hero

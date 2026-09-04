@@ -85,12 +85,13 @@ end
 -- Pure logic (testable without a tooltip)
 --------------------------------------------------------------------------------
 
--- The rank of each rankable stat for a spec, from its guide's statPriority:
--- { haste = 1, crit = 2, ... } plus the total count, or nil when the spec has
--- no guide or its priority names no rankable stat at all.
+-- The rank of each rankable stat for a spec: { haste = 1, crit = 2, ... }
+-- plus the total count, or nil when the spec has no guide or its priority
+-- names no rankable stat at all. Ranks against GuideStore's active
+-- priority, so the player's own spec is ranked for the hero tree they are
+-- actually in (Wowhead's per-tree order), not the guide's flat stand-in.
 function ItemRanks:GetRankTable(specID)
-    local guide = specID and ns.GuideStore and ns.GuideStore:GetGuide(specID)
-    local priority = guide and guide.statPriority
+    local priority = specID and ns.GuideStore and ns.GuideStore:GetActiveStatPriority(specID)
     if type(priority) ~= "table" then return nil end
 
     local ranks, count = {}, 0
