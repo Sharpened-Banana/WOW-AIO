@@ -263,6 +263,10 @@ local DEFAULTS = {
         -- (<= 0) from its docked spot beside the sheet.
         offsetX = 0,
         offsetY = 0,
+        -- Set once the bottom-right grip has resized the panel; nil means
+        -- it follows the character sheet's size.
+        width = nil,
+        height = nil,
     },
 
     -- Pinned tooltips, keyed by "section:key", each { section, key, custom,

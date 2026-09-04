@@ -2963,6 +2963,11 @@ do
         "the trinket row itself takes no mouse")
     check(first.hit ~= nil and first.hit:IsShown() and (first.hit.width or 0) <= (first.text.width or 0),
         "the item text carries a hit area no wider than the text", first.hit and first.hit.width)
+    -- The hit covers the name only, not the ilvl / source / tier detail
+    -- after it - the whole-line version still fired across most of the row.
+    check(first.hit.width == #"Thunderfury, Blessed Blade of the Windseeker" * 7
+        and first.hit.width < first.text:GetStringWidth(),
+        "the hit area is the width of the item name, not the whole line", first.hit.width)
     first.hit:GetScript("OnEnter")(first.hit)
     check(GameTooltip.itemID == 19019, "hovering a trinket row's item shows its tooltip", GameTooltip.itemID)
     first.hit:GetScript("OnLeave")(first.hit)
@@ -3683,6 +3688,39 @@ do
     grip:GetScript("OnMouseUp")(grip, "RightButton")
     _, ax, ay = Anchor()
     check(ax == 16 and ay == 0 and ns.db.characterPanel.offsetX == 0, "right-clicking the grip puts the panel back", ax .. "," .. ay)
+
+    -- The bottom-right grip resizes the panel; until then it follows the
+    -- sheet, and right-click makes it follow again.
+    local resize = Panel.frame.resizeGrip
+    check(resize ~= nil, "the panel has a resize grip")
+    check(#Panel.frame.points == 2, "an unresized panel anchors both left corners to the sheet")
+    local startW = Panel.frame:GetWidth()
+    mock.cursor = { x = 500, y = 200 }
+    resize:GetScript("OnMouseDown")(resize, "LeftButton")
+    mock.cursor = { x = 560, y = 120 }
+    resize:GetScript("OnUpdate")(resize)
+    resize:GetScript("OnMouseUp")(resize, "LeftButton")
+    check(Panel.frame:GetWidth() == startW + 60, "dragging the resize grip right widens the panel", Panel.frame:GetWidth())
+    check(ns.db.characterPanel.width == startW + 60 and ns.db.characterPanel.height ~= nil,
+        "the size is saved", tostring(ns.db.characterPanel.width))
+    check(#Panel.frame.points == 1 and Panel.frame:GetHeight() == ns.db.characterPanel.height,
+        "a resized panel owns its height and anchors only its top corner", Panel.frame:GetHeight())
+    check(Panel.frame.scrollChild:GetWidth() == Panel:ContentWidth() and Panel.surface.contentWidth == Panel:ContentWidth(),
+        "rows re-lay-out at the new width")
+    mock.ShowCharacterFrame(false)
+    mock.ShowCharacterFrame(true)
+    check(Panel.frame:GetWidth() == startW + 60, "the size survives reopening the sheet", Panel.frame:GetWidth())
+    -- It cannot be dragged smaller than the side tabs need.
+    mock.cursor = { x = 0, y = 0 }
+    resize:GetScript("OnMouseDown")(resize, "LeftButton")
+    mock.cursor = { x = -900, y = 900 }
+    resize:GetScript("OnUpdate")(resize)
+    resize:GetScript("OnMouseUp")(resize, "LeftButton")
+    check(Panel.frame:GetWidth() == 260 and Panel.frame:GetHeight() == 398,
+        "the panel stops at its minimum size", Panel.frame:GetWidth() .. "x" .. Panel.frame:GetHeight())
+    resize:GetScript("OnMouseUp")(resize, "RightButton")
+    check(ns.db.characterPanel.width == nil and Panel.frame:GetWidth() == CharacterFrame:GetWidth()
+        and #Panel.frame.points == 2, "right-clicking the resize grip follows the sheet again", Panel.frame:GetWidth())
 
     mock.ShowCharacterFrame(false)
 end

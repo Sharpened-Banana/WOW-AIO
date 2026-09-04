@@ -60,6 +60,12 @@ local GRIP_SIZE = 16
 -- build does not ship, and the grip came out invisible.
 local GRIP_DOT = 3
 local GRIP_COLOR = { 0.651, 0.706, 0.761, 0.9 }
+-- The panel follows the sheet's size until the bottom-right grip has been
+-- dragged; from then on it keeps its own. Right-click on that grip goes
+-- back to following. The floor keeps the side tabs on the panel and a row
+-- readable.
+local MIN_WIDTH = 260
+local MIN_HEIGHT = 30 + 10 * 36 + 8
 local SCROLLBAR_INSET = 26
 local PADDING = 10
 local TITLE_HEIGHT = 20
@@ -327,7 +333,7 @@ function CharacterPanel:BuildFrame()
     -- Codex is showing.
     local listToggle = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     listToggle:SetSize(110, 18)
-    listToggle:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -PADDING, PADDING - 2)
+    listToggle:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -(PADDING + GRIP_SIZE), PADDING - 2)
     listToggle:SetScript("OnClick", function() self:CycleList() end)
     frame.listToggle = listToggle
 
@@ -335,6 +341,8 @@ function CharacterPanel:BuildFrame()
     footer:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", PADDING, PADDING)
     footer:SetTextColor(unpack(MUTED_COLOR))
     frame.footer = footer
+
+    self:BuildResizeGrip(frame)
 
     self.rows = {}
 
@@ -358,13 +366,37 @@ function CharacterPanel:DockOffset()
     return x, y
 end
 
+-- Explicit size, or nil for "follow the sheet".
+function CharacterPanel:SizeOverride()
+    local settings = Settings()
+    local w = tonumber(settings.width)
+    local h = tonumber(settings.height)
+    if w and w < MIN_WIDTH then w = MIN_WIDTH end
+    if h and h < MIN_HEIGHT then h = MIN_HEIGHT end
+    return w, h
+end
+
 function CharacterPanel:ApplyDockOffset()
     local frame = self.frame
     if not (frame and CharacterFrame) then return end
     local x, y = self:DockOffset()
+    local _, height = self:SizeOverride()
     frame:ClearAllPoints()
     frame:SetPoint("TOPLEFT", CharacterFrame, "TOPRIGHT", DOCK_GAP + x, y)
-    frame:SetPoint("BOTTOMLEFT", CharacterFrame, "BOTTOMRIGHT", DOCK_GAP + x, y)
+    if height then
+        -- A resized panel owns its height; only the top corner follows.
+        frame:SetHeight(height)
+    else
+        frame:SetPoint("BOTTOMLEFT", CharacterFrame, "BOTTOMRIGHT", DOCK_GAP + x, y)
+    end
+end
+
+function CharacterPanel:SetSize(width, height)
+    local settings = Settings()
+    settings.width = width and math.max(MIN_WIDTH, math.floor(width + 0.5)) or nil
+    settings.height = height and math.max(MIN_HEIGHT, math.floor(height + 0.5)) or nil
+    self:ApplyDockOffset()
+    self:SyncSize()
 end
 
 function CharacterPanel:SetDockOffset(x, y)
@@ -443,6 +475,65 @@ function CharacterPanel:BuildGrip(frame)
     grip:SetScript("OnLeave", function() pcall(function() GameTooltip:Hide() end) end)
 
     frame.grip = grip
+end
+
+-- The resize grip in the bottom-right corner: three dots on the diagonal.
+-- Drag to size the panel; right-click to go back to following the sheet.
+function CharacterPanel:BuildResizeGrip(frame)
+    local grip = CreateFrame("Button", nil, frame)
+    grip:SetSize(GRIP_SIZE, GRIP_SIZE)
+    grip:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -2, 2)
+    pcall(grip.RegisterForClicks, grip, "LeftButtonUp", "RightButtonUp")
+    pcall(grip.SetHighlightTexture, grip, "Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
+
+    grip.dots = {}
+    for i = 0, 2 do
+        local dot = grip:CreateTexture(nil, "ARTWORK")
+        dot:SetSize(GRIP_DOT, GRIP_DOT)
+        dot:SetPoint("BOTTOMRIGHT", grip, "BOTTOMRIGHT", -(1 + i * (GRIP_DOT + 1)), 1 + i * (GRIP_DOT + 1))
+        dot:SetColorTexture(unpack(GRIP_COLOR))
+        grip.dots[#grip.dots + 1] = dot
+        -- Fill the lower-right triangle: one extra dot beside each of the
+        -- inner diagonal dots.
+        if i < 2 then
+            local side = grip:CreateTexture(nil, "ARTWORK")
+            side:SetSize(GRIP_DOT, GRIP_DOT)
+            side:SetPoint("BOTTOMRIGHT", grip, "BOTTOMRIGHT", -(1 + (i + 1) * (GRIP_DOT + 1)), 1 + i * (GRIP_DOT + 1))
+            side:SetColorTexture(unpack(GRIP_COLOR))
+            grip.dots[#grip.dots + 1] = side
+        end
+    end
+
+    grip:SetScript("OnMouseDown", function(button, mouseButton)
+        if mouseButton ~= "LeftButton" then return end
+        local cx, cy = CursorPosition()
+        if not cx then return end
+        button.drag = { cx = cx, cy = cy, w = frame:GetWidth() or FALLBACK_WIDTH, h = frame:GetHeight() or MIN_HEIGHT }
+        button:SetScript("OnUpdate", function(b)
+            local d = b.drag
+            local nx, ny = CursorPosition()
+            if not (d and nx) then return end
+            self:SetSize(d.w + (nx - d.cx), d.h - (ny - d.cy))
+            self:QueueRender()
+        end)
+    end)
+    grip:SetScript("OnMouseUp", function(button, mouseButton)
+        button:SetScript("OnUpdate", nil)
+        button.drag = nil
+        if mouseButton == "RightButton" then self:SetSize(nil, nil) end
+        if self.frame and self.frame:IsShown() then self:Render() end
+    end)
+    grip:SetScript("OnEnter", function(button)
+        pcall(function()
+            GameTooltip:SetOwner(button, "ANCHOR_LEFT")
+            GameTooltip:SetText("Resize panel")
+            GameTooltip:AddLine("Drag to resize. Right-click to match the character sheet again.", 1, 1, 1, true)
+            GameTooltip:Show()
+        end)
+    end)
+    grip:SetScript("OnLeave", function() pcall(function() GameTooltip:Hide() end) end)
+
+    frame.resizeGrip = grip
 end
 
 -- The column of icon tabs down the panel's right edge, one per section,
@@ -789,16 +880,19 @@ function CharacterPanel:IsEnabled()
     return Settings().enabled ~= false
 end
 
--- Pushes the character sheet's width across. Height needs nothing: the panel
--- is anchored to both of the sheet's right-hand corners, so it already tracks
--- any height the sheet takes. A sheet that reports no width yet (built but
+-- Pushes the character sheet's width across, unless the resize grip has
+-- given the panel a width of its own. Height needs nothing here: until
+-- resized the panel is anchored to both of the sheet's right-hand corners,
+-- and once resized ApplyDockOffset sets it. A sheet that reports no width yet (built but
 -- not laid out) leaves the fallback in place rather than collapsing to zero.
 function CharacterPanel:SyncSize()
     if not (self.frame and CharacterFrame) then return end
-    local ok, width = pcall(CharacterFrame.GetWidth, CharacterFrame)
-    if ok and type(width) == "number" and width > 0 then
-        self.frame:SetWidth(width)
+    local width = self:SizeOverride()
+    if not width then
+        local ok, sheetWidth = pcall(CharacterFrame.GetWidth, CharacterFrame)
+        if ok and type(sheetWidth) == "number" and sheetWidth > 0 then width = sheetWidth end
     end
+    if width then self.frame:SetWidth(width) end
     -- The Codex's renderers lay rows out against self.contentWidth, so the
     -- surface has to be told too or a resized panel would keep drawing at
     -- the old width.

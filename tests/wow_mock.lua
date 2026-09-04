@@ -117,6 +117,13 @@ local function NewFontString()
     function fs:SetFont(path, size) self.font, self.fontSize = path, size end
     function fs:GetFont() return self.font or "Fonts\\FRIZQT__.TTF", self.fontSize or 12, "" end
     function fs:SetTextColor(r, g, b) self.color = { r, g, b } end
+    -- Natural width of the text: 7px per visible character, colour codes
+    -- stripped, so a hit area sized to a name is narrower than one sized to
+    -- the whole line.
+    function fs:GetStringWidth()
+        local visible = (self.text or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+        return #visible * 7
+    end
     function fs:SetFontObject(obj) self.fontObject = obj end
     return fs
 end

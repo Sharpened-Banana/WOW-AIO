@@ -31,8 +31,9 @@ class guides, talent loadouts, and live character tracking in one place:
   rating beside each stat, Wowhead's order for each hero talent tree, and the
   BiS item for whichever gear slot you hover, tagged equipped / owned /
   missing. A checkbox on the character sheet turns it off, and the grip in
-  its corner drags it further right or down if it is in the way
-  (right-click to put it back).
+  its top-left corner drags it further right or down if it is in the way,
+  and the one in its bottom-right corner resizes it (right-click either to
+  put it back).
 - **Talent Loadout Vault** — save, label, import, and export talent loadout
   strings per spec, organised by content type (Raid, Mythic+, Delves, PvP).
   Ships with suggested builds per spec: SimulationCraft's default profile,

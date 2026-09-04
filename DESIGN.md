@@ -834,12 +834,19 @@ right-click resets. The panel is anchored to the sheet on both left corners
 so `StartMoving` is out - the grip tracks `GetCursorPosition` itself in an
 `OnUpdate` while held and feeds the delta into the anchor offset.
 
+A second grip in the bottom-right corner resizes it (`characterPanel.width`
+/ `height`, nil = follow the sheet; floor 260 x 398 so the ten side tabs
+stay on the panel). A resized panel anchors only its top-left corner to the
+sheet and owns its height; right-click on that grip clears the override.
+
 ### List-row hit areas
 
 Trinket and linked-BiS rows used to take the mouse across their full width,
 so scrolling a list past the cursor popped a tooltip on every line. The row
-is now inert; a child button fitted to the item text (`AttachItemHit` /
-`SizeItemHit`, via `GetStringWidth`) carries hover and click.
+is now inert; a child button fitted to the item *name* - measured on a
+hidden FontString in the same font, since the row's text also carries the
+drop source or tier detail after the name (`AttachItemHit` / `SizeItemHit`)
+- carries hover and click.
 
 ### BiS tab checklist
 
