@@ -55,7 +55,11 @@ local DOCK_GAP = 16
 -- the sheet or its side tabs); the offset is saved and the panel keeps
 -- following the sheet from there. Right-click puts it back.
 local GRIP_SIZE = 16
-local GRIP_TEXTURE = "Interface\\CURSOR\\UI-Cursor-Move"
+-- Drawn as a 2x3 dot grid from plain colour textures rather than a client
+-- texture file: the first cut pointed at a cursor texture that this client
+-- build does not ship, and the grip came out invisible.
+local GRIP_DOT = 3
+local GRIP_COLOR = { 0.651, 0.706, 0.761, 0.9 }
 local SCROLLBAR_INSET = 26
 local PADDING = 10
 local TITLE_HEIGHT = 20
@@ -390,11 +394,21 @@ function CharacterPanel:BuildGrip(frame)
     grip:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING - 2, -(PADDING - 2))
     pcall(grip.RegisterForClicks, grip, "LeftButtonUp", "RightButtonUp")
 
-    local icon = grip:CreateTexture(nil, "ARTWORK")
-    icon:SetAllPoints(grip)
-    icon:SetTexture(GRIP_TEXTURE)
-    pcall(icon.SetAlpha, icon, 0.7)
-    grip.icon = icon
+    grip.dots = {}
+    local gridW = GRIP_DOT * 2 + 2
+    local gridH = GRIP_DOT * 3 + 4
+    local x0 = math.floor((GRIP_SIZE - gridW) / 2)
+    local y0 = math.floor((GRIP_SIZE - gridH) / 2)
+    for col = 0, 1 do
+        for rowIndex = 0, 2 do
+            local dot = grip:CreateTexture(nil, "ARTWORK")
+            dot:SetSize(GRIP_DOT, GRIP_DOT)
+            dot:SetPoint("TOPLEFT", grip, "TOPLEFT",
+                x0 + col * (GRIP_DOT + 2), -(y0 + rowIndex * (GRIP_DOT + 2)))
+            dot:SetColorTexture(unpack(GRIP_COLOR))
+            grip.dots[#grip.dots + 1] = dot
+        end
+    end
     pcall(grip.SetHighlightTexture, grip, "Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
 
     -- The panel is anchored to the sheet, so it cannot use StartMoving;
