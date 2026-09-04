@@ -3583,8 +3583,11 @@ do
     -- No slot hovered yet, so the BiS half asks for one.
     check(dump:find("hover a gear slot", 1, true) ~= nil, "the BiS half prompts for a slot first", dump)
 
-    -- Hovering a paper doll slot fills the BiS half with that slot.
+    -- Hovering a paper doll slot fills the BiS half with that slot. The
+    -- redraw is throttled (see the sections block below), so it lands on
+    -- the next timer tick rather than inside the hover itself.
     mock.HoverPaperDollSlot("CharacterNeckSlot")
+    mock.RunAfter()
     dump = ShownText()
     check(Panel.hoveredSlot == "Neck", "hovering the neck slot selects it", Panel.hoveredSlot)
     check(dump:find("BiS: Neck", 1, true) ~= nil, "the BiS half names the hovered slot", dump)
@@ -3609,6 +3612,7 @@ do
     -- A slot the guides list twice (Ring, Trinket) shows both rows, and both
     -- ring buttons select the same "Ring" slot.
     mock.HoverPaperDollSlot("CharacterFinger1Slot")
+    mock.RunAfter()
     check(Panel.hoveredSlot == "Ring", "the second ring button selects the Ring slot too", Panel.hoveredSlot)
     local ringRows = 0
     for _, row in ipairs(Panel.rows) do
@@ -3618,6 +3622,7 @@ do
 
     -- Clicking a row opens the item link, the same contract the Codex's rows have.
     mock.HoverPaperDollSlot("CharacterNeckSlot")
+    mock.RunAfter()
     local clickable
     for _, row in ipairs(Panel.rows) do
         if row:IsShown() and row.itemID then clickable = row end
@@ -3805,6 +3810,35 @@ do
     check((Panel.frame.footer:GetText() or ""):find("patch", 1, true) ~= nil,
         "the footer names the patch the shipped data targets", Panel.frame.footer:GetText())
 
+    -- Event-driven redraws are throttled. Opening the sheet asks for every
+    -- item on the section and each answer is its own GET_ITEM_INFO_RECEIVED;
+    -- one redraw per event was a forty-redraw freeze on a forty-item list.
+    Panel:SelectSection("BiS")
+    mock.RunAfter()
+    local renders = 0
+    local realRender = Panel.Render
+    Panel.Render = function(...) renders = renders + 1; return realRender(...) end
+    for i = 1, 40 do mock.Fire("GET_ITEM_INFO_RECEIVED", 700000 + i) end
+    mock.Fire("PLAYER_EQUIPMENT_CHANGED", 1)
+    check(renders == 0, "a burst of item-info events draws nothing synchronously", renders)
+    mock.RunAfter()
+    check(renders == 1, "and exactly one redraw once the throttle elapses", renders)
+    mock.RunAfter()
+    check(renders == 1, "with nothing left queued after it", renders)
+    -- Hovering a paper doll slot goes through the same throttle.
+    Panel:SetHoveredSlot("Head")
+    Panel:SetHoveredSlot("Neck")
+    check(renders == 1, "hovering slots queues rather than draws", renders)
+    mock.RunAfter()
+    check(renders == 2 and Panel.hoveredSlot == "Neck", "and draws once for the last hovered slot", renders)
+    -- With the sheet closed nothing is queued at all.
+    mock.ShowCharacterFrame(false)
+    mock.Fire("GET_ITEM_INFO_RECEIVED", 700001)
+    mock.RunAfter()
+    check(renders == 2, "a closed sheet queues no redraw", renders)
+    Panel.Render = realRender
+
+    mock.ShowCharacterFrame(true)
     Panel:SelectSection("Gear")
     mock.ShowCharacterFrame(false)
 end

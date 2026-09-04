@@ -59,6 +59,13 @@ local TAB_STRIDE = 36
 local TAB_TOP_OFFSET = 30
 local TAB_ICON_INSET = 3
 
+-- How long a burst of redraw requests is held before one redraw happens.
+-- Opening the sheet asks the client for every item the section shows, and
+-- each answer arrives as its own GET_ITEM_INFO_RECEIVED; drawing on every
+-- one turned a list of forty items into forty full redraws inside a second,
+-- which is a visible freeze. One redraw per interval covers a burst.
+local RENDER_THROTTLE = 0.25
+
 -- The Codex's own tabs, plus this panel's Gear section in front of them.
 -- Gear is first because it is the reason to have the panel docked at all:
 -- it is the only view that reacts to the paper doll next to it.
@@ -724,7 +731,21 @@ function CharacterPanel:SetHoveredSlot(slot)
     self.hoveredSlot = slot
     -- Only redraw when the panel is actually up; hovering gear with the
     -- panel off should cost nothing.
-    if self.frame and self.frame:IsShown() then self:Render() end
+    self:QueueRender()
+end
+
+-- Redraws once, RENDER_THROTTLE from now, however many times it is asked
+-- in between. Everything event-driven goes through here; only opening the
+-- sheet and clicking a tab draw synchronously, because there the player is
+-- waiting to see the result.
+function CharacterPanel:QueueRender()
+    if not (self.frame and self.frame:IsShown()) then return end
+    if self.renderQueued then return end
+    self.renderQueued = true
+    C_Timer.After(RENDER_THROTTLE, function()
+        self.renderQueued = nil
+        if self.frame and self.frame:IsShown() then self:Render() end
+    end)
 end
 
 -- Hooks Blizzard's frames. Kept separate from OnEnable so it can be retried:
@@ -768,13 +789,7 @@ end
 -- Equipping something changes both the live stat values and the
 -- equipped/owned tags, so the panel redraws with the character sheet open.
 function CharacterPanel:OnInit()
-    ns:RegisterEvent("PLAYER_EQUIPMENT_CHANGED", function()
-        if self.frame and self.frame:IsShown() then self:Render() end
-    end)
-    ns:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", function()
-        if self.frame and self.frame:IsShown() then self:Render() end
-    end)
-    ns:RegisterEvent("GET_ITEM_INFO_RECEIVED", function()
-        if self.frame and self.frame:IsShown() then self:Render() end
-    end)
+    ns:RegisterEvent("PLAYER_EQUIPMENT_CHANGED", function() self:QueueRender() end)
+    ns:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", function() self:QueueRender() end)
+    ns:RegisterEvent("GET_ITEM_INFO_RECEIVED", function() self:QueueRender() end)
 end

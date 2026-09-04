@@ -1340,7 +1340,9 @@ end
 -- for a spec the player is not looking at right now, is a no-op.
 function Codex:OnBiSItemInfoReceived(itemID)
     if type(itemID) ~= "number" then return end
-    if not self.frame or self.activeTab ~= "BiS" then return end
+    -- A closed Codex left on its BiS tab must not redraw for every item
+    -- the docked panel asked about; the next Open redraws anyway.
+    if not self.frame or not self.frame:IsShown() or self.activeTab ~= "BiS" then return end
 
     local specID = self.selectedSpecID
     local BiSModule = ns:GetModule("BiS")
