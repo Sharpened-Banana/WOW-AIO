@@ -49,7 +49,7 @@ local FALLBACK_WIDTH = 338
 -- Space between the sheet's right edge and the panel's left. It used to
 -- overlap the sheet by 2px to read as one window; the owner wanted it set
 -- off to the right instead, clear of the sheet's own side tabs.
-local DOCK_GAP = 8
+local DOCK_GAP = 16
 local SCROLLBAR_INSET = 26
 local PADDING = 10
 local TITLE_HEIGHT = 20
