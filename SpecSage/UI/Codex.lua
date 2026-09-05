@@ -519,32 +519,23 @@ local function SkinButton(button, opts)
 
     button.specSageBorder = border
 
-    if button.SetHighlightTexture then
-        button:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
-    end
-
-    -- A soft accent-colored glow (SpecSage/Textures/accent_glow.png, a plain
-    -- radial gradient with real alpha falloff) behind the button on hover -
-    -- ADD blend means it only ever brightens what's underneath, so unlike
-    -- the corner tiles above there's no "opaque layer defeats it" problem
-    -- to worry about here.
-    local glow
-    if not isDanger then
-        glow = button:CreateTexture(nil, "BACKGROUND")
-        glow:SetPoint("TOPLEFT", button, "TOPLEFT", -6, 6)
-        glow:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 6, -6)
-        glow:SetTexture(TEXTURE_PATH .. "accent_glow.png")
-        glow:SetBlendMode("ADD")
-        glow:Hide()
-    end
+    -- Hover: the whole button warms (a flat wax-red wash edge to edge,
+    -- not Blizzard's soft round MouseHilight, which only ever covered the
+    -- middle) and the border goes wax red. The bronze radial glow that
+    -- spilled 6px past the button in the Blizzard Modern pass is gone; on
+    -- parchment it read as a smudge.
+    pcall(function()
+        button:SetHighlightTexture(WHITE8X8, "BLEND")
+        local highlight = button:GetHighlightTexture()
+        highlight:SetAllPoints(button)
+        highlight:SetVertexColor(ACCENT_COLOR[1], ACCENT_COLOR[2], ACCENT_COLOR[3], 0.16)
+    end)
 
     button:HookScript("OnEnter", function()
         border:SetColorTexture(unpack(isDanger and DANGER_BORDER_COLOR or ACCENT_COLOR))
-        if glow then glow:Show() end
     end)
     button:HookScript("OnLeave", function()
         border:SetColorTexture(unpack(BORDER_COLOR))
-        if glow then glow:Hide() end
     end)
 
     if button.SetNormalFontObject then
@@ -2727,11 +2718,13 @@ function Codex:BuildFrame()
     closeButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -4, -4)
     closeButton:SetScript("OnClick", function() self:Toggle() end)
 
-    -- Feedback button in the title bar, left of the close button: shows the
-    -- GitHub Issues link ready to copy (see Codex:ShowFeedback).
+    -- Feedback button at the foot of the left page, right of the version:
+    -- shows the GitHub Issues link ready to copy (see Codex:ShowFeedback).
+    -- It sat beside the close button until the first in-game look, where
+    -- the right page's top rule ran straight through it.
     local feedbackButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     feedbackButton:SetSize(84, 20)
-    feedbackButton:SetPoint("RIGHT", closeButton, "LEFT", -6, 0)
+    feedbackButton:SetPoint("BOTTOMRIGHT", frame.leftPage, "BOTTOMRIGHT", -(PAGE_PADDING + 6), 12)
     feedbackButton:SetText("Feedback")
     feedbackButton:SetScript("OnClick", function() self:ShowFeedback() end)
     SkinButton(feedbackButton)
