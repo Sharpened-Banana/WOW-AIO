@@ -40,6 +40,7 @@ Modules\Combat.lua
 Modules\Procs.lua
 Modules\Buffs.lua
 Modules\Loadouts.lua
+Modules\TalentButton.lua
 Modules\BiS.lua
 Modules\ItemRanks.lua
 Modules\Notes.lua

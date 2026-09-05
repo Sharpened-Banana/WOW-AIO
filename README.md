@@ -49,6 +49,10 @@ class guides, talent loadouts, and live character tracking in one place:
   the build laid out on your tree, unsaved, so you can look before you
   commit.
 - **Personal Notes** — free-text notes per spec, kept between sessions.
+- **Talent window button** — a **SpecSage** button on the Talents tab lists every
+  build SpecSage knows for your spec (SimC-suggested Mythic+ and Raid, the live
+  top-players' build, guide-site builds, your saved loadouts); pick one and it is
+  laid onto the tree for you to look at, unsaved and unapplied until you choose.
 - **Minimap button** — SpecSage's wax seal on the minimap ring. Left-click
   opens the Codex, right-click toggles the stat overlay, drag it around the
   ring to move it; the Options tab can hide it.

@@ -899,6 +899,16 @@ rest are desaturated.
   Notes / Options** — rendered by `UI/Codex.lua`'s own methods, not copies
   of them.
 
+**Talent window button (2026-09-05):** `Modules/TalentButton.lua` puts a
+SpecSage button (Codex skin, via `ns.SkinButton` / `ns.SetParchmentBackdrop`
+exported from `UI/Codex.lua`) at the bottom left of the PlayerSpells Talents
+tab, attaching when `Blizzard_PlayerSpells` loads. Clicking it opens a
+parchment menu of every build for the current spec, grouped SpecSage /
+Guide sites / My vault (`TalentButton:BuildsFor`), and picking one runs
+`Loadouts:OpenInTalentUI` - the View path, so nothing is saved or applied.
+A refused pick (window closed, combat, another spec's string) reports the
+reason in chat. The addon still never opens the talent window itself.
+
 **Minimap button (2026-09-05):** `Modules/MinimapButton.lua` puts the
 Codex's wax-seal art with the addon's book icon inside it on the minimap
 ring. Left-click toggles the Codex, right-click the overlay, drag moves it

@@ -63,6 +63,7 @@ local FILES = {
     "Modules\\Procs.lua",
     "Modules\\Buffs.lua",
     "Modules\\Loadouts.lua",
+    "Modules\\TalentButton.lua",
     "Modules\\BiS.lua",
     "Modules\\ItemRanks.lua",
     "Modules\\Notes.lua",
@@ -2641,6 +2642,106 @@ check(savedRow and savedRow.viewButton and savedRow.viewButton:IsShown(), "a sav
 
 ExportUtil, PlayerSpellsUtil, PlayerSpellsFrame = nil, nil, nil
 ClassTalentLoadoutImportDialog, StaticPopupSpecial_Show = nil, nil
+
+--------------------------------------------------------------------------------
+section("Talent window button (Modules/TalentButton.lua, 2026-09-05)")
+--------------------------------------------------------------------------------
+
+do
+    local TalentButton = ns:GetModule("TalentButton")
+    check(TalentButton ~= nil, "the TalentButton module is registered")
+
+    -- The View test above left PlayerSpellsFrame as a plain table; the
+    -- button needs a real frame to sit on, so it must not have attached.
+    check(TalentButton.button == nil, "no button is built while the talent frame is not a frame")
+
+    -- A proper talent window, with the same view-path methods as the View test.
+    local viewed
+    ExportUtil = ExportUtil or { MakeImportDataStream = function(text) return { text = text } end }
+    PlayerSpellsFrame = CreateFrame("Frame", "PlayerSpellsFrame", UIParent)
+    local talents = CreateFrame("Frame", nil, PlayerSpellsFrame)
+    PlayerSpellsFrame.TalentsFrame = talents
+    talents.IsVisible = function() return true end
+    talents.ReadLoadoutHeader = function(_, stream) return true, 2, 252, "hash" end
+    talents.GetTalentTreeID = function() return 1 end
+    talents.ReadLoadoutContent = function(_, stream) return { from = stream.text } end
+    talents.ConvertToImportLoadoutEntryInfo = function(_, configID, content) return { configID = configID, content = content } end
+    talents.ViewLoadout = function(_, entries) viewed = entries end
+
+    -- Blizzard_PlayerSpells loading is what attaches it.
+    mock.Fire("ADDON_LOADED", "Blizzard_PlayerSpells")
+    local button = TalentButton.button
+    check(button ~= nil and button.parent == talents and button:GetText() == "SpecSage",
+        "a SpecSage button attaches to the Talents tab when Blizzard_PlayerSpells loads")
+    check(button.specSageSkinned == true, "it wears the Codex's button skin")
+    check(TalentButton:Attach() == true and TalentButton.button == button, "attaching again is a no-op")
+
+    -- The player is Frost DK (252); every build SpecSage knows for it lists.
+    LoadoutsModule:Add(252, "My own Frost build", "Mythic+", "C0EAy0kSavedFrost")
+    local builds = TalentButton:BuildsFor(252)
+    local sources, names = {}, {}
+    for _, build in ipairs(builds) do sources[build.source] = true; names[build.name] = build end
+    check(names["Suggested Mythic+"] ~= nil and names["Suggested Mythic+"].string ~= "",
+        "the SimC-suggested Mythic+ build is listed with its string")
+    check(names["My own Frost build"] ~= nil and names["My own Frost build"].string == "C0EAy0kSavedFrost"
+        and names["My own Frost build"].source == "My vault", "a saved loadout is listed under My vault")
+    check(sources["SpecSage"] and sources["My vault"], "builds are grouped by where they came from")
+    check(#TalentButton:BuildsFor(nil) == 0, "no spec, no builds")
+
+    -- Click: the menu opens with one row per build and a header per source.
+    button:GetScript("OnClick")(button)
+    local menu = TalentButton.menu
+    check(menu ~= nil and menu:IsShown(), "clicking the button opens the build menu")
+    check(menu.buildCount == #builds, "the menu lists every build", menu.buildCount, #builds)
+    local specName = ns.GuideStore:GetGuide(252).specName
+    check(menu.title:GetText() == "SpecSage builds - " .. specName, "the menu is titled for the player's spec", menu.title:GetText())
+    local shownRows, savedRow = 0, nil
+    for _, row in ipairs(menu.rows) do
+        if row:IsShown() then
+            shownRows = shownRows + 1
+            if row.build and row.build.name == "My own Frost build" then savedRow = row end
+        end
+    end
+    check(shownRows == #builds and savedRow ~= nil, "one row per build, including the saved one", shownRows)
+
+    -- Picking a row lays it onto the tree via the same path as View, and
+    -- closes the menu. Nothing is saved.
+    local vaultBefore = #LoadoutsModule:GetForSpec(252)
+    savedRow:GetScript("OnClick")(savedRow)
+    check(viewed ~= nil and viewed.content.from == "C0EAy0kSavedFrost", "picking a build shows it via ViewLoadout", viewed and viewed.content.from)
+    check(not menu:IsShown(), "the menu closes after a pick")
+    check(#LoadoutsModule:GetForSpec(252) == vaultBefore, "picking saves nothing")
+
+    -- With the window closed the reason goes to chat.
+    talents.IsVisible = function() return false end
+    local printed = {}
+    local realPrint = ns.Print
+    ns.Print = function(...) printed[#printed + 1] = table.concat({ ... }, " ") end
+    TalentButton:Pick(names["Suggested Mythic+"])
+    ns.Print = realPrint
+    check(#printed == 1 and printed[1]:find("could not show", 1, true) ~= nil, "a refused pick says why in chat", printed[1])
+    talents.IsVisible = function() return true end
+
+    -- Clicking the button again closes the menu; hiding the tab closes it too.
+    button:GetScript("OnClick")(button)
+    check(menu:IsShown(), "clicking reopens the menu")
+    button:GetScript("OnClick")(button)
+    check(not menu:IsShown(), "clicking again closes it")
+    button:GetScript("OnClick")(button)
+    button:GetScript("OnHide")(button)
+    check(not menu:IsShown(), "the menu closes with the talent tab")
+
+    -- A spec with nothing registered gets a hint instead of an empty card.
+    local realGetCurrent = LoadoutsModule.GetCurrentSpecID
+    LoadoutsModule.GetCurrentSpecID = function() return 9999 end
+    TalentButton:FillMenu()
+    LoadoutsModule.GetCurrentSpecID = realGetCurrent
+    check(menu.buildCount == 0 and menu.headers[1]:GetText():find("No builds", 1, true) ~= nil,
+        "a spec with no builds gets a hint", menu.headers[1]:GetText())
+
+    -- Leave the plain-table frame the later tests may expect.
+    PlayerSpellsFrame = nil
+end
 
 --------------------------------------------------------------------------------
 section("Codex: rotation/cooldown conditions (v1.3)")

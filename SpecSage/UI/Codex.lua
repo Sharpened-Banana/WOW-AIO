@@ -651,6 +651,11 @@ local function SkinButton(button, opts)
     end
 end
 
+-- Shared with Modules/TalentButton.lua, whose button sits in Blizzard's
+-- talent window but should look like the Codex's.
+ns.SkinButton = SkinButton
+ns.SetParchmentBackdrop = SetParchmentBackdrop
+
 -- Creates a multi-line EditBox backed by a bordered BackdropTemplate frame.
 -- A bare EditBox has no font set and no backdrop/inset of its own: in the
 -- real client that means invisible text (or a "font not set" error on
