@@ -201,17 +201,30 @@ local SpecSageItalicFont = CreateFont("SpecSageItalicFont")
 SpecSageItalicFont:SetFont(HEADING_ITALIC_FONT_PATH, 14, "")
 SpecSageItalicFont:SetTextColor(unpack(TEXT_SECONDARY_COLOR))
 -- Class-coloured text on parchment: a bright class colour (Paladin pink,
--- Priest white, Rogue yellow) has no contrast against paper, so anything
--- drawn in a class colour gets a black outline and shadow. Owner's call on
--- the first in-game look (2026-09-05).
+-- Priest white, Rogue yellow) has no contrast against paper. The first
+-- cut outlined the glyphs, which at 15px Baskerville turned them to mud;
+-- now the text is clean with a shadow and sits on a dark ink plate behind
+-- it (AttachInkPlate), the "black background" the owner asked for.
 local SpecSageClassFont = CreateFont("SpecSageClassFont")
-SpecSageClassFont:SetFont(BODY_BOLD_FONT_PATH, 15, "OUTLINE")
-pcall(SpecSageClassFont.SetShadowColor, SpecSageClassFont, 0, 0, 0, 0.9)
+SpecSageClassFont:SetFont(BODY_BOLD_FONT_PATH, 15, "")
+pcall(SpecSageClassFont.SetShadowColor, SpecSageClassFont, 0, 0, 0, 1)
 pcall(SpecSageClassFont.SetShadowOffset, SpecSageClassFont, 1, -1)
 local SpecSageClassItalicFont = CreateFont("SpecSageClassItalicFont")
-SpecSageClassItalicFont:SetFont(HEADING_ITALIC_FONT_PATH, 14, "OUTLINE")
-pcall(SpecSageClassItalicFont.SetShadowColor, SpecSageClassItalicFont, 0, 0, 0, 0.9)
+SpecSageClassItalicFont:SetFont(HEADING_ITALIC_FONT_PATH, 14, "")
+pcall(SpecSageClassItalicFont.SetShadowColor, SpecSageClassItalicFont, 0, 0, 0, 1)
 pcall(SpecSageClassItalicFont.SetShadowOffset, SpecSageClassItalicFont, 1, -1)
+
+-- A dark plate behind a class-coloured FontString, 4px proud of the text
+-- on every side. Anchored to the string itself, so it follows whatever
+-- the text is set to; the FontString must not have a fixed width or the
+-- plate would span that instead of the word.
+local function AttachInkPlate(owner, fontString)
+    local plate = owner:CreateTexture(nil, "ARTWORK")
+    plate:SetPoint("TOPLEFT", fontString, "TOPLEFT", -4, 2)
+    plate:SetPoint("BOTTOMRIGHT", fontString, "BOTTOMRIGHT", 4, -2)
+    plate:SetColorTexture(0.06, 0.04, 0.02, 0.72)
+    return plate
+end
 
 -- BiS tab: the default
 -- item colour-- item colour for an entry whose quality is not known yet (a plain-name
@@ -2350,10 +2363,12 @@ function Codex:UpdateSpecHighlight()
             if btn.specID == self.selectedSpecID then
                 btn.label:SetFontObject(SpecSageClassFont)
                 btn.label:SetTextColor(color.r, color.g, color.b)
+                if btn.plate then btn.plate:Show() end
                 pcall(btn.SetAlpha, btn, 1)
             else
                 btn.label:SetFontObject(SpecSageBodyFontSmall)
                 btn.label:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])
+                if btn.plate then btn.plate:Hide() end
                 pcall(btn.SetAlpha, btn, 0.4)
             end
         end
@@ -2403,7 +2418,8 @@ function Codex:RefreshSpecRail(classToken)
             btn.label = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
             btn.label:SetFontObject(SpecSageBodyFontSmall)
             btn.label:SetJustifyH("LEFT")
-            btn.label:SetPoint("LEFT", btn.icon, "RIGHT", 4, 0)
+            btn.label:SetPoint("LEFT", btn.icon, "RIGHT", 6, 0)
+            btn.plate = AttachInkPlate(btn, btn.label)
 
             pool[index] = btn
         end
@@ -2524,8 +2540,9 @@ function Codex:BuildClassRail()
         local label = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         label:SetFontObject(SpecSageClassFont)
         label:SetJustifyH("LEFT")
-        label:SetPoint("LEFT", icon, "RIGHT", 4, 0)
+        label:SetPoint("LEFT", icon, "RIGHT", 6, 0)
         label:SetText(entry.name)
+        btn.plate = AttachInkPlate(btn, label)
         local color = ClassColor(entry.token)
         label:SetTextColor(color.r, color.g, color.b)
         btn.label = label
@@ -2677,8 +2694,9 @@ function Codex:BuildFrame()
 
     local subtitle = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     subtitle:SetFontObject(SpecSageClassItalicFont)
-    subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 1, -2)
+    subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 5, -4)
     frame.subtitle = subtitle
+    AttachInkPlate(frame, subtitle)
 
     -- Left page foot: the hero-tree seal (UpdateHeroSeal) and the version.
     local seal = CreateFrame("Frame", nil, frame)
