@@ -1,6 +1,6 @@
 # Changelog
 
-## Since 1.3.0 (2026-09-05)
+## 1.3.1 (2026-09-05)
 
 **New**
 - **Talent window button.** A SpecSage button on the Talents tab lists every build for your spec (SimC Mythic+ and Raid, live top-players', guide sites, your vault) and lays the one you pick onto the tree, unsaved.
