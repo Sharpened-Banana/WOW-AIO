@@ -49,6 +49,7 @@ ns.OPTION_SCOPES = {
     procs = function() return ns.db.procs end,
     statsShow = function() return ns.StatsShown() end,
     characterPanel = function() return ns.db.characterPanel end,
+    minimap = function() return ns.db.minimap end,
 }
 
 -- Named side effects, kept out of the schema itself so it stays plain data.
@@ -158,6 +159,10 @@ local function BuildOptionGroups()
           tooltip = "Show your stat priority, your live rating for each stat, Wowhead's order for "
               .. "each hero talent tree, and the BiS item for whichever gear slot you hover - "
               .. "attached to the character sheet, opening and closing with it." },
+        { kind = "check", scope = "minimap", key = "shown",
+          variable = "SpecSage_minimapButton", label = "Minimap button",
+          tooltip = "Show SpecSage's wax seal on the minimap. Left-click opens the Codex, "
+              .. "right-click toggles the stat overlay, drag it to move it around the ring." },
         { kind = "action", action = "feedback", label = "Feedback",
           buttonText = "Feedback / requests",
           tooltip = "Shows the link to SpecSage's GitHub Issues page, ready to copy, for bug reports "
@@ -267,6 +272,13 @@ local DEFAULTS = {
         -- it follows the character sheet's size.
         width = nil,
         height = nil,
+    },
+
+    -- Modules/MinimapButton.lua: the wax seal on the minimap ring, and
+    -- where around the ring it sits (degrees anticlockwise from 3 o'clock).
+    minimap = {
+        shown = true,
+        angle = 220,
     },
 
     -- Pinned tooltips, keyed by "section:key", each { section, key, custom,

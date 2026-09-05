@@ -41,6 +41,7 @@ Modules\Loadouts.lua
 Modules\BiS.lua
 Modules\ItemRanks.lua
 Modules\Notes.lua
+Modules\MinimapButton.lua
 Core\Options.lua
 Core\Commands.lua
 

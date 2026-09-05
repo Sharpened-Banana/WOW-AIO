@@ -383,6 +383,13 @@ end
 UIParent = CreateFrame("Frame", "UIParent")
 function UIParent:GetEffectiveScale() return 1 end
 
+-- The minimap, for Modules/MinimapButton.lua: 140px across, centred at a
+-- known spot so a drag test can aim the cursor at an angle from it.
+Minimap = CreateFrame("Frame", "Minimap", UIParent)
+Minimap:SetSize(140, 140)
+function Minimap:GetCenter() return 1000, 800 end
+function Minimap:GetEffectiveScale() return 1 end
+
 -- Where the mouse is, for drag tests. Set mock.cursor and fire the
 -- widget's own OnMouseDown / OnUpdate / OnMouseUp scripts.
 mock.cursor = { x = 0, y = 0 }
@@ -1007,6 +1014,11 @@ function GameTooltip:SetOwner(owner, anchor)
 end
 
 function GameTooltip:ClearLines() self.lines = {} end
+
+-- The title line; the real SetText also clears whatever was there.
+function GameTooltip:SetText(text)
+    self.lines = { { left = text } }
+end
 
 function GameTooltip:AddLine(text)
     table.insert(self.lines, { left = text })

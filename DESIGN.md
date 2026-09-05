@@ -899,6 +899,15 @@ rest are desaturated.
   Notes / Options** — rendered by `UI/Codex.lua`'s own methods, not copies
   of them.
 
+**Minimap button (2026-09-05):** `Modules/MinimapButton.lua` puts the
+Codex's wax-seal art with the addon's book icon inside it on the minimap
+ring. Left-click toggles the Codex, right-click the overlay, drag moves it
+around the ring (the angle is saved in `db.minimap.angle`, degrees
+anticlockwise from 3 o'clock; 220 by default, lower left). No LibDBIcon —
+the addon bundles no libraries and the job is one button plus the ring
+trigonometry, with `GetMinimapShape` honoured for squared minimaps. The
+Options tab's "Minimap button" check (`db.minimap.shown`) hides it.
+
 **Consumables item chips (2026-09-05):** the guides' consumable lines are
 prose and stay prose, but every item they name now gets a chip under the
 line — item icon plus quality-coloured name, hover for the real tooltip,

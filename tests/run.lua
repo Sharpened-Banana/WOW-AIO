@@ -64,6 +64,7 @@ local FILES = {
     "Modules\\BiS.lua",
     "Modules\\ItemRanks.lua",
     "Modules\\Notes.lua",
+    "Modules\\MinimapButton.lua",
     "Core\\Options.lua",
     "Core\\Commands.lua",
 }
@@ -3995,6 +3996,83 @@ do
     else
         check(point and point[4] == 0, "Add from string takes the left margin while Save is hidden")
     end
+end
+
+--------------------------------------------------------------------------------
+section("Minimap button (Modules/MinimapButton.lua, 2026-09-05)")
+--------------------------------------------------------------------------------
+
+do
+    local MinimapButton = ns:GetModule("MinimapButton")
+    check(MinimapButton ~= nil, "the MinimapButton module is registered")
+    check(ns.db.minimap and ns.db.minimap.shown == true and ns.db.minimap.angle == 220,
+        "the minimap button is on by default at the lower left of the ring")
+
+    MinimapButton:Refresh()
+    local button = MinimapButton.button
+    check(button ~= nil and button:IsShown(), "enabling creates and shows the seal on the minimap")
+    check(button and button.parent == Minimap, "the seal is parented to the minimap")
+    check(button and button.wax and button.wax.texture and button.wax.texture:find("wax_seal", 1, true) ~= nil,
+        "the seal wears the Codex's wax-seal art")
+    check(button and button.icon and button.icon.texture == "Interface\\Icons\\INV_Misc_Book_11",
+        "the addon's book icon sits inside the seal")
+
+    -- Position: 220 degrees is below and left of the minimap centre.
+    local point = button.points[1]
+    check(point[1] == "CENTER" and point[2] == Minimap and point[4] < 0 and point[5] < 0,
+        "at 220 degrees the seal sits below-left of the minimap centre", point[4], point[5])
+    local x0, y0 = MinimapButton:OffsetFor(0)
+    check(math.abs(x0 - 72) < 0.01 and math.abs(y0) < 0.01,
+        "at 0 degrees the seal sits just off the minimap's right edge", x0, y0)
+
+    -- Clicks: left opens the Codex, right toggles the overlay.
+    if Codex:IsShown() then Codex:Toggle() end
+    button:GetScript("OnClick")(button, "LeftButton")
+    check(Codex:IsShown(), "left-clicking the seal opens the Codex")
+    button:GetScript("OnClick")(button, "LeftButton")
+    check(not Codex:IsShown(), "left-clicking again closes it")
+    local overlayBefore = ns.db.hidden
+    button:GetScript("OnClick")(button, "RightButton")
+    check(ns.db.hidden ~= overlayBefore, "right-clicking the seal toggles the stat overlay")
+    button:GetScript("OnClick")(button, "RightButton")
+
+    -- Hover: a tooltip that says what the clicks do.
+    button:GetScript("OnEnter")(button)
+    local hint = false
+    for _, line in ipairs(GameTooltip.lines or {}) do
+        if (line.left or ""):find("Codex", 1, true) then hint = true end
+    end
+    check(GameTooltip.shown and hint, "hovering the seal explains its clicks")
+    button:GetScript("OnLeave")(button)
+
+    -- Drag: the seal follows the cursor's angle about the minimap centre
+    -- and remembers where it was left.
+    mock.cursor.x, mock.cursor.y = 1000, 900  -- straight above the centre
+    button:GetScript("OnDragStart")(button)
+    check(MinimapButton.dragging == true and button:GetScript("OnUpdate") ~= nil,
+        "dragging the seal starts following the cursor")
+    button:GetScript("OnUpdate")(button)
+    check(math.abs(ns.db.minimap.angle - 90) < 0.01, "the saved angle follows the cursor (90 = straight up)", ns.db.minimap.angle)
+    point = button.points[1]
+    check(math.abs(point[4]) < 0.01 and point[5] > 70, "the seal moved to the top of the ring", point[4], point[5])
+    button:GetScript("OnDragStop")(button)
+    check(MinimapButton.dragging == false and button:GetScript("OnUpdate") == nil, "releasing stops the follow")
+    ns.db.minimap.angle = 220
+
+    -- The Options toggle hides and shows it.
+    local entry
+    for _, group in ipairs(ns.OPTION_GROUPS) do
+        for _, option in ipairs(group.options) do
+            if option.scope == "minimap" and option.key == "shown" then entry = option end
+        end
+    end
+    check(entry ~= nil and entry.label == "Minimap button", "the Options tab offers a Minimap button toggle")
+    ns.SetOptionValue(entry, false)
+    ns.RefreshAll()
+    check(not button:IsShown(), "turning the option off hides the seal")
+    ns.SetOptionValue(entry, true)
+    ns.RefreshAll()
+    check(button:IsShown(), "turning it back on shows the seal again")
 end
 
 --------------------------------------------------------------------------------

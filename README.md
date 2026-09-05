@@ -49,6 +49,9 @@ class guides, talent loadouts, and live character tracking in one place:
   the build laid out on your tree, unsaved, so you can look before you
   commit.
 - **Personal Notes** — free-text notes per spec, kept between sessions.
+- **Minimap button** — SpecSage's wax seal on the minimap ring. Left-click
+  opens the Codex, right-click toggles the stat overlay, drag it around the
+  ring to move it; the Options tab can hide it.
 - **Feedback button** — in the Codex title bar (and `/sage feedback`): shows
   the addon's GitHub Issues link ready to Ctrl+C for bug reports and feature
   requests. WoW gives addons no network access, so no addon can open your
@@ -111,7 +114,7 @@ The folder name must stay `SpecSage` so it matches `SpecSage.toc`.
 
 ## Usage
 
-`/sage` opens the Codex. `/sage overlay` toggles the overlay; drag it to move
+`/sage` (or the wax seal on the minimap) opens the Codex. `/sage overlay` toggles the overlay; drag it to move
 it, then `/sage lock` to fix it in place (locking lets clicks pass through).
 
 ### Commands
