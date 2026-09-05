@@ -3670,7 +3670,8 @@ do
                 Panel.surface.pools.consumables, Panel.surface.pools.bis,
                 Panel.surface.pools.options, Panel.surface.statLinePool,
                 Panel.surface.bisLinkRowPool, Panel.surface.trinketRowPool,
-                Panel.surface.loadoutRowPool, Panel.surface.siteLoadoutRowPool }) do
+                Panel.surface.loadoutRowPool, Panel.surface.siteLoadoutRowPool,
+                Panel.surface.consumableChipPool }) do
             for _, row in ipairs(pool) do
                 if row:IsShown() then n = n + 1 end
             end
@@ -3687,6 +3688,28 @@ do
             check(CountShown() > 0, "section " .. sectionName .. " draws rows", CountShown())
         end
     end
+
+    -- The Consumables section carries the item chips too, on the panel's own
+    -- scroll child (not the Codex window's), and they hover like the Codex's.
+    Panel:SelectSection("Consumables")
+    local panelChips = 0
+    for _, chip in ipairs(Panel.surface.consumableChipPool) do
+        if chip:IsShown() then
+            panelChips = panelChips + 1
+            check(chip.parent == Panel.frame.scrollChild, "a panel chip is parented to the panel's scroll child")
+            break
+        end
+    end
+    for _, chip in ipairs(Panel.surface.consumableChipPool) do if chip:IsShown() then panelChips = panelChips + 1 end end
+    check(panelChips > 1, "the panel's Consumables section draws item chips", panelChips)
+    check(Panel.surface.consumableChipPool ~= Codex.consumableChipPool,
+        "the panel's chip pool is its own, not the Codex window's")
+    local chip = Panel.surface.consumableChipPool[1]
+    chip:GetScript("OnEnter")(chip)
+    check(GameTooltip.itemID == chip.itemID and chip.itemID ~= nil, "hovering a panel chip shows its item tooltip", GameTooltip.itemID)
+    chip:GetScript("OnLeave")(chip)
+    Panel:SelectSection("Gear")
+    check(not chip:IsShown(), "leaving the Consumables section hides the panel's chips")
 
     -- Having visited every section, the lazily-built widgets all exist, so
     -- this is the point at which sharing would show up.

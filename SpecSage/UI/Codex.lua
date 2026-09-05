@@ -886,6 +886,10 @@ function Codex:NewSurface(host, scrollFrame, scrollChild, contentWidth)
         trinketRowPool = {},
         loadoutRowPool = {},
         siteLoadoutRowPool = {},
+        -- The Consumables tab's item chips. Without this the docked panel
+        -- fell through to the Codex window's chips (parented to the
+        -- Codex's own scroll child) and showed none of its own.
+        consumableChipPool = {},
 
         -- Per-surface view state. Scalars, so unlike the pools above these
         -- cannot be shared by reference even in principle: each window
