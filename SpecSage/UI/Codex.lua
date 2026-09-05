@@ -197,6 +197,18 @@ SpecSageTitleFont:SetTextColor(unpack(HEADER_COLOR))
 local SpecSageItalicFont = CreateFont("SpecSageItalicFont")
 SpecSageItalicFont:SetFont(HEADING_ITALIC_FONT_PATH, 13, "")
 SpecSageItalicFont:SetTextColor(unpack(TEXT_SECONDARY_COLOR))
+-- Class-coloured text on parchment: a bright class colour (Paladin pink,
+-- Priest white, Rogue yellow) has no contrast against paper, so anything
+-- drawn in a class colour gets a black outline and shadow. Owner's call on
+-- the first in-game look (2026-09-05).
+local SpecSageClassFont = CreateFont("SpecSageClassFont")
+SpecSageClassFont:SetFont(BODY_BOLD_FONT_PATH, 14, "OUTLINE")
+pcall(SpecSageClassFont.SetShadowColor, SpecSageClassFont, 0, 0, 0, 0.9)
+pcall(SpecSageClassFont.SetShadowOffset, SpecSageClassFont, 1, -1)
+local SpecSageClassItalicFont = CreateFont("SpecSageClassItalicFont")
+SpecSageClassItalicFont:SetFont(HEADING_ITALIC_FONT_PATH, 13, "OUTLINE")
+pcall(SpecSageClassItalicFont.SetShadowColor, SpecSageClassItalicFont, 0, 0, 0, 0.9)
+pcall(SpecSageClassItalicFont.SetShadowOffset, SpecSageClassItalicFont, 1, -1)
 
 -- BiS tab: the default
 -- item colour-- item colour for an entry whose quality is not known yet (a plain-name
@@ -2349,8 +2361,10 @@ function Codex:UpdateSpecHighlight()
     for _, btn in ipairs(self.specButtonPool or {}) do
         if btn.specID then
             if btn.specID == self.selectedSpecID then
+                btn.label:SetFontObject(SpecSageClassFont)
                 btn.label:SetTextColor(color.r, color.g, color.b)
             else
+                btn.label:SetFontObject(SpecSageBodyFontSmall)
                 btn.label:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])
             end
         end
@@ -2519,7 +2533,7 @@ function Codex:BuildClassRail()
         -- UpdateClassHighlight dims the whole button via alpha for
         -- whichever class is not currently selected.
         local label = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        label:SetFontObject(SpecSageBodyFontSmall)
+        label:SetFontObject(SpecSageClassFont)
         label:SetJustifyH("LEFT")
         label:SetPoint("LEFT", icon, "RIGHT", 4, 0)
         label:SetText(entry.name)
@@ -2665,7 +2679,7 @@ function Codex:BuildFrame()
     frame.title = title
 
     local subtitle = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    subtitle:SetFontObject(SpecSageItalicFont)
+    subtitle:SetFontObject(SpecSageClassItalicFont)
     subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 1, -2)
     frame.subtitle = subtitle
 
