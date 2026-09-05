@@ -3969,6 +3969,23 @@ do
     check((save.width or 0) >= #"Save current" * 7 + 20,
         "Save current is at least its text plus 10px a side", save.width)
     check(add.specSageFill ~= nil and add.specSageBorder ~= nil, "a skinned button carries its plate fill and border")
+    -- Depth cues: a drop shadow at rest that goes when the button is
+    -- pressed, and the pointing-hand cursor on hover.
+    check(add.specSageShadow ~= nil and add.specSageShadow.shown ~= false, "a skinned button casts a shadow at rest")
+    add:GetScript("OnMouseDown")(add)
+    check(add.specSageShadow.shown == false, "pressing a button drops its shadow (the plate sinks)")
+    check(add.specSageFill.points[1][4] == 3, "the pressed plate steps 2px right", add.specSageFill.points[1][4])
+    add:GetScript("OnMouseUp")(add)
+    check(add.specSageShadow.shown == true and add.specSageFill.points[1][4] == 1,
+        "releasing restores the shadow and the plate's rest position")
+    local cursor
+    _G.SetCursor = function(name) cursor = name end
+    _G.ResetCursor = function() cursor = nil end
+    add:GetScript("OnEnter")(add)
+    check(cursor == "POINT_CURSOR", "hovering a button shows the pointing hand", cursor)
+    add:GetScript("OnLeave")(add)
+    check(cursor == nil, "leaving a button resets the cursor")
+    _G.SetCursor, _G.ResetCursor = nil, nil
     -- Add anchors to Save's right edge when Save is shown, so a wider Save
     -- can never run under it.
     local point = add.points and add.points[1]

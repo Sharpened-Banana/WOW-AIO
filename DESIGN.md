@@ -792,8 +792,11 @@ content. Palette is ink on paper: text `#2B1F14`, secondary `#5A4630`,
 rules `#6E5A3A`, emphasis and the active tab in wax red `#7A2F1F`;
 no grey text anywhere, at the owner's call. Buttons are ink plates: leather
 fill (`#3B2A1C`), cover-edge border (`#1A120B`), paper text (`#F0E4C8`),
-each sized to its own label plus 10px a side; the whole plate goes wax red
-on hover, and Delete carries a wax-red border at rest. (They were
+each sized to its own label plus 10px a side, with a 2px ink drop shadow
+and a lit 1px seam along the top so the plate sits proud of the page; the
+whole plate goes wax red on hover under the game's pointing-hand cursor,
+pressing sinks it 2px into its shadow, and Delete carries a wax-red border
+at rest. (They were
 darker-paper cards until 2026-09-05, when the owner could not tell them
 from the page.) Dialogs and
 edit boxes are parchment cards (`SetParchmentBackdrop`). Type is Libre

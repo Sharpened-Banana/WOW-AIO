@@ -552,8 +552,21 @@ local function SkinButton(button, opts)
     -- Danger buttons carry a wax-red border at rest so Delete reads as
     -- the one to be careful with before it is ever hovered.
     local restBorder = isDanger and DANGER_BORDER_COLOR or PANEL_BORDER_COLOR
-    local border = button:CreateTexture(nil, "BACKGROUND")
-    border:SetAllPoints(button)
+
+    -- Depth, so the plate reads as a thing sitting on the page rather than
+    -- a printed rectangle (the owner's second in-game look, 2026-09-05):
+    -- a soft ink shadow 2px down and right, and a 1px lit seam along the
+    -- top inside the border, the way a leather tab catches the light.
+    -- Pressing sinks it - the shadow goes, the plate and its word step
+    -- down into the shadow's place.
+    local shadow = button:CreateTexture(nil, "BACKGROUND", nil, -1)
+    shadow:SetPoint("TOPLEFT", button, "TOPLEFT", 2, -2)
+    shadow:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 2, -2)
+    shadow:SetColorTexture(0.06, 0.04, 0.02, 0.45)
+
+    local border = button:CreateTexture(nil, "BACKGROUND", nil, 0)
+    border:SetPoint("TOPLEFT", button, "TOPLEFT", 0, 0)
+    border:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 0, 0)
     border:SetColorTexture(unpack(restBorder))
 
     local fill = button:CreateTexture(nil, "BORDER")
@@ -561,8 +574,34 @@ local function SkinButton(button, opts)
     fill:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
     fill:SetColorTexture(unpack(PANEL_BACKDROP_COLOR))
 
+    local seam = button:CreateTexture(nil, "ARTWORK")
+    seam:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
+    seam:SetPoint("TOPRIGHT", button, "TOPRIGHT", -1, -1)
+    seam:SetHeight(1)
+    seam:SetColorTexture(0.55, 0.42, 0.28, 0.6)
+
     button.specSageBorder = border
     button.specSageFill = fill
+    button.specSageShadow = shadow
+    button.specSageSeam = seam
+
+    local function SetPressed(pressed)
+        local dx = pressed and 2 or 0
+        shadow:SetShown(not pressed)
+        border:ClearAllPoints()
+        border:SetPoint("TOPLEFT", button, "TOPLEFT", dx, -dx)
+        border:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", dx, -dx)
+        fill:ClearAllPoints()
+        fill:SetPoint("TOPLEFT", button, "TOPLEFT", 1 + dx, -1 - dx)
+        fill:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1 + dx, 1 - dx)
+        seam:ClearAllPoints()
+        seam:SetPoint("TOPLEFT", button, "TOPLEFT", 1 + dx, -1 - dx)
+        seam:SetPoint("TOPRIGHT", button, "TOPRIGHT", -1 + dx, -1 - dx)
+        seam:SetHeight(1)
+    end
+    pcall(button.SetPushedTextOffset, button, 2, -2)
+    button:HookScript("OnMouseDown", function() SetPressed(true) end)
+    button:HookScript("OnMouseUp", function() SetPressed(false) end)
 
     -- Hover: the plate goes wax red edge to edge (fill and border), the
     -- seal pressed. No separate highlight texture - Blizzard's soft round
@@ -575,13 +614,18 @@ local function SkinButton(button, opts)
         highlight:SetVertexColor(1, 1, 1, 0)
     end)
 
+    -- The pointing hand the game already uses for anything you can click
+    -- on (an NPC, a chat link) - the one cue every player already reads.
     button:HookScript("OnEnter", function()
         fill:SetColorTexture(unpack(ACCENT_COLOR))
         border:SetColorTexture(unpack(ACCENT_COLOR))
+        if SetCursor then pcall(SetCursor, "POINT_CURSOR") end
     end)
     button:HookScript("OnLeave", function()
         fill:SetColorTexture(unpack(PANEL_BACKDROP_COLOR))
         border:SetColorTexture(unpack(restBorder))
+        SetPressed(false)
+        if ResetCursor then pcall(ResetCursor) end
     end)
 
     if button.SetNormalFontObject then
