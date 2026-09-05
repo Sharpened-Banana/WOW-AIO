@@ -787,7 +787,7 @@ wax seal (`wax_seal.png`) framing the player's hero-tree icon — the atlas
 `C_Traits.GetSubTreeInfo` returns, rounded with `circle_mask.png` — with
 the tree's name beside it, shown only while the player's own spec is on
 the page. The right page carries the chapter tabs (bare Playfair text on a
-rule, wax-red underline on the open one; 74/78 wide, so nine fit) and the
+rule, wax-red underline on the open one; each sized to its own word plus a 16px gap) and the
 content. Palette is ink on paper: text `#2B1F14`, secondary `#5A4630`,
 rules `#6E5A3A`, emphasis and the active tab in wax red `#7A2F1F`;
 no grey text anywhere, at the owner's call. Buttons are darker paper

@@ -96,10 +96,12 @@ local LEFT_PAGE_WIDTH = PAGE_PADDING + CLASS_RAIL_WIDTH + 4 + SPEC_RAIL_WIDTH + 
 local RIGHT_PAGE_LEFT = SPINE_WIDTH + 6 + LEFT_PAGE_WIDTH + PAGE_GAP
 local TITLE_HEIGHT = 52
 local TAB_HEIGHT = 26
--- Chapter tabs are plain text in the heading face, no button box, so they
--- need less room than the boxed tabs did (84/86).
+-- Chapter tabs are plain text in the heading face, no button box, so each
+-- is as wide as its own word plus a gap - "Consumables" and "Cooldowns"
+-- ran into each other at a fixed 74/78. TAB_BUTTON_WIDTH is the fallback
+-- when the client cannot measure the text.
 local TAB_BUTTON_WIDTH = 74
-local TAB_BUTTON_STRIDE = 78
+local TAB_GAP = 16
 -- The scroll area: the right page's inner width minus the scrollbar.
 local CONTENT_WIDTH = FRAME_WIDTH - RIGHT_PAGE_LEFT - PAGE_INSET - PAGE_PADDING - 30
 local PADDING = 12
@@ -2581,17 +2583,25 @@ function Codex:BuildTabStrip()
             btn:SetDisabledFontObject(SpecSageChapterFont)
         end
 
+        -- Sized to the word, so the row reads as a line of chapter titles.
+        local width = TAB_BUTTON_WIDTH
+        local fontString = btn.GetFontString and btn:GetFontString()
+        local ok, measured = pcall(function() return fontString:GetStringWidth() end)
+        if ok and type(measured) == "number" and measured > 0 then width = measured + 4 end
+        btn:SetSize(width, TAB_HEIGHT)
+
         -- Active-tab indicator: a 2px wax-red underline (UpdateTabHighlight).
         local underline = btn:CreateTexture(nil, "OVERLAY")
-        underline:SetPoint("BOTTOMLEFT", btn, "BOTTOMLEFT", 1, 0)
-        underline:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT", -1, 0)
+        underline:SetPoint("BOTTOMLEFT", btn, "BOTTOMLEFT", 0, 0)
+        underline:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT", 0, 0)
         underline:SetHeight(2)
         underline:Hide()
         btn.tabUnderline = underline
 
         self.tabButtons[tabName] = btn
-        x = x + TAB_BUTTON_STRIDE
+        x = x + width + TAB_GAP
     end
+    self.tabStripUsedWidth = x - TAB_GAP
 end
 
 function Codex:BuildContentArea()

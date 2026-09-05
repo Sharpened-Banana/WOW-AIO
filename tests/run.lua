@@ -2264,7 +2264,10 @@ do
     local tabCount = 0
     for _ in pairs(Codex.tabButtons) do tabCount = tabCount + 1 end
 
-    local needed = (tabCount - 1) * 78 + 74
+    -- Each tab is as wide as its own word (plus a 16px gap), so the need
+    -- is the strip's actual laid-out width, not a count times a stride.
+    local needed = Codex.tabStripUsedWidth
+    check(needed > tabCount * 30, "tabs are sized to their words", needed)
     local stripLeft = rightPageLeft + 12
     local stripRight = Codex.frame:GetWidth() - 12 - 12
     local available = stripRight - stripLeft
