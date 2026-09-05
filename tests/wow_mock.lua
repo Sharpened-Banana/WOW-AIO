@@ -1169,6 +1169,11 @@ end
 --------------------------------------------------------------------------------
 
 C_AddOns = {
+    LoadAddOn = function(name)
+        mock.loadedAddOns = mock.loadedAddOns or {}
+        mock.loadedAddOns[#mock.loadedAddOns + 1] = name
+        return true
+    end,
     GetAddOnMetadata = function(_, field)
         if field == "Version" then return "1.0.0" end
         if field == "X-Website" then return "https://github.com/Sharpened-Banana/WOW-AIO/issues" end

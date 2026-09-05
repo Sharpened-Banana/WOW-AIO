@@ -2550,6 +2550,91 @@ mock.RunAfter()
 check(mplusRow.addButton:GetText() == "Add to my vault",
     "the confirmation label reverts to 'Add to my vault' after the timer", mplusRow.addButton:GetText())
 
+--------------------------------------------------------------------------------
+section("Codex: View sends a build to the talent window")
+--------------------------------------------------------------------------------
+
+-- Every loadout row has a View button. With no talent UI in the client the
+-- reason goes to chat and the copy dialog opens instead.
+check(mplusRow.viewButton:IsShown() and mplusRow.viewButton:GetText() == "View",
+    "a suggested row has a View button")
+Codex.copyDialog:Hide()
+local printed = {}
+local realPrint = ns.Print
+ns.Print = function(...) printed[#printed + 1] = table.concat({ ... }, " ") end
+mplusRow.viewButton:GetScript("OnClick")(mplusRow.viewButton)
+ns.Print = realPrint
+check(Codex.copyDialog:IsShown(), "with no talent window View falls back to the copy dialog")
+check(#printed > 0 and printed[#printed]:find("talent window", 1, true) ~= nil,
+    "and says why", printed[#printed])
+Codex.copyDialog:Hide()
+
+-- A client with Blizzard's PlayerSpells talent frame: the build is decoded
+-- the way Blizzard's own import does and handed to ViewLoadout, with the
+-- window opened first. Nothing is saved.
+local viewed, opened = nil, 0
+ExportUtil = { MakeImportDataStream = function(text) return { text = text } end }
+PlayerSpellsUtil = { OpenToClassTalentsTab = function() opened = opened + 1 end }
+PlayerSpellsFrame = { TalentsFrame = {
+    ReadLoadoutHeader = function(_, stream)
+        -- The mock's player is Frost DK (spec 252 by GetSpecializationInfo).
+        local specID = stream.text:find("OtherSpec", 1, true) and 250 or 252
+        return stream.text ~= "garbage", 2, specID, "hash"
+    end,
+    GetTalentTreeID = function() return 1 end,
+    ReadLoadoutContent = function(_, stream) return { from = stream.text } end,
+    ConvertToImportLoadoutEntryInfo = function(_, configID, content) return { configID = configID, content = content } end,
+    ViewLoadout = function(_, entries) viewed = entries end,
+} }
+local vaultBefore = #LoadoutsModule:GetForSpec(9201)
+mplusRow.viewButton:GetScript("OnClick")(mplusRow.viewButton)
+check(opened == 1, "View opens the talent window")
+check(viewed ~= nil and viewed.content.from == "C0EAy0kSampleExportStringFromSimC",
+    "and shows the row's build in it via ViewLoadout", viewed and viewed.content.from)
+check(#LoadoutsModule:GetForSpec(9201) == vaultBefore, "viewing saves nothing to the vault")
+check(mplusRow.viewButton:GetText() == "Shown", "the button confirms")
+mock.RunAfter()
+check(mplusRow.viewButton:GetText() == "View", "and reverts")
+check(not Codex.copyDialog:IsShown(), "the copy dialog stays closed when the window could show it")
+
+-- A build for another spec is refused before the window opens.
+local ok2, err2 = LoadoutsModule:OpenInTalentUI("OtherSpecBuild", "x")
+check(ok2 == nil and err2:find("switch to that spec", 1, true) ~= nil,
+    "a string for another spec is refused with the reason", err2)
+check(opened == 1, "and the window is not opened for it")
+local ok3, err3 = LoadoutsModule:OpenInTalentUI("garbage", "x")
+check(ok3 == nil and err3:find("not a valid", 1, true) ~= nil, "an invalid string is refused", err3)
+
+-- In combat nothing happens.
+mock.inCombat = true
+local ok4, err4 = LoadoutsModule:OpenInTalentUI("C0EAy0kSampleExportStringFromSimC", "x")
+check(ok4 == nil and err4:find("combat", 1, true) ~= nil, "View is refused in combat", err4)
+mock.inCombat = false
+
+-- A client whose talent frame has no view mode gets Blizzard's import
+-- dialog, pre-filled with the string and a name.
+PlayerSpellsFrame.TalentsFrame.ViewLoadout = nil
+local importText, importName
+ClassTalentLoadoutImportDialog = {
+    ImportControl = { GetEditBox = function() return { SetText = function(_, t) importText = t end } end },
+    NameControl = { GetEditBox = function() return { SetText = function(_, t) importName = t end } end },
+}
+local shownPopup
+StaticPopupSpecial_Show = function(d) shownPopup = d end
+local result = LoadoutsModule:OpenInTalentUI("C0EAy0kSampleExportStringFromSimC", "Suggested Mythic+ (SimC)")
+check(result == "dialog" and shownPopup == ClassTalentLoadoutImportDialog,
+    "without a view mode the import dialog opens", result)
+check(importText == "C0EAy0kSampleExportStringFromSimC" and importName == "Suggested Mythic+ (SimC)",
+    "pre-filled with the string and a name", importText)
+
+-- Saved vault rows carry the same button.
+Codex:SelectTab("Loadouts")
+local savedRow = Codex.loadoutRowPool[1]
+check(savedRow and savedRow.viewButton and savedRow.viewButton:IsShown(), "a saved vault row has a View button")
+
+ExportUtil, PlayerSpellsUtil, PlayerSpellsFrame = nil, nil, nil
+ClassTalentLoadoutImportDialog, StaticPopupSpecial_Show = nil, nil
+
 -- The Raid row's Add is independent: its own name/category, and it does not
 -- disturb the Mythic+ entry already in the vault.
 raidRow.addButton:GetScript("OnClick")(raidRow.addButton)

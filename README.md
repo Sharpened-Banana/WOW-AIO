@@ -42,7 +42,9 @@ class guides, talent loadouts, and live character tracking in one place:
   the live top-Mythic+-players build from Blizzard's API, and Icy Veins'
   and Wowhead's recommended builds (`tools/fetch_talents.py` regenerates
   `Data/SiteLoadouts.lua`, verifying every string decodes to its spec) —
-  each one Copy-able or one click from your vault.
+  each one Copy-able, one click from your vault, or **View**-able: it opens
+  the talent window with the build laid out on your tree, unsaved, so you
+  can look before you commit.
 - **Personal Notes** — free-text notes per spec, kept between sessions.
 - **Feedback button** — in the Codex title bar (and `/sage feedback`): shows
   the addon's GitHub Issues link ready to Ctrl+C for bug reports and feature

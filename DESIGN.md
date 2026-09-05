@@ -753,7 +753,15 @@ above) - only exercised by `tests/run.lua`'s fixtures.
   category; buttons: **Save current** (only for own spec, reads
   `C_Traits`/`C_ClassTalents` export string when available), **Add from
   string** (editbox dialog), **Copy** (read-only editbox with the string
-  selected for Ctrl+C), **Delete**. Stored in
+  selected for Ctrl+C), **View** (2026-09-04: the build in Blizzard's
+  talent window — `Loadouts:OpenInTalentUI` runs the same decode Blizzard's
+  import dialog does on the talent frame, `ReadLoadoutHeader` /
+  `ReadLoadoutContent` / `ConvertToImportLoadoutEntryInfo`, then
+  `ViewLoadout` instead of `ImportLoadout`, so nothing is saved or applied;
+  a client without that view mode gets the import dialog pre-filled; a
+  string for another spec, combat, or no talent UI is refused with the
+  reason in chat and the copy dialog as the fallback), **Delete**. Every
+  suggested / site row has View too. Stored in
   `SpecSageDB.loadouts[specID] = { {name=..., category=..., export=...}, ... }`.
   Categories: Raid, Mythic+, Delves, PvP, Other.
 - Notes tab: multi-line editbox saved to `SpecSageDB.notes[specID]` on

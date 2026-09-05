@@ -1393,6 +1393,13 @@ local function AcquireLoadoutRow(pool, index, parent)
         row.copyButton:SetPoint("RIGHT", row, "RIGHT", -58, 0)
         SkinButton(row.copyButton)
 
+        -- Opens the build in the talent window (Loadouts:OpenInTalentUI).
+        row.viewButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+        row.viewButton:SetSize(50, 18)
+        row.viewButton:SetText("View")
+        row.viewButton:SetPoint("RIGHT", row.copyButton, "LEFT", -8, 0)
+        SkinButton(row.viewButton)
+
         row.deleteButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
         row.deleteButton:SetSize(50, 18)
         row.deleteButton:SetText("Delete")
@@ -1488,6 +1495,12 @@ local function CreateSuggestedLoadoutRow(parent)
     row.copyButton:SetPoint("RIGHT", row.addButton, "LEFT", -8, 0)
     SkinButton(row.copyButton)
 
+    row.viewButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+    row.viewButton:SetSize(50, 18)
+    row.viewButton:SetText("View")
+    row.viewButton:SetPoint("RIGHT", row.copyButton, "LEFT", -8, 0)
+    SkinButton(row.viewButton)
+
     row:Hide()
     return row
 end
@@ -1512,6 +1525,24 @@ end
 -- which would otherwise stomp the "Added!" label back to its default before
 -- the player ever sees it (RenderLoadouts resets this button's text every
 -- render, the same as a saved row's Delete button).
+-- "View" on any loadout row: the build goes to Blizzard's talent window,
+-- shown in its view-a-loadout mode when the client has one, else in the
+-- import dialog pre-filled. When neither is possible the reason goes to
+-- chat and the copy dialog opens, so the player still has the string.
+function Codex:OnViewLoadoutClicked(button, exportString, label)
+    local Loadouts = ns:GetModule("Loadouts")
+    local result, err = Loadouts and Loadouts:OpenInTalentUI(exportString, label)
+    if result == "viewed" then
+        button:SetText("Shown")
+        C_Timer.After(2, function() pcall(button.SetText, button, "View") end)
+    elseif result == "dialog" then
+        button:SetText("View")
+    else
+        ns.Print("could not show that build in the talent window: " .. tostring(err))
+        self:ShowCopyDialog(exportString, label)
+    end
+end
+
 function Codex:OnAddSuggestedLoadoutClicked(button, specID, kind, exportString)
     local Loadouts = ns:GetModule("Loadouts")
     local ok, err = Loadouts:Add(specID, kind.addName, kind.category, exportString)
@@ -1599,6 +1630,10 @@ function Codex:RenderLoadouts(specID, guide)
 
             suggested.copyButton:Show()
             suggested.copyButton:SetScript("OnClick", function() self:ShowCopyDialog(loadout.string) end)
+            suggested.viewButton:Show()
+            suggested.viewButton:SetScript("OnClick", function(btn)
+                self:OnViewLoadoutClicked(btn, loadout.string, kind.addName)
+            end)
 
             suggested.addButton:SetText("Add to my vault")
             suggested.addButton:Show()
@@ -1639,6 +1674,10 @@ function Codex:RenderLoadouts(specID, guide)
                 addName = siteName .. ": " .. build.label,
                 category = SiteBuildCategory(build.label),
             }
+            row.viewButton:Show()
+            row.viewButton:SetScript("OnClick", function(btn)
+                self:OnViewLoadoutClicked(btn, build.string, kind.addName)
+            end)
             row.addButton:SetText("Add to my vault")
             row.addButton:Show()
             row.addButton:SetScript("OnClick", function(btn)
@@ -1662,6 +1701,7 @@ function Codex:RenderLoadouts(specID, guide)
         empty.name:SetText("no loadouts saved for this spec yet")
         empty.name:SetTextColor(MUTED_COLOR[1], MUTED_COLOR[2], MUTED_COLOR[3])
         empty.copyButton:Hide()
+        empty.viewButton:Hide()
         empty.deleteButton:Hide()
         empty:Show()
         y = y - ROW_STEP
@@ -1677,6 +1717,10 @@ function Codex:RenderLoadouts(specID, guide)
             row.name:SetTextColor(TEXT_PRIMARY_COLOR[1], TEXT_PRIMARY_COLOR[2], TEXT_PRIMARY_COLOR[3])
             row.copyButton:Show()
             row.copyButton:SetScript("OnClick", function() self:ShowCopyDialog(loadout.export) end)
+            row.viewButton:Show()
+            row.viewButton:SetScript("OnClick", function(btn)
+                self:OnViewLoadoutClicked(btn, loadout.export, loadout.name)
+            end)
 
             row.deleteButton.armed = false
             row.deleteButton:SetText("Delete")

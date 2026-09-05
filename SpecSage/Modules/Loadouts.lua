@@ -139,3 +139,112 @@ function Loadouts:ExportCurrent()
 
     return nil
 end
+
+--------------------------------------------------------------------------------
+-- Showing a build in Blizzard's talent window
+--------------------------------------------------------------------------------
+
+-- The talent tab frame, under whichever name this client uses: the
+-- PlayerSpells window (11.0+) or the older ClassTalent window. Loads the
+-- Blizzard addon first, since it is load-on-demand.
+local function TalentsFrame()
+    if C_AddOns and C_AddOns.LoadAddOn then
+        pcall(C_AddOns.LoadAddOn, "Blizzard_PlayerSpells")
+        pcall(C_AddOns.LoadAddOn, "Blizzard_ClassTalentUI")
+    end
+    if PlayerSpellsFrame and PlayerSpellsFrame.TalentsFrame then return PlayerSpellsFrame.TalentsFrame end
+    if ClassTalentFrame and ClassTalentFrame.TalentsTab then return ClassTalentFrame.TalentsTab end
+    return nil
+end
+
+local function OpenTalentWindow()
+    if PlayerSpellsUtil and PlayerSpellsUtil.OpenToClassTalentsTab then
+        if pcall(PlayerSpellsUtil.OpenToClassTalentsTab) then return true end
+    end
+    if ClassTalentFrame and ShowUIPanel then
+        if pcall(ShowUIPanel, ClassTalentFrame) then return true end
+    end
+    if ToggleTalentFrame then
+        return pcall(ToggleTalentFrame)
+    end
+    return false
+end
+
+-- Puts `exportString` in front of the player in the talent window. Returns
+-- one of:
+--   "viewed" - the window is open showing the build (Blizzard's own
+--              view-a-loadout mode: nothing is saved or applied until the
+--              player chooses to), or
+--   "dialog" - this client has no view mode the addon can drive, so
+--              Blizzard's import dialog is open with the string and a name
+--              already filled in; Import there saves it as a loadout, or
+--   nil, reason - could not do either (in combat, a string for another
+--              spec, no talent UI).
+--
+-- The view path is the same sequence Blizzard's import dialog runs
+-- (ReadLoadoutHeader / ReadLoadoutContent / ConvertToImportLoadoutEntryInfo
+-- on the talent frame, then ViewLoadout instead of ImportLoadout). Every
+-- step is pcall'd because those are Blizzard mixin methods, not API, and
+-- move between patches; any failure drops through to the dialog.
+function Loadouts:OpenInTalentUI(exportString, label)
+    if type(exportString) ~= "string" or exportString == "" then return nil, "no talent string" end
+    if InCombatLockdown and InCombatLockdown() then return nil, "cannot open the talent window in combat" end
+
+    local frame = TalentsFrame()
+    if not frame then return nil, "this client has no talent window the addon can open" end
+
+    -- The string has to be for the spec the player is on: Blizzard's own
+    -- import refuses otherwise, and a view of another spec's tree would be
+    -- meaningless.
+    local currentSpecID = self:GetCurrentSpecID()
+    if frame.ReadLoadoutHeader and ExportUtil and ExportUtil.MakeImportDataStream then
+        local ok, headerValid, _, specID = pcall(function()
+            local stream = ExportUtil.MakeImportDataStream(exportString)
+            return frame:ReadLoadoutHeader(stream)
+        end)
+        if ok and headerValid == false then return nil, "that is not a valid talent string" end
+        if ok and headerValid and type(specID) == "number" and currentSpecID and specID ~= currentSpecID then
+            local specName = GetSpecializationInfoByID and select(2, GetSpecializationInfoByID(specID))
+            return nil, format("that build is for %s - switch to that spec first", specName or ("spec " .. specID))
+        end
+    end
+
+    OpenTalentWindow()
+
+    if frame.ViewLoadout and frame.ReadLoadoutHeader and frame.ReadLoadoutContent
+        and frame.ConvertToImportLoadoutEntryInfo and ExportUtil and ExportUtil.MakeImportDataStream
+        and C_ClassTalents and C_ClassTalents.GetActiveConfigID then
+        local ok = pcall(function()
+            local stream = ExportUtil.MakeImportDataStream(exportString)
+            local headerValid, _, specID, treeHash = frame:ReadLoadoutHeader(stream)
+            if not headerValid then error("invalid header") end
+            local configID = C_ClassTalents.GetActiveConfigID()
+            local treeID = frame.GetTalentTreeID and frame:GetTalentTreeID()
+            if not treeID and C_Traits and C_Traits.GetConfigInfo then
+                local info = C_Traits.GetConfigInfo(configID)
+                treeID = info and info.treeIDs and info.treeIDs[1]
+            end
+            local content = frame:ReadLoadoutContent(stream, treeID)
+            local entries = frame:ConvertToImportLoadoutEntryInfo(configID, content)
+            frame:ViewLoadout(entries)
+        end)
+        if ok then return "viewed" end
+    end
+
+    -- No view mode: hand the string to Blizzard's import dialog instead.
+    local dialog = ClassTalentLoadoutImportDialog
+    if dialog and StaticPopupSpecial_Show then
+        local ok = pcall(function()
+            StaticPopupSpecial_Show(dialog)
+            if dialog.ImportControl and dialog.ImportControl.GetEditBox then
+                dialog.ImportControl:GetEditBox():SetText(exportString)
+            end
+            if dialog.NameControl and dialog.NameControl.GetEditBox and label then
+                dialog.NameControl:GetEditBox():SetText(label)
+            end
+        end)
+        if ok then return "dialog" end
+    end
+
+    return nil, "this client's talent window cannot show a build from an addon"
+end
