@@ -157,29 +157,30 @@ local function TalentsFrame()
     return nil
 end
 
-local function OpenTalentWindow()
-    if PlayerSpellsUtil and PlayerSpellsUtil.OpenToClassTalentsTab then
-        if pcall(PlayerSpellsUtil.OpenToClassTalentsTab) then return true end
-    end
-    if ClassTalentFrame and ShowUIPanel then
-        if pcall(ShowUIPanel, ClassTalentFrame) then return true end
-    end
-    if ToggleTalentFrame then
-        return pcall(ToggleTalentFrame)
-    end
-    return false
+-- Whether the talent tab is actually on screen. The addon never opens the
+-- window itself: showing PlayerSpellsFrame runs Blizzard's
+-- ShowAllActionButtonGrids, which sets a protected attribute on every
+-- action button, and doing that from addon code is what BugSack reported
+-- as "SpecSage tried to call the protected function
+-- ActionButton4:SetAttribute". Switching its tab from the spellbook hides
+-- the grids the same way. So the player opens it (the talent keybind), the
+-- addon only draws into it once it is up.
+local function TalentsFrameVisible(frame)
+    local ok, shown = pcall(frame.IsVisible, frame)
+    return ok and shown and true or false
 end
 
 -- Puts `exportString` in front of the player in the talent window. Returns
 -- one of:
---   "viewed" - the window is open showing the build (Blizzard's own
+--   "viewed" - the window is showing the build (Blizzard's own
 --              view-a-loadout mode: nothing is saved or applied until the
 --              player chooses to), or
 --   "dialog" - this client has no view mode the addon can drive, so
 --              Blizzard's import dialog is open with the string and a name
 --              already filled in; Import there saves it as a loadout, or
---   nil, reason - could not do either (in combat, a string for another
---              spec, no talent UI).
+--   nil, reason - could not do either (the talent window is not open - see
+--              TalentsFrameVisible for why the addon will not open it -
+--              in combat, a string for another spec, no talent UI).
 --
 -- The view path is the same sequence Blizzard's import dialog runs
 -- (ReadLoadoutHeader / ReadLoadoutContent / ConvertToImportLoadoutEntryInfo
@@ -191,7 +192,10 @@ function Loadouts:OpenInTalentUI(exportString, label)
     if InCombatLockdown and InCombatLockdown() then return nil, "cannot open the talent window in combat" end
 
     local frame = TalentsFrame()
-    if not frame then return nil, "this client has no talent window the addon can open" end
+    if not frame then return nil, "this client has no talent window the addon can draw into" end
+    if not TalentsFrameVisible(frame) then
+        return nil, "open your talent window to the Talents tab first, then click View"
+    end
 
     -- The string has to be for the spec the player is on: Blizzard's own
     -- import refuses otherwise, and a view of another spec's tree would be
@@ -208,8 +212,6 @@ function Loadouts:OpenInTalentUI(exportString, label)
             return nil, format("that build is for %s - switch to that spec first", specName or ("spec " .. specID))
         end
     end
-
-    OpenTalentWindow()
 
     if frame.ViewLoadout and frame.ReadLoadoutHeader and frame.ReadLoadoutContent
         and frame.ConvertToImportLoadoutEntryInfo and ExportUtil and ExportUtil.MakeImportDataStream

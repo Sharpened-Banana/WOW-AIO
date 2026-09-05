@@ -1501,18 +1501,23 @@ end
 -- which would otherwise stomp the "Added!" label back to its default before
 -- the player ever sees it (RenderLoadouts resets this button's text every
 -- render, the same as a saved row's Delete button).
--- "View" on any loadout row: the build goes to Blizzard's talent window,
--- shown in its view-a-loadout mode when the client has one, else in the
--- import dialog pre-filled. When neither is possible the reason goes to
--- chat and the copy dialog opens, so the player still has the string.
+-- "View" on any loadout row: the build goes to Blizzard's talent window
+-- (which the player has to have open - Loadouts.lua says why the addon
+-- does not open it), shown in its view-a-loadout mode when the client has
+-- one, else in the import dialog pre-filled. A closed window just gets the
+-- instruction in chat; anything else that fails also opens the copy
+-- dialog so the player still has the string.
 function Codex:OnViewLoadoutClicked(button, exportString, label)
     local Loadouts = ns:GetModule("Loadouts")
-    local result, err = Loadouts and Loadouts:OpenInTalentUI(exportString, label)
+    if not Loadouts then return end
+    local result, err = Loadouts:OpenInTalentUI(exportString, label)
     if result == "viewed" then
         button:SetText("Shown")
         C_Timer.After(2, function() pcall(button.SetText, button, "View") end)
     elseif result == "dialog" then
         button:SetText("View")
+    elseif type(err) == "string" and err:find("open your talent window", 1, true) then
+        ns.Print(err)
     else
         ns.Print("could not show that build in the talent window: " .. tostring(err))
         self:ShowCopyDialog(exportString, label)

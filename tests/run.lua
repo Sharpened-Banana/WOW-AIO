@@ -2545,12 +2545,16 @@ check(#printed > 0 and printed[#printed]:find("talent window", 1, true) ~= nil,
 Codex.copyDialog:Hide()
 
 -- A client with Blizzard's PlayerSpells talent frame: the build is decoded
--- the way Blizzard's own import does and handed to ViewLoadout, with the
--- window opened first. Nothing is saved.
-local viewed, opened = nil, 0
+-- the way Blizzard's own import does and handed to ViewLoadout. Nothing is
+-- saved. The addon never opens the window itself (showing it sets a
+-- protected attribute on every action button, which is blocked from addon
+-- code - the ActionButton4:SetAttribute BugSack report); a closed window
+-- gets the instruction in chat and nothing else.
+local viewed, opened, talentsVisible = nil, 0, false
 ExportUtil = { MakeImportDataStream = function(text) return { text = text } end }
 PlayerSpellsUtil = { OpenToClassTalentsTab = function() opened = opened + 1 end }
 PlayerSpellsFrame = { TalentsFrame = {
+    IsVisible = function() return talentsVisible end,
     ReadLoadoutHeader = function(_, stream)
         -- The mock's player is Frost DK (spec 252 by GetSpecializationInfo).
         local specID = stream.text:find("OtherSpec", 1, true) and 250 or 252
@@ -2562,8 +2566,16 @@ PlayerSpellsFrame = { TalentsFrame = {
     ViewLoadout = function(_, entries) viewed = entries end,
 } }
 local vaultBefore = #LoadoutsModule:GetForSpec(9201)
+printed = {}
+ns.Print = function(...) printed[#printed + 1] = table.concat({ ... }, " ") end
 mplusRow.viewButton:GetScript("OnClick")(mplusRow.viewButton)
-check(opened == 1, "View opens the talent window")
+ns.Print = realPrint
+check(opened == 0, "View never opens the talent window itself")
+check(viewed == nil and not Codex.copyDialog:IsShown(), "with it closed nothing is shown and no copy dialog opens")
+check(#printed == 1 and printed[1]:find("open your talent window", 1, true) ~= nil,
+    "the player is told to open it", printed[1])
+talentsVisible = true
+mplusRow.viewButton:GetScript("OnClick")(mplusRow.viewButton)
 check(viewed ~= nil and viewed.content.from == "C0EAy0kSampleExportStringFromSimC",
     "and shows the row's build in it via ViewLoadout", viewed and viewed.content.from)
 check(#LoadoutsModule:GetForSpec(9201) == vaultBefore, "viewing saves nothing to the vault")
@@ -2576,7 +2588,6 @@ check(not Codex.copyDialog:IsShown(), "the copy dialog stays closed when the win
 local ok2, err2 = LoadoutsModule:OpenInTalentUI("OtherSpecBuild", "x")
 check(ok2 == nil and err2:find("switch to that spec", 1, true) ~= nil,
     "a string for another spec is refused with the reason", err2)
-check(opened == 1, "and the window is not opened for it")
 local ok3, err3 = LoadoutsModule:OpenInTalentUI("garbage", "x")
 check(ok3 == nil and err3:find("not a valid", 1, true) ~= nil, "an invalid string is refused", err3)
 

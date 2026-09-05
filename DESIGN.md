@@ -760,7 +760,12 @@ above) - only exercised by `tests/run.lua`'s fixtures.
   `ViewLoadout` instead of `ImportLoadout`, so nothing is saved or applied;
   a client without that view mode gets the import dialog pre-filled; a
   string for another spec, combat, or no talent UI is refused with the
-  reason in chat and the copy dialog as the fallback), **Delete**. Every
+  reason in chat and the copy dialog as the fallback. The addon never
+  opens the talent window itself - showing `PlayerSpellsFrame` runs
+  Blizzard's `ShowAllActionButtonGrids`, a protected `SetAttribute` on
+  every action button, blocked from addon code; the 2026-09-05 BugSack
+  report. A closed window just gets "open your talent window ... then
+  click View" in chat), **Delete**. Every
   suggested / site row has View and Copy; their "Add to my vault" button
   was pulled the same day at the owner's request. Stored in
   `SpecSageDB.loadouts[specID] = { {name=..., category=..., export=...}, ... }`.
