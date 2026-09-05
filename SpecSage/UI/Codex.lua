@@ -638,8 +638,17 @@ local function SkinButton(button, opts)
     -- the callers pass to SetSize were tuned against a smaller face, and
     -- when the body type went up a point (2026-09-05) "Save current" and
     -- "Add from string" spilled past their borders. Measured after the font
-    -- swap above so the width matches what is actually drawn.
+    -- swap above so the width matches what is actually drawn - and again on
+    -- every SetText, since most buttons get their label after they are
+    -- skinned (the Options tab's action buttons, the BiS list toggles).
     FitButtonToText(button)
+    local originalSetText = button.SetText
+    if originalSetText then
+        button.SetText = function(self, text, ...)
+            originalSetText(self, text, ...)
+            FitButtonToText(self)
+        end
+    end
 end
 
 -- Creates a multi-line EditBox backed by a bordered BackdropTemplate frame.
@@ -1692,10 +1701,19 @@ local function AcquireLoadoutRow(pool, index, parent)
         row.name:SetJustifyH("LEFT")
         row.name:SetPoint("LEFT", row, "LEFT", 0, 0)
 
+        -- Right to left: Delete on the row's edge, Copy off Delete, View
+        -- off Copy - each anchored to its neighbour, never a fixed offset,
+        -- so the buttons can be as wide as their words without overlapping.
+        row.deleteButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+        row.deleteButton:SetSize(50, 18)
+        row.deleteButton:SetText("Delete")
+        row.deleteButton:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+        SkinButton(row.deleteButton, { variant = "danger" })
+
         row.copyButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
         row.copyButton:SetSize(50, 18)
         row.copyButton:SetText("Copy")
-        row.copyButton:SetPoint("RIGHT", row, "RIGHT", -58, 0)
+        row.copyButton:SetPoint("RIGHT", row.deleteButton, "LEFT", -8, 0)
         SkinButton(row.copyButton)
 
         -- Opens the build in the talent window (Loadouts:OpenInTalentUI).
@@ -1704,12 +1722,6 @@ local function AcquireLoadoutRow(pool, index, parent)
         row.viewButton:SetText("View")
         row.viewButton:SetPoint("RIGHT", row.copyButton, "LEFT", -8, 0)
         SkinButton(row.viewButton)
-
-        row.deleteButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-        row.deleteButton:SetSize(50, 18)
-        row.deleteButton:SetText("Delete")
-        row.deleteButton:SetPoint("RIGHT", row, "RIGHT", 0, 0)
-        SkinButton(row.deleteButton, { variant = "danger" })
 
         pool[index] = row
     end

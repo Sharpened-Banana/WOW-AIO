@@ -4036,6 +4036,19 @@ do
     check((save.width or 0) >= #"Save current" * 7 + 20,
         "Save current is at least its text plus 10px a side", save.width)
     check(add.specSageFill ~= nil and add.specSageBorder ~= nil, "a skinned button carries its plate fill and border")
+    -- A button labelled after it was skinned (the Options tab's action
+    -- buttons get their text per render) refits on SetText.
+    add:SetText("A much longer label than before")
+    check((add.width or 0) >= #"A much longer label than before" * 7 + 20, "SetText refits the button to the new label", add.width)
+    add:SetText("Add from string")
+    Codex:SelectTab("Options")
+    local feedbackRow
+    for _, row in ipairs(Codex.optionPools and Codex.optionPools.action or {}) do
+        if row:IsShown() and row.button and row.button:GetText() == "Feedback / requests" then feedbackRow = row end
+    end
+    check(feedbackRow ~= nil and (feedbackRow.button.width or 0) >= #"Feedback / requests" * 7 + 20,
+        "the Options tab's Feedback button is as wide as its label", feedbackRow and feedbackRow.button.width)
+    Codex:SelectTab("Loadouts")
     -- Depth cues: a drop shadow at rest that goes when the button is
     -- pressed, and the pointing-hand cursor on hover.
     check(add.specSageShadow ~= nil and add.specSageShadow.shown ~= false, "a skinned button casts a shadow at rest")
