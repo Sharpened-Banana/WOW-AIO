@@ -781,7 +781,7 @@ mocked directions (a blend of "The Tome" and "Cartographer's Scroll").
 with three gold rivets, two `parchment.png` pages with an alpha-gradient
 gutter between them and hairline rules inset in each (doubled on the
 right), a faint compass rose in the right page's corner. The left page
-carries the title ("Class Codex" in Playfair Display), the class · spec
+carries the title ("SpecSage" in Playfair Display), the class · spec
 subtitle in the class colour, the class and spec rails, and at the foot a
 wax seal (`wax_seal.png`) framing the player's hero-tree icon — the atlas
 `C_Traits.GetSubTreeInfo` returns, rounded with `circle_mask.png` — with

@@ -2666,7 +2666,7 @@ function Codex:BuildFrame()
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     title:SetFontObject(SpecSageTitleFont)
     title:SetPoint("TOPLEFT", frame.leftPage, "TOPLEFT", PAGE_PADDING + 4, -14)
-    title:SetText("Class Codex")
+    title:SetText("SpecSage")
     frame.title = title
 
     local subtitle = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
