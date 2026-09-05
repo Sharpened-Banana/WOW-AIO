@@ -2,4 +2,10 @@
 	<Binding name="SPECSAGE_PIN_TOOLTIP" header="SPECSAGE">
 		SpecSage_PinHoveredTooltip()
 	</Binding>
+	<Binding name="SPECSAGE_TOGGLE_OVERLAY">
+		SpecSage_ToggleOverlay()
+	</Binding>
+	<Binding name="SPECSAGE_TOGGLE_CODEX">
+		SpecSage_ToggleCodex()
+	</Binding>
 </Bindings>

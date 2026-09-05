@@ -4078,6 +4078,46 @@ do
 end
 
 --------------------------------------------------------------------------------
+section("Show stat overlay option and toggle key bindings (2026-09-05)")
+--------------------------------------------------------------------------------
+
+do
+    local entry
+    for _, group in ipairs(ns.OPTION_GROUPS) do
+        for _, option in ipairs(group.options) do
+            if option.scope == "overlay" and option.key == "shown" then entry = option end
+        end
+    end
+    check(entry ~= nil and entry.kind == "check" and entry.label == "Show stat overlay",
+        "the Display group offers a Show stat overlay check")
+    check(ns.OPTION_GROUPS[1].options[1] == entry, "it is the first option in the first group")
+
+    local wasHidden = ns.db.hidden
+    ns.db.hidden = true
+    check(ns.GetOptionValue(entry) == false, "the option reads false while the overlay is hidden")
+    ns.SetOptionValue(entry, true)
+    ns.RefreshAll()
+    check(ns.db.hidden == false and ns.UI.frame:IsShown(), "ticking it shows the overlay")
+    ns.SetOptionValue(entry, false)
+    ns.RefreshAll()
+    check(ns.db.hidden == true and not ns.UI.frame:IsShown(), "unticking it hides the overlay again")
+
+    -- Key bindings: global functions Bindings.xml names.
+    check(type(SpecSage_ToggleOverlay) == "function" and BINDING_NAME_SPECSAGE_TOGGLE_OVERLAY == "Toggle stat overlay",
+        "a Toggle stat overlay binding exists")
+    SpecSage_ToggleOverlay()
+    check(ns.db.hidden == false, "the overlay binding toggles the overlay")
+    check(type(SpecSage_ToggleCodex) == "function" and BINDING_NAME_SPECSAGE_TOGGLE_CODEX == "Toggle the Codex",
+        "a Toggle the Codex binding exists")
+    if Codex:IsShown() then Codex:Toggle() end
+    SpecSage_ToggleCodex()
+    check(Codex:IsShown(), "the Codex binding opens the Codex")
+    SpecSage_ToggleCodex()
+    ns.db.hidden = wasHidden
+    ns.RefreshAll()
+end
+
+--------------------------------------------------------------------------------
 section("Minimap button (Modules/MinimapButton.lua, 2026-09-05)")
 --------------------------------------------------------------------------------
 

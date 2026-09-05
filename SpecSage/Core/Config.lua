@@ -42,8 +42,21 @@ ns.STAT_LIST = {
 
 -- Where an option's value lives. Resolved at call time, never at load time:
 -- ns.db and ns.chardb do not exist until InitConfig has run.
+-- The overlay's visibility is stored inverted (db.hidden, so a fresh
+-- install starts hidden); the option reads as "shown". A tiny proxy keeps
+-- that inversion out of both option surfaces.
+local overlayShownProxy = setmetatable({}, {
+    __index = function(_, key)
+        if key == "shown" then return not ns.db.hidden end
+    end,
+    __newindex = function(_, key, value)
+        if key == "shown" then ns.db.hidden = not value end
+    end,
+})
+
 ns.OPTION_SCOPES = {
     db = function() return ns.db end,
+    overlay = function() return overlayShownProxy end,
     stats = function() return ns.db.stats end,
     combat = function() return ns.db.combat end,
     procs = function() return ns.db.procs end,
@@ -118,6 +131,11 @@ local function Seconds(value) return format("%ds", Round(value)) end
 
 local function BuildOptionGroups()
     local display = {
+        { kind = "check", scope = "overlay", key = "shown",
+          variable = "SpecSage_overlayShown", label = "Show stat overlay",
+          tooltip = "Show the movable stat overlay (item level, primary and secondary stats, combat metrics, "
+              .. "procs). Also toggled by /sage overlay, right-clicking the minimap seal, or the "
+              .. "Toggle stat overlay key binding." },
         { kind = "check", scope = "db", key = "locked",
           variable = "SpecSage_locked", label = "Lock overlay",
           tooltip = "Stops the overlay from being dragged and lets clicks pass through it." },

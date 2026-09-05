@@ -136,6 +136,10 @@ it, then `/sage lock` to fix it in place (locking lets clicks pass through).
 | `/sage pin [stat]` | Keep a tooltip on screen (the hovered one if no stat given) |
 | `/sage unpin [stat\|all]` | Close pinned tooltips |
 | `/sage pins` | List what is pinned |
+
+Key bindings (Options → Keybindings → SpecSage): **Toggle the Codex**, **Toggle
+stat overlay**, and **Pin hovered tooltip**. The Codex's Options tab and the
+Settings panel both carry a **Show stat overlay** check as well.
 | `/sage dps` | Print a summary of the last fight |
 | `/sage watch <spellID>` | Track a spell's proc and cooldown |
 | `/sage unwatch <spellID>` | Stop tracking a spell |

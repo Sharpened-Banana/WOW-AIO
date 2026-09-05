@@ -396,6 +396,19 @@ end
 
 BINDING_HEADER_SPECSAGE = "SpecSage"
 BINDING_NAME_SPECSAGE_PIN_TOOLTIP = "Pin hovered tooltip"
+BINDING_NAME_SPECSAGE_TOGGLE_OVERLAY = "Toggle stat overlay"
+BINDING_NAME_SPECSAGE_TOGGLE_CODEX = "Toggle the Codex"
+
+-- Key bindings (Bindings.xml). Global by necessity - the binding system
+-- calls them by name.
+function SpecSage_ToggleOverlay()
+    if ns.UI and ns.UI.Toggle then ns.UI:Toggle() end
+end
+
+function SpecSage_ToggleCodex()
+    local Codex = ns:GetModule("Codex")
+    if Codex then Codex:Toggle() end
+end
 
 function SpecSage_PinHoveredTooltip()
     local ok, result = ns.Tooltips:PinHovered()
