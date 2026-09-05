@@ -777,8 +777,8 @@ above) - only exercised by `tests/run.lua`'s fixtures.
 book, the docked panel a single page of it. Picked by the owner from eight
 mocked directions (a blend of "The Tome" and "Cartographer's Scroll").
 `ApplyTomeChrome` in `UI/Codex.lua` builds it: a tiled leather cover
-(`Textures/leather.png`) over the backdrop's leather colour, a 30px spine
-with three gold rivets, two `parchment.png` pages with an alpha-gradient
+(`Textures/leather.png`) over the backdrop's leather colour, a plain 30px
+spine (the three gold rivets came out on the first in-game look), two `parchment.png` pages with an alpha-gradient
 gutter between them and hairline rules inset in each (doubled on the
 right), a faint compass rose in the right page's corner. The left page
 carries the title ("SpecSage" in Playfair Display), the class · spec
@@ -789,8 +789,8 @@ the tree's name beside it, shown only while the player's own spec is on
 the page. The right page carries the chapter tabs (bare Playfair text on a
 rule, wax-red underline on the open one; 74/78 wide, so nine fit) and the
 content. Palette is ink on paper: text `#2B1F14`, secondary `#5A4630`,
-faded `#8A7A5E`, rules `#6E5A3A`, emphasis and the active tab in wax red
-`#7A2F1F`, gold `#D9B46A` only on the rivets. Buttons are darker paper
+rules `#6E5A3A`, emphasis and the active tab in wax red `#7A2F1F`;
+no grey text anywhere, at the owner's call. Buttons are darker paper
 (`#CDBB92`) with a rule border that goes wax red on hover; dialogs and
 edit boxes are parchment cards (`SetParchmentBackdrop`). Type is Libre
 Baskerville 14/15 for rows and paragraphs, Playfair Display Bold 16 for

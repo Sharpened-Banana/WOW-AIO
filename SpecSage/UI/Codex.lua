@@ -81,7 +81,7 @@ local GetSpecializationInfoByID = (C_SpecializationInfo and C_SpecializationInfo
 local FRAME_WIDTH, FRAME_HEIGHT = 1100, 620
 
 -- The Tome (2026-09-05): the window is a leather-bound book. A spine down
--- the left with three rivets, then two parchment pages with a gutter
+-- the left, then two parchment pages with a gutter
 -- between: the left page carries the class and spec rails, the title and
 -- the hero-tree seal; the right page the chapter tabs and the content.
 -- PAGE_INSET is the leather showing around the pages.
@@ -416,7 +416,7 @@ end
 
 -- Builds the book: leather cover (a tiled texture over the backdrop's own
 -- leather colour, so a client that will not tile still shows leather),
--- the spine with its rivets, the two parchment pages with a shadowed
+-- the plain spine, the two parchment pages with a shadowed
 -- gutter, a hairline rule inside each page (doubled on the right, the way
 -- a chart's border is), and the compass rose in the right page's corner.
 -- The pages are stored on the frame so the rails, tabs and content can
@@ -434,15 +434,6 @@ local function ApplyTomeChrome(frame)
     spine:SetWidth(SPINE_WIDTH)
     spine:SetColorTexture(0.10, 0.07, 0.04, 0.55)
     frame.spine = spine
-
-    frame.rivets = {}
-    for i = 1, 3 do
-        local rivet = frame:CreateTexture(nil, "ARTWORK")
-        rivet:SetSize(14, 14)
-        rivet:SetPoint("CENTER", spine, "TOP", 0, -(FRAME_HEIGHT * i / 4))
-        rivet:SetTexture(TEXTURE_PATH .. "rivet.png")
-        frame.rivets[i] = rivet
-    end
 
     local leftPage = frame:CreateTexture(nil, "BACKGROUND", nil, 2)
     leftPage:SetPoint("TOPLEFT", frame, "TOPLEFT", SPINE_WIDTH + 6, -PAGE_INSET)
