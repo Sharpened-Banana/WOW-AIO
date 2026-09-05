@@ -908,17 +908,30 @@ the addon bundles no libraries and the job is one button plus the ring
 trigonometry, with `GetMinimapShape` honoured for squared minimaps. The
 Options tab's "Minimap button" check (`db.minimap.shown`) hides it.
 
-**Consumables item chips (2026-09-05):** the guides' consumable lines are
-prose and stay prose, but every item they name now gets a chip under the
-line — item icon plus quality-coloured name, hover for the real tooltip,
-click for the link, the same behaviour as a BiS row. `Data/Consumables.lua`
-holds the name → itemID table (rank-3 crafted where ranks exist) and the
-scanner (`ns.FindConsumableItems`) that pulls names out of a line, longest
-first, in order of appearance. Chips are not inline because a FontString
-cannot report where a word landed after wrapping. A name missing from the
-table simply gets no chip, so extending it is the whole job when a guide
-starts naming a new item. The Feedback link now points at
-`github.com/Sharpened-Banana/SpecSage`, read from the TOC's `X-Website`.
+**Consumables tab rebuilt on Midnight data (2026-09-05):** the shipped
+consumables were still War Within items (Tempered flasks, Crystallized
+runes) two expansions on. `tools/gen_consumables.py` now writes every
+spec's `consumables` block from the spec's role, stat priority and class
+against a catalogue of the current expansion's flasks, potions, food, oils
+and stones, weapon / ring / chest / leg / helm-shoulder-boot enchants, gems
+and augment runes - every item looked up on Wowhead (name, ID, tooltip) on
+the date in the script. Each entry is `{ slot, items = { itemIDs }, text }`:
+eleven kinds per spec, from Flask through Augment Rune, with the weapon
+oil its own kind. The Codex draws each kind as a heading, then the items as
+chips (icon plus quality-coloured name - hover for the tooltip, click for
+the link, an enchant chip shows the enchant's name without the scroll's
+"Enchant Ring - " prefix), then the reasoning, with a group gap before the
+next kind. `Data/Consumables.lua` (also generated) holds name → ID for the
+fallback name before the client has an item cached, and the prose scanner
+`ns.FindConsumableItems` still links items named in an entry with no
+`items` list (a third-party pack). Chips are not inline because a
+FontString cannot report where a word landed after wrapping. Recommendations
+are derived, not simmed: stat-matched to the priority the guide already
+states, with role variants (absorb potion and Leech/Avoidance enchants for
+tanks, mana potion and Oil of Dawn for healers, stones for physical specs).
+When a patch adds items, extend the catalogue and rerun. The Feedback link
+now points at `github.com/Sharpened-Banana/SpecSage`, read from the TOC's
+`X-Website`.
 
 ### Docked panel grip
 

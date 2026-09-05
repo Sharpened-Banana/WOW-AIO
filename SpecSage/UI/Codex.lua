@@ -1202,7 +1202,9 @@ function Codex:PlaceConsumableChips(chipIndex, parent, y, width, items)
         -- take ink instead, and only rarer qualities keep their colour.
         if not quality or quality <= 1 then r, g, b = unpack(TEXT_PRIMARY_COLOR) end
         chip.restColor = { r, g, b }
-        chip.text:SetText(name)
+        -- An enchant scroll's name is "Enchant Ring - Silvermoon's
+        -- Alacrity"; the chip shows the enchant, the tooltip the scroll.
+        chip.text:SetText((name:gsub("^Enchant [%a ]+ %- ", "")))
         chip.text:SetTextColor(r, g, b)
         chip.icon:SetTexture(ItemIcon(item.itemID) or "Interface\\Icons\\INV_Misc_QuestionMark")
         chip.itemID = item.itemID
@@ -1235,16 +1237,43 @@ function Codex:RenderConsumables(guide)
         index = index + 1
         y = PlaceLine(pool, index, parent, y, width, NO_DATA_TEXT, { color = MUTED_COLOR })
     else
-        for _, entry in ipairs(consumables) do
+        -- One block per kind: the kind as a small heading, the items as
+        -- chips (the links), then the guide's reasoning under them, and a
+        -- group gap before the next kind. The first cut ran kind after
+        -- kind as "Flask: ..." prose lines and the owner could not tell
+        -- where one ended (2026-09-05).
+        for i, entry in ipairs(consumables) do
             index = index + 1
-            y = PlaceLine(pool, index, parent, y, width, format("%s: %s", entry.slot or "?", entry.text or ""))
-            local items = ns.FindConsumableItems and ns.FindConsumableItems(entry.text) or {}
+            y = PlaceLine(pool, index, parent, y, width, entry.slot or "?", { color = HEADER_COLOR, isHeader = true })
+            local items = self:ConsumableItemsFor(entry)
             chipIndex, y = self:PlaceConsumableChips(chipIndex, parent, y, width, items)
+            if entry.text and entry.text ~= "" then
+                index = index + 1
+                y = PlaceLine(pool, index, parent, y, width, entry.text, { color = TEXT_SECONDARY_COLOR })
+            end
+            if i < #consumables then y = y - GROUP_GAP end
         end
     end
 
     HidePoolFrom(self.consumableChipPool, chipIndex + 1)
     self:FinishPool(pool, index, y)
+end
+
+-- The items a consumables entry links: its own `items` list of IDs when it
+-- has one (the shipped guides, via tools/gen_consumables.py), else whatever
+-- Data/Consumables.lua can find by name in its prose.
+function Codex:ConsumableItemsFor(entry)
+    if type(entry.items) == "table" and #entry.items > 0 then
+        local items = {}
+        for _, itemID in ipairs(entry.items) do
+            if type(itemID) == "number" then
+                items[#items + 1] = { itemID = itemID,
+                    name = (ns.ConsumableNames and ns.ConsumableNames[itemID]) or ("Item " .. itemID) }
+            end
+        end
+        return items
+    end
+    return ns.FindConsumableItems and ns.FindConsumableItems(entry.text) or {}
 end
 
 --------------------------------------------------------------------------------

@@ -3868,41 +3868,68 @@ section("Codex: Consumables tab item chips (2026-09-05)")
 --------------------------------------------------------------------------------
 
 do
-    -- Data/Consumables.lua: name -> itemID, and the scanner that finds the
-    -- names a line of guide prose mentions.
+    -- Data/Consumables.lua: name -> itemID (and back), and the scanner that
+    -- finds the names a line of guide prose mentions.
+    check(ns.ConsumableItems["Flask of the Blood Knights"] == 241325
+        and ns.ConsumableNames[241325] == "Flask of the Blood Knights",
+        "the item table maps names to IDs and back")
     local found = ns.FindConsumableItems(
-        "Flask of Tempered Swiftness matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick. "
-        .. "Always carry Concentrated Silvermoon Health Potions; Flask of Tempered Swiftness again.")
+        "Flask of the Blood Knights for Haste; Flask of the Magisters if you're short on Mastery. "
+        .. "Always carry Concentrated Silvermoon Health Potions; Flask of the Blood Knights again.")
     check(#found == 3, "each named consumable is found once, in order of appearance", #found)
-    check(found[1].name == "Flask of Tempered Swiftness" and found[1].itemID == ns.ConsumableItems["Flask of Tempered Swiftness"],
+    check(found[1].name == "Flask of the Blood Knights" and found[1].itemID == 241325,
         "the first chip is the first item named, with its itemID")
-    check(found[2].name == "Flask of Alchemical Chaos", "the second item named comes second", found[2] and found[2].name)
+    check(found[2].name == "Flask of the Magisters", "the second item named comes second", found[2] and found[2].name)
     check(found[3].name == "Concentrated Silvermoon Health Potion",
         "a plural mention still finds the singular item name", found[3] and found[3].name)
-    check(#ns.FindConsumableItems("Weapon enchant for Stamina; ring enchants for secondary stats") == 0,
+    check(#ns.FindConsumableItems("Speed is the throughput-neutral default") == 0,
         "a line naming no known item yields no chips")
     check(#ns.FindConsumableItems(nil) == 0, "a nil line yields no chips")
 
-    -- Every consumable the shipped guides name is in the table, so no spec
-    -- shows a bare word where another shows a chip.
-    local named, unknown = {}, {}
-    for _, specID in ipairs(ns.GuideStore:GetClassSpecs("DEATHKNIGHT")) do
-        local guide = ns.GuideStore:GetGuide(specID)
-        for _, entry in ipairs(guide and guide.consumables or {}) do
-            for _, item in ipairs(ns.FindConsumableItems(entry.text)) do named[item.name] = true end
+    -- Every shipped guide's consumables carry item lists, and every ID in
+    -- them is in the table (so no chip ever falls back to "Item 12345").
+    local specs, entries, unknown = 0, 0, {}
+    for _, class in ipairs({ "DEATHKNIGHT", "DEMONHUNTER", "DRUID", "EVOKER", "HUNTER", "MAGE", "MONK",
+                             "PALADIN", "PRIEST", "ROGUE", "SHAMAN", "WARLOCK", "WARRIOR" }) do
+        for _, specID in ipairs(ns.GuideStore:GetClassSpecs(class)) do
+            local guide = ns.GuideStore:GetGuide(specID)
+            if guide and guide.consumables and #guide.consumables >= 10 then
+                specs = specs + 1
+                for _, entry in ipairs(guide.consumables) do
+                    entries = entries + 1
+                    for _, itemID in ipairs(entry.items or {}) do
+                        if not ns.ConsumableNames[itemID] then unknown[#unknown + 1] = itemID end
+                    end
+                    if not entry.items or #entry.items == 0 then unknown[#unknown + 1] = "no items: " .. tostring(entry.slot) end
+                end
+            end
         end
     end
-    check(named["Flask of Tempered Swiftness"] and named["Crystallized Augment Rune"],
-        "the shipped Death Knight guides yield flask and augment-rune chips")
+    check(specs == 40, "all 40 shipped specs carry a full consumables block", specs)
+    check(#unknown == 0, "every shipped consumable entry links items the table knows", table.concat(unknown, ","))
 
-    -- The tab: one chip row under each line that names items, none under a
-    -- line that does not; chips hover and click like BiS item links.
-    mock.items[212283] = { name = "Flask of Alchemical Chaos", quality = 1 }
+    -- A tank's block differs from a healer's where it should.
+    local blood, holy = ns.GuideStore:GetGuide(250), ns.GuideStore:GetGuide(257)
+    local function slotItems(guide, slot)
+        for _, entry in ipairs(guide.consumables) do if entry.slot == slot then return entry.items end end
+    end
+    check(slotItems(blood, "Flask")[1] == 241325 and slotItems(holy, "Flask")[1] == 241321,
+        "each spec's flask leads with its own top secondary (Blood: Haste; Holy Priest: Versatility)")
+    check(slotItems(blood, "Potion")[1] == 241287 and slotItems(holy, "Potion")[1] == 241301,
+        "a tank leads with the absorb potion, a healer with the mana potion")
+    check(slotItems(blood, "Weapon Oil")[1] == 243734 and #slotItems(blood, "Weapon Oil") == 3
+        and #slotItems(holy, "Weapon Oil") == 2,
+        "every spec lists the current tier's oil; physical specs add the stones, healers Oil of Dawn")
+
+    -- The tab: a heading, the chips, then the prose, per kind; chips hover
+    -- and click like BiS item links.
+    mock.items[241323] = { name = "Flask of the Magisters", quality = 1 }
     ns.GuideStore:RegisterSpec("MAGE", 9605, {
         specName = "Chip Spec", role = "DAMAGER",
         consumables = {
-            { slot = "Flask", text = "Flask of Alchemical Chaos, or Flask of Tempered Swiftness for pure throughput" },
-            { slot = "Enchants", text = "Weapon enchant for Stamina/mitigation" },
+            { slot = "Flask", items = { 241323, 241325 }, text = "Magisters for Mastery, Blood Knights for Haste." },
+            { slot = "Prose-only", text = "Always carry Concentrated Silvermoon Health Potions." },
+            { slot = "Enchants", text = "Nothing this table knows." },
         },
     })
     Codex:Open("MAGE", 9605)
@@ -3912,49 +3939,65 @@ do
     for _, chip in ipairs(Codex.consumableChipPool) do
         if chip:IsShown() then shown[#shown + 1] = chip end
     end
-    check(#shown == 2, "two chips for the two items the flask line names", #shown)
-    local first, second = shown[1], shown[2]
-    check(first.itemID == 212283 and first.text:GetText() == "Flask of Alchemical Chaos",
+    check(#shown == 3, "two chips from the item list plus one found in prose", #shown)
+    local first, second, third = shown[1], shown[2], shown[3]
+    check(first.itemID == 241323 and first.text:GetText() == "Flask of the Magisters",
         "the first chip is the cached flask under the client's name", first.text:GetText())
-    check(second.itemID == ns.ConsumableItems["Flask of Tempered Swiftness"]
-        and second.text:GetText() == "Flask of Tempered Swiftness",
-        "an uncached item's chip falls back to the guide's own name", second.text:GetText())
+    check(second.itemID == 241325 and second.text:GetText() == "Flask of the Blood Knights",
+        "an uncached item's chip falls back to the table's name", second.text:GetText())
+    check(third.itemID == 271884, "a prose-only entry still gets chips for the items it names", third.itemID)
     local requested = false
     for _, id in ipairs(mock.itemLoadRequests) do if id == second.itemID then requested = true end end
     check(requested, "an uncached chip queues a RequestLoadItemDataByID call")
-    check((first.width or 0) >= 16 + 4 + #"Flask of Alchemical Chaos" * 7,
+    check((first.width or 0) >= 16 + 4 + #"Flask of the Magisters" * 7,
         "a chip is as wide as its icon plus its name", first.width)
     check(first.hit == nil and first:GetScript("OnEnter") ~= nil, "the chip itself is the hit area")
 
-    -- The flask line's chips sit under the flask line and above the
-    -- Enchants line; the chip pool's y is between the two text rows.
-    local flaskLine, enchantLine = Codex.pools.consumables[1], Codex.pools.consumables[2]
-    -- The mock records SetPoint positionally: { point, relativeTo, relativePoint, x, y }.
+    -- Layout: heading, chips, prose, then a gap before the next heading.
+    local lines = Codex.pools.consumables
+    check(lines[1].text:GetText() == "Flask" and lines[2].text:GetText():find("Magisters for Mastery", 1, true) ~= nil
+        and lines[3].text:GetText() == "Prose-only",
+        "each kind is a heading followed by its prose", lines[1].text:GetText(), lines[3].text:GetText())
     local function top(frame) return frame.points and frame.points[1] and frame.points[1][5] end
-    local flaskY, chipY, enchantY = top(flaskLine), top(first), top(enchantLine)
-    check(type(flaskY) == "number" and type(chipY) == "number" and type(enchantY) == "number"
-        and chipY < flaskY and enchantY < chipY,
-        "the chips are laid between the line they belong to and the next", flaskY, chipY, enchantY)
+    local headY, chipY, proseY, nextHeadY = top(lines[1]), top(first), top(lines[2]), top(lines[3])
+    check(headY > chipY and chipY > proseY and proseY > nextHeadY,
+        "chips sit under their heading and above the prose; the next heading comes after", headY, chipY, proseY, nextHeadY)
+    -- The prose line's bottom to the next heading's top is at least a group gap.
+    local proseBottom = proseY - (lines[2].height or 0)
+    check(proseBottom - nextHeadY >= 16, "a group gap separates one kind from the next", proseBottom - nextHeadY)
 
     first:GetScript("OnEnter")(first)
-    check(GameTooltip.itemID == 212283, "hovering a chip shows the item's tooltip", GameTooltip.itemID)
+    check(GameTooltip.itemID == 241323, "hovering a chip shows the item's tooltip", GameTooltip.itemID)
     first:GetScript("OnLeave")(first)
     mock.itemRefClicks = {}
     first:GetScript("OnMouseUp")(first, "LeftButton")
     check(#mock.itemRefClicks == 1, "clicking a chip opens the item link", #mock.itemRefClicks)
 
+    -- An enchant scroll's chip shows the enchant's name, not "Enchant Ring - ".
+    ns.GuideStore:RegisterSpec("MAGE", 9606, {
+        specName = "Enchant Spec", role = "DAMAGER",
+        consumables = { { slot = "Ring Enchants", items = { 244015 }, text = "" } },
+    })
+    Codex:Open("MAGE", 9606)
+    Codex:SelectTab("Consumables")
+    check(Codex.consumableChipPool[1].text:GetText() == "Silvermoon's Alacrity",
+        "an enchant chip drops the scroll's slot prefix", Codex.consumableChipPool[1].text:GetText())
+    check(Codex.pools.consumables[2] == nil or not Codex.pools.consumables[2]:IsShown(),
+        "an entry with empty prose draws no prose line")
+
     -- Switching tabs hides the chips.
     Codex:SelectTab("Overview")
-    check(not first:IsShown(), "chips hide when another tab is chosen")
+    check(not Codex.consumableChipPool[1]:IsShown(), "chips hide when another tab is chosen")
 
     -- The item arriving later redraws the chip under its real name.
+    Codex:Open("MAGE", 9605)
     Codex:SelectTab("Consumables")
-    mock.items[second.itemID] = { name = "Flask of Tempered Swiftness (cached)", quality = 1 }
-    Codex:OnBiSItemInfoReceived(second.itemID)
-    check(Codex.consumableChipPool[2].text:GetText() == "Flask of Tempered Swiftness (cached)",
+    mock.items[241325] = { name = "Flask of the Blood Knights (cached)", quality = 1 }
+    Codex:OnBiSItemInfoReceived(241325)
+    check(Codex.consumableChipPool[2].text:GetText() == "Flask of the Blood Knights (cached)",
         "GET_ITEM_INFO_RECEIVED for a chip's item redraws the chip", Codex.consumableChipPool[2].text:GetText())
-    mock.items[second.itemID] = nil
-    mock.items[212283] = nil
+    mock.items[241325] = nil
+    mock.items[241323] = nil
 end
 
 --------------------------------------------------------------------------------
