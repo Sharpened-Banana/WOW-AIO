@@ -145,7 +145,10 @@ local NO_DATA_TEXT = "no guide data yet - see SpecSage/Data/Guides_<Class>.lua t
 -- page, not a dark panel: text is ink, emphasis is wax red, rules are the
 -- faded brown a quill leaves, and the only bright thing is the gold of the
 -- spine rivets.
-local MUTED_COLOR = { 0.541, 0.478, 0.369 }          -- #8A7A5E faded ink
+-- Owner's call (2026-09-05, first look in-game): no grey text on the page.
+-- Muted and secondary text are ink too; hierarchy comes from the heading
+-- face, the wax red and the rules, not from fading.
+local MUTED_COLOR = { 0.169, 0.122, 0.078 }          -- ink
 local HEADER_COLOR = { 0.169, 0.122, 0.078 }         -- #2B1F14 ink; headings set in Playfair
 local CONDITION_COLOR = { 0.478, 0.184, 0.122 }      -- #7A2F1F wax red
 local CONDITION_INDENT = 20
@@ -157,7 +160,7 @@ local BORDER_COLOR = { 0.431, 0.353, 0.227, 1 }         -- #6E5A3A rule
 local ACCENT_COLOR = { 0.478, 0.184, 0.122 }            -- #7A2F1F wax red
 local GOLD_COLOR = { 0.851, 0.706, 0.416 }              -- #D9B46A rivets
 local TEXT_PRIMARY_COLOR = { 0.169, 0.122, 0.078 }      -- #2B1F14 ink
-local TEXT_SECONDARY_COLOR = { 0.353, 0.275, 0.188 }    -- #5A4630
+local TEXT_SECONDARY_COLOR = { 0.169, 0.122, 0.078 }    -- ink
 
 -- Type: Libre Baskerville for everything read (rows 14pt, paragraphs
 -- 15pt), Playfair Display for what is looked at - the title, chapter tabs
@@ -1207,7 +1210,7 @@ function Codex:RenderBiSLinkSection(pool, index, parent, width, y, specID)
             end
         end
         local r, g, b = ItemQualityColor(quality)
-        local fromText = (entry.from and entry.from ~= "") and ("  |cff6e5a3a" .. entry.from .. "|r") or ""
+        local fromText = (entry.from and entry.from ~= "") and ("  |cff2b1f14" .. entry.from .. "|r") or ""
         row.text:SetText(format("|cff%02x%02x%02x%s|r%s",
             math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5), name, fromText))
         row.text:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
@@ -1358,7 +1361,7 @@ function Codex:RenderTrinketSection(pool, index, parent, width, y, specID)
             for _, site in ipairs({ { "Icy Veins", entry.siteTier }, { "Wowhead", entry.whTier } }) do
                 if site[2] then
                     local st = TIER_COLORS[site[2]] or MUTED_COLOR
-                    detail[#detail + 1] = format("%s |cff%02x%02x%02x%s|r|cff6e5a3a", site[1],
+                    detail[#detail + 1] = format("%s |cff%02x%02x%02x%s|r|cff2b1f14", site[1],
                         math.floor(st[1] * 255 + 0.5), math.floor(st[2] * 255 + 0.5), math.floor(st[3] * 255 + 0.5),
                         site[2])
                 else
@@ -1366,7 +1369,7 @@ function Codex:RenderTrinketSection(pool, index, parent, width, y, specID)
                 end
             end
         end
-        local detailText = #detail > 0 and ("  |cff6e5a3a" .. table.concat(detail, " · ") .. "|r") or ""
+        local detailText = #detail > 0 and ("  |cff2b1f14" .. table.concat(detail, " · ") .. "|r") or ""
         row.text:SetText(format("|cff%02x%02x%02x%s|r%s",
             math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5), name, detailText))
         row.text:SetTextColor(unpack(TEXT_PRIMARY_COLOR))

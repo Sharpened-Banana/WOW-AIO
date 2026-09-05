@@ -125,17 +125,17 @@ local TAB_ACTIVE_COLOR = { 0.478, 0.184, 0.122, 1 }    -- wax red
 local RULE_COLOR = { 0.431, 0.353, 0.227 }             -- #6E5A3A
 local GOLD_COLOR = { 0.851, 0.706, 0.416 }             -- #D9B46A
 local HEADER_COLOR = { 0.169, 0.122, 0.078 }           -- ink
-local MUTED_COLOR = { 0.541, 0.478, 0.369 }            -- #8A7A5E
+local MUTED_COLOR = { 0.169, 0.122, 0.078 }            -- ink; no grey text on the page
 local CONDITION_COLOR = { 0.478, 0.184, 0.122 }        -- wax red
 local TEXT_PRIMARY_COLOR = { 0.169, 0.122, 0.078 }
-local TEXT_SECONDARY_COLOR = { 0.353, 0.275, 0.188 }
+local TEXT_SECONDARY_COLOR = { 0.169, 0.122, 0.078 }
 local DEFAULT_ITEM_COLOR = { 0.35, 0.35, 0.35 }
 
 -- Matches the Codex's BiS tab tags so the two surfaces read the same.
 local STATUS_COLORS = {
     equipped = { 0.25, 0.42, 0.23 },   -- ink green, readable on paper
     owned    = { 0.478, 0.184, 0.122 }, -- wax red
-    missing  = { 0.541, 0.478, 0.369 }, -- faded
+    missing  = { 0.169, 0.122, 0.078 }, -- ink
 }
 
 local STAT_LABELS = {
