@@ -2684,16 +2684,13 @@ function Codex:BuildFrame()
         icon:AddMaskTexture(mask)
     end)
     seal.icon = icon
+    -- Just the tree's name beside the seal; the "your hero tree, read
+    -- from your talents" note under it came out on the first in-game look.
     local sealName = seal:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     sealName:SetFontObject(SpecSageHeadingFont)
     sealName:SetJustifyH("LEFT")
-    sealName:SetPoint("TOPLEFT", seal, "TOPRIGHT", 10, -12)
+    sealName:SetPoint("LEFT", seal, "RIGHT", 10, 0)
     seal.name = sealName
-    local sealNote = seal:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    sealNote:SetFontObject(SpecSageItalicFont)
-    sealNote:SetJustifyH("LEFT")
-    sealNote:SetPoint("TOPLEFT", sealName, "BOTTOMLEFT", 0, -2)
-    sealNote:SetText("your hero tree,\nread from your talents")
     seal:Hide()
     frame.heroSeal = seal
 
