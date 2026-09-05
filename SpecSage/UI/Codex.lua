@@ -170,8 +170,9 @@ local TEXT_SECONDARY_COLOR = { 0.169, 0.122, 0.078 }    -- ink
 -- with their licences. This is the third face the Codex has worn: Friz
 -- Quadrata (the client's own) after the 2026-09-02 readability pass
 -- replaced PT Sans; the owner picked the Tome look on 2026-09-05 and a
--- serif is what makes parchment read as parchment. Sizes stay at or above
--- what that readability pass settled on. Built once at load and reused via
+-- serif is what makes parchment read as parchment. Sizes went up one more
+-- point across the board after the first in-game look ("hard to see"):
+-- rows 15, paragraphs 16, headings 17, chapter tabs 15. Built once at load and reused via
 -- SetFontObject rather than a fresh CreateFont per row.
 local FONT_PATH = "Interface\\AddOns\\SpecSage\\Fonts\\"
 local BODY_FONT_PATH = FONT_PATH .. "LibreBaskerville-Regular.ttf"
@@ -179,36 +180,36 @@ local BODY_BOLD_FONT_PATH = FONT_PATH .. "LibreBaskerville-Bold.ttf"
 local HEADING_FONT_PATH = FONT_PATH .. "PlayfairDisplay-Bold.ttf"
 local HEADING_ITALIC_FONT_PATH = FONT_PATH .. "PlayfairDisplay-Italic.ttf"
 local SpecSageBodyFont = CreateFont("SpecSageBodyFont")
-SpecSageBodyFont:SetFont(BODY_FONT_PATH, 15, "")
+SpecSageBodyFont:SetFont(BODY_FONT_PATH, 16, "")
 SpecSageBodyFont:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
 local SpecSageBodyFontSmall = CreateFont("SpecSageBodyFontSmall")
-SpecSageBodyFontSmall:SetFont(BODY_FONT_PATH, 14, "")
+SpecSageBodyFontSmall:SetFont(BODY_FONT_PATH, 15, "")
 SpecSageBodyFontSmall:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
 local SpecSageBoldFontSmall = CreateFont("SpecSageBoldFontSmall")
-SpecSageBoldFontSmall:SetFont(BODY_BOLD_FONT_PATH, 14, "")
+SpecSageBoldFontSmall:SetFont(BODY_BOLD_FONT_PATH, 15, "")
 SpecSageBoldFontSmall:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
 local SpecSageHeadingFont = CreateFont("SpecSageHeadingFont")
-SpecSageHeadingFont:SetFont(HEADING_FONT_PATH, 16, "")
+SpecSageHeadingFont:SetFont(HEADING_FONT_PATH, 17, "")
 SpecSageHeadingFont:SetTextColor(unpack(HEADER_COLOR))
 local SpecSageChapterFont = CreateFont("SpecSageChapterFont")
-SpecSageChapterFont:SetFont(HEADING_FONT_PATH, 13, "")
+SpecSageChapterFont:SetFont(HEADING_FONT_PATH, 15, "")
 SpecSageChapterFont:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
 local SpecSageTitleFont = CreateFont("SpecSageTitleFont")
 SpecSageTitleFont:SetFont(HEADING_FONT_PATH, 22, "")
 SpecSageTitleFont:SetTextColor(unpack(HEADER_COLOR))
 local SpecSageItalicFont = CreateFont("SpecSageItalicFont")
-SpecSageItalicFont:SetFont(HEADING_ITALIC_FONT_PATH, 13, "")
+SpecSageItalicFont:SetFont(HEADING_ITALIC_FONT_PATH, 14, "")
 SpecSageItalicFont:SetTextColor(unpack(TEXT_SECONDARY_COLOR))
 -- Class-coloured text on parchment: a bright class colour (Paladin pink,
 -- Priest white, Rogue yellow) has no contrast against paper, so anything
 -- drawn in a class colour gets a black outline and shadow. Owner's call on
 -- the first in-game look (2026-09-05).
 local SpecSageClassFont = CreateFont("SpecSageClassFont")
-SpecSageClassFont:SetFont(BODY_BOLD_FONT_PATH, 14, "OUTLINE")
+SpecSageClassFont:SetFont(BODY_BOLD_FONT_PATH, 15, "OUTLINE")
 pcall(SpecSageClassFont.SetShadowColor, SpecSageClassFont, 0, 0, 0, 0.9)
 pcall(SpecSageClassFont.SetShadowOffset, SpecSageClassFont, 1, -1)
 local SpecSageClassItalicFont = CreateFont("SpecSageClassItalicFont")
-SpecSageClassItalicFont:SetFont(HEADING_ITALIC_FONT_PATH, 13, "OUTLINE")
+SpecSageClassItalicFont:SetFont(HEADING_ITALIC_FONT_PATH, 14, "OUTLINE")
 pcall(SpecSageClassItalicFont.SetShadowColor, SpecSageClassItalicFont, 0, 0, 0, 0.9)
 pcall(SpecSageClassItalicFont.SetShadowOffset, SpecSageClassItalicFont, 1, -1)
 
@@ -2295,8 +2296,10 @@ function Codex:UpdateClassHighlight()
 
     self:UpdateSubtitle()
 
+    -- The other classes fade well back - still there to click, not
+    -- competing with the one open.
     for token, btn in pairs(self.classButtons or {}) do
-        pcall(btn.SetAlpha, btn, (token == self.selectedClass) and 1 or 0.55)
+        pcall(btn.SetAlpha, btn, (token == self.selectedClass) and 1 or 0.3)
     end
 end
 
@@ -2347,9 +2350,11 @@ function Codex:UpdateSpecHighlight()
             if btn.specID == self.selectedSpecID then
                 btn.label:SetFontObject(SpecSageClassFont)
                 btn.label:SetTextColor(color.r, color.g, color.b)
+                pcall(btn.SetAlpha, btn, 1)
             else
                 btn.label:SetFontObject(SpecSageBodyFontSmall)
                 btn.label:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])
+                pcall(btn.SetAlpha, btn, 0.4)
             end
         end
     end
