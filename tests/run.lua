@@ -2448,22 +2448,20 @@ check(mplusRow:IsShown(), "the Mythic+ row is shown for a spec whose guide ships
 check(mplusRow.name:GetText() == "Suggested Mythic+ (via SimulationCraft, patch 12.1)",
     "the Mythic+ row is labeled per DESIGN.md, including the guide's patch", mplusRow.name:GetText())
 check(mplusRow.copyButton:IsShown(), "the Mythic+ row's Copy button is shown")
-check(mplusRow.addButton:IsShown(), "the Mythic+ row's Add to my vault button is shown")
-check(mplusRow.addButton:GetText() == "Add to my vault",
-    "the Mythic+ row's Add button is labeled 'Add to my vault'", mplusRow.addButton:GetText())
+check(mplusRow.addButton == nil, "the Mythic+ row has no Add to my vault button (pulled 2026-09-04)")
 
 check(raidRow:IsShown(), "the Raid row is shown for a spec whose guide ships raidLoadout")
 check(raidRow.name:GetText() == "Suggested Raid (via SimulationCraft, patch 12.1)",
     "the Raid row is labeled per DESIGN.md, including the guide's patch", raidRow.name:GetText())
 check(raidRow.copyButton:IsShown(), "the Raid row's Copy button is shown")
-check(raidRow.addButton:IsShown(), "the Raid row's Add to my vault button is shown")
+check(raidRow.addButton == nil, "nor does the Raid row")
 
 check(metaRow:IsShown(), "the live-meta row is shown for a spec whose guide ships mplusMetaLoadout")
 check(metaRow.name:GetText() == "Top Players' Mythic+ Build (via Blizzard's API, top 50, patch 12.1)",
     "the live-meta row is attributed to Blizzard's API (not SimC) and shows its sample size",
     metaRow.name:GetText())
 check(metaRow.copyButton:IsShown(), "the live-meta row's Copy button is shown")
-check(metaRow.addButton:IsShown(), "the live-meta row's Add to my vault button is shown")
+check(metaRow.addButton == nil, "nor does the live-meta row")
 
 -- The mock's GetPoint() is a fixed stub (it does not track real SetPoint
 -- calls), so ordering is checked against the recorded .points table instead
@@ -2526,29 +2524,6 @@ check(metaCopyOk, "Copy on the live-meta row does not error under the mock's vis
 check(Codex.copyBox:GetText() == "C0EAy0kSampleLiveMetaExportString",
     "the copy dialog is populated with the live-meta loadout's export string, not either SimC one",
     Codex.copyBox:GetText())
-
--- Add to my vault: calls Loadouts:Add with the exact arguments DESIGN.md
--- specifies for each kind, never touching SpecSageDB before the click, and
--- gives a brief confirmation via a temporary label change that reverts on
--- its own.
-local vaultCountBefore = #LoadoutsModule:GetForSpec(9201)
-mplusRow.addButton:GetScript("OnClick")(mplusRow.addButton)
-
-local vaultAfter = LoadoutsModule:GetForSpec(9201)
-check(#vaultAfter == vaultCountBefore + 1, "Add to my vault stores exactly one new loadout", #vaultAfter)
-check(vaultAfter[#vaultAfter].name == "Suggested M+ (SimC)",
-    "the added Mythic+ loadout uses the exact name DESIGN.md specifies", vaultAfter[#vaultAfter].name)
-check(vaultAfter[#vaultAfter].category == "Mythic+",
-    "the added Mythic+ loadout uses the exact category DESIGN.md specifies", vaultAfter[#vaultAfter].category)
-check(vaultAfter[#vaultAfter].export == "C0EAy0kSampleExportStringFromSimC",
-    "the added loadout keeps the guide's mplusLoadout.string as its export", vaultAfter[#vaultAfter].export)
-check(mplusRow.addButton:GetText() == "Added!",
-    "clicking Add to my vault gives a brief confirmation via a temporary label change",
-    mplusRow.addButton:GetText())
-
-mock.RunAfter()
-check(mplusRow.addButton:GetText() == "Add to my vault",
-    "the confirmation label reverts to 'Add to my vault' after the timer", mplusRow.addButton:GetText())
 
 --------------------------------------------------------------------------------
 section("Codex: View sends a build to the talent window")
@@ -2628,51 +2603,13 @@ check(importText == "C0EAy0kSampleExportStringFromSimC" and importName == "Sugge
     "pre-filled with the string and a name", importText)
 
 -- Saved vault rows carry the same button.
+LoadoutsModule:Add(9201, "A saved build", "Raid", "C0EAy0kSampleExportStringFromSimC")
 Codex:SelectTab("Loadouts")
 local savedRow = Codex.loadoutRowPool[1]
 check(savedRow and savedRow.viewButton and savedRow.viewButton:IsShown(), "a saved vault row has a View button")
 
 ExportUtil, PlayerSpellsUtil, PlayerSpellsFrame = nil, nil, nil
 ClassTalentLoadoutImportDialog, StaticPopupSpecial_Show = nil, nil
-
--- The Raid row's Add is independent: its own name/category, and it does not
--- disturb the Mythic+ entry already in the vault.
-raidRow.addButton:GetScript("OnClick")(raidRow.addButton)
-local vaultAfterRaid = LoadoutsModule:GetForSpec(9201)
-check(#vaultAfterRaid == vaultCountBefore + 2, "Add to my vault on the Raid row stores a second loadout")
-check(vaultAfterRaid[#vaultAfterRaid].name == "Suggested Raid (SimC)",
-    "the added Raid loadout uses its own name, not the Mythic+ one", vaultAfterRaid[#vaultAfterRaid].name)
-check(vaultAfterRaid[#vaultAfterRaid].category == "Raid",
-    "the added Raid loadout uses the Raid category", vaultAfterRaid[#vaultAfterRaid].category)
-check(vaultAfterRaid[#vaultAfterRaid].export == "C0EAy0kSampleRaidExportStringFromSimC",
-    "the added Raid loadout keeps the guide's raidLoadout.string as its export",
-    vaultAfterRaid[#vaultAfterRaid].export)
-check(vaultAfterRaid[1].name == "Suggested M+ (SimC)",
-    "the earlier Mythic+ entry is untouched by adding the Raid one")
-mock.RunAfter()
-
--- The live-meta row's Add is likewise independent, and its category is
--- "Mythic+" (same category as the SimC mplus row, since it is also a
--- Mythic+ build - only the source and name differ) rather than a category
--- of its own.
-metaRow.addButton:GetScript("OnClick")(metaRow.addButton)
-local vaultAfterMeta = LoadoutsModule:GetForSpec(9201)
-check(#vaultAfterMeta == vaultCountBefore + 3, "Add to my vault on the live-meta row stores a third loadout")
-check(vaultAfterMeta[#vaultAfterMeta].name == "Top M+ Build (Live)",
-    "the added live-meta loadout uses its own name", vaultAfterMeta[#vaultAfterMeta].name)
-check(vaultAfterMeta[#vaultAfterMeta].category == "Mythic+",
-    "the added live-meta loadout uses the Mythic+ category", vaultAfterMeta[#vaultAfterMeta].category)
-check(vaultAfterMeta[#vaultAfterMeta].export == "C0EAy0kSampleLiveMetaExportString",
-    "the added live-meta loadout keeps the guide's mplusMetaLoadout.string as its export",
-    vaultAfterMeta[#vaultAfterMeta].export)
-mock.RunAfter()
-
--- Clicking Add to my vault a second time adds a fourth entry rather than
--- silently no-oping - it is a plain Loadouts:Add call, not a toggle.
-mplusRow.addButton:GetScript("OnClick")(mplusRow.addButton)
-check(#LoadoutsModule:GetForSpec(9201) == vaultCountBefore + 4,
-    "clicking Add to my vault again stores another loadout")
-mock.RunAfter()
 
 --------------------------------------------------------------------------------
 section("Codex: rotation/cooldown conditions (v1.3)")
@@ -3365,7 +3302,7 @@ do
     Codex:SelectTab("Overview")
     check(shownLinkRows() == 0 and not Codex.bisListToggle:IsShown(), "leaving the tab hides the linked BiS rows")
 
-    -- Loadouts tab: Icy Veins build rows with Copy and Add to my vault.
+    -- Loadouts tab: Icy Veins build rows with View and Copy.
     GuideStore:RegisterSiteLoadouts(9604, {
         source = "test", patch = "12.1",
         builds = {
@@ -3382,13 +3319,8 @@ do
     siteRow.copyButton:GetScript("OnClick")()
     check(Codex.copyBox:GetText():find("^C4DAAAA") ~= nil, "Copy on a site build row opens the copy dialog with its string")
     Codex.copyDialog:Hide()
-    local LoadoutsMod = ns:GetModule("Loadouts")
-    local vaultBefore = #LoadoutsMod:GetForSpec(9604)
-    Codex.siteLoadoutRowPool[2].addButton:GetScript("OnClick")(Codex.siteLoadoutRowPool[2].addButton)
-    local vault = LoadoutsMod:GetForSpec(9604)
-    check(#vault == vaultBefore + 1 and vault[#vault].category == "Mythic+",
-        "Add to my vault on a Mythic+ site build files it under Mythic+", vault[#vault] and vault[#vault].category)
-    check(vault[#vault].name == "Icy Veins: High Mythic+ Keys - Spellslinger", "the vault entry is named after the site build", vault[#vault].name)
+    check(siteRow.viewButton:IsShown() and siteRow.addButton == nil,
+        "a site build row has View but no Add to my vault")
     Codex:SelectTab("Overview")
     shownSite = 0
     for _, row in ipairs(Codex.siteLoadoutRowPool) do if row:IsShown() then shownSite = shownSite + 1 end end

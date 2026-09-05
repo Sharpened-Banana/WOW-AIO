@@ -1438,42 +1438,24 @@ end
 -- guide can ship a talent string for. A fixed small list rather than a pool,
 -- since a spec has at most one loadout per kind - there is no unbounded list
 -- to pool for. Built alongside the saved-loadout row pool but kept separate
--- from it, since these rows' buttons (Copy / Add to my vault) differ from a
--- saved row's (Copy / Delete) and none of them participate in the
--- delete-by-index list.
+-- from it, since these rows' buttons (View / Copy) differ from a saved
+-- row's (View / Copy / Delete) and none of them participate in the
+-- delete-by-index list. "Add to my vault" used to sit on these rows too;
+-- the owner pulled it on 2026-09-04 (View covers the "try this build" case
+-- and Copy the "keep it" one).
 --
--- guideField is the guide table key the data lives under; addName/category
--- are what Loadouts:Add stores when the player clicks "Add to my vault"
--- (category must be one of Loadouts.VALID_CATEGORIES, so an unrecognised
--- one here would silently fall back to "Other" rather than error).
--- attribution names the source in the row's own label - kinds are NOT all
+-- guideField is the guide table key the data lives under; name is what
+-- View offers the import dialog as the loadout's name. attribution names the source in the row's own label - kinds are NOT all
 -- SimC-sourced (mplusMeta is Blizzard's own API), so this must not be
 -- hardcoded at render time the way an earlier version of this table did.
 local SUGGESTED_LOADOUT_KINDS = {
     { key = "mplus", guideField = "mplusLoadout", label = "Suggested Mythic+",
-      addName = "Suggested M+ (SimC)", category = "Mythic+", attribution = "via SimulationCraft" },
+      name = "Suggested M+ (SimC)", attribution = "via SimulationCraft" },
     { key = "raid", guideField = "raidLoadout", label = "Suggested Raid",
-      addName = "Suggested Raid (SimC)", category = "Raid", attribution = "via SimulationCraft" },
+      name = "Suggested Raid (SimC)", attribution = "via SimulationCraft" },
     { key = "mplusMeta", guideField = "mplusMetaLoadout", label = "Top Players' Mythic+ Build",
-      addName = "Top M+ Build (Live)", category = "Mythic+", attribution = "via Blizzard's API" },
+      name = "Top M+ Build (Live)", attribution = "via Blizzard's API" },
 }
-
--- Which vault category a guide site's build label belongs to, from the words
--- the sites actually use ("AoE / Mythic+", "High Mythic+ Keys", "Raid /
--- Cleave", "Delves"). Must return one of Loadouts.VALID_CATEGORIES.
-local function SiteBuildCategory(label)
-    local lower = (label or ""):lower()
-    if lower:find("mythic", 1, true) or lower:find("dungeon", 1, true) or lower:find("keys", 1, true)
-        or lower:find("m+", 1, true) or lower:find("aoe", 1, true) then
-        return "Mythic+"
-    end
-    if lower:find("delve", 1, true) then return "Delves" end
-    if lower:find("pvp", 1, true) then return "PvP" end
-    if lower:find("raid", 1, true) or lower:find("single", 1, true) or lower:find("cleave", 1, true) then
-        return "Raid"
-    end
-    return "Other"
-end
 
 local function CreateSuggestedLoadoutRow(parent)
     local row = CreateFrame("Frame", nil, parent)
@@ -1483,16 +1465,10 @@ local function CreateSuggestedLoadoutRow(parent)
     row.name:SetJustifyH("LEFT")
     row.name:SetPoint("LEFT", row, "LEFT", 0, 0)
 
-    row.addButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-    row.addButton:SetSize(110, 18)
-    row.addButton:SetText("Add to my vault")
-    row.addButton:SetPoint("RIGHT", row, "RIGHT", -58, 0)
-    SkinButton(row.addButton)
-
     row.copyButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
     row.copyButton:SetSize(50, 18)
     row.copyButton:SetText("Copy")
-    row.copyButton:SetPoint("RIGHT", row.addButton, "LEFT", -8, 0)
+    row.copyButton:SetPoint("RIGHT", row, "RIGHT", 0, 0)
     SkinButton(row.copyButton)
 
     row.viewButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
@@ -1540,20 +1516,6 @@ function Codex:OnViewLoadoutClicked(button, exportString, label)
     else
         ns.Print("could not show that build in the talent window: " .. tostring(err))
         self:ShowCopyDialog(exportString, label)
-    end
-end
-
-function Codex:OnAddSuggestedLoadoutClicked(button, specID, kind, exportString)
-    local Loadouts = ns:GetModule("Loadouts")
-    local ok, err = Loadouts:Add(specID, kind.addName, kind.category, exportString)
-    if ok then
-        button:SetText("Added!")
-        C_Timer.After(2, function()
-            pcall(button.SetText, button, "Add to my vault")
-            if self.activeTab == "Loadouts" then self:RenderActiveTab() end
-        end)
-    else
-        ns.Print("could not add suggested loadout: " .. tostring(err))
     end
 end
 
@@ -1632,13 +1594,7 @@ function Codex:RenderLoadouts(specID, guide)
             suggested.copyButton:SetScript("OnClick", function() self:ShowCopyDialog(loadout.string) end)
             suggested.viewButton:Show()
             suggested.viewButton:SetScript("OnClick", function(btn)
-                self:OnViewLoadoutClicked(btn, loadout.string, kind.addName)
-            end)
-
-            suggested.addButton:SetText("Add to my vault")
-            suggested.addButton:Show()
-            suggested.addButton:SetScript("OnClick", function(btn)
-                self:OnAddSuggestedLoadoutClicked(btn, specID, kind, loadout.string)
+                self:OnViewLoadoutClicked(btn, loadout.string, kind.name)
             end)
 
             suggested:Show()
@@ -1649,8 +1605,7 @@ function Codex:RenderLoadouts(specID, guide)
     end
 
     -- Guide-site builds (Data/SiteLoadouts.lua): a pooled row per build,
-    -- same Copy / Add-to-my-vault buttons as the suggested rows above. The
-    -- vault category is inferred from the site's own label.
+    -- same View / Copy buttons as the suggested rows above.
     local site = specID and ns.GuideStore:GetSiteLoadouts(specID)
     self.siteLoadoutRowPool = self.siteLoadoutRowPool or {}
     local siteCount = 0
@@ -1670,18 +1625,10 @@ function Codex:RenderLoadouts(specID, guide)
             row.name:SetTextColor(TEXT_PRIMARY_COLOR[1], TEXT_PRIMARY_COLOR[2], TEXT_PRIMARY_COLOR[3])
             row.copyButton:Show()
             row.copyButton:SetScript("OnClick", function() self:ShowCopyDialog(build.string) end)
-            local kind = {
-                addName = siteName .. ": " .. build.label,
-                category = SiteBuildCategory(build.label),
-            }
+            local buildName = siteName .. ": " .. build.label
             row.viewButton:Show()
             row.viewButton:SetScript("OnClick", function(btn)
-                self:OnViewLoadoutClicked(btn, build.string, kind.addName)
-            end)
-            row.addButton:SetText("Add to my vault")
-            row.addButton:Show()
-            row.addButton:SetScript("OnClick", function(btn)
-                self:OnAddSuggestedLoadoutClicked(btn, specID, kind, build.string)
+                self:OnViewLoadoutClicked(btn, build.string, buildName)
             end)
             row:Show()
             y = y - ROW_STEP

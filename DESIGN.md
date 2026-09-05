@@ -761,7 +761,8 @@ above) - only exercised by `tests/run.lua`'s fixtures.
   a client without that view mode gets the import dialog pre-filled; a
   string for another spec, combat, or no talent UI is refused with the
   reason in chat and the copy dialog as the fallback), **Delete**. Every
-  suggested / site row has View too. Stored in
+  suggested / site row has View and Copy; their "Add to my vault" button
+  was pulled the same day at the owner's request. Stored in
   `SpecSageDB.loadouts[specID] = { {name=..., category=..., export=...}, ... }`.
   Categories: Raid, Mythic+, Delves, PvP, Other.
 - Notes tab: multi-line editbox saved to `SpecSageDB.notes[specID]` on
