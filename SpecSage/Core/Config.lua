@@ -65,7 +65,7 @@ ns.OPTION_ACTIONS = {
 -- send anything out of the game (no network access from Lua), so "feedback"
 -- means showing this link ready to Ctrl+C. Read from the TOC's X-Website so
 -- the one place to change it is the addon manifest.
-local FEEDBACK_URL_FALLBACK = "https://github.com/Sharpened-Banana/WOW-AIO/issues"
+local FEEDBACK_URL_FALLBACK = "https://github.com/Sharpened-Banana/SpecSage"
 function ns.FeedbackURL()
     if C_AddOns and C_AddOns.GetAddOnMetadata then
         local ok, url = pcall(C_AddOns.GetAddOnMetadata, ADDON, "X-Website")

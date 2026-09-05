@@ -214,6 +214,19 @@ SpecSageClassItalicFont:SetFont(HEADING_ITALIC_FONT_PATH, 14, "")
 pcall(SpecSageClassItalicFont.SetShadowColor, SpecSageClassItalicFont, 0, 0, 0, 1)
 pcall(SpecSageClassItalicFont.SetShadowOffset, SpecSageClassItalicFont, 1, -1)
 
+-- Button faces: paper-coloured Baskerville for the ink-plate buttons
+-- (SkinButton). Disabled buttons keep the plate and dim the word.
+local BUTTON_TEXT_COLOR = { 0.941, 0.894, 0.784 }         -- #F0E4C8 paper
+local BUTTON_TEXT_DISABLED_COLOR = { 0.941, 0.894, 0.784, 0.45 }
+local SpecSageButtonFont = CreateFont("SpecSageButtonFont")
+SpecSageButtonFont:SetFont(BODY_FONT_PATH, 15, "")
+SpecSageButtonFont:SetTextColor(unpack(BUTTON_TEXT_COLOR))
+pcall(SpecSageButtonFont.SetShadowColor, SpecSageButtonFont, 0, 0, 0, 0.8)
+pcall(SpecSageButtonFont.SetShadowOffset, SpecSageButtonFont, 1, -1)
+local SpecSageButtonDisabledFont = CreateFont("SpecSageButtonDisabledFont")
+SpecSageButtonDisabledFont:SetFont(BODY_FONT_PATH, 15, "")
+SpecSageButtonDisabledFont:SetTextColor(unpack(BUTTON_TEXT_DISABLED_COLOR))
+
 -- A dark plate behind a class-coloured FontString, 4px proud of the text
 -- on every side. Anchored to the string itself, so it follows whatever
 -- the text is set to; the FontString must not have a fixed width or the
@@ -503,6 +516,22 @@ local DANGER_BORDER_COLOR = { 0.700, 0.298, 0.263 }
 -- there is no frame-level ordering to get wrong against the button's own
 -- text. The button keeps its native click/disable/highlight behavior -
 -- only SetHighlightTexture is re-pointed at a plain additive glow.
+-- Widens a button to its label's measured width plus BUTTON_TEXT_PAD on each
+-- side, never narrower than it already is. A no-op when the label cannot be
+-- measured (no font string, or a stub without GetStringWidth), which is
+-- also why callers still pass a sensible SetSize first.
+local BUTTON_TEXT_PAD = 10
+local function FitButtonToText(button)
+    local fontString = button.GetFontString and button:GetFontString()
+    if not fontString then return end
+    local ok, measured = pcall(function() return fontString:GetStringWidth() end)
+    if not ok or type(measured) ~= "number" or measured <= 0 then return end
+    local wanted = math.ceil(measured) + BUTTON_TEXT_PAD * 2
+    if wanted > button:GetWidth() then
+        button:SetWidth(wanted)
+    end
+end
+
 local function SkinButton(button, opts)
     if not button or button.specSageSkinned then return end
     button.specSageSkinned = true
@@ -515,41 +544,58 @@ local function SkinButton(button, opts)
         end
     end
 
+    -- An ink plate, not a paper card: the darker-paper fill of the first
+    -- pass sat flush with the page and the owner could not tell the
+    -- buttons were buttons (2026-09-05). Now the button is the one dark
+    -- object on the parchment - leather fill, cover-edge border, paper
+    -- text - the same figure/ground move as the class-name ink plates.
+    -- Danger buttons carry a wax-red border at rest so Delete reads as
+    -- the one to be careful with before it is ever hovered.
+    local restBorder = isDanger and DANGER_BORDER_COLOR or PANEL_BORDER_COLOR
     local border = button:CreateTexture(nil, "BACKGROUND")
     border:SetAllPoints(button)
-    border:SetColorTexture(unpack(BORDER_COLOR))
+    border:SetColorTexture(unpack(restBorder))
 
     local fill = button:CreateTexture(nil, "BORDER")
     fill:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
     fill:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
-    fill:SetColorTexture(unpack(CARD_BACKDROP_COLOR))
+    fill:SetColorTexture(unpack(PANEL_BACKDROP_COLOR))
 
     button.specSageBorder = border
+    button.specSageFill = fill
 
-    -- Hover: the whole button warms (a flat wax-red wash edge to edge,
-    -- not Blizzard's soft round MouseHilight, which only ever covered the
-    -- middle) and the border goes wax red. The bronze radial glow that
-    -- spilled 6px past the button in the Blizzard Modern pass is gone; on
-    -- parchment it read as a smudge.
+    -- Hover: the plate goes wax red edge to edge (fill and border), the
+    -- seal pressed. No separate highlight texture - Blizzard's soft round
+    -- MouseHilight only ever covered the middle, and a wash over a dark
+    -- plate reads as a smear.
     pcall(function()
         button:SetHighlightTexture(WHITE8X8, "BLEND")
         local highlight = button:GetHighlightTexture()
         highlight:SetAllPoints(button)
-        highlight:SetVertexColor(ACCENT_COLOR[1], ACCENT_COLOR[2], ACCENT_COLOR[3], 0.16)
+        highlight:SetVertexColor(1, 1, 1, 0)
     end)
 
     button:HookScript("OnEnter", function()
-        border:SetColorTexture(unpack(isDanger and DANGER_BORDER_COLOR or ACCENT_COLOR))
+        fill:SetColorTexture(unpack(ACCENT_COLOR))
+        border:SetColorTexture(unpack(ACCENT_COLOR))
     end)
     button:HookScript("OnLeave", function()
-        border:SetColorTexture(unpack(BORDER_COLOR))
+        fill:SetColorTexture(unpack(PANEL_BACKDROP_COLOR))
+        border:SetColorTexture(unpack(restBorder))
     end)
 
     if button.SetNormalFontObject then
-        button:SetNormalFontObject(SpecSageBodyFontSmall)
-        button:SetHighlightFontObject(SpecSageBodyFontSmall)
-        button:SetDisabledFontObject(SpecSageBodyFontSmall)
+        button:SetNormalFontObject(SpecSageButtonFont)
+        button:SetHighlightFontObject(SpecSageButtonFont)
+        button:SetDisabledFontObject(SpecSageButtonDisabledFont)
     end
+
+    -- Every skinned button is as wide as its own label. The fixed widths
+    -- the callers pass to SetSize were tuned against a smaller face, and
+    -- when the body type went up a point (2026-09-05) "Save current" and
+    -- "Add from string" spilled past their borders. Measured after the font
+    -- swap above so the width matches what is actually drawn.
+    FitButtonToText(button)
 end
 
 -- Creates a multi-line EditBox backed by a bordered BackdropTemplate frame.
@@ -1026,10 +1072,119 @@ function Codex:RenderCooldowns(guide)
     self:FinishPool(pool, index, y)
 end
 
+-- Item chips (Consumables tab). The guide's consumable lines are prose that
+-- names real items - "Flask of Tempered Swiftness ... Flask of Alchemical
+-- Chaos is the flex pick" - and until 2026-09-05 they were only words: the
+-- owner hovered one in game and nothing happened. A FontString cannot tell
+-- us where a word landed once wrapped, so the links are not inline; each
+-- line gets a row of chips under it (icon + quality-coloured name), one per
+-- item Data/Consumables.lua knows, laid left to right and wrapping onto a
+-- new row when the page runs out. Hover a chip for the tooltip, click it
+-- for the link - the same AttachItemHit behaviour as a BiS row.
+local CHIP_HEIGHT = 20
+local CHIP_ICON = 16
+local CHIP_GAP = 12
+local CHIP_PAD = 4
+
+local function AcquireConsumableChip(pool, index, parent)
+    local chip = pool[index]
+    if not chip then
+        chip = CreateFrame("Button", nil, parent)
+        chip:SetHeight(CHIP_HEIGHT)
+
+        chip.icon = chip:CreateTexture(nil, "ARTWORK")
+        chip.icon:SetSize(CHIP_ICON, CHIP_ICON)
+        chip.icon:SetPoint("LEFT", chip, "LEFT", 0, 0)
+        pcall(chip.icon.SetTexCoord, chip.icon, 0.07, 0.93, 0.07, 0.93)
+
+        chip.text = chip:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        chip.text:SetFontObject(SpecSageBodyFontSmall)
+        chip.text:SetJustifyH("LEFT")
+        chip.text:SetPoint("LEFT", chip.icon, "RIGHT", CHIP_PAD, 0)
+        pcall(chip.text.SetWordWrap, chip.text, false)
+
+        -- Hover: the name goes wax red, like a link underlined.
+        chip:SetScript("OnEnter", function()
+            if chip.itemID then ShowItemTooltip(chip, chip.itemID) end
+            chip.text:SetTextColor(unpack(ACCENT_COLOR))
+        end)
+        chip:SetScript("OnLeave", function()
+            pcall(function() GameTooltip:Hide() end)
+            if chip.restColor then chip.text:SetTextColor(unpack(chip.restColor)) end
+        end)
+        chip:SetScript("OnMouseUp", function(_, button)
+            if chip.itemID then ClickItemLink(chip.itemID, button) end
+        end)
+
+        pool[index] = chip
+    end
+    return chip
+end
+
+-- Icon for an item, whichever API the client has; nil when none resolves.
+local function ItemIcon(itemID)
+    local ok, icon = pcall(function()
+        if C_Item and C_Item.GetItemIconByID then return C_Item.GetItemIconByID(itemID) end
+        if GetItemIcon then return GetItemIcon(itemID) end
+        return nil
+    end)
+    if ok then return icon end
+    return nil
+end
+
+-- Lays the chips for one guide line starting at (x = 0, y), wrapping within
+-- `width`. Returns the next free chip index and the y cursor under the
+-- last chip row (unchanged when there were no items to show).
+function Codex:PlaceConsumableChips(chipIndex, parent, y, width, items)
+    if #items == 0 then return chipIndex, y end
+    local pool = self.consumableChipPool
+    local x = 0
+    local rowY = y - LINE_GAP
+    for _, item in ipairs(items) do
+        chipIndex = chipIndex + 1
+        local chip = AcquireConsumableChip(pool, chipIndex, parent)
+
+        local name, quality = item.name, nil
+        if GetItemInfoAPI then
+            local ok, realName, _, realQuality = pcall(GetItemInfoAPI, item.itemID)
+            if ok and type(realName) == "string" and realName ~= "" then
+                name, quality = realName, realQuality
+            elseif C_Item and C_Item.RequestLoadItemDataByID then
+                pcall(C_Item.RequestLoadItemDataByID, item.itemID)
+            end
+        end
+        local r, g, b = ItemQualityColor(quality)
+        -- Common (white) and poor items would vanish on parchment; they
+        -- take ink instead, and only rarer qualities keep their colour.
+        if not quality or quality <= 1 then r, g, b = unpack(TEXT_PRIMARY_COLOR) end
+        chip.restColor = { r, g, b }
+        chip.text:SetText(name)
+        chip.text:SetTextColor(r, g, b)
+        chip.icon:SetTexture(ItemIcon(item.itemID) or "Interface\\Icons\\INV_Misc_QuestionMark")
+        chip.itemID = item.itemID
+
+        local ok, measured = pcall(chip.text.GetStringWidth, chip.text)
+        local textWidth = (ok and type(measured) == "number" and measured > 0) and measured or (#name * 7)
+        local chipWidth = CHIP_ICON + CHIP_PAD + math.ceil(textWidth)
+        if x > 0 and x + chipWidth > width then
+            x = 0
+            rowY = rowY - CHIP_HEIGHT - LINE_GAP
+        end
+        chip:ClearAllPoints()
+        chip:SetPoint("TOPLEFT", parent, "TOPLEFT", x, rowY)
+        chip:SetWidth(chipWidth)
+        chip:Show()
+        x = x + chipWidth + CHIP_GAP
+    end
+    return chipIndex, rowY - CHIP_HEIGHT - LINE_GAP
+end
+
 function Codex:RenderConsumables(guide)
     local parent, width = self.scrollChild, self.contentWidth
     local pool = self.pools.consumables
     local y, index = -PADDING, 0
+    self.consumableChipPool = self.consumableChipPool or {}
+    local chipIndex = 0
 
     local consumables = guide and guide.consumables
     if not consumables or #consumables == 0 then
@@ -1039,9 +1194,12 @@ function Codex:RenderConsumables(guide)
         for _, entry in ipairs(consumables) do
             index = index + 1
             y = PlaceLine(pool, index, parent, y, width, format("%s: %s", entry.slot or "?", entry.text or ""))
+            local items = ns.FindConsumableItems and ns.FindConsumableItems(entry.text) or {}
+            chipIndex, y = self:PlaceConsumableChips(chipIndex, parent, y, width, items)
         end
     end
 
+    HidePoolFrom(self.consumableChipPool, chipIndex + 1)
     self:FinishPool(pool, index, y)
 end
 
@@ -1276,10 +1434,22 @@ function Codex:OnBiSItemInfoReceived(itemID)
     if type(itemID) ~= "number" then return end
     -- A closed Codex left on its BiS tab must not redraw for every item
     -- the docked panel asked about; the next Open redraws anyway.
-    if not self.frame or not self.frame:IsShown() or self.activeTab ~= "BiS" then return end
+    if not self.frame or not self.frame:IsShown() then return end
 
     local specID = self.selectedSpecID
     if not specID then return end
+
+    -- The Consumables tab's item chips ask for their items the same way.
+    if self.activeTab == "Consumables" then
+        for _, chip in ipairs(self.consumableChipPool or {}) do
+            if chip.itemID == itemID and chip:IsShown() then
+                self:RenderConsumables(ns.GuideStore:GetGuide(specID))
+                return
+            end
+        end
+        return
+    end
+    if self.activeTab ~= "BiS" then return end
 
     -- Anything on the tab showing that item re-renders: a linked BiS row or
     -- a trinket tier-list row.
@@ -1615,8 +1785,15 @@ function Codex:RenderLoadouts(specID, guide)
     buttons.save:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
     buttons.save:SetShown(IsPlayersSpec(specID))
 
+    -- Anchored to Save's right edge (not a fixed x) so the pair never
+    -- overlaps whatever width the labels measured out to. When Save is
+    -- hidden for another spec, Add takes its place at the left margin.
     buttons.add:ClearAllPoints()
-    buttons.add:SetPoint("TOPLEFT", parent, "TOPLEFT", 120, y)
+    if buttons.save:IsShown() then
+        buttons.add:SetPoint("TOPLEFT", buttons.save, "TOPRIGHT", 8, 0)
+    else
+        buttons.add:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
+    end
     buttons.add:Show()
 
     y = y - 26
@@ -1863,11 +2040,18 @@ function Codex:OnAddDialogSave()
     end
 end
 
+local COPY_DIALOG_WIDTH = 480
+local COPY_DIALOG_MARGIN = 12
+
 function Codex:EnsureCopyDialog()
     if self.copyDialog then return end
 
+    -- Wide enough for the Feedback caption to sit inside the card in 15px
+    -- Baskerville; the caption wraps within the card's margins (it ran past
+    -- both edges of the old 360px dialog, 2026-09-05) and leaves the top
+    -- right corner to the close button.
     local dialog = CreateFrame("Frame", nil, self.frame, "BackdropTemplate")
-    dialog:SetSize(360, 130)
+    dialog:SetSize(COPY_DIALOG_WIDTH, 150)
     dialog:SetPoint("CENTER", self.frame, "CENTER", 0, 0)
     dialog:SetFrameStrata("DIALOG")
     SetParchmentBackdrop(dialog)
@@ -1876,13 +2060,16 @@ function Codex:EnsureCopyDialog()
 
     local label = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     label:SetFontObject(SpecSageBodyFontSmall)
-    label:SetPoint("TOP", dialog, "TOP", 0, -12)
+    label:SetJustifyH("LEFT")
+    label:SetWidth(COPY_DIALOG_WIDTH - 2 * COPY_DIALOG_MARGIN - 28)
+    pcall(label.SetWordWrap, label, true)
+    label:SetPoint("TOPLEFT", dialog, "TOPLEFT", COPY_DIALOG_MARGIN, -12)
     label:SetText("Ctrl+C to copy")
 
     -- Read-only in spirit (nothing writes it back anywhere): the box exists
     -- purely so the string is selected and focused for the player to copy.
-    local boxBackdrop, box = NewBackdropEditBox(dialog, 336, 60)
-    boxBackdrop:SetPoint("TOP", label, "BOTTOM", 0, -8)
+    local boxBackdrop, box = NewBackdropEditBox(dialog, COPY_DIALOG_WIDTH - 2 * COPY_DIALOG_MARGIN, 60)
+    boxBackdrop:SetPoint("TOPLEFT", label, "BOTTOMLEFT", 0, -8)
 
     local closeButton = CreateFrame("Button", nil, dialog, "UIPanelCloseButton")
     closeButton:SetSize(24, 24)
@@ -1915,7 +2102,7 @@ end
 function Codex:ShowFeedback()
     if not self.frame or not self:IsShown() then self:Toggle() end
     self:ShowCopyDialog(ns.FeedbackURL(),
-        "Ctrl+C this link, paste it in your browser: bug reports and feature requests go there")
+        "Ctrl+C this link and paste it in your browser. Bug reports and feature requests go there.")
 end
 
 --------------------------------------------------------------------------------
@@ -2231,6 +2418,10 @@ function Codex:HideOtherTabWidgets(activeTab)
         if self.trinketToggle then self.trinketToggle:Hide() end
         if self.bisLinkRowPool then HidePoolFrom(self.bisLinkRowPool, 1) end
         if self.bisListToggle then self.bisListToggle:Hide() end
+    end
+
+    if activeTab ~= "Consumables" and self.consumableChipPool then
+        HidePoolFrom(self.consumableChipPool, 1)
     end
 
     if activeTab ~= "Stats" and self.statLinePool then

@@ -52,6 +52,7 @@ local FILES = {
     "Data\\BiS.lua",
     "Data\\SiteLoadouts.lua",
     "Data\\StatPriority.lua",
+    "Data\\Consumables.lua",
     "UI\\Overlay.lua",
     "UI\\Tooltips.lua",
     "UI\\Codex.lua",
@@ -3862,11 +3863,129 @@ do
 end
 
 --------------------------------------------------------------------------------
+section("Codex: Consumables tab item chips (2026-09-05)")
+--------------------------------------------------------------------------------
+
+do
+    -- Data/Consumables.lua: name -> itemID, and the scanner that finds the
+    -- names a line of guide prose mentions.
+    local found = ns.FindConsumableItems(
+        "Flask of Tempered Swiftness matches this spec's top secondary; Flask of Alchemical Chaos is the flex pick. "
+        .. "Always carry Concentrated Silvermoon Health Potions; Flask of Tempered Swiftness again.")
+    check(#found == 3, "each named consumable is found once, in order of appearance", #found)
+    check(found[1].name == "Flask of Tempered Swiftness" and found[1].itemID == ns.ConsumableItems["Flask of Tempered Swiftness"],
+        "the first chip is the first item named, with its itemID")
+    check(found[2].name == "Flask of Alchemical Chaos", "the second item named comes second", found[2] and found[2].name)
+    check(found[3].name == "Concentrated Silvermoon Health Potion",
+        "a plural mention still finds the singular item name", found[3] and found[3].name)
+    check(#ns.FindConsumableItems("Weapon enchant for Stamina; ring enchants for secondary stats") == 0,
+        "a line naming no known item yields no chips")
+    check(#ns.FindConsumableItems(nil) == 0, "a nil line yields no chips")
+
+    -- Every consumable the shipped guides name is in the table, so no spec
+    -- shows a bare word where another shows a chip.
+    local named, unknown = {}, {}
+    for _, specID in ipairs(ns.GuideStore:GetClassSpecs("DEATHKNIGHT")) do
+        local guide = ns.GuideStore:GetGuide(specID)
+        for _, entry in ipairs(guide and guide.consumables or {}) do
+            for _, item in ipairs(ns.FindConsumableItems(entry.text)) do named[item.name] = true end
+        end
+    end
+    check(named["Flask of Tempered Swiftness"] and named["Crystallized Augment Rune"],
+        "the shipped Death Knight guides yield flask and augment-rune chips")
+
+    -- The tab: one chip row under each line that names items, none under a
+    -- line that does not; chips hover and click like BiS item links.
+    mock.items[212283] = { name = "Flask of Alchemical Chaos", quality = 1 }
+    ns.GuideStore:RegisterSpec("MAGE", 9605, {
+        specName = "Chip Spec", role = "DAMAGER",
+        consumables = {
+            { slot = "Flask", text = "Flask of Alchemical Chaos, or Flask of Tempered Swiftness for pure throughput" },
+            { slot = "Enchants", text = "Weapon enchant for Stamina/mitigation" },
+        },
+    })
+    Codex:Open("MAGE", 9605)
+    Codex:SelectTab("Consumables")
+
+    local shown = {}
+    for _, chip in ipairs(Codex.consumableChipPool) do
+        if chip:IsShown() then shown[#shown + 1] = chip end
+    end
+    check(#shown == 2, "two chips for the two items the flask line names", #shown)
+    local first, second = shown[1], shown[2]
+    check(first.itemID == 212283 and first.text:GetText() == "Flask of Alchemical Chaos",
+        "the first chip is the cached flask under the client's name", first.text:GetText())
+    check(second.itemID == ns.ConsumableItems["Flask of Tempered Swiftness"]
+        and second.text:GetText() == "Flask of Tempered Swiftness",
+        "an uncached item's chip falls back to the guide's own name", second.text:GetText())
+    local requested = false
+    for _, id in ipairs(mock.itemLoadRequests) do if id == second.itemID then requested = true end end
+    check(requested, "an uncached chip queues a RequestLoadItemDataByID call")
+    check((first.width or 0) >= 16 + 4 + #"Flask of Alchemical Chaos" * 7,
+        "a chip is as wide as its icon plus its name", first.width)
+    check(first.hit == nil and first:GetScript("OnEnter") ~= nil, "the chip itself is the hit area")
+
+    -- The flask line's chips sit under the flask line and above the
+    -- Enchants line; the chip pool's y is between the two text rows.
+    local flaskLine, enchantLine = Codex.pools.consumables[1], Codex.pools.consumables[2]
+    -- The mock records SetPoint positionally: { point, relativeTo, relativePoint, x, y }.
+    local function top(frame) return frame.points and frame.points[1] and frame.points[1][5] end
+    local flaskY, chipY, enchantY = top(flaskLine), top(first), top(enchantLine)
+    check(type(flaskY) == "number" and type(chipY) == "number" and type(enchantY) == "number"
+        and chipY < flaskY and enchantY < chipY,
+        "the chips are laid between the line they belong to and the next", flaskY, chipY, enchantY)
+
+    first:GetScript("OnEnter")(first)
+    check(GameTooltip.itemID == 212283, "hovering a chip shows the item's tooltip", GameTooltip.itemID)
+    first:GetScript("OnLeave")(first)
+    mock.itemRefClicks = {}
+    first:GetScript("OnMouseUp")(first, "LeftButton")
+    check(#mock.itemRefClicks == 1, "clicking a chip opens the item link", #mock.itemRefClicks)
+
+    -- Switching tabs hides the chips.
+    Codex:SelectTab("Overview")
+    check(not first:IsShown(), "chips hide when another tab is chosen")
+
+    -- The item arriving later redraws the chip under its real name.
+    Codex:SelectTab("Consumables")
+    mock.items[second.itemID] = { name = "Flask of Tempered Swiftness (cached)", quality = 1 }
+    Codex:OnBiSItemInfoReceived(second.itemID)
+    check(Codex.consumableChipPool[2].text:GetText() == "Flask of Tempered Swiftness (cached)",
+        "GET_ITEM_INFO_RECEIVED for a chip's item redraws the chip", Codex.consumableChipPool[2].text:GetText())
+    mock.items[second.itemID] = nil
+    mock.items[212283] = nil
+end
+
+--------------------------------------------------------------------------------
+section("Codex: skinned buttons fit their labels and read as ink plates (2026-09-05)")
+--------------------------------------------------------------------------------
+
+do
+    Codex:Open("MAGE", 9605)
+    Codex:SelectTab("Loadouts")
+    local save, add = Codex.loadoutButtons.save, Codex.loadoutButtons.add
+    check((add.width or 0) >= #"Add from string" * 7 + 20,
+        "Add from string is at least its text plus 10px a side", add.width)
+    check((save.width or 0) >= #"Save current" * 7 + 20,
+        "Save current is at least its text plus 10px a side", save.width)
+    check(add.specSageFill ~= nil and add.specSageBorder ~= nil, "a skinned button carries its plate fill and border")
+    -- Add anchors to Save's right edge when Save is shown, so a wider Save
+    -- can never run under it.
+    local point = add.points and add.points[1]
+    if save:IsShown() then
+        check(point and point[2] == save and point[3] == "TOPRIGHT",
+            "Add from string hangs off Save current's right edge while Save is shown")
+    else
+        check(point and point[4] == 0, "Add from string takes the left margin while Save is hidden")
+    end
+end
+
+--------------------------------------------------------------------------------
 section("Codex: Feedback button")
 --------------------------------------------------------------------------------
 
 do
-    check(ns.FeedbackURL() == "https://github.com/Sharpened-Banana/WOW-AIO/issues",
+    check(ns.FeedbackURL() == "https://github.com/Sharpened-Banana/SpecSage",
         "the feedback URL comes from the TOC's X-Website field", ns.FeedbackURL())
     check(Codex.frame.feedbackButton ~= nil and Codex.frame.feedbackButton:GetText() == "Feedback",
         "the Codex title bar has a Feedback button")
@@ -3877,7 +3996,7 @@ do
     check(Codex.copyDialog:IsShown(), "the Feedback button opens the copy dialog")
     check(Codex.copyBox:GetText() == ns.FeedbackURL(), "the copy dialog holds the feedback URL", Codex.copyBox:GetText())
     check(Codex.copyBox.focused and Codex.copyBox.highlighted, "the URL is focused and selected, ready for Ctrl+C")
-    check(Codex.copyLabel:GetText():find("bug reports", 1, true) ~= nil, "the dialog caption says what the link is for",
+    check(Codex.copyLabel:GetText():lower():find("bug reports", 1, true) ~= nil, "the dialog caption says what the link is for",
         Codex.copyLabel:GetText())
 
     -- The same dialog reverts to its default caption for a loadout copy.

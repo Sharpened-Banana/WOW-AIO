@@ -6,7 +6,7 @@
 ## SavedVariables: SpecSageDB
 ## SavedVariablesPerCharacter: SpecSageCharDB
 ## IconTexture: Interface\Icons\INV_Misc_Book_11
-## X-Website: https://github.com/Sharpened-Banana/WOW-AIO/issues
+## X-Website: https://github.com/Sharpened-Banana/SpecSage
 ## Category-enUS: Combat
 
 Core\Init.lua
@@ -29,6 +29,7 @@ Data\Trinkets.lua
 Data\BiS.lua
 Data\SiteLoadouts.lua
 Data\StatPriority.lua
+Data\Consumables.lua
 UI\Overlay.lua
 UI\Tooltips.lua
 UI\Codex.lua

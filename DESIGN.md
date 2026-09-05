@@ -790,8 +790,12 @@ the page. The right page carries the chapter tabs (bare Playfair text on a
 rule, wax-red underline on the open one; each sized to its own word plus a 16px gap) and the
 content. Palette is ink on paper: text `#2B1F14`, secondary `#5A4630`,
 rules `#6E5A3A`, emphasis and the active tab in wax red `#7A2F1F`;
-no grey text anywhere, at the owner's call. Buttons are darker paper
-(`#CDBB92`) with a rule border that goes wax red on hover; dialogs and
+no grey text anywhere, at the owner's call. Buttons are ink plates: leather
+fill (`#3B2A1C`), cover-edge border (`#1A120B`), paper text (`#F0E4C8`),
+each sized to its own label plus 10px a side; the whole plate goes wax red
+on hover, and Delete carries a wax-red border at rest. (They were
+darker-paper cards until 2026-09-05, when the owner could not tell them
+from the page.) Dialogs and
 edit boxes are parchment cards (`SetParchmentBackdrop`). Type is Libre
 Baskerville 14/15 for rows and paragraphs, Playfair Display Bold 16 for
 section headings, 13 for chapters, 22 for the title, Playfair Italic 13
@@ -891,6 +895,18 @@ rest are desaturated.
 - **Overview / Stats / Rotation / Cooldowns / Consumables / BiS / Loadouts /
   Notes / Options** — rendered by `UI/Codex.lua`'s own methods, not copies
   of them.
+
+**Consumables item chips (2026-09-05):** the guides' consumable lines are
+prose and stay prose, but every item they name now gets a chip under the
+line — item icon plus quality-coloured name, hover for the real tooltip,
+click for the link, the same behaviour as a BiS row. `Data/Consumables.lua`
+holds the name → itemID table (rank-3 crafted where ranks exist) and the
+scanner (`ns.FindConsumableItems`) that pulls names out of a line, longest
+first, in order of appearance. Chips are not inline because a FontString
+cannot report where a word landed after wrapping. A name missing from the
+table simply gets no chip, so extending it is the whole job when a guide
+starts naming a new item. The Feedback link now points at
+`github.com/Sharpened-Banana/SpecSage`, read from the TOC's `X-Website`.
 
 ### Docked panel grip
 

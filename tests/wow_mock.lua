@@ -1176,7 +1176,7 @@ C_AddOns = {
     end,
     GetAddOnMetadata = function(_, field)
         if field == "Version" then return "1.0.0" end
-        if field == "X-Website" then return "https://github.com/Sharpened-Banana/WOW-AIO/issues" end
+        if field == "X-Website" then return "https://github.com/Sharpened-Banana/SpecSage" end
         return nil
     end,
 }
