@@ -454,11 +454,12 @@ function GuideStore:GetStatPriority(specID)
     return statPriorities[specID]
 end
 
--- The hero talent tree the player is in, by name ("Slayer", "San'layn"),
--- or nil when the client cannot say (no hero tree chosen, pre-70, an API
--- that is not there). C_ClassTalents.GetActiveHeroTalentSpec gives the
--- sub-tree ID; C_Traits.GetSubTreeInfo names it. Every call is pcall'd:
--- this runs from tooltips.
+-- The hero talent tree the player is in, by name ("Slayer", "San'layn")
+-- plus the atlas of its icon (the art the talent screen shows for it), or
+-- nil when the client cannot say (no hero tree chosen, pre-70, an API that
+-- is not there). C_ClassTalents.GetActiveHeroTalentSpec gives the sub-tree
+-- ID; C_Traits.GetSubTreeInfo names it and carries iconElementID. Every
+-- call is pcall'd: this runs from tooltips.
 function GuideStore:GetActiveHeroTree()
     if not (C_ClassTalents and C_ClassTalents.GetActiveHeroTalentSpec) then return nil end
     local ok, subTreeID = pcall(C_ClassTalents.GetActiveHeroTalentSpec)
@@ -468,7 +469,8 @@ function GuideStore:GetActiveHeroTree()
     if not ok2 or type(configID) ~= "number" then return nil end
     local ok3, info = pcall(C_Traits.GetSubTreeInfo, configID, subTreeID)
     if not ok3 or type(info) ~= "table" or type(info.name) ~= "string" or info.name == "" then return nil end
-    return info.name
+    local atlas = type(info.iconElementID) == "string" and info.iconElementID or nil
+    return info.name, atlas
 end
 
 local function PlayerSpecIDForHero()

@@ -2243,12 +2243,15 @@ end
 section("Codex: BiS tab")
 --------------------------------------------------------------------------------
 
--- CONTENT_WIDTH's documented invariant: the scroll area is the frame minus
--- 310px of chrome (both rails, their gaps, and the scrollbar). Asserted as a
--- relationship rather than a second magic number, so widening the frame for
--- another tab cannot leave the content area behind.
-check(Codex.scrollChild:GetWidth() == Codex.frame:GetWidth() - 310,
-    "CONTENT_WIDTH stays FRAME_WIDTH minus 310px of chrome",
+-- CONTENT_WIDTH's documented invariant: the scroll area is the right page
+-- minus its padding and the scrollbar. The right page starts at the spine
+-- (30) + 6, the left page (12 + 120 + 4 + 150 + 12 = 298) and the 8px
+-- gutter; it ends 12px inside the frame. Asserted as a relationship rather
+-- than a second magic number, so widening the frame for another tab cannot
+-- leave the content area behind.
+local rightPageLeft = 30 + 6 + 298 + 8
+check(Codex.scrollChild:GetWidth() == Codex.frame:GetWidth() - rightPageLeft - 12 - 12 - 30,
+    "CONTENT_WIDTH is the right page's inner width minus the scrollbar",
     format("frame=%d content=%d", Codex.frame:GetWidth(), Codex.scrollChild:GetWidth()))
 
 do
@@ -2261,10 +2264,9 @@ do
     local tabCount = 0
     for _ in pairs(Codex.tabButtons) do tabCount = tabCount + 1 end
 
-    local needed = (tabCount - 1) * 86 + 84
-    local specRailRight = 120 + 4 + 150
-    local stripLeft = specRailRight + 8
-    local stripRight = Codex.frame:GetWidth() - 8
+    local needed = (tabCount - 1) * 78 + 74
+    local stripLeft = rightPageLeft + 12
+    local stripRight = Codex.frame:GetWidth() - 12 - 12
     local available = stripRight - stripLeft
     check(available >= needed,
         format("tab strip has enough width for all %d tabs without clipping", tabCount),
@@ -2657,8 +2659,9 @@ check(rotationPool[2].icon:IsShown(), "the step's own line keeps its spell icon"
 check(rotationPool[3].text:GetText() == "with Rage above 40, or on a Sudden Death proc",
     "the step's condition renders as a separate line right after it", rotationPool[3].text:GetText())
 check(not rotationPool[3].icon:IsShown(), "the condition line has no spell icon of its own")
-check(rotationPool[3].text.color[1] == 0.55 and rotationPool[3].text.color[2] == 0.75
-    and rotationPool[3].text.color[3] == 0.95,
+local function SameColour(a, b) return a[1] == b[1] and a[2] == b[2] and a[3] == b[3] end
+check(not SameColour(rotationPool[3].text.color, rotationPool[2].text.color)
+    and not SameColour(rotationPool[3].text.color, rotationPool[1].text.color),
     "the condition line uses its own colour, distinct from step text and from a section header",
     table.concat(rotationPool[3].text.color or {}, ","))
 check(rotationPool[4].text:GetText() == "Mortal Strike on cooldown",

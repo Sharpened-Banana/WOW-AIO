@@ -760,7 +760,7 @@ C_Traits = {
     GetSubTreeInfo = function(configID, subTreeID)
         local name = mock.heroTrees[subTreeID]
         if configID ~= mock.activeConfigID or not name then return nil end
-        return { ID = subTreeID, name = name }
+        return { ID = subTreeID, name = name, iconElementID = "talents-heroclass-mock-" .. subTreeID }
     end,
     -- The current retail export API; Modules/Loadouts.lua tries this before
     -- falling back to GenerateInspectImportString, so both are defined here.

@@ -59,7 +59,7 @@ local GRIP_SIZE = 16
 -- texture file: the first cut pointed at a cursor texture that this client
 -- build does not ship, and the grip came out invisible.
 local GRIP_DOT = 3
-local GRIP_COLOR = { 0.651, 0.706, 0.761, 0.9 }
+local GRIP_COLOR = { 0.541, 0.478, 0.369, 0.9 }
 -- The panel follows the sheet's size until the bottom-right grip has been
 -- dragged; from then on it keeps its own. Right-click on that grip goes
 -- back to following. The floor keeps the side tabs on the panel and a row
@@ -114,21 +114,28 @@ local ROW_HEIGHT = 16
 local ROW_STEP = 18
 local SECTION_GAP = 10
 
-local PANEL_BACKDROP_COLOR = { 0.10, 0.13, 0.16, 0.97 }
-local TAB_BACKDROP_COLOR = { 0.07, 0.09, 0.12, 0.98 }
-local PANEL_BORDER_COLOR = { 0.15, 0.18, 0.22, 1 }
-local HEADER_COLOR = { 0.388, 0.737, 0.902 }
-local MUTED_COLOR = { 0.392, 0.455, 0.541 }
-local CONDITION_COLOR = { 0.55, 0.75, 0.95 }
-local TEXT_PRIMARY_COLOR = { 0.906, 0.929, 0.953 }
-local TEXT_SECONDARY_COLOR = { 0.651, 0.706, 0.761 }
-local DEFAULT_ITEM_COLOR = { 0.62, 0.62, 0.62 }
+-- The Tome skin (2026-09-05), matching UI/Codex.lua: a single chart page
+-- in a leather edge, ink text, wax red for emphasis. Side tabs are leather
+-- with the open one sealed in wax.
+local TEXTURE_PATH = "Interface\\AddOns\\SpecSage\\Textures\\"
+local LEATHER_COLOR = { 0.231, 0.165, 0.110, 1 }       -- #3B2A1C
+local PANEL_BORDER_COLOR = { 0.102, 0.071, 0.043, 1 }  -- #1A120B
+local TAB_BACKDROP_COLOR = LEATHER_COLOR
+local TAB_ACTIVE_COLOR = { 0.478, 0.184, 0.122, 1 }    -- wax red
+local RULE_COLOR = { 0.431, 0.353, 0.227 }             -- #6E5A3A
+local GOLD_COLOR = { 0.851, 0.706, 0.416 }             -- #D9B46A
+local HEADER_COLOR = { 0.169, 0.122, 0.078 }           -- ink
+local MUTED_COLOR = { 0.541, 0.478, 0.369 }            -- #8A7A5E
+local CONDITION_COLOR = { 0.478, 0.184, 0.122 }        -- wax red
+local TEXT_PRIMARY_COLOR = { 0.169, 0.122, 0.078 }
+local TEXT_SECONDARY_COLOR = { 0.353, 0.275, 0.188 }
+local DEFAULT_ITEM_COLOR = { 0.35, 0.35, 0.35 }
 
 -- Matches the Codex's BiS tab tags so the two surfaces read the same.
 local STATUS_COLORS = {
-    equipped = { 0.20, 0.80, 0.20 },
-    owned    = { 0.95, 0.85, 0.20 },
-    missing  = { 0.55, 0.55, 0.55 },
+    equipped = { 0.25, 0.42, 0.23 },   -- ink green, readable on paper
+    owned    = { 0.478, 0.184, 0.122 }, -- wax red
+    missing  = { 0.541, 0.478, 0.369 }, -- faded
 }
 
 local STAT_LABELS = {
@@ -216,11 +223,13 @@ local function AcquireRow(pool, index, parent)
 
     row = CreateFrame("Frame", nil, parent)
     row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    if SpecSageBodyFontSmall then row.text:SetFontObject(SpecSageBodyFontSmall) end
     row.text:SetJustifyH("LEFT")
     row.text:SetPoint("TOPLEFT", row, "TOPLEFT", 0, 0)
     pcall(row.text.SetWordWrap, row.text, true)
 
     row.value = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    if SpecSageBoldFontSmall then row.value:SetFontObject(SpecSageBoldFontSmall) end
     row.value:SetJustifyH("RIGHT")
     row.value:SetPoint("TOPRIGHT", row, "TOPRIGHT", 0, 0)
 
@@ -286,28 +295,42 @@ function CharacterPanel:BuildFrame()
     frame:SetWidth(FALLBACK_WIDTH)
     self.frame = frame
     self:ApplyDockOffset()
+    -- Parchment page, 4px leather edge, a hairline rule inside it.
     pcall(frame.SetBackdrop, frame, {
-        bgFile = "Interface\\Buttons\\WHITE8X8",
+        bgFile = TEXTURE_PATH .. "parchment.png",
         edgeFile = "Interface\\Buttons\\WHITE8X8",
-        edgeSize = 1,
+        edgeSize = 4,
     })
-    pcall(frame.SetBackdropColor, frame, unpack(PANEL_BACKDROP_COLOR))
-    pcall(frame.SetBackdropBorderColor, frame, unpack(PANEL_BORDER_COLOR))
+    pcall(frame.SetBackdropColor, frame, 1, 1, 1, 1)
+    pcall(frame.SetBackdropBorderColor, frame, unpack(LEATHER_COLOR))
+    local rule = CreateFrame("Frame", nil, frame, "BackdropTemplate")
+    rule:SetPoint("TOPLEFT", frame, "TOPLEFT", 6, -6)
+    rule:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -6, 6)
+    pcall(rule.SetBackdrop, rule, { edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+    pcall(rule.SetBackdropBorderColor, rule, RULE_COLOR[1], RULE_COLOR[2], RULE_COLOR[3], 0.6)
     frame:Hide()
 
     self:BuildGrip(frame)
 
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    if SpecSageHeadingFont then title:SetFontObject(SpecSageHeadingFont) end
     title:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING + GRIP_SIZE + 4, -PADDING)
     title:SetTextColor(unpack(HEADER_COLOR))
     frame.title = title
 
+    local headRule = frame:CreateTexture(nil, "ARTWORK")
+    headRule:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING, -(PADDING + TITLE_HEIGHT + 1))
+    headRule:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -PADDING, -(PADDING + TITLE_HEIGHT + 1))
+    headRule:SetHeight(1)
+    headRule:SetColorTexture(unpack(RULE_COLOR))
+
     -- Names the active section beside the spec name, since the side tabs
     -- are icons.
     local sectionLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    sectionLabel:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -PADDING, -(PADDING + 2))
+    if SpecSageItalicFont then sectionLabel:SetFontObject(SpecSageItalicFont) end
+    sectionLabel:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -PADDING, -(PADDING + 4))
     sectionLabel:SetJustifyH("RIGHT")
-    sectionLabel:SetTextColor(unpack(TEXT_SECONDARY_COLOR))
+    sectionLabel:SetTextColor(unpack(CONDITION_COLOR))
     frame.sectionLabel = sectionLabel
 
     self:BuildSideTabs(frame)
@@ -317,7 +340,7 @@ function CharacterPanel:BuildFrame()
     -- reason the Codex's is (see UI/Codex.lua).
     local scrollFrame = CreateFrame("ScrollFrame", "SpecSageCharacterPanelScroll", frame,
         "UIPanelScrollFrameTemplate")
-    scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING, -(PADDING + TITLE_HEIGHT + 4))
+    scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", PADDING, -(PADDING + TITLE_HEIGHT + 8))
     scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -SCROLLBAR_INSET, FOOTER_HEIGHT)
 
     local scrollChild = CreateFrame("Frame", nil, scrollFrame)
@@ -338,6 +361,7 @@ function CharacterPanel:BuildFrame()
     frame.listToggle = listToggle
 
     local footer = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    if SpecSageItalicFont then footer:SetFontObject(SpecSageItalicFont) end
     footer:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", PADDING, PADDING)
     footer:SetTextColor(unpack(MUTED_COLOR))
     frame.footer = footer
@@ -591,26 +615,22 @@ function CharacterPanel:BuildSideTabs(frame)
     end
 end
 
--- Lights the active tab and dims the rest. The marker takes the player's
--- class colour when the client can say what it is, else the header blue.
+-- The open tab is sealed in wax red with its icon at full colour; the rest
+-- are leather with the icon faded. (The Blizzard Modern pass used the
+-- class colour for the marker; the Tome keeps class colour off the page.)
 function CharacterPanel:UpdateTabHighlight(active)
     local frame = self.frame
     if not (frame and frame.sectionTabs) then return end
-
-    local r, g, b = HEADER_COLOR[1], HEADER_COLOR[2], HEADER_COLOR[3]
-    local token = PlayerClassToken()
-    local classColor = token and RAID_CLASS_COLORS and RAID_CLASS_COLORS[token]
-    if classColor and classColor.r then r, g, b = classColor.r, classColor.g, classColor.b end
 
     for _, tab in ipairs(frame.sectionTabs) do
         local isActive = tab.section == active
         tab.active = isActive
         tab.marker:SetShown(isActive)
-        if isActive then tab.marker:SetColorTexture(r, g, b) end
+        if isActive then tab.marker:SetColorTexture(GOLD_COLOR[1], GOLD_COLOR[2], GOLD_COLOR[3]) end
         pcall(tab.icon.SetDesaturated, tab.icon, not isActive)
-        pcall(tab.icon.SetAlpha, tab.icon, isActive and 1 or 0.55)
-        pcall(tab.SetBackdropBorderColor, tab, isActive and r or PANEL_BORDER_COLOR[1],
-            isActive and g or PANEL_BORDER_COLOR[2], isActive and b or PANEL_BORDER_COLOR[3], 1)
+        pcall(tab.icon.SetAlpha, tab.icon, isActive and 1 or 0.5)
+        pcall(tab.SetBackdropColor, tab, unpack(isActive and TAB_ACTIVE_COLOR or TAB_BACKDROP_COLOR))
+        pcall(tab.SetBackdropBorderColor, tab, unpack(PANEL_BORDER_COLOR))
     end
 end
 
@@ -661,6 +681,12 @@ local function PlaceRow(pool, index, parent, width, y, text, opts)
     row.text:SetText(text or "")
     local color = opts.color or TEXT_PRIMARY_COLOR
     row.text:SetTextColor(color[1], color[2], color[3])
+    -- Section headers in the heading face; everything else in the body.
+    if opts.color == HEADER_COLOR and SpecSageHeadingFont then
+        row.text:SetFontObject(SpecSageHeadingFont)
+    elseif SpecSageBodyFontSmall then
+        row.text:SetFontObject(SpecSageBodyFontSmall)
+    end
 
     row.value:SetText(opts.value or "")
     row.value:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])

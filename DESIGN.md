@@ -773,7 +773,38 @@ above) - only exercised by `tests/run.lua`'s fixtures.
 - Notes tab: multi-line editbox saved to `SpecSageDB.notes[specID]` on
   focus-lost / window close.
 
-**Visual style ("Blizzard Modern", 2026-09-01):** soft dark blue-gray panels
+**Visual style — the Tome (2026-09-05):** the Codex is a leather-bound
+book, the docked panel a single page of it. Picked by the owner from eight
+mocked directions (a blend of "The Tome" and "Cartographer's Scroll").
+`ApplyTomeChrome` in `UI/Codex.lua` builds it: a tiled leather cover
+(`Textures/leather.png`) over the backdrop's leather colour, a 30px spine
+with three gold rivets, two `parchment.png` pages with an alpha-gradient
+gutter between them and hairline rules inset in each (doubled on the
+right), a faint compass rose in the right page's corner. The left page
+carries the title ("Class Codex" in Playfair Display), the class · spec
+subtitle in the class colour, the class and spec rails, and at the foot a
+wax seal (`wax_seal.png`) framing the player's hero-tree icon — the atlas
+`C_Traits.GetSubTreeInfo` returns, rounded with `circle_mask.png` — with
+the tree's name beside it, shown only while the player's own spec is on
+the page. The right page carries the chapter tabs (bare Playfair text on a
+rule, wax-red underline on the open one; 74/78 wide, so nine fit) and the
+content. Palette is ink on paper: text `#2B1F14`, secondary `#5A4630`,
+faded `#8A7A5E`, rules `#6E5A3A`, emphasis and the active tab in wax red
+`#7A2F1F`, gold `#D9B46A` only on the rivets. Buttons are darker paper
+(`#CDBB92`) with a rule border that goes wax red on hover; dialogs and
+edit boxes are parchment cards (`SetParchmentBackdrop`). Type is Libre
+Baskerville 14/15 for rows and paragraphs, Playfair Display Bold 16 for
+section headings, 13 for chapters, 22 for the title, Playfair Italic 13
+for asides; all four faces are bundled under `SpecSage/Fonts/` with their
+OFL licences. The frame is 1100 × 620; the class colour lives only on the
+left page (subtitle, rails). `panel_corner_*.png` and
+`ApplyRoundedCorners` are gone — a book has square corners. The docked
+panel (`UI/CharacterPanel.lua`) uses the same textures and fonts: a
+parchment page with a 4px leather edge, leather side tabs with the open
+one in wax red and a gold marker, section headers in Playfair. The three
+notes below describe the look this replaced.
+
+**Visual style ("Blizzard Modern", 2026-09-01, replaced):** soft dark blue-gray panels
 with a faked vertical gradient (`Texture:SetGradient`, no bundled art) and a
 1px top-edge highlight seam (`ApplyPanelChrome` in `UI/Codex.lua`), a warm
 bronze accent (`ACCENT_COLOR`) that shifts to the selected class's own color

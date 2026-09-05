@@ -24,6 +24,9 @@ class guides, talent loadouts, and live character tracking in one place:
   the stat itself ("+512 Haste  #1") against the stat priority for the hero
   talent tree you are in, so
   you can tell at a glance whether a drop in your bags is for you.
+- **The Tome** — the Codex is a leather-bound book: parchment pages,
+  serif type, a wax seal carrying your hero talent tree's own icon. The
+  docked panel is a page of the same book.
 - **Docked panel** — an optional panel attached to the character sheet,
   opening and closing with it, showing everything the Codex does: icon
   tabs down its right edge switch between Overview, Stats, Rotation,

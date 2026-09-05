@@ -37,6 +37,7 @@ function Codex:OnEnable()
     -- Swapping hero tree (or spec) changes which stat order is the
     -- player's; an open Stats tab redraws to match.
     local function OnTalentsChanged()
+        self:UpdateHeroSeal()
         if self.frame and self.frame:IsShown() and self.activeTab == "Stats" then
             self:RenderActiveTab()
         end
@@ -77,14 +78,30 @@ local GetSpecializationInfoByID = (C_SpecializationInfo and C_SpecializationInfo
 -- small margin over that, with tab width/stride untouched so "Consumables"
 -- still fits its button. CONTENT_WIDTH grows by the same 86 to keep its own
 -- invariant (frame width minus 310px of chrome).
-local FRAME_WIDTH, FRAME_HEIGHT = 1070, 600
+local FRAME_WIDTH, FRAME_HEIGHT = 1100, 620
+
+-- The Tome (2026-09-05): the window is a leather-bound book. A spine down
+-- the left with three rivets, then two parchment pages with a gutter
+-- between: the left page carries the class and spec rails, the title and
+-- the hero-tree seal; the right page the chapter tabs and the content.
+-- PAGE_INSET is the leather showing around the pages.
+local SPINE_WIDTH = 30
+local PAGE_INSET = 12
+local PAGE_GAP = 8
+local PAGE_PADDING = 12
 local CLASS_RAIL_WIDTH = 120
 local SPEC_RAIL_WIDTH = 150
-local TITLE_HEIGHT = 26
-local TAB_HEIGHT = 28
-local TAB_BUTTON_WIDTH = 84
-local TAB_BUTTON_STRIDE = 86
-local CONTENT_WIDTH = 760
+-- Left page width: both rails, their gap, and the page padding either side.
+local LEFT_PAGE_WIDTH = PAGE_PADDING + CLASS_RAIL_WIDTH + 4 + SPEC_RAIL_WIDTH + PAGE_PADDING
+local RIGHT_PAGE_LEFT = SPINE_WIDTH + 6 + LEFT_PAGE_WIDTH + PAGE_GAP
+local TITLE_HEIGHT = 52
+local TAB_HEIGHT = 26
+-- Chapter tabs are plain text in the heading face, no button box, so they
+-- need less room than the boxed tabs did (84/86).
+local TAB_BUTTON_WIDTH = 74
+local TAB_BUTTON_STRIDE = 78
+-- The scroll area: the right page's inner width minus the scrollbar.
+local CONTENT_WIDTH = FRAME_WIDTH - RIGHT_PAGE_LEFT - PAGE_INSET - PAGE_PADDING - 30
 local PADDING = 12
 local LINE_GAP = 5
 local PARAGRAPH_GAP = 10
@@ -124,49 +141,59 @@ local NO_DATA_TEXT = "no guide data yet - see SpecSage/Data/Guides_<Class>.lua t
 -- from a separate overlay texture via Texture:SetGradient, see
 -- ApplyPanelChrome below) and a warm bronze accent, successor to the old flat
 -- near-black/pure-blue palette this file used before the 2026-09-01 UI pass.
-local MUTED_COLOR = { 0.392, 0.455, 0.541 } -- was { 0.55, 0.55, 0.55 }
-local HEADER_COLOR = { 0.388, 0.737, 0.902 } -- was { 0.4, 0.8, 1.0 }; #63BCE6
--- A rotation/cooldown step's optional `condition` (DESIGN.md's v1.3
--- section): a distinct blue-grey so it reads as "detail on the line above"
--- rather than MUTED_COLOR's "there is no data here" or HEADER_COLOR's
--- "this starts a new section".
-local CONDITION_COLOR = { 0.55, 0.75, 0.95 }
+-- Ink on parchment. Every colour here is read against the parchment.png
+-- page, not a dark panel: text is ink, emphasis is wax red, rules are the
+-- faded brown a quill leaves, and the only bright thing is the gold of the
+-- spine rivets.
+local MUTED_COLOR = { 0.541, 0.478, 0.369 }          -- #8A7A5E faded ink
+local HEADER_COLOR = { 0.169, 0.122, 0.078 }         -- #2B1F14 ink; headings set in Playfair
+local CONDITION_COLOR = { 0.478, 0.184, 0.122 }      -- #7A2F1F wax red
 local CONDITION_INDENT = 20
 
-local PANEL_BG_TOP = { 0.125, 0.164, 0.207 }    -- #202A35
-local PANEL_BG_BOTTOM = { 0.071, 0.094, 0.125 } -- #121820
-local PANEL_BACKDROP_COLOR = { 0.10, 0.13, 0.16, 0.97 }
-local PANEL_BORDER_COLOR = { 0.15, 0.18, 0.22, 1 }
-local CARD_BG_TOP = { 0.149, 0.192, 0.239 }    -- #26313D
-local CARD_BG_BOTTOM = { 0.102, 0.133, 0.169 } -- #1A222B
-local CARD_BACKDROP_COLOR = { 0.149, 0.192, 0.239, 0.92 }
-local BORDER_COLOR = { 0.216, 0.259, 0.310, 1 }        -- #37424F
-local BORDER_HIGHLIGHT_COLOR = { 0.357, 0.439, 0.525 } -- #5B7086, top-seam highlight
-local ACCENT_COLOR = { 0.776, 0.608, 0.427 }        -- #C69B6D
-local ACCENT_COLOR_BRIGHT = { 0.886, 0.741, 0.569 } -- #E2BD91
-local ACCENT_GLOW_COLOR = { 0.776, 0.608, 0.427, 0.38 }
-local TEXT_PRIMARY_COLOR = { 0.906, 0.929, 0.953 }   -- #E7EDF3
-local TEXT_SECONDARY_COLOR = { 0.651, 0.706, 0.761 } -- #A6B4C2
+local PANEL_BACKDROP_COLOR = { 0.231, 0.165, 0.110, 1 } -- #3B2A1C leather (under the tile)
+local PANEL_BORDER_COLOR = { 0.102, 0.071, 0.043, 1 }   -- #1A120B cover edge
+local CARD_BACKDROP_COLOR = { 0.804, 0.733, 0.573, 1 }  -- #CDBB92 darker paper: buttons, dialogs
+local BORDER_COLOR = { 0.431, 0.353, 0.227, 1 }         -- #6E5A3A rule
+local ACCENT_COLOR = { 0.478, 0.184, 0.122 }            -- #7A2F1F wax red
+local GOLD_COLOR = { 0.851, 0.706, 0.416 }              -- #D9B46A rivets
+local TEXT_PRIMARY_COLOR = { 0.169, 0.122, 0.078 }      -- #2B1F14 ink
+local TEXT_SECONDARY_COLOR = { 0.353, 0.275, 0.188 }    -- #5A4630
 
--- Body text uses the game's own standard font (Friz Quadrata via
--- STANDARD_TEXT_FONT, the face every default tooltip and panel uses) at 13pt
--- for rows and 14pt for paragraphs. The 2026-09-01 pass bundled PT Sans at
--- 11/12pt for a "modern" look; the owner found it harder to read than the
--- game's own face and too small, so this is the 2026-09-02 readability pass:
--- Blizzard's font, two sizes up, and the row metrics above opened to match.
--- Friz has no bold cut in the client, so headers use the same face and rely
--- on their colour and divider rule to stand out. Built once at load and
--- reused via SetFontObject rather than a fresh CreateFont per row.
-local BODY_FONT_PATH = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
+-- Type: Libre Baskerville for everything read (rows 14pt, paragraphs
+-- 15pt), Playfair Display for what is looked at - the title, chapter tabs
+-- and section headings. Both are SIL OFL, bundled under SpecSage/Fonts/
+-- with their licences. This is the third face the Codex has worn: Friz
+-- Quadrata (the client's own) after the 2026-09-02 readability pass
+-- replaced PT Sans; the owner picked the Tome look on 2026-09-05 and a
+-- serif is what makes parchment read as parchment. Sizes stay at or above
+-- what that readability pass settled on. Built once at load and reused via
+-- SetFontObject rather than a fresh CreateFont per row.
+local FONT_PATH = "Interface\\AddOns\\SpecSage\\Fonts\\"
+local BODY_FONT_PATH = FONT_PATH .. "LibreBaskerville-Regular.ttf"
+local BODY_BOLD_FONT_PATH = FONT_PATH .. "LibreBaskerville-Bold.ttf"
+local HEADING_FONT_PATH = FONT_PATH .. "PlayfairDisplay-Bold.ttf"
+local HEADING_ITALIC_FONT_PATH = FONT_PATH .. "PlayfairDisplay-Italic.ttf"
 local SpecSageBodyFont = CreateFont("SpecSageBodyFont")
-SpecSageBodyFont:SetFont(BODY_FONT_PATH, 14, "")
+SpecSageBodyFont:SetFont(BODY_FONT_PATH, 15, "")
 SpecSageBodyFont:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
 local SpecSageBodyFontSmall = CreateFont("SpecSageBodyFontSmall")
-SpecSageBodyFontSmall:SetFont(BODY_FONT_PATH, 13, "")
+SpecSageBodyFontSmall:SetFont(BODY_FONT_PATH, 14, "")
 SpecSageBodyFontSmall:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
 local SpecSageBoldFontSmall = CreateFont("SpecSageBoldFontSmall")
-SpecSageBoldFontSmall:SetFont(BODY_FONT_PATH, 13, "")
+SpecSageBoldFontSmall:SetFont(BODY_BOLD_FONT_PATH, 14, "")
 SpecSageBoldFontSmall:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
+local SpecSageHeadingFont = CreateFont("SpecSageHeadingFont")
+SpecSageHeadingFont:SetFont(HEADING_FONT_PATH, 16, "")
+SpecSageHeadingFont:SetTextColor(unpack(HEADER_COLOR))
+local SpecSageChapterFont = CreateFont("SpecSageChapterFont")
+SpecSageChapterFont:SetFont(HEADING_FONT_PATH, 13, "")
+SpecSageChapterFont:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
+local SpecSageTitleFont = CreateFont("SpecSageTitleFont")
+SpecSageTitleFont:SetFont(HEADING_FONT_PATH, 22, "")
+SpecSageTitleFont:SetTextColor(unpack(HEADER_COLOR))
+local SpecSageItalicFont = CreateFont("SpecSageItalicFont")
+SpecSageItalicFont:SetFont(HEADING_ITALIC_FONT_PATH, 13, "")
+SpecSageItalicFont:SetTextColor(unpack(TEXT_SECONDARY_COLOR))
 
 -- BiS tab: the default
 -- item colour-- item colour for an entry whose quality is not known yet (a plain-name
@@ -332,98 +359,121 @@ local TIER_COLORS = {
 -- a flat BackdropTemplate panel - the two tricks that make a plain solid-color
 -- backdrop read as a lit "Blizzard Modern" panel instead of a flat rectangle,
 -- using only WoW's own Texture:SetGradient API (no bundled art needed).
-local function ApplyPanelChrome(frame, topColor, bottomColor)
+local TEXTURE_PATH = "Interface\\AddOns\\SpecSage\\Textures\\"
+local WHITE8X8 = "Interface\\Buttons\\WHITE8X8"
+
+-- A parchment card: dialogs and edit boxes. The page texture as the fill,
+-- a 1px rule as the edge, and a second hairline inset from it so the edge
+-- reads as a chart border drawn twice. Replaces the flat dark panel with a
+-- gradient and top seam that the Blizzard Modern pass used.
+local function SetParchmentBackdrop(frame)
+    pcall(frame.SetBackdrop, frame, {
+        bgFile = TEXTURE_PATH .. "parchment.png",
+        edgeFile = WHITE8X8,
+        edgeSize = 1,
+    })
+    pcall(frame.SetBackdropColor, frame, 1, 1, 1, 1)
+    pcall(frame.SetBackdropBorderColor, frame, unpack(BORDER_COLOR))
+end
+
+local function ApplyPanelChrome(frame)
     if frame.specSageChromeApplied then return end
     frame.specSageChromeApplied = true
 
-    local gradient = frame:CreateTexture(nil, "BACKGROUND", nil, 1)
-    gradient:SetAllPoints(frame)
-    gradient:SetGradient("VERTICAL",
-        CreateColor(topColor[1], topColor[2], topColor[3], 0.55),
-        CreateColor(bottomColor[1], bottomColor[2], bottomColor[3], 0))
-
-    local seam = frame:CreateTexture(nil, "BORDER")
-    seam:SetPoint("TOPLEFT", frame, "TOPLEFT", 1, -1)
-    seam:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -1, -1)
-    seam:SetHeight(1)
-    seam:SetColorTexture(unpack(BORDER_HIGHLIGHT_COLOR))
-    seam:SetAlpha(0.6)
+    local rule = CreateFrame("Frame", nil, frame, "BackdropTemplate")
+    rule:SetPoint("TOPLEFT", frame, "TOPLEFT", 3, -3)
+    rule:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -3, 3)
+    pcall(rule.SetBackdrop, rule, { edgeFile = WHITE8X8, edgeSize = 1 })
+    pcall(rule.SetBackdropBorderColor, rule, BORDER_COLOR[1], BORDER_COLOR[2], BORDER_COLOR[3], 0.55)
+    frame.specSageRule = rule
 end
 
-local CORNER_RADIUS = 10
-local CORNER_BORDER_WIDTH = 2
-local TEXTURE_PATH = "Interface\\AddOns\\SpecSage\\Textures\\"
+-- One hairline rule inset `inset` px inside `region` (a page texture),
+-- drawn as a backdrop-only frame that takes no mouse.
+local function PageRule(parent, region, inset, alpha)
+    local rule = CreateFrame("Frame", nil, parent, "BackdropTemplate")
+    rule:SetPoint("TOPLEFT", region, "TOPLEFT", inset, -inset)
+    rule:SetPoint("BOTTOMRIGHT", region, "BOTTOMRIGHT", -inset, inset)
+    pcall(rule.SetBackdrop, rule, { edgeFile = WHITE8X8, edgeSize = 1 })
+    pcall(rule.SetBackdropBorderColor, rule, BORDER_COLOR[1], BORDER_COLOR[2], BORDER_COLOR[3], alpha)
+    return rule
+end
 
--- Genuinely rounds a panel's corners - unlike ApplyPanelChrome's gradient/
--- seam trick above, a naive corner-mask overlay does NOT work here: a
--- BackdropTemplate's own bg/border fill paints the FULL rectangle including
--- the corners, so anything drawn on top of it with transparent "cut" pixels
--- just reveals that same opaque fill sitting underneath, not the real
--- background behind the frame - rounding requires nothing else to paint
--- those corner pixels in the first place.
--- This replaces the backdrop's fill entirely with a manually-built "cross"
--- (3 border-colored rects + 3 fill-colored rects, each shaped to avoid the
--- 4 corner squares) plus 4 pre-baked corner tiles
--- (SpecSage/Textures/panel_corner_*.png - fill+border baked in, transparent
--- outside the rounded arc) dropped into exactly those 4 unpainted corner
--- squares. Since nothing else paints there, the tiles' transparent zone
--- correctly reveals whatever's really behind the frame.
--- Caller must also set the frame's own SetBackdropColor/BorderColor alpha
--- to 0 so the old flat square fill doesn't paint underneath and defeat this.
--- Only applied to the main Codex frame - dialogs/the notes editbox keep
--- ApplyPanelChrome's simpler flat treatment, since this is a bigger change
--- per frame and the main panel is the highest-value target.
-local function ApplyRoundedCorners(frame, bgColor, borderColor)
-    local r, bw = CORNER_RADIUS, CORNER_BORDER_WIDTH
+-- Builds the book: leather cover (a tiled texture over the backdrop's own
+-- leather colour, so a client that will not tile still shows leather),
+-- the spine with its rivets, the two parchment pages with a shadowed
+-- gutter, a hairline rule inside each page (doubled on the right, the way
+-- a chart's border is), and the compass rose in the right page's corner.
+-- The pages are stored on the frame so the rails, tabs and content can
+-- anchor to them. Replaces ApplyRoundedCorners: a book has square corners.
+local function ApplyTomeChrome(frame)
+    local cover = frame:CreateTexture(nil, "BACKGROUND", nil, 0)
+    cover:SetAllPoints(frame)
+    cover:SetTexture(TEXTURE_PATH .. "leather.png", "REPEAT", "REPEAT")
+    pcall(cover.SetHorizTile, cover, true)
+    pcall(cover.SetVertTile, cover, true)
 
-    -- Builds the 3-piece "frame rect minus 4 corner squares" cross shape
-    -- (a full-height center band + two side strips that stop short of the
-    -- top/bottom corners) at the given inset from the frame's true edges.
-    local function crossPieces(color, inset, sublevel)
-        local vert = frame:CreateTexture(nil, "BACKGROUND", nil, sublevel)
-        vert:SetColorTexture(unpack(color))
-        vert:SetPoint("TOPLEFT", frame, "TOPLEFT", r, -inset)
-        vert:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -r, inset)
+    local spine = frame:CreateTexture(nil, "BACKGROUND", nil, 1)
+    spine:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
+    spine:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 0, 0)
+    spine:SetWidth(SPINE_WIDTH)
+    spine:SetColorTexture(0.10, 0.07, 0.04, 0.55)
+    frame.spine = spine
 
-        local left = frame:CreateTexture(nil, "BACKGROUND", nil, sublevel)
-        left:SetColorTexture(unpack(color))
-        left:SetPoint("TOPLEFT", frame, "TOPLEFT", inset, -r)
-        left:SetPoint("BOTTOMRIGHT", frame, "BOTTOMLEFT", r, r)
-
-        local right = frame:CreateTexture(nil, "BACKGROUND", nil, sublevel)
-        right:SetColorTexture(unpack(color))
-        right:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -inset, -r)
-        right:SetPoint("BOTTOMLEFT", frame, "BOTTOMRIGHT", -r, r)
-
-        return { vert, left, right }
+    frame.rivets = {}
+    for i = 1, 3 do
+        local rivet = frame:CreateTexture(nil, "ARTWORK")
+        rivet:SetSize(14, 14)
+        rivet:SetPoint("CENTER", spine, "TOP", 0, -(FRAME_HEIGHT * i / 4))
+        rivet:SetTexture(TEXTURE_PATH .. "rivet.png")
+        frame.rivets[i] = rivet
     end
 
-    -- Border layer sits at the true edges (inset 0); the fill layer sits
-    -- inset by the border width so a `bw`-thick border ring shows on the
-    -- straight edges. Stored on the frame so UpdateClassHighlight can
-    -- recolor the (only) tintable part of this per selected class - the
-    -- 4 small corner tiles stay a fixed neutral color rather than also
-    -- being made tintable, a deliberate, low-risk scope cut.
-    frame.roundedBorderPieces = crossPieces(borderColor, 0, 0)
-    crossPieces(bgColor, bw, 1)
+    local leftPage = frame:CreateTexture(nil, "BACKGROUND", nil, 2)
+    leftPage:SetPoint("TOPLEFT", frame, "TOPLEFT", SPINE_WIDTH + 6, -PAGE_INSET)
+    leftPage:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", SPINE_WIDTH + 6, PAGE_INSET)
+    leftPage:SetWidth(LEFT_PAGE_WIDTH)
+    leftPage:SetTexture(TEXTURE_PATH .. "parchment.png")
+    frame.leftPage = leftPage
 
-    for _, spec in ipairs({
-        { point = "TOPLEFT", suffix = "TL" },
-        { point = "TOPRIGHT", suffix = "TR" },
-        { point = "BOTTOMLEFT", suffix = "BL" },
-        { point = "BOTTOMRIGHT", suffix = "BR" },
-    }) do
-        local tex = frame:CreateTexture(nil, "BORDER")
-        tex:SetSize(r, r)
-        tex:SetPoint(spec.point, frame, spec.point, 0, 0)
-        tex:SetTexture(TEXTURE_PATH .. "panel_corner_" .. spec.suffix .. ".png")
-    end
+    local rightPage = frame:CreateTexture(nil, "BACKGROUND", nil, 2)
+    rightPage:SetPoint("TOPLEFT", frame, "TOPLEFT", RIGHT_PAGE_LEFT, -PAGE_INSET)
+    rightPage:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -PAGE_INSET, PAGE_INSET)
+    rightPage:SetTexture(TEXTURE_PATH .. "parchment.png")
+    frame.rightPage = rightPage
+
+    -- Gutter shadow: the left page curving into the spine, the right page
+    -- lifting off it. Plain alpha gradients; a client without SetGradient
+    -- just shows flat pages.
+    local gutterL = frame:CreateTexture(nil, "BACKGROUND", nil, 3)
+    gutterL:SetPoint("TOPRIGHT", leftPage, "TOPRIGHT", 0, 0)
+    gutterL:SetPoint("BOTTOMRIGHT", leftPage, "BOTTOMRIGHT", 0, 0)
+    gutterL:SetWidth(16)
+    gutterL:SetColorTexture(0, 0, 0, 1)
+    pcall(gutterL.SetGradient, gutterL, "HORIZONTAL", CreateColor(0, 0, 0, 0), CreateColor(0, 0, 0, 0.22))
+    local gutterR = frame:CreateTexture(nil, "BACKGROUND", nil, 3)
+    gutterR:SetPoint("TOPLEFT", rightPage, "TOPLEFT", 0, 0)
+    gutterR:SetPoint("BOTTOMLEFT", rightPage, "BOTTOMLEFT", 0, 0)
+    gutterR:SetWidth(16)
+    gutterR:SetColorTexture(0, 0, 0, 1)
+    pcall(gutterR.SetGradient, gutterR, "HORIZONTAL", CreateColor(0, 0, 0, 0.18), CreateColor(0, 0, 0, 0))
+
+    PageRule(frame, leftPage, 6, 0.6)
+    PageRule(frame, rightPage, 6, 0.7)
+    PageRule(frame, rightPage, 9, 0.35)
+
+    local rose = frame:CreateTexture(nil, "ARTWORK")
+    rose:SetSize(84, 84)
+    rose:SetPoint("BOTTOMRIGHT", rightPage, "BOTTOMRIGHT", -14, 12)
+    rose:SetTexture(TEXTURE_PATH .. "compass_rose.png")
+    rose:SetAlpha(0.45)
+    frame.compassRose = rose
 end
 
 local DANGER_BORDER_COLOR = { 0.700, 0.298, 0.263 }
 
 -- Re-skins a UIPanelButtonTemplate button (the gray 3D bevel look) as a flat
--- bordered button: hides every pre-existing texture region rather than
+-- bordered button on darker paper, wax-red border on hover: hides every pre-existing texture region rather than
 -- assuming a specific template internal (some templates expose a single
 -- NormalTexture, others a Left/Middle/Right 3-slice - hiding all of them
 -- works either way), then layers two textures of our own directly on the
@@ -498,19 +548,14 @@ end
 local function NewBackdropEditBox(parent, width, height)
     local backdrop = CreateFrame("Frame", nil, parent, "BackdropTemplate")
     backdrop:SetSize(width, height)
-    backdrop:SetBackdrop({
-        bgFile = "Interface\\Buttons\\WHITE8X8",
-        edgeFile = "Interface\\Buttons\\WHITE8X8",
-        edgeSize = 1,
-    })
-    backdrop:SetBackdropColor(unpack(CARD_BACKDROP_COLOR))
-    backdrop:SetBackdropBorderColor(unpack(BORDER_COLOR))
-    ApplyPanelChrome(backdrop, CARD_BG_TOP, CARD_BG_BOTTOM)
+    SetParchmentBackdrop(backdrop)
+    ApplyPanelChrome(backdrop)
 
     local box = CreateFrame("EditBox", nil, backdrop)
     box:SetMultiLine(true)
     box:SetAutoFocus(false)
-    box:SetFontObject(ChatFontNormal)
+    -- Ink, not ChatFontNormal's white: the box sits on parchment.
+    box:SetFontObject(SpecSageBodyFont)
     box:SetTextInsets(4, 4, 2, 2)
     box:SetPoint("TOPLEFT", backdrop, "TOPLEFT", 4, -4)
     box:SetPoint("BOTTOMRIGHT", backdrop, "BOTTOMRIGHT", -4, 4)
@@ -626,7 +671,7 @@ local function PlaceLine(pool, index, parent, y, width, text, opts)
 
     row.text:ClearAllPoints()
     row.text:SetPoint("TOPLEFT", row, "TOPLEFT", textInset, 0)
-    row.text:SetFontObject(opts.isHeader and SpecSageBoldFontSmall or SpecSageBodyFontSmall)
+    row.text:SetFontObject(opts.isHeader and SpecSageHeadingFont or SpecSageBodyFontSmall)
 
     local color = opts.color or TEXT_PRIMARY_COLOR
     row.text:SetTextColor(color[1], color[2], color[3])
@@ -1162,10 +1207,10 @@ function Codex:RenderBiSLinkSection(pool, index, parent, width, y, specID)
             end
         end
         local r, g, b = ItemQualityColor(quality)
-        local fromText = (entry.from and entry.from ~= "") and ("  |cff8a97a5" .. entry.from .. "|r") or ""
+        local fromText = (entry.from and entry.from ~= "") and ("  |cff6e5a3a" .. entry.from .. "|r") or ""
         row.text:SetText(format("|cff%02x%02x%02x%s|r%s",
             math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5), name, fromText))
-        row.text:SetTextColor(1, 1, 1)
+        row.text:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
         row.itemID = entry.itemID
         row.itemLink = (item ~= entry.itemID) and item or nil
         SizeItemHit(row, name)
@@ -1313,7 +1358,7 @@ function Codex:RenderTrinketSection(pool, index, parent, width, y, specID)
             for _, site in ipairs({ { "Icy Veins", entry.siteTier }, { "Wowhead", entry.whTier } }) do
                 if site[2] then
                     local st = TIER_COLORS[site[2]] or MUTED_COLOR
-                    detail[#detail + 1] = format("%s |cff%02x%02x%02x%s|r|cff8a97a5", site[1],
+                    detail[#detail + 1] = format("%s |cff%02x%02x%02x%s|r|cff6e5a3a", site[1],
                         math.floor(st[1] * 255 + 0.5), math.floor(st[2] * 255 + 0.5), math.floor(st[3] * 255 + 0.5),
                         site[2])
                 else
@@ -1321,10 +1366,10 @@ function Codex:RenderTrinketSection(pool, index, parent, width, y, specID)
                 end
             end
         end
-        local detailText = #detail > 0 and ("  |cff8a97a5" .. table.concat(detail, " · ") .. "|r") or ""
+        local detailText = #detail > 0 and ("  |cff6e5a3a" .. table.concat(detail, " · ") .. "|r") or ""
         row.text:SetText(format("|cff%02x%02x%02x%s|r%s",
             math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5), name, detailText))
-        row.text:SetTextColor(1, 1, 1)
+        row.text:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
         row.itemID = entry.itemID
         row.itemLink = (item ~= entry.itemID) and item or nil
         SizeItemHit(row, name)
@@ -1728,10 +1773,8 @@ function Codex:EnsureAddDialog()
     dialog:SetSize(360, 210)
     dialog:SetPoint("CENTER", self.frame, "CENTER", 0, 0)
     dialog:SetFrameStrata("DIALOG")
-    dialog:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
-    dialog:SetBackdropColor(unpack(CARD_BACKDROP_COLOR))
-    dialog:SetBackdropBorderColor(unpack(BORDER_COLOR))
-    ApplyPanelChrome(dialog, CARD_BG_TOP, CARD_BG_BOTTOM)
+    SetParchmentBackdrop(dialog)
+    ApplyPanelChrome(dialog)
     dialog:Hide()
 
     local nameLabel = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -1814,10 +1857,8 @@ function Codex:EnsureCopyDialog()
     dialog:SetSize(360, 130)
     dialog:SetPoint("CENTER", self.frame, "CENTER", 0, 0)
     dialog:SetFrameStrata("DIALOG")
-    dialog:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
-    dialog:SetBackdropColor(unpack(CARD_BACKDROP_COLOR))
-    dialog:SetBackdropBorderColor(unpack(BORDER_COLOR))
-    ApplyPanelChrome(dialog, CARD_BG_TOP, CARD_BG_BOTTOM)
+    SetParchmentBackdrop(dialog)
+    ApplyPanelChrome(dialog)
     dialog:Hide()
 
     local label = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -2253,21 +2294,50 @@ end
 function Codex:UpdateClassHighlight()
     local color = ClassColor(self.selectedClass)
 
-    if self.frame then
-        -- The frame's real border is now the 3-piece cross ApplyRoundedCorners
-        -- built (SetBackdropBorderColor is a no-op alpha-0 leftover) - the 4
-        -- small corner tiles deliberately stay a fixed color rather than also
-        -- being tinted per class, see that function's own comment.
-        for _, piece in ipairs(self.frame.roundedBorderPieces or {}) do
-            pcall(piece.SetColorTexture, piece, color.r, color.g, color.b, 1)
-        end
-        if self.frame.title then
-            self.frame.title:SetTextColor(color.r, color.g, color.b)
-        end
-    end
+    self:UpdateSubtitle()
 
     for token, btn in pairs(self.classButtons or {}) do
         pcall(btn.SetAlpha, btn, (token == self.selectedClass) and 1 or 0.55)
+    end
+end
+
+-- The line under the title on the left page: "Paladin · Protection" in the
+-- class's colour, and the version.
+function Codex:UpdateSubtitle()
+    local frame = self.frame
+    if not (frame and frame.subtitle) then return end
+    local className
+    for _, entry in ipairs(ns.GuideStore:GetClasses()) do
+        if entry.token == self.selectedClass then className = entry.name end
+    end
+    local guide = self.selectedSpecID and ns.GuideStore:GetGuide(self.selectedSpecID)
+    local parts = {}
+    if className then parts[#parts + 1] = className end
+    if guide and guide.specName then parts[#parts + 1] = guide.specName end
+    frame.subtitle:SetText(table.concat(parts, " \194\183 "))
+    local color = ClassColor(self.selectedClass)
+    frame.subtitle:SetTextColor(color.r, color.g, color.b)
+end
+
+-- The wax seal on the left page: the hero tree the player is in, framing
+-- the tree's own icon (the atlas the client hands back with its name).
+-- Shown only while the player's own spec is on the page; another spec's
+-- guide has no "you" to seal.
+function Codex:UpdateHeroSeal()
+    local frame = self.frame
+    if not (frame and frame.heroSeal) then return end
+    local name, atlas = ns.GuideStore:GetActiveHeroTree()
+    if name and IsPlayersSpec(self.selectedSpecID) then
+        frame.heroSeal.name:SetText(name)
+        if atlas then
+            local ok = pcall(frame.heroSeal.icon.SetAtlas, frame.heroSeal.icon, atlas)
+            frame.heroSeal.icon:SetShown(ok)
+        else
+            frame.heroSeal.icon:Hide()
+        end
+        frame.heroSeal:Show()
+    else
+        frame.heroSeal:Hide()
     end
 end
 
@@ -2285,14 +2355,10 @@ function Codex:UpdateSpecHighlight()
 end
 
 function Codex:UpdateTabHighlight()
-    -- Bronze ACCENT_COLOR by default; once a real class is selected (not
-    -- DEFAULT_CLASS_COLOR's neutral gray fallback), the active-tab
-    -- underline shifts to that class's own color instead.
-    local color = self.selectedClass and ClassColor(self.selectedClass)
+    -- The open chapter is ink with a wax-red rule under it; the rest are
+    -- faded. Wax red regardless of class: the class colour lives on the
+    -- left page (the subtitle and the rails), the right page is the chart.
     local accentR, accentG, accentB = ACCENT_COLOR[1], ACCENT_COLOR[2], ACCENT_COLOR[3]
-    if color and color ~= DEFAULT_CLASS_COLOR then
-        accentR, accentG, accentB = color.r, color.g, color.b
-    end
 
     for tabName, btn in pairs(self.tabButtons or {}) do
         local isActive = (tabName == self.activeTab)
@@ -2301,7 +2367,7 @@ function Codex:UpdateTabHighlight()
             if isActive then
                 fontString:SetTextColor(unpack(TEXT_PRIMARY_COLOR))
             else
-                fontString:SetTextColor(unpack(TEXT_SECONDARY_COLOR))
+                fontString:SetTextColor(unpack(MUTED_COLOR))
             end
         end
         if btn.tabUnderline then
@@ -2397,6 +2463,8 @@ function Codex:SelectSpec(specID)
 
     self.selectedSpecID = specID
     self:UpdateSpecHighlight()
+    self:UpdateSubtitle()
+    self:UpdateHeroSeal()
     if self.scrollFrame then self.scrollFrame:SetVerticalScroll(0) end
     self:RenderActiveTab()
 end
@@ -2423,8 +2491,8 @@ end
 
 function Codex:BuildClassRail()
     local rail = CreateFrame("Frame", nil, self.frame)
-    rail:SetPoint("TOPLEFT", self.frame, "TOPLEFT", 0, -TITLE_HEIGHT)
-    rail:SetPoint("BOTTOMLEFT", self.frame, "BOTTOMLEFT", 0, 0)
+    rail:SetPoint("TOPLEFT", self.frame.leftPage, "TOPLEFT", PAGE_PADDING, -TITLE_HEIGHT)
+    rail:SetPoint("BOTTOMLEFT", self.frame.leftPage, "BOTTOMLEFT", PAGE_PADDING, 0)
     rail:SetWidth(CLASS_RAIL_WIDTH)
     self.classRail = rail
 
@@ -2482,24 +2550,39 @@ end
 
 function Codex:BuildTabStrip()
     local strip = CreateFrame("Frame", nil, self.frame)
-    strip:SetPoint("TOPLEFT", self.specRail, "TOPRIGHT", 8, 0)
-    strip:SetPoint("TOPRIGHT", self.frame, "TOPRIGHT", -8, -TITLE_HEIGHT)
+    strip:SetPoint("TOPLEFT", self.frame.rightPage, "TOPLEFT", PAGE_PADDING, -14)
+    strip:SetPoint("TOPRIGHT", self.frame.rightPage, "TOPRIGHT", -PAGE_PADDING, -14)
     strip:SetHeight(TAB_HEIGHT)
     self.tabStrip = strip
+
+    -- A rule under the whole chapter row, the way the mock's page header
+    -- is underlined; the active chapter's own wax-red underline sits on it.
+    local rule = strip:CreateTexture(nil, "ARTWORK")
+    rule:SetPoint("BOTTOMLEFT", strip, "BOTTOMLEFT", 0, 0)
+    rule:SetPoint("BOTTOMRIGHT", strip, "BOTTOMRIGHT", 0, 0)
+    rule:SetHeight(1)
+    rule:SetColorTexture(unpack(BORDER_COLOR))
 
     self.tabButtons = {}
     local x = 0
     for _, tabName in ipairs(TABS) do
+        -- Chapter tabs are bare text in the heading face: the template's
+        -- own bevel textures are hidden rather than re-skinned into a box.
         local btn = CreateFrame("Button", nil, strip, "UIPanelButtonTemplate")
         btn:SetSize(TAB_BUTTON_WIDTH, TAB_HEIGHT)
         btn:SetPoint("TOPLEFT", strip, "TOPLEFT", x, 0)
         btn:SetText(tabName)
         btn:SetScript("OnClick", function() self:SelectTab(tabName) end)
-        SkinButton(btn)
+        for _, region in ipairs({ btn:GetRegions() }) do
+            if region.IsObjectType and region:IsObjectType("Texture") then region:Hide() end
+        end
+        if btn.SetNormalFontObject then
+            btn:SetNormalFontObject(SpecSageChapterFont)
+            btn:SetHighlightFontObject(SpecSageChapterFont)
+            btn:SetDisabledFontObject(SpecSageChapterFont)
+        end
 
-        -- Active-tab indicator: a 2px underline in the selected class's
-        -- color (falls back to the flat bronze ACCENT_COLOR - see
-        -- UpdateTabHighlight) instead of the old plain alpha dim/undim.
+        -- Active-tab indicator: a 2px wax-red underline (UpdateTabHighlight).
         local underline = btn:CreateTexture(nil, "OVERLAY")
         underline:SetPoint("BOTTOMLEFT", btn, "BOTTOMLEFT", 1, 0)
         underline:SetPoint("BOTTOMRIGHT", btn, "BOTTOMRIGHT", -1, 0)
@@ -2518,8 +2601,8 @@ function Codex:BuildContentArea()
     -- name when self.ScrollBar is not set by a parentKey; an anonymous frame
     -- makes that a concat-on-nil risk for no benefit.
     local scrollFrame = CreateFrame("ScrollFrame", "SpecSageCodexScrollFrame", self.frame, "UIPanelScrollFrameTemplate")
-    scrollFrame:SetPoint("TOPLEFT", self.tabStrip, "BOTTOMLEFT", 0, -4)
-    scrollFrame:SetPoint("BOTTOMRIGHT", self.frame, "BOTTOMRIGHT", -28, 8)
+    scrollFrame:SetPoint("TOPLEFT", self.tabStrip, "BOTTOMLEFT", 0, -8)
+    scrollFrame:SetPoint("BOTTOMRIGHT", self.frame.rightPage, "BOTTOMRIGHT", -30, PAGE_PADDING)
 
     local scrollChild = CreateFrame("Frame", nil, scrollFrame)
     scrollChild:SetWidth(CONTENT_WIDTH)
@@ -2552,14 +2635,10 @@ function Codex:BuildFrame()
         edgeSize = 2,
         insets = { left = 2, right = 2, top = 2, bottom = 2 },
     })
-    -- Alpha 0: the backdrop's own flat square fill/border is replaced by
-    -- ApplyRoundedCorners' manual texture stack below. A visible backdrop
-    -- fill here would paint the 4 corner squares too, defeating the
-    -- rounding (see that function's own comment for why).
-    frame:SetBackdropColor(0, 0, 0, 0)
-    frame:SetBackdropBorderColor(0, 0, 0, 0)
-    ApplyPanelChrome(frame, PANEL_BG_TOP, PANEL_BG_BOTTOM)
-    ApplyRoundedCorners(frame, PANEL_BACKDROP_COLOR, PANEL_BORDER_COLOR)
+    -- Leather under the tiled cover (see ApplyTomeChrome), dark cover edge.
+    frame:SetBackdropColor(unpack(PANEL_BACKDROP_COLOR))
+    frame:SetBackdropBorderColor(unpack(PANEL_BORDER_COLOR))
+    ApplyTomeChrome(frame)
 
     frame:SetScript("OnDragStart", function(self2) self2:StartMoving() end)
     frame:SetScript("OnDragStop", function(self2)
@@ -2574,10 +2653,57 @@ function Codex:BuildFrame()
     -- and then closed without tabbing away is never lost.
     frame:SetScript("OnHide", function() self:SaveNotes() end)
 
+    -- Left page header: the title in the heading face, the class and spec
+    -- under it in the class colour (UpdateSubtitle).
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    title:SetPoint("TOPLEFT", frame, "TOPLEFT", 12, -8)
-    title:SetText(ns.version and ("SpecSage Codex " .. ns.version) or "SpecSage Codex")
+    title:SetFontObject(SpecSageTitleFont)
+    title:SetPoint("TOPLEFT", frame.leftPage, "TOPLEFT", PAGE_PADDING + 4, -14)
+    title:SetText("Class Codex")
     frame.title = title
+
+    local subtitle = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    subtitle:SetFontObject(SpecSageItalicFont)
+    subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 1, -2)
+    frame.subtitle = subtitle
+
+    -- Left page foot: the hero-tree seal (UpdateHeroSeal) and the version.
+    local seal = CreateFrame("Frame", nil, frame)
+    seal:SetSize(64, 64)
+    seal:SetPoint("BOTTOMLEFT", frame.leftPage, "BOTTOMLEFT", PAGE_PADDING + 6, 34)
+    local wax = seal:CreateTexture(nil, "ARTWORK")
+    wax:SetAllPoints(seal)
+    wax:SetTexture(TEXTURE_PATH .. "wax_seal.png")
+    local icon = seal:CreateTexture(nil, "OVERLAY")
+    icon:SetSize(44, 44)
+    icon:SetPoint("CENTER", seal, "CENTER", 0, 0)
+    -- Round the icon off inside the wax; MaskTexture is guarded since the
+    -- test mock has no such thing.
+    pcall(function()
+        local mask = seal:CreateMaskTexture()
+        mask:SetTexture(TEXTURE_PATH .. "circle_mask.png")
+        mask:SetAllPoints(icon)
+        icon:AddMaskTexture(mask)
+    end)
+    seal.icon = icon
+    local sealName = seal:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    sealName:SetFontObject(SpecSageHeadingFont)
+    sealName:SetJustifyH("LEFT")
+    sealName:SetPoint("TOPLEFT", seal, "TOPRIGHT", 10, -12)
+    seal.name = sealName
+    local sealNote = seal:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    sealNote:SetFontObject(SpecSageItalicFont)
+    sealNote:SetJustifyH("LEFT")
+    sealNote:SetPoint("TOPLEFT", sealName, "BOTTOMLEFT", 0, -2)
+    sealNote:SetText("your hero tree,\nread from your talents")
+    seal:Hide()
+    frame.heroSeal = seal
+
+    local versionText = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    versionText:SetFontObject(SpecSageItalicFont)
+    versionText:SetPoint("BOTTOMLEFT", frame.leftPage, "BOTTOMLEFT", PAGE_PADDING + 6, 14)
+    versionText:SetTextColor(unpack(MUTED_COLOR))
+    versionText:SetText(ns.version and ("v" .. ns.version .. " \194\183 patch 12.1") or "")
+    frame.versionText = versionText
 
     local closeButton = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
     closeButton:SetSize(24, 24)
