@@ -209,8 +209,13 @@ function ns.ItemString(itemID, bonus)
 end
 
 function ns.FormatPercent(value)
-    local ok, result = pcall(format, "%.2f%%", value or 0)
+    local ok, result = pcall(function() return format("%.2f%%", value or 0) end)
     if ok then return result end
+
+    -- Even the `or 0` can trip on some secret shapes; formatting the raw
+    -- value alone is the plainest rendering that can still succeed.
+    local plainOk, plain = pcall(format, "%.2f%%", value)
+    if plainOk then return plain end
     return "-"
 end
 
@@ -224,6 +229,12 @@ end
 function ns.FormatTime(seconds)
     seconds = seconds or 0
     local ok, result = pcall(FormatTimeRaw, seconds)
+    if ok then return result end
+
+    -- The >= 60 comparison couldn't run; formatting alone still can, so a
+    -- secret remaining time shows as its plain seconds rather than a dash
+    -- (the same second attempt ns.FormatNumber makes).
+    ok, result = pcall(format, "%.1fs", seconds)
     if ok then return result end
     return "-"
 end

@@ -1140,6 +1140,92 @@ The mock grew `IsInGroup()` (`mock.inGroup`), `GROUP_ROSTER_UPDATE`,
 run at once so an empty list fails in the suite), and records
 `SetBackdropBorderColor` alongside `SetBackdrop`.
 
+### Second Upkeep pass: Stagger, richer armor and mastery tooltips, per-field degradation (2026-09-05)
+
+The rest of what Upkeep had learned since the fork, again ported with
+SpecSage's names and *on top of* its extras (Power, Attack Speed, Dodge,
+Parry, Block rows; the single-fetch combat-log parser; the
+UnitEffectiveLevel-first level lookup), none of which Upkeep has:
+
+- **Stagger row** (`stagger`, last in `ns.STAT_LIST` after Block, off by
+  default per character). Reads `C_PaperDollInfo.GetStaggerPercentage("player")`
+  under pcall with **no class gating** — a non-Brewmaster sees 0%, the same
+  way a caster sees 0% Block, and the player decides visibility. The
+  tooltip's second line, "From your current target", is the API's second
+  return and simply does not appear without a target.
+- **Armor.** Four additions to the one tooltip, all in `Modules/Stats.lua`:
+  - `SaneEffectiveArmor(base, effective, posBuff)` — effective armor has
+    been seen reading as 0 for a single frame while base and a positive buff
+    were both fine (Blizzard's own panel reads the same field the same way);
+    when effective is *known* to be below base + buff, base + buff stands in.
+    Used by the row reader and the tooltip so the two never disagree.
+  - `GetArmorReductionAgainstTarget(effective)` — the character panel's
+    "against your current target" figure, from
+    `C_PaperDollInfo.GetArmorEffectivenessAgainstTarget`, gated on
+    `UnitExists("target") and UnitCanAttack("player","target")` and noted in
+    grey as "Against your current target". A friendly or absent target falls
+    back to the evenly-matched line as before.
+  - **Manual estimate fallback.** SpecSage used to refuse any formula because
+    the pre-Shadowlands `85*level+400` curve was ~8 points off. The curve
+    Blizzard actually uses adds one linear term per later level-cap bump
+    (`+4.5*(level-59)`, `+20*(level-80)`, `+22*(level-85)`), and with those
+    it matches the live API to the hundredth. `EstimateArmorReductionPercent`
+    is written with division and addition only and reports success through
+    pcall's boolean — never `if estimate` — so it survives a secret armor
+    value and can return a secret result that still displays. It is used
+    only when the live call fails (a secret mid-combat, or an instance
+    refusing reads), shown as "Physical damage reduction (estimated)" with
+    "Live figure unavailable right now" in grey.
+  - **Self-validation.** The estimate is checked against every successful
+    live figure using the exact armor/level pair just proven; one
+    disagreement of more than a percentage point sets `estimateTrusted =
+    false` for the session, so a future squish makes the estimate vanish
+    rather than lie. Validation is skipped unless `ns.KnownPast(armor, 0,
+    true)` — a secret or transiently-zero armor must not be read as the
+    *formula* being wrong. When neither a live figure nor a trusted
+    estimate exists the tooltip says "Damage reduction unavailable right
+    now" **unconditionally** (not gated on the scale probe, which can fail
+    for the same live-read reasons).
+  - `ReadLevel(unit)` keeps SpecSage's UnitEffectiveLevel-then-UnitLevel
+    order (scaled content fights you at your effective level) and is now
+    used for the target too; a `??` boss reads -1 and skips validation.
+- **Mastery.** `GetMasterySpellDescription()` reads the spec's mastery
+  spell(s) via `GetSpecializationMasterySpells` + `GetSpellDescription`,
+  because a fixed sentence is either too vague or wrong for most specs and
+  the spell text arrives already computed with the character's current
+  mastery. An empty description means "not loaded yet" (a C_Spell quirk),
+  so `C_Spell.RequestLoadSpellData` is kicked off for a later hover and the
+  static text stands in meanwhile. `TooltipProvider` now lets any builder's
+  `description` override the `DESCRIPTIONS` entry; only mastery uses it.
+- **Combat: per-field degradation.** `SafeFormatNumber` wraps every meter
+  row (DPS / HPS / DTPS / Session DPS / Session Dmg) and every field of
+  `GetReport`, so one secret figure reads "?" while its neighbours keep
+  their numbers; the sentence-level pcall in `GetReport` stays as the last
+  line of defence. The single-fetch `CombatLogGetCurrentEventInfo` path and
+  the SPELL_ABSORBED / SWING_DAMAGE_LANDED exclusion are unchanged.
+- **Procs.** Each watched row is built under its own pcall ("one watched
+  spell's row failing to build must not cost every other row"), and the
+  three inline SafeCall comparisons (aura.applications, aura.duration,
+  proc.count) now go through `ns.KnownPast`. The "on" fallback for an
+  unreadable remaining time is kept.
+- **Formatters.** `ns.FormatPercent` and `ns.FormatTime` gained the second
+  `pcall(format, ...)` on the raw value that `ns.FormatNumber` already had,
+  so a value that formats but cannot be compared shows as its plain number.
+  The fallback string stays SpecSage's "-".
+- **Migration.** `MigrateStatVisibility` is back in `Core/Config.lua`'s
+  `InitConfig`: a legacy account-wide `db.stats.show` is copied onto each
+  character once (`chardb.migratedStatVisibility`), only for keys the
+  character table knows, and the shared copy is left for characters that
+  have not logged in yet. The earlier removal treated it as dead code
+  because SpecSage never wrote that key; it is cheap, and a saved-variable
+  file carried over from the predecessor overlay does carry one.
+
+The mock's armor curve was switched to Blizzard's real one (it was a
+made-up `armor/(armor+5000)`), because the self-validation above would
+otherwise have disabled the estimate for the whole suite on the first live
+tooltip. `mock.target`, `mock.stagger`, `mock.masterySpells`,
+`mock.spellDescriptions` and `mock.requestedSpellData` drive the new paths.
+
 ## Live Mythic+ meta loadout (v1.4) — schema, UI, and pipeline all shipped
 
 A third suggested-loadout kind, `mplusMetaLoadout`, alongside `mplusLoadout`

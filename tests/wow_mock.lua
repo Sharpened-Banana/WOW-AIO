@@ -581,8 +581,26 @@ mock.armor = { base = 3000, effective = 4500, posBuff = 0 }
 function UnitArmor()
     return mock.armor.base, mock.armor.effective, mock.armor.effective, mock.armor.posBuff, 0
 end
-function UnitLevel() return 80 end
-function UnitEffectiveLevel() return 80 end
+function UnitLevel(unit)
+    if unit == "target" then return mock.target.level end
+    return 80
+end
+function UnitEffectiveLevel(unit)
+    if unit == "target" then return mock.target.level end
+    return 80
+end
+
+-- The player's current target, for the target-relative armor and stagger
+-- lines. `exists=false` is "nothing selected"; `hostile` drives UnitCanAttack.
+mock.target = { exists = false, hostile = false, level = 80 }
+function UnitExists(unit)
+    if unit == "target" then return mock.target.exists end
+    return unit == "player"
+end
+function UnitCanAttack(_, unit)
+    if unit == "target" then return mock.target.exists and mock.target.hostile end
+    return false
+end
 
 -- Main-hand / off-hand swing times, as the character sheet's Attack Speed.
 mock.attackSpeed = { main = 1.99, off = 2.60 }
@@ -599,13 +617,39 @@ function GetParryChance() return 24.88 end
 function GetBlockChance() return 33.66 end
 
 -- Returns an effectiveness RATIO (0-1), the way the live API does; the
--- character sheet multiplies it by 100 for display. Deliberately not the old
--- armor/((85*level)+400) curve, which no longer matches the client.
+-- character sheet multiplies it by 100 for display. The curve is Blizzard's
+-- current post-squish one (85*level+400 plus the linear terms added at each
+-- later level-cap bump), the same one Modules/Stats.lua's manual estimate
+-- uses as its last-resort fallback: Stats.lua validates that estimate
+-- against every successful live read and disables it for the session on a
+-- disagreement, so a mock curve that disagreed with the real one would
+-- quietly switch the fallback off for the rest of the suite.
+local function ArmorConstant(level)
+    local k = 400 + 85 * level
+    if level > 59 then k = k + 4.5 * (level - 59) end
+    if level > 80 then k = k + 20 * (level - 80) end
+    if level > 85 then k = k + 22 * (level - 85) end
+    return k
+end
+mock.ArmorConstant = ArmorConstant
+
+-- Brewmaster stagger: the first return is the player's own stagger, the
+-- second the stagger against the current target (nil with no target).
+mock.stagger = { percent = 0, againstTarget = nil }
+
 C_PaperDollInfo = {
     GetArmorEffectiveness = function(armor, attackerLevel)
         assert(type(attackerLevel) == "number", "GetArmorEffectiveness needs an attacker level")
-        local value = (armor or 0) / ((armor or 0) + 5000)
+        local value = (armor or 0) / ((armor or 0) + ArmorConstant(attackerLevel))
         return value
+    end,
+    GetArmorEffectivenessAgainstTarget = function(armor)
+        assert(mock.target.exists, "GetArmorEffectivenessAgainstTarget needs a target")
+        return (armor or 0) / ((armor or 0) + ArmorConstant(mock.target.level))
+    end,
+    GetStaggerPercentage = function(unit)
+        assert(unit == "player", "GetStaggerPercentage takes a unit token")
+        return mock.stagger.percent, mock.stagger.againstTarget
     end,
 }
 
@@ -642,6 +686,14 @@ function GetSpecialization() return 2 end
 -- closure reads fresh on every call.
 mock.playerPrimaryStat = 2
 function GetSpecializationInfo() return 252, "Frost", "desc", 135773, "DAMAGER", mock.playerPrimaryStat end
+
+-- The spec's mastery spell(s), as the character sheet's mastery tooltip
+-- reads them; Stats.lua captures this function at load, so tests vary the
+-- table rather than the function.
+mock.masterySpells = { 77514 }
+function GetSpecializationMasterySpells(_)
+    return mock.masterySpells[1], mock.masterySpells[2]
+end
 
 --------------------------------------------------------------------------------
 -- Classes and specializations
@@ -793,7 +845,21 @@ mock.spells = {
 
 mock.cooldowns = {}
 
+-- Spell descriptions load asynchronously on a live client: an ID with no
+-- entry here returns "" the way C_Spell.GetSpellDescription does before the
+-- data arrives, and RequestLoadSpellData records what was asked for.
+mock.spellDescriptions = {
+    [77514] = "Increases all Frost damage done by 32.5%.",
+}
+mock.requestedSpellData = {}
+
 C_Spell = {
+    GetSpellDescription = function(spellID)
+        return mock.spellDescriptions[spellID] or ""
+    end,
+    RequestLoadSpellData = function(spellID)
+        mock.requestedSpellData[#mock.requestedSpellData + 1] = spellID
+    end,
     GetSpellInfo = function(spellID)
         local spell = mock.spells[spellID]
         if not spell then return nil end

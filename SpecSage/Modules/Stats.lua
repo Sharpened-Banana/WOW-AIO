@@ -9,9 +9,17 @@ local Stats = ns:NewModule("Stats")
 -- still around; prefer the namespaced versions when present.
 local GetSpecialization = (C_SpecializationInfo and C_SpecializationInfo.GetSpecialization) or GetSpecialization
 local GetSpecializationInfo = (C_SpecializationInfo and C_SpecializationInfo.GetSpecializationInfo) or GetSpecializationInfo
+local GetSpecializationMasterySpells = (C_SpecializationInfo and C_SpecializationInfo.GetSpecializationMasterySpells)
+    or GetSpecializationMasterySpells
+local GetSpellDescription = (C_Spell and C_Spell.GetSpellDescription) or GetSpellDescription
+local RequestLoadSpellData = C_Spell and C_Spell.RequestLoadSpellData
 
--- Shared guard for expressions that may touch secret values (Core/Init.lua).
+-- Shared guards for expressions that may touch secret values (Core/Init.lua).
+-- KnownPast is a comparison that reports false, rather than throwing, on a
+-- secret: each tooltipBuilder runs inside a single pcall in TooltipProvider,
+-- so one bad comparison would otherwise cost the whole tooltip body.
 local SafeCall = ns.SafeCall
+local KnownPast = ns.KnownPast
 
 local STAT_STRENGTH, STAT_AGILITY, STAT_STAMINA, STAT_INTELLECT = 1, 2, 3, 4
 
@@ -163,9 +171,43 @@ readers.speed = function()
     return "Speed", ns.FormatPercent(value)
 end
 
+-- Effective armor has been observed reading as an implausible 0 - below
+-- base plus a buff independently known to be positive - for a single read,
+-- then reading correctly again moments later; Blizzard's own character
+-- panel reads this identical field the identical way, so it is not a
+-- misread on our end, just a transient value neither of us protects
+-- against. Rather than display or calculate from a number that contradicts
+-- its own inputs, fall back to the one figure we can compute ourselves.
+-- Every comparison goes through KnownPast/SafeCall because any of the three
+-- inputs can be secret in restricted content.
+local function SaneEffectiveArmor(base, effective, posBuff)
+    if not KnownPast(posBuff, 0, true) then return effective end
+    local floor = SafeCall(function() return base + posBuff end)
+    if not floor then return effective end
+    if KnownPast(effective, floor, false) then
+        return floor
+    end
+    return effective
+end
+
 readers.armor = function()
-    local _, effectiveArmor = UnitArmor("player")
-    return "Armor", ns.FormatNumber(effectiveArmor)
+    local base, effectiveArmor, _, posBuff = UnitArmor("player")
+    return "Armor", ns.FormatNumber(SaneEffectiveArmor(base, effectiveArmor, posBuff))
+end
+
+-- Brewmaster-specific, but shown the same way every other stat is: opt-in via
+-- statsShow, with no class gating - a Monk not specced Brewmaster just sees
+-- 0%, and the player controls visibility via the Stats options anyway.
+-- pcall rather than a plain call: the API is newer than the rest of the
+-- paper-doll set and its argument checking has varied between builds.
+readers.stagger = function()
+    local getStagger = C_PaperDollInfo and C_PaperDollInfo.GetStaggerPercentage
+    local stagger = 0
+    if getStagger then
+        local ok, value = pcall(getStagger, "player")
+        if ok then stagger = value or 0 end
+    end
+    return "Stagger", ns.FormatPercent(stagger)
 end
 
 -- Effective attack power (base plus buffs/debuffs); mirrors StatBreakdown's
@@ -256,15 +298,6 @@ local function Rating(index)
     return GetCombatRating and GetCombatRating(index) or 0
 end
 
--- What the armor actually does, the way Blizzard's own character sheet puts
--- it ("Physical damage reduction: 56.62%"), rather than only the rating.
---
--- The number comes from C_PaperDollInfo.GetArmorEffectiveness against an
--- attacker of the player's own level - "an evenly matched enemy" in
--- Blizzard's wording. There is deliberately no formula fallback: the old
--- armor/((85*level)+400) curve is obsolete (it reports ~48% where the live
--- client shows 56.62% for the same armor), so a client without the API omits
--- the line rather than printing a confidently wrong one.
 -- Whether GetArmorEffectiveness reports a 0-1 ratio or an already-scaled
 -- percentage, worked out ONCE from a probe made with our own literal numbers
 -- and then cached as a multiplier.
@@ -297,15 +330,30 @@ local function GetArmorEffectivenessScale()
     return armorEffectivenessScale
 end
 
+-- A unit's level for the armor curve. UnitEffectiveLevel first: in scaled
+-- content (Timewalking, Chromie Time, level-synced zones) it is the level
+-- the game actually fights you at, which is the one the armor curve uses,
+-- and UnitLevel is only the fallback for a client without it. Read under
+-- SafeCall because a unit token that resolves to nothing readable mid-combat
+-- can hand back a secret.
+local function ReadLevel(unit)
+    local level
+    if UnitEffectiveLevel then
+        level = SafeCall(function() return UnitEffectiveLevel(unit) end)
+    end
+    if not level and UnitLevel then
+        level = SafeCall(function() return UnitLevel(unit) end)
+    end
+    if type(level) ~= "number" or level <= 0 then return nil end
+    return level
+end
+
 -- What the armor actually does, the way Blizzard's own character sheet puts
 -- it ("Physical damage reduction: 56.62%"), rather than only the rating.
 --
 -- The number comes from C_PaperDollInfo.GetArmorEffectiveness against an
 -- attacker of the player's own level - "an evenly matched enemy" in
--- Blizzard's wording. There is deliberately no formula fallback: the old
--- armor/((85*level)+400) curve is obsolete (it reports ~48% where the live
--- client shows 56.62% for the same armor), so a client without the API omits
--- the line rather than printing a confidently wrong one.
+-- Blizzard's wording.
 --
 -- The result may itself be a secret; ns.FormatPercent renders one fine. No
 -- clamping is applied, deliberately - clamping means comparing, and the API
@@ -323,13 +371,7 @@ local function GetArmorReductionPercent(effectiveArmor)
     local getEffectiveness = C_PaperDollInfo and C_PaperDollInfo.GetArmorEffectiveness
     if not getEffectiveness then return nil end
 
-    local level
-    if UnitEffectiveLevel then
-        level = SafeCall(function() return UnitEffectiveLevel("player") end)
-    end
-    if not level and UnitLevel then
-        level = SafeCall(function() return UnitLevel("player") end)
-    end
+    local level = ReadLevel("player")
     if not level then return nil end
 
     local ok, effectiveness = pcall(getEffectiveness, effectiveArmor, level)
@@ -337,6 +379,104 @@ local function GetArmorReductionPercent(effectiveArmor)
 
     -- Arithmetic only: a secret in yields a secret out, which still displays.
     return SafeCall(function() return effectiveness * scale end)
+end
+
+-- Same idea, but against the player's actual current target rather than an
+-- assumed same-level enemy - what the character panel shows once you have
+-- someone selected. Shares the same scale as GetArmorEffectiveness: they are
+-- clearly the same family of API, just against a different attacker. Gated
+-- on a hostile target because a friendly one has no attacker level worth
+-- reporting, and UnitCanAttack is the one check that survives a secret
+-- reaction flag (it returns a boolean, never the underlying value).
+local function GetArmorReductionAgainstTarget(effectiveArmor)
+    local scale = GetArmorEffectivenessScale()
+    if not scale then return nil end
+
+    local againstTarget = C_PaperDollInfo and C_PaperDollInfo.GetArmorEffectivenessAgainstTarget
+    if not (againstTarget and UnitExists and UnitCanAttack) then return nil end
+    if not (UnitExists("target") and UnitCanAttack("player", "target")) then return nil end
+
+    local ok, effectiveness = pcall(againstTarget, effectiveArmor)
+    if not ok or effectiveness == nil then return nil end
+
+    return SafeCall(function() return effectiveness * scale end)
+end
+
+--------------------------------------------------------------------------------
+-- Manual armor-reduction estimate
+--
+-- The two functions above go through Blizzard's own curve via
+-- C_PaperDollInfo, which is why they are trustworthy - but that call can
+-- fail even when the API exists at all: effective armor is a secret value
+-- during some combat/content states (see Core/Init.lua), and Blizzard's own
+-- internal comparisons against a secret throw, caught above only as "no
+-- result." When that happens this manual formula, built from pure
+-- arithmetic (division and addition only, never a comparison on the armor
+-- value itself), still works on a secret the same way ns.FormatNumber does.
+--
+-- The formula is Blizzard's published post-squish curve, unchanged since
+-- Legion aside from one new linear term added at each later level-cap
+-- bump (60, 80, 85); it is used here ONLY as a last resort and is never
+-- trusted blindly - see ValidateEstimate below. (An earlier SpecSage build
+-- refused any formula because the pre-Shadowlands 85*level+400 form was
+-- ~8 points off; the extra terms are what closes that gap.)
+--------------------------------------------------------------------------------
+
+local function EstimateArmorConstant(level)
+    local k = 400 + 85 * level
+    if level > 59 then k = k + 4.5 * (level - 59) end
+    if level > 80 then k = k + 20 * (level - 80) end
+    if level > 85 then k = k + 22 * (level - 85) end
+    return k
+end
+
+-- armor is never tested for truthiness here - it can be the same secret
+-- value the live API just failed on, and a plain `if`/`not` on one throws
+-- exactly like a comparison does. Only pure arithmetic touches it. The
+-- result can end up secret too (division doesn't strip the tag), so success
+-- is reported through pcall's own boolean - never by testing the number
+-- itself - and callers must do the same rather than write `if estimate`.
+local function EstimateArmorReductionPercent(armor, level)
+    if not level or level <= 0 then return false, nil end
+    local ok, pct = pcall(function()
+        local raw = (armor / (armor + EstimateArmorConstant(level))) * 100
+        -- Armor's reduction is capped at 75% in the client; only clamp when
+        -- the comparison is possible (a secret result is left as-is).
+        if KnownPast(raw, 75, true) then return 75 end
+        return raw
+    end)
+    if not ok then return false, nil end
+    return true, pct
+end
+
+-- A future level squish or curve rework would make the formula above wrong
+-- without throwing - it would just quietly compute a different number. So
+-- rather than trust it forever, check it against the real API every time
+-- that succeeds, using the exact armor/level pair just proven live: one
+-- comparison more than about a percentage point off is enough to stop
+-- offering the estimate for the rest of the session.
+local estimateTrusted = true
+
+local function ValidateEstimate(armor, level, actualPercent)
+    if not estimateTrusted then return end
+
+    -- Effective armor has been observed reading as an implausible 0 for a
+    -- moment (see SaneEffectiveArmor above) - comparing an estimate against
+    -- a live result computed from a momentarily-bad input would read as the
+    -- FORMULA being wrong and disable it for the rest of the session over
+    -- nothing. Only validate when armor is confirmed to be a real positive
+    -- number (a secret one reports false here and is skipped too).
+    if not KnownPast(armor, 0, true) then return end
+
+    local haveEstimate, estimate = EstimateArmorReductionPercent(armor, level)
+    if not haveEstimate then return end
+
+    local withinTolerance = SafeCall(function()
+        return math.abs(estimate - actualPercent) < 1
+    end)
+    if withinTolerance ~= true then
+        estimateTrusted = false
+    end
 end
 
 local function RatingLines(index, ratingLabel)
@@ -364,6 +504,7 @@ local DESCRIPTIONS = {
     dodge = "Chance to completely avoid a melee or ranged attack.",
     parry = "Chance to deflect a melee attack and reduce the attacker's next swing timer. Requires a melee weapon.",
     block = "Chance for your shield to block part of an incoming melee hit. Requires a shield.",
+    stagger = "Brewmaster: the portion of incoming damage held back to be taken over time instead of all at once.",
 }
 
 local tooltipBuilders = {}
@@ -376,19 +517,6 @@ tooltipBuilders.ilvl = function()
             { left = "Overall", right = format("%.1f", overall or 0) },
         },
     }
-end
-
--- True only when `value` is known to be past `threshold`. A secret value
--- cannot be compared at all, so it reports false: the optional line is
--- skipped rather than the comparison erroring and costing the caller every
--- line it had already built (each tooltipBuilder runs inside a single pcall
--- in TooltipProvider, so one bad comparison loses the whole tooltip body).
-local function KnownPast(value, threshold, wantGreater)
-    return SafeCall(function()
-        local number = value or 0
-        if wantGreater then return number > threshold end
-        return number < threshold
-    end) == true
 end
 
 local function StatBreakdown(index)
@@ -435,12 +563,48 @@ tooltipBuilders.haste = function(primaryStat)
     return { lines = RatingLines(index) }
 end
 
+-- Mastery is the one secondary stat whose effect is entirely spec-specific
+-- ("Frostbolt and Frozen Orb deal more damage", "your shield absorbs more"),
+-- so a single fixed description would either be too vague to mean anything
+-- or wrong for most specs reading it. The spell description already comes
+-- back fully computed with this character's current mastery plugged in, so
+-- it doubles as an explanation and a live value.
+local function GetMasterySpellDescription()
+    if not (GetSpecializationMasterySpells and GetSpecialization and GetSpellDescription) then return nil end
+
+    local spec = GetSpecialization()
+    if not spec then return nil end
+
+    local ok, spell1, spell2 = pcall(GetSpecializationMasterySpells, spec)
+    if not ok then return nil end
+
+    local lines = {}
+    for _, spellID in ipairs({ spell1 or 0, spell2 or 0 }) do
+        if spellID > 0 then
+            local descOk, desc = pcall(GetSpellDescription, spellID)
+            if descOk and desc and desc ~= "" then
+                lines[#lines + 1] = desc
+            elseif RequestLoadSpellData then
+                -- Spell text loads asynchronously; an empty description just
+                -- means it hasn't arrived yet (a documented C_Spell quirk,
+                -- not a real absence). Kick off the load so a later hover -
+                -- there is no event worth waiting on here - gets the real
+                -- text instead of the generic fallback forever.
+                pcall(RequestLoadSpellData, spellID)
+            end
+        end
+    end
+
+    if #lines == 0 then return nil end
+    return table.concat(lines, "\n\n")
+end
+
 tooltipBuilders.mastery = function()
     local lines = RatingLines(RATING.mastery)
     if GetMastery then
         lines[#lines + 1] = { left = "Mastery points", right = format("%.2f", GetMastery() or 0) }
     end
-    return { lines = lines }
+    return { lines = lines, description = GetMasterySpellDescription() }
 end
 
 tooltipBuilders.vers = function()
@@ -460,6 +624,7 @@ tooltipBuilders.speed = function() return { lines = RatingLines(RATING.speed) } 
 
 tooltipBuilders.armor = function()
     local base, effective, _, posBuff = UnitArmor("player")
+    effective = SaneEffectiveArmor(base, effective, posBuff)
     local lines = {
         { left = "Base", right = ns.FormatNumber(base) },
         { left = "Effective", right = ns.FormatNumber(effective) },
@@ -469,10 +634,45 @@ tooltipBuilders.armor = function()
     end
 
     -- What the armor is actually worth, the way the character sheet shows it.
-    local reduction = GetArmorReductionPercent(effective)
-    if reduction then
+    -- Recomputed from the current effective armor every call, so a pinned
+    -- tooltip's periodic refresh (and a fresh hover) picks up gear, buff,
+    -- debuff, or target changes rather than showing a stale reduction.
+    local targetReduction = GetArmorReductionAgainstTarget(effective)
+    local reduction = not targetReduction and GetArmorReductionPercent(effective) or nil
+
+    if targetReduction then
+        ValidateEstimate(effective, ReadLevel("target"), targetReduction)
+        lines[#lines + 1] = { left = "Physical damage reduction", right = ns.FormatPercent(targetReduction) }
+        lines[#lines + 1] = { left = "|cff808080Against your current target|r", right = "" }
+    elseif reduction then
+        ValidateEstimate(effective, ReadLevel("player"), reduction)
         lines[#lines + 1] = { left = "Physical damage reduction", right = ns.FormatPercent(reduction) }
         lines[#lines + 1] = { left = "|cff808080Against an evenly matched enemy|r", right = "" }
+    else
+        -- The live call failed - almost always because effective armor is
+        -- unreadable right now, either a Patch 12.0 secret value mid-combat
+        -- or this instance restricting addon reads outright (the same
+        -- reason Procs/Buffs may be reporting aura tracking as paused).
+        -- Fall back to the manual estimate rather than a cached pre-fight
+        -- figure, which would be actively misleading during the exact
+        -- moment a big armor buff is up.
+        --
+        -- The fallback note below is shown unconditionally rather than
+        -- gated on the API "existing" (formerly checked via the scale
+        -- probe): that probe can fail for the exact same live-read reasons
+        -- the two calls above just did, which would otherwise go silent
+        -- here too rather than say anything at all.
+        local haveEstimate, estimate = false, nil
+        if estimateTrusted then
+            haveEstimate, estimate = EstimateArmorReductionPercent(effective, ReadLevel("player"))
+        end
+
+        if haveEstimate then
+            lines[#lines + 1] = { left = "Physical damage reduction (estimated)", right = ns.FormatPercent(estimate) }
+            lines[#lines + 1] = { left = "|cff808080Live figure unavailable right now|r", right = "" }
+        else
+            lines[#lines + 1] = { left = "|cff808080Damage reduction unavailable right now|r", right = "" }
+        end
     end
 
     return { lines = lines }
@@ -515,6 +715,29 @@ tooltipBuilders.dodge = function() return { lines = RatingLines(RATING.dodge) } 
 tooltipBuilders.parry = function() return { lines = RatingLines(RATING.parry) } end
 tooltipBuilders.block = function() return { lines = RatingLines(RATING.block) } end
 
+-- GetStaggerPercentage's second return is the stagger against the current
+-- target specifically (the character panel's own "vs. target" figure); it
+-- is nil with no target, so the line simply does not appear then.
+tooltipBuilders.stagger = function()
+    local getStagger = C_PaperDollInfo and C_PaperDollInfo.GetStaggerPercentage
+    local stagger, staggerAgainstTarget = 0, nil
+    if getStagger then
+        local ok, value, valueAgainstTarget = pcall(getStagger, "player")
+        if ok then
+            stagger, staggerAgainstTarget = value or 0, valueAgainstTarget
+        end
+    end
+
+    local lines = {
+        { left = "Of health staggered", right = ns.FormatPercent(stagger or 0) },
+    }
+    if staggerAgainstTarget then
+        lines[#lines + 1] = { left = "From your current target", right = ns.FormatPercent(staggerAgainstTarget) }
+    end
+
+    return { lines = lines }
+end
+
 -- Called by the UI when the mouse enters a stat row.
 local function TooltipProvider(key)
     local entry
@@ -536,6 +759,12 @@ local function TooltipProvider(key)
         local ok, built = pcall(builder, primaryStat)
         if ok and built then
             data.lines = built.lines
+            -- A builder can supply a live, spec-specific description (see
+            -- mastery) that's more useful than the fixed one in DESCRIPTIONS;
+            -- falling back to the static text when it can't (e.g. no spec yet).
+            if built.description then
+                data.description = built.description
+            end
         end
     end
 

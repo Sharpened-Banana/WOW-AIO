@@ -56,15 +56,19 @@ class guides, talent loadouts, and live character tracking in one place:
   the addon's GitHub Issues link ready to Ctrl+C for bug reports and feature
   requests. WoW gives addons no network access, so no addon can open your
   browser or send a report itself; copying a link is the honest version.
-- **Stat Overlay** — a small movable overlay with your character stats, live
-  combat numbers (DPS / HPS / damage taken), proc & cooldown tracking, and a
-  **Buffs** section that only appears when something is missing: raid buffs
+- **Stat Overlay** — a small movable overlay with your character stats
+  (including a **Stagger** row for Brewmasters), live combat numbers (DPS /
+  HPS / damage taken), proc & cooldown tracking, and a **Buffs** section that only appears when something is missing: raid buffs
   (Battle Shout, Arcane Intellect, Fortitude, Mark of the Wild, Skyfury)
   while you are grouped, and — if you turn it on — your flask and food. A
   **Theme** dropdown picks the overlay's look: Minimal (a hairline border),
   Bordered (the tooltip frame), or Class-coloured (a border in your class
   colour). Status colours are blue-green and orange rather than green and
-  red so they stay apart under the common forms of colour blindness.
+  red so they stay apart under the common forms of colour blindness. Stat
+  tooltips explain what a number is worth: Armor shows your physical damage
+  reduction against your current target (or an evenly matched enemy, with a
+  clearly labelled estimate when the game hides the live figure) and Mastery
+  shows your spec's own mastery text with its current value plugged in.
 
 The pieces talk to each other: the Codex's stat-priority page shows *your
 live values* next to each stat in the priority, so the guide and your

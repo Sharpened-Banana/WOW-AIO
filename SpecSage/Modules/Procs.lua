@@ -182,14 +182,14 @@ local function BuildWatchedRow(spellID)
 
     if aura then
         local label = name
-        if SafeCall(function() return (aura.applications or 0) > 1 end) then
+        if ns.KnownPast(aura.applications, 1, true) then
             label = format("%s (%d)", name, aura.applications)
         end
 
         -- A secret duration/expiration renders as a plain "on" - active is
         -- the one thing we still know for sure.
         local value = "on"
-        if SafeCall(function() return (aura.duration or 0) > 0 end) then
+        if ns.KnownPast(aura.duration, 0, true) then
             local remaining = SafeCall(function() return (aura.expirationTime or 0) - GetTime() end)
             if remaining then value = ns.FormatTime(remaining) end
         end
@@ -241,8 +241,11 @@ function Procs:Update()
 
     for _, spellID in ipairs(ns.chardb.watch) do
         watchedSet[spellID] = true
-        local row = BuildWatchedRow(spellID)
-        if row then
+        -- One watched spell's row failing to build (an unexpected secret
+        -- value, say) must not cost every other row - this loop has no
+        -- outer pcall of its own the way Stats.lua's per-reader calls do.
+        local ok, row = pcall(BuildWatchedRow, spellID)
+        if ok and row then
             rows[#rows + 1] = row
         end
     end
@@ -254,7 +257,7 @@ function Procs:Update()
             local proc = auto[index]
             local remaining = SafeCall(function() return proc.expirationTime - GetTime() end)
             local label = proc.name
-            if SafeCall(function() return proc.count > 1 end) then
+            if ns.KnownPast(proc.count, 1, true) then
                 label = format("%s (%d)", proc.name, proc.count)
             end
             rows[#rows + 1] = {

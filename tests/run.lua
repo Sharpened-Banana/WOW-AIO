@@ -888,29 +888,42 @@ do
     local provider = ns.UI:GetSectionProvider("stats")
     check(provider ~= nil, "the stats section publishes a tooltip provider")
 
+    -- Exact match on the label when one is a prefix of another ("Physical
+    -- damage reduction" vs "... (estimated)"); substring match otherwise so
+    -- the colour-coded grey notes can be found by a fragment.
     local function lineValue(data, leftPattern)
         for _, line in ipairs((data and data.lines) or {}) do
-            if line.left and line.left:find(leftPattern, 1, true) then return line.right end
+            if line.left == leftPattern then return line.right end
+        end
+        for _, line in ipairs((data and data.lines) or {}) do
+            if line.left and line.left:find(leftPattern, 1, true)
+                and not line.left:find(leftPattern .. " (", 1, true) then
+                return line.right
+            end
         end
         return nil
     end
 
     local armor = provider("armor")
     check(armor ~= nil, "the armor tooltip resolves")
-    -- The mock's effectiveness curve: 4500 / (4500 + 5000) = 0.47368...
+    -- The mock's effectiveness curve at level 80: 4500 / (4500 + 7294.5) = 0.38153...
     local reduction = lineValue(armor, "Physical damage reduction")
-    check(reduction == "47.37%", "armor tooltip shows physical damage reduction", tostring(reduction))
+    check(reduction == "38.15%", "armor tooltip shows physical damage reduction", tostring(reduction))
     check(lineValue(armor, "evenly matched") ~= nil,
         "armor tooltip notes the reduction is against an evenly matched enemy")
     check(lineValue(armor, "Effective") ~= nil, "armor tooltip still shows effective armor")
 
-    -- A client without the API must omit the line rather than guess with the
-    -- obsolete formula.
+    -- A client without the API falls back to the manual curve, but says so:
+    -- the line is marked "(estimated)" and a grey note explains why.
     local savedPaperDoll = C_PaperDollInfo
     C_PaperDollInfo = nil
     local armorNoAPI = provider("armor")
     check(lineValue(armorNoAPI, "Physical damage reduction") == nil,
-        "without GetArmorEffectiveness the reduction line is omitted, not guessed")
+        "without GetArmorEffectiveness the live reduction line is not shown")
+    check(lineValue(armorNoAPI, "Physical damage reduction (estimated)") == "38.15%",
+        "without GetArmorEffectiveness the manual estimate stands in, marked as such",
+        tostring(lineValue(armorNoAPI, "Physical damage reduction (estimated)")))
+    check(lineValue(armorNoAPI, "Live figure unavailable") ~= nil, "the estimate carries its grey explanatory note")
     check(lineValue(armorNoAPI, "Effective") ~= nil, "the rest of the armor tooltip survives")
     C_PaperDollInfo = savedPaperDoll
 
@@ -1037,20 +1050,18 @@ check(ns.chardb.statsShow.speed == false, "second character does not inherit the
     ns.chardb.statsShow.speed)
 check(firstCharacter.statsShow.speed == true, "first character keeps its own choice")
 
--- Core/Config.lua used to have a MigrateStatVisibility function that read
--- SpecSageDB.stats.show onto the character DB, but DEFAULTS.stats never
--- creates that key and this addon never writes it either (SpecSageDB is a
--- brand-new saved variable, not the predecessor addon's StatOverlayDB) - the
--- only thing that ever exercised the branch was this test writing to it by
--- hand. It was dead code (see REVIEW.md #13) and has been removed; confirm a
--- stray legacy-shaped key like this is simply left alone, not read into a
--- player's real per-character choices.
+-- A legacy account-wide SpecSageDB.stats.show (the predecessor overlay's
+-- layout) is moved onto a character the first time that character logs in,
+-- so an upgrade does not reset anyone's rows. Brought back from Upkeep on
+-- 2026-09-05; the one-shot and unknown-key behaviour is covered in the
+-- "Second Upkeep pass" section below.
 SpecSageDB.stats.show = { crit = false, armor = true, haste = false }
 SpecSageCharDB = nil
 ns.InitConfig()
-check(ns.chardb.statsShow.crit == true, "a stray SpecSageDB.stats.show is not read into the character DB",
+check(ns.chardb.statsShow.crit == false, "a legacy SpecSageDB.stats.show is read onto a fresh character DB",
     ns.chardb.statsShow.crit)
-check(ns.chardb.migratedStatVisibility == nil, "there is no migration flag - the migration path was removed")
+check(ns.chardb.statsShow.armor == true, "every legacy key the character table knows is copied")
+check(ns.chardb.migratedStatVisibility == true, "the character is flagged as migrated")
 
 SpecSageDB.stats.show = nil
 SpecSageCharDB = firstCharacter
@@ -4469,6 +4480,359 @@ do
     mock.inGroup = false
     ns.db.buffs.enabled, ns.db.buffs.showRaidBuffs, ns.db.buffs.showSelfBuffs = true, true, false
     BuffsModule:Update()
+end
+
+--------------------------------------------------------------------------------
+section("Second Upkeep pass: Stagger, armor and mastery tooltips (2026-09-05)")
+--------------------------------------------------------------------------------
+
+do
+    local provider = ns.UI:GetSectionProvider("stats")
+
+    local function lineValue(data, left)
+        for _, line in ipairs((data and data.lines) or {}) do
+            if line.left == left then return line.right end
+        end
+        return nil
+    end
+    local function hasNote(data, fragment)
+        for _, line in ipairs((data and data.lines) or {}) do
+            if line.left and line.left:find(fragment, 1, true) then return true end
+        end
+        return false
+    end
+
+    -- Stagger row: listed after Block, off by default, no class gating.
+    local staggerIndex, blockIndex
+    for index, entry in ipairs(ns.STAT_LIST) do
+        if entry.key == "stagger" then staggerIndex = index end
+        if entry.key == "block" then blockIndex = index end
+    end
+    check(staggerIndex ~= nil and blockIndex ~= nil and staggerIndex == blockIndex + 1,
+        "Stagger is in ns.STAT_LIST directly after Block", staggerIndex)
+    check(ns.chardb.statsShow.stagger == false, "Stagger is hidden by default for a character")
+
+    ns.StatsShown().stagger = true
+    ns.RefreshAll()
+    local staggerRow = findRow("stats", "Stagger")
+    check(staggerRow ~= nil and staggerRow.value == "0.00%", "a non-Brewmaster sees a 0% Stagger row, not no row",
+        staggerRow and staggerRow.value)
+    mock.stagger.percent = 12.5
+    ns.RefreshAll()
+    staggerRow = findRow("stats", "Stagger")
+    check(staggerRow and staggerRow.value == "12.50%", "the Stagger row reads GetStaggerPercentage",
+        staggerRow and staggerRow.value)
+
+    local staggerTip = provider("stagger")
+    check(lineValue(staggerTip, "Of health staggered") == "12.50%", "stagger tooltip shows the staggered portion",
+        tostring(lineValue(staggerTip, "Of health staggered")))
+    check(lineValue(staggerTip, "From your current target") == nil,
+        "no target-relative stagger line without a second return value")
+    check(staggerTip and staggerTip.description and staggerTip.description:find("Brewmaster", 1, true) ~= nil,
+        "stagger has a description")
+    mock.stagger.againstTarget = 9.25
+    staggerTip = provider("stagger")
+    check(lineValue(staggerTip, "From your current target") == "9.25%",
+        "the second return becomes the 'From your current target' line",
+        tostring(lineValue(staggerTip, "From your current target")))
+
+    -- An API that throws costs the row nothing but its number.
+    local savedStagger = C_PaperDollInfo.GetStaggerPercentage
+    C_PaperDollInfo.GetStaggerPercentage = function() error("secret") end
+    ns.RefreshAll()
+    staggerRow = findRow("stats", "Stagger")
+    check(staggerRow and staggerRow.value == "0.00%", "a throwing GetStaggerPercentage reads as 0%",
+        staggerRow and staggerRow.value)
+    C_PaperDollInfo.GetStaggerPercentage = savedStagger
+    mock.stagger.percent, mock.stagger.againstTarget = 0, nil
+    ns.StatsShown().stagger = false
+    ns.RefreshAll()
+
+    -- SaneEffectiveArmor: an effective value below base + a positive buff is
+    -- a transient misread; base + buff stands in for it everywhere.
+    ns.StatsShown().armor = true
+    mock.armor.base, mock.armor.effective, mock.armor.posBuff = 3000, 0, 1200
+    ns.RefreshAll()
+    local armorRow = findRow("stats", "Armor")
+    check(armorRow and armorRow.value == "4200", "an implausible effective armor of 0 is replaced by base + buff",
+        armorRow and armorRow.value)
+    local armorTip = provider("armor")
+    check(lineValue(armorTip, "Effective") == "4200", "the tooltip's Effective line uses the same sane value",
+        tostring(lineValue(armorTip, "Effective")))
+    check(lineValue(armorTip, "From buffs") == "+1200", "the buff line still shows")
+
+    -- A plausible value is left alone.
+    mock.armor.effective = 4500
+    ns.RefreshAll()
+    armorRow = findRow("stats", "Armor")
+    check(armorRow and armorRow.value == "4500", "a plausible effective armor is not touched", armorRow and armorRow.value)
+    mock.armor.posBuff = 0
+    ns.StatsShown().armor = false
+    ns.RefreshAll()
+
+    -- Target-relative reduction: only with a hostile target selected.
+    mock.target.exists, mock.target.hostile, mock.target.level = true, true, 83
+    armorTip = provider("armor")
+    local expected = format("%.2f%%", 4500 / (4500 + mock.ArmorConstant(83)) * 100)
+    check(lineValue(armorTip, "Physical damage reduction") == expected,
+        "with a hostile target the reduction is computed against that target",
+        tostring(lineValue(armorTip, "Physical damage reduction")))
+    check(hasNote(armorTip, "Against your current target"), "the grey note names the target")
+    check(not hasNote(armorTip, "evenly matched"), "the evenly-matched note is not shown alongside it")
+
+    mock.target.hostile = false
+    armorTip = provider("armor")
+    check(hasNote(armorTip, "evenly matched") and lineValue(armorTip, "Physical damage reduction") == "38.15%",
+        "a friendly target falls back to the evenly matched figure",
+        tostring(lineValue(armorTip, "Physical damage reduction")))
+
+    -- A ?? boss reads as level -1; the target line still shows and the
+    -- unusable level must not trip the estimate's self-validation.
+    mock.target.hostile, mock.target.level = true, -1
+    local okBoss, bossTip = pcall(provider, "armor")
+    check(okBoss and hasNote(bossTip, "Against your current target"), "a level -1 (??) target still gets its line")
+    mock.target.exists, mock.target.hostile, mock.target.level = false, false, 80
+
+    -- Estimate fallback: the live call fails on a real armor value (a secret
+    -- mid-combat) while the constant probe still works.
+    local savedEffectiveness = C_PaperDollInfo.GetArmorEffectiveness
+    C_PaperDollInfo.GetArmorEffectiveness = function(armor, level)
+        if armor == 1000 then return savedEffectiveness(armor, level) end
+        error("attempt to compare a secret value")
+    end
+    armorTip = provider("armor")
+    check(lineValue(armorTip, "Physical damage reduction") == nil, "the live line is absent when the API fails")
+    check(lineValue(armorTip, "Physical damage reduction (estimated)") == "38.15%",
+        "the manual curve stands in and is marked as an estimate",
+        tostring(lineValue(armorTip, "Physical damage reduction (estimated)")))
+    check(hasNote(armorTip, "Live figure unavailable right now"), "the estimate is explained in grey")
+
+    -- Self-validation: one live figure more than a point away from the
+    -- formula switches the estimate off for the rest of the session.
+    C_PaperDollInfo.GetArmorEffectiveness = function(armor, level)
+        if armor == 1000 then return savedEffectiveness(armor, level) end
+        return 0.5
+    end
+    armorTip = provider("armor")
+    check(lineValue(armorTip, "Physical damage reduction") == "50.00%",
+        "a disagreeing live figure is still what gets shown", tostring(lineValue(armorTip, "Physical damage reduction")))
+
+    C_PaperDollInfo.GetArmorEffectiveness = function(armor, level)
+        if armor == 1000 then return savedEffectiveness(armor, level) end
+        error("attempt to compare a secret value")
+    end
+    armorTip = provider("armor")
+    check(lineValue(armorTip, "Physical damage reduction (estimated)") == nil,
+        "after a disagreement the estimate is no longer offered")
+    check(hasNote(armorTip, "Damage reduction unavailable right now"),
+        "with neither a live figure nor a trusted estimate the tooltip says so")
+    check(lineValue(armorTip, "Effective") ~= nil, "the rest of the armor tooltip survives")
+
+    -- No API at all reads the same way once the estimate is distrusted.
+    C_PaperDollInfo.GetArmorEffectiveness = savedEffectiveness
+    local savedPaperDoll = C_PaperDollInfo
+    C_PaperDollInfo = nil
+    armorTip = provider("armor")
+    check(hasNote(armorTip, "Damage reduction unavailable right now"), "the unavailable note is unconditional")
+    C_PaperDollInfo = savedPaperDoll
+
+    -- Mastery: the spec's mastery spell text replaces the generic sentence.
+    local masteryTip = provider("mastery")
+    check(masteryTip and masteryTip.description == "Increases all Frost damage done by 32.5%.",
+        "the mastery tooltip's description is the spec's mastery spell text", masteryTip and masteryTip.description)
+    check(lineValue(masteryTip, "Mastery points") == "24.50", "the mastery tooltip shows Mastery points",
+        tostring(lineValue(masteryTip, "Mastery points")))
+    check(lineValue(masteryTip, "Rating") ~= nil, "the rating lines are still there")
+
+    mock.spellDescriptions[77515] = "Your Frozen Orb deals 12% more damage."
+    mock.masterySpells = { 77514, 77515 }
+    masteryTip = provider("mastery")
+    check(masteryTip and masteryTip.description
+        == "Increases all Frost damage done by 32.5%.\n\nYour Frozen Orb deals 12% more damage.",
+        "two mastery spells are joined with a blank line", masteryTip and masteryTip.description)
+    mock.masterySpells = { 77514 }
+    mock.spellDescriptions[77515] = nil
+
+    -- Not loaded yet: fall back to the static text and ask for the data.
+    mock.spellDescriptions[77514] = nil
+    mock.requestedSpellData = {}
+    masteryTip = provider("mastery")
+    check(masteryTip and masteryTip.description == "Improves a bonus specific to your specialisation.",
+        "an empty spell description falls back to the static text", masteryTip and masteryTip.description)
+    check(mock.requestedSpellData[1] == 77514, "and the spell data load is requested for a later hover",
+        mock.requestedSpellData[1])
+    mock.spellDescriptions[77514] = "Increases all Frost damage done by 32.5%."
+
+    -- Other builders leave the static description alone.
+    local critTip = provider("crit")
+    check(critTip and critTip.description and critTip.description:find("critically", 1, true) ~= nil,
+        "builders without a description leave the static one in place")
+end
+
+--------------------------------------------------------------------------------
+section("Second Upkeep pass: per-field meter degradation (2026-09-05)")
+--------------------------------------------------------------------------------
+
+do
+    -- A secret amount arriving through the combat log: arithmetic on it
+    -- yields another secret, comparing or formatting it errors.
+    local function SecretAmount(value)
+        local secret
+        secret = setmetatable({}, {
+            __lt = function() error("attempt to compare a secret value") end,
+            __le = function() error("attempt to compare a secret value") end,
+            __add = function(a, b) return SecretAmount(value + (type(a) == "number" and a or b)) end,
+            __div = function(a, b) return SecretAmount(value / (type(a) == "number" and a or b)) end,
+        })
+        return secret
+    end
+
+    local PLAYER, ENEMY = "Player-1234-ABCDEF", "Creature-0-9999"
+    local Combat = ns:GetModule("Combat")
+    ns.db.combat.showDPS, ns.db.combat.showHPS = true, true
+    Combat:ResetSession()
+    mock.inCombat = true
+    mock.Fire("PLAYER_REGEN_DISABLED")
+    mock.FireCombatLog(mock.now, "SWING_DAMAGE", false, PLAYER, "Player", 0, 0, ENEMY, "Target", 0, 0,
+        SecretAmount(40000), 0, 1, 0, 0, 0, false)
+    mock.FireCombatLog(mock.now, "SPELL_HEAL", false, PLAYER, "Player", 0, 0, PLAYER, "Player", 0, 0,
+        2061, "Heal", 2, 50000, 30000, 0, false)
+    mock.Advance(10)
+
+    local okUpdate = pcall(function() Combat:Update() end)
+    check(okUpdate, "a secret damage total does not error out of Combat:Update")
+    local dpsRow, hpsRow = findRow("combat", "DPS"), findRow("combat", "HPS")
+    check(dpsRow and dpsRow.value == "-", "the secret DPS field degrades on its own through ns.FormatNumber",
+        dpsRow and dpsRow.value)
+    check(hpsRow and hpsRow.value == "2000", "while HPS in the same update still formats", hpsRow and hpsRow.value)
+
+    local report = Combat:GetReport()
+    check(type(report) == "string" and report:find("healing 20.0K", 1, true) ~= nil,
+        "GetReport keeps the readable fields", report)
+    check(report:find("damage %-", 1) ~= nil or report:find("damage -", 1, true) ~= nil,
+        "and shows only the secret field as unreadable", report)
+
+    -- SafeFormatNumber's own contract: should the formatter itself throw on
+    -- a value (the case it exists to contain), that one field reads "?" and
+    -- nothing else is lost.
+    local realFormatNumber = ns.FormatNumber
+    ns.FormatNumber = function(value)
+        if type(value) == "table" then error("formatter cannot render this value") end
+        return realFormatNumber(value)
+    end
+    okUpdate = pcall(function() Combat:Update() end)
+    check(okUpdate, "a throwing formatter does not error out of Combat:Update")
+    dpsRow, hpsRow = findRow("combat", "DPS"), findRow("combat", "HPS")
+    check(dpsRow and dpsRow.value == "?", "the field whose formatting threw shows '?'", dpsRow and dpsRow.value)
+    check(hpsRow and hpsRow.value == "2000", "the other row is unaffected", hpsRow and hpsRow.value)
+    report = Combat:GetReport()
+    check(report:find("last fight ? dps", 1, true) ~= nil and report:find("healing 20.0K", 1, true) ~= nil,
+        "GetReport degrades per field rather than to a sentence", report)
+    ns.FormatNumber = realFormatNumber
+
+    mock.inCombat = false
+    mock.Fire("PLAYER_REGEN_ENABLED")
+    Combat:ResetSession()
+end
+
+--------------------------------------------------------------------------------
+section("Second Upkeep pass: watched-row isolation and secret aura fields (2026-09-05)")
+--------------------------------------------------------------------------------
+
+do
+    local Procs = ns:GetModule("Procs")
+    mock.ClearAuras()
+    mock.cooldowns = {}
+    Procs:Watch(190319) -- Combustion
+    Procs:Watch(12472)  -- Icy Veins
+    check(findRow("procs", "Combustion") ~= nil and findRow("procs", "Icy Veins") ~= nil,
+        "both watched spells render while ready")
+
+    -- One row's build throwing must not take the other with it.
+    local savedTexture = C_Spell.GetSpellTexture
+    C_Spell.GetSpellTexture = function(spellID)
+        if spellID == 190319 then error("attempt to read a secret value") end
+        return savedTexture(spellID)
+    end
+    local ok = pcall(function() Procs:Update() end)
+    check(ok, "a failing watched-row build does not escape Procs:Update")
+    check(findRow("procs", "Combustion") == nil, "the row that failed to build is skipped")
+    check(findRow("procs", "Icy Veins") ~= nil, "the other watched row still renders")
+    C_Spell.GetSpellTexture = savedTexture
+    Procs:Update()
+    check(findRow("procs", "Combustion") ~= nil, "the skipped row returns once its data is readable again")
+
+    -- Secret stack count: the label drops the count but the row stays.
+    local secretCount = setmetatable({}, {
+        __lt = function() error("attempt to compare a secret value") end,
+        __le = function() error("attempt to compare a secret value") end,
+    })
+    mock.AddAura(190319, 10, secretCount)
+    Procs:Update()
+    local row = findRow("procs", "Combustion")
+    check(row ~= nil and row.label == "Combustion", "a secret application count leaves the label uncounted",
+        row and row.label)
+    check(row and row.value == "10.0s", "the remaining time is still shown", row and row.value)
+
+    -- Secret duration: "on" is the one thing still known for sure.
+    mock.ClearAuras()
+    -- Built by hand: mock.AddAura derives expirationTime from the duration,
+    -- and arithmetic on this stand-in is exactly what a test must not do.
+    table.insert(mock.auras, {
+        spellId = 190319, name = "Combustion", icon = 0,
+        duration = secretCount, expirationTime = secretCount,
+        applications = 1, sourceUnit = "player", isHelpful = true,
+    })
+    Procs:Update()
+    row = findRow("procs", "Combustion")
+    check(row and row.value == "on", "a secret duration reads as 'on'", row and row.value)
+
+    mock.ClearAuras()
+    Procs:Unwatch(190319)
+    Procs:Unwatch(12472)
+end
+
+--------------------------------------------------------------------------------
+section("Second Upkeep pass: formatter second attempts and stat-visibility migration (2026-09-05)")
+--------------------------------------------------------------------------------
+
+do
+    -- A numeric string is the plain-Lua stand-in for a secret number: format()
+    -- coerces it happily, but comparing it to a number throws - exactly the
+    -- split Midnight's secret values make. The first attempt (with its >=
+    -- comparisons) fails; the second, comparison-free format succeeds.
+    check(ns.FormatNumber("123456") == "123456", "FormatNumber's second attempt formats an uncomparable value",
+        ns.FormatNumber("123456"))
+    check(ns.FormatTime("90") == "90.0s", "FormatTime's second attempt formats an uncomparable value",
+        ns.FormatTime("90"))
+    check(ns.FormatPercent("12.5") == "12.50%", "FormatPercent formats an uncomparable value", ns.FormatPercent("12.5"))
+
+    -- A value that cannot be formatted at all keeps SpecSage's dash.
+    local opaque = setmetatable({}, { __lt = function() error("secret") end, __le = function() error("secret") end })
+    check(ns.FormatNumber(opaque) == "-", "FormatNumber keeps '-' when even the raw format fails", ns.FormatNumber(opaque))
+    check(ns.FormatPercent(opaque) == "-", "FormatPercent keeps '-' when even the raw format fails", ns.FormatPercent(opaque))
+    check(ns.FormatTime(opaque) == "-", "FormatTime keeps '-' when even the raw format fails", ns.FormatTime(opaque))
+
+    -- MigrateStatVisibility: runs once per character, copies only known keys,
+    -- never overwrites a later per-character choice, keeps the legacy table.
+    local liveCharDB = SpecSageCharDB
+    SpecSageDB.stats.show = { crit = false, armor = true, notAStat = true }
+    SpecSageCharDB = nil
+    ns.InitConfig()
+    check(ns.chardb.statsShow.crit == false and ns.chardb.statsShow.armor == true,
+        "a legacy account-wide layout is copied onto a fresh character")
+    check(ns.chardb.statsShow.notAStat == nil, "a legacy key the character table does not know is ignored")
+    check(ns.chardb.migratedStatVisibility == true, "the character records that it migrated")
+    check(SpecSageDB.stats.show ~= nil, "the shared copy is kept for characters that have not logged in yet")
+
+    ns.chardb.statsShow.crit = true
+    ns.InitConfig()
+    check(ns.chardb.statsShow.crit == true, "a later per-character toggle survives the next login (one-shot)")
+
+    SpecSageDB.stats.show = nil
+    SpecSageCharDB = liveCharDB
+    ns.InitConfig()
+    ns.RefreshAll()
 end
 
 --------------------------------------------------------------------------------

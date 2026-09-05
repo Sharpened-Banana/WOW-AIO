@@ -22,6 +22,9 @@ ns.STAT_LIST = {
     { key = "dodge",   label = "Dodge" },
     { key = "parry",   label = "Parry" },
     { key = "block",   label = "Block" },
+    -- Brewmaster-only in practice, but listed like every other stat: opt-in
+    -- per character, no class gating (see Modules/Stats.lua's reader).
+    { key = "stagger", label = "Stagger" },
 }
 
 --------------------------------------------------------------------------------
@@ -447,6 +450,7 @@ local CHAR_DEFAULTS = {
         dodge = false,
         parry = false,
         block = false,
+        stagger = false,
     },
 }
 
@@ -469,11 +473,41 @@ end
 ns.CopyDefaults = CopyDefaults
 ns.DEFAULTS = DEFAULTS
 
+-- Stat visibility used to live in the shared DB (the predecessor overlay's
+-- account-wide `stats.show`). Move an existing account-wide choice onto this
+-- character the first time it is seen, so upgrading from a saved-variable
+-- file that still carries one does not silently reset anyone's layout.
+--
+-- Only keys the character table already knows are copied: a stray or
+-- misspelled legacy key must not become a phantom row. The per-character
+-- `migratedStatVisibility` flag makes this a one-shot per character - a
+-- later toggle on this character is never overwritten by the legacy table
+-- on the next login.
+local function MigrateStatVisibility(db, chardb)
+    local legacy = db.stats and db.stats.show
+    if type(legacy) ~= "table" then return end
+
+    if not chardb.migratedStatVisibility then
+        for key, value in pairs(legacy) do
+            if chardb.statsShow[key] ~= nil then
+                chardb.statsShow[key] = value
+            end
+        end
+        chardb.migratedStatVisibility = true
+    end
+
+    -- The shared copy is deliberately left in place: another character on
+    -- the account may not have logged in yet to inherit it. Keeping it costs
+    -- a few bytes and makes the migration safe to repeat.
+end
+
 function ns.InitConfig()
     SpecSageDB = CopyDefaults(SpecSageDB or {}, DEFAULTS)
     SpecSageCharDB = CopyDefaults(SpecSageCharDB or {}, CHAR_DEFAULTS)
     ns.db = SpecSageDB
     ns.chardb = SpecSageCharDB
+
+    MigrateStatVisibility(ns.db, ns.chardb)
 end
 
 -- Single point of truth for which stats this character shows.

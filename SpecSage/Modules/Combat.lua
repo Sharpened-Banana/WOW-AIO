@@ -57,6 +57,18 @@ local function GetLocalPlayerAmount(sessionType, meterType, perSecond)
     return nil
 end
 
+-- The meter's amounts can be secret mid-combat, and ns.FormatNumber's own
+-- >= comparisons would throw on one. Wrapping just that call (rather than
+-- ns.FormatNumber itself) keeps the fix scoped to the one data source that
+-- can actually hand it a secret - and scoped per FIELD, so one unreadable
+-- number degrades to "?" instead of costing every row (or, in GetReport,
+-- the whole sentence).
+local function SafeFormatNumber(value)
+    local ok, formatted = pcall(ns.FormatNumber, value)
+    if ok then return formatted end
+    return "?"
+end
+
 -- Combat log payload layouts. The number is the index of `amount` in the
 -- variadic returned by CombatLogGetCurrentEventInfo().
 --
@@ -215,7 +227,7 @@ function Combat:Update()
     if db.combat.showDPS then
         rows[#rows + 1] = {
             label = "DPS",
-            value = ns.FormatNumber(dps),
+            value = SafeFormatNumber(dps),
             valueColor = ns.Colors.gold,
         }
     end
@@ -223,7 +235,7 @@ function Combat:Update()
     if db.combat.showHPS then
         rows[#rows + 1] = {
             label = "HPS",
-            value = ns.FormatNumber(hps),
+            value = SafeFormatNumber(hps),
             valueColor = ns.Colors.good,
         }
     end
@@ -231,7 +243,7 @@ function Combat:Update()
     if db.combat.showDamageTaken then
         rows[#rows + 1] = {
             label = "DTPS",
-            value = ns.FormatNumber(taken),
+            value = SafeFormatNumber(taken),
             valueColor = ns.Colors.bad,
         }
     end
@@ -247,24 +259,24 @@ function Combat:Update()
         if HAS_DAMAGE_METER then
             rows[#rows + 1] = {
                 label = "Session DPS",
-                value = ns.FormatNumber(GetLocalPlayerAmount(SESSION_TYPE.overall, METER_TYPE.dps, true) or 0),
+                value = SafeFormatNumber(GetLocalPlayerAmount(SESSION_TYPE.overall, METER_TYPE.dps, true) or 0),
                 alpha = 0.8,
             }
             rows[#rows + 1] = {
                 label = "Session Dmg",
-                value = ns.FormatNumber(GetLocalPlayerAmount(SESSION_TYPE.overall, METER_TYPE.damage) or 0),
+                value = SafeFormatNumber(GetLocalPlayerAmount(SESSION_TYPE.overall, METER_TYPE.damage) or 0),
                 alpha = 0.8,
             }
         else
             local sessionElapsed = ElapsedFor(session)
             rows[#rows + 1] = {
                 label = "Session DPS",
-                value = ns.FormatNumber(PerSecond(session.damage, sessionElapsed)),
+                value = SafeFormatNumber(PerSecond(session.damage, sessionElapsed)),
                 alpha = 0.8,
             }
             rows[#rows + 1] = {
                 label = "Session Dmg",
-                value = ns.FormatNumber(session.damage),
+                value = SafeFormatNumber(session.damage),
                 alpha = 0.8,
             }
         end
@@ -295,10 +307,12 @@ function Combat:ResetSession()
 end
 
 function Combat:GetReport()
-    -- Everything here can be secret mid-combat on 12.x, and printing a
-    -- secret string to chat is not display in Blizzard's sense the way
-    -- SetText is - so build the line under pcall and fall back to an honest
-    -- "not right now" rather than erroring out of the slash command.
+    -- Everything here can be secret mid-combat on 12.x. Each figure goes
+    -- through SafeFormatNumber on its own, so one unreadable field shows as
+    -- "?" while the rest of the sentence still carries real numbers; the
+    -- outer pcall stays as the last line of defence, because printing a
+    -- secret string to chat is not "display" in Blizzard's sense the way
+    -- SetText is, and the final format() itself can still refuse.
     local dps, _, _ = CurrentThroughput()
     local elapsed = ElapsedFor(current)
 
@@ -313,11 +327,11 @@ function Combat:GetReport()
 
     local ok, report = pcall(format,
         "last fight %s over %s - damage %s, healing %s, taken %s",
-        ns.FormatNumber(dps) .. " dps",
+        SafeFormatNumber(dps) .. " dps",
         ns.FormatTime(elapsed),
-        ns.FormatNumber(damage),
-        ns.FormatNumber(healing),
-        ns.FormatNumber(taken)
+        SafeFormatNumber(damage),
+        SafeFormatNumber(healing),
+        SafeFormatNumber(taken)
     )
     if ok then return report end
     return "combat numbers are protected while you are in combat - try again after the fight."
