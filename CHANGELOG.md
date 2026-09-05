@@ -22,3 +22,10 @@
 **Fixed**
 - "Save current" and "Add from string" no longer overflow their buttons.
 - One watched proc failing to build no longer hides the others.
+
+## 1.3.0
+
+- The Tome: leather-bound Codex with parchment pages, Playfair and Libre Baskerville type, class-coloured names on ink plates, chapter tabs sized to their words, and the hero-tree wax seal.
+- View button on every loadout row opens a build in the talent window without saving it. The addon never opens the window itself.
+- Hero talent tree read from your talents; the Stats tab shows that tree's priority.
+- Docked character sheet panel gained a resize grip; item rows hit only the item name.
