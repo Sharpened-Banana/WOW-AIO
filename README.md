@@ -57,7 +57,14 @@ class guides, talent loadouts, and live character tracking in one place:
   requests. WoW gives addons no network access, so no addon can open your
   browser or send a report itself; copying a link is the honest version.
 - **Stat Overlay** — a small movable overlay with your character stats, live
-  combat numbers (DPS / HPS / damage taken), and proc & cooldown tracking.
+  combat numbers (DPS / HPS / damage taken), proc & cooldown tracking, and a
+  **Buffs** section that only appears when something is missing: raid buffs
+  (Battle Shout, Arcane Intellect, Fortitude, Mark of the Wild, Skyfury)
+  while you are grouped, and — if you turn it on — your flask and food. A
+  **Theme** dropdown picks the overlay's look: Minimal (a hairline border),
+  Bordered (the tooltip frame), or Class-coloured (a border in your class
+  colour). Status colours are blue-green and orange rather than green and
+  red so they stay apart under the common forms of colour blindness.
 
 The pieces talk to each other: the Codex's stat-priority page shows *your
 live values* next to each stat in the priority, so the guide and your
@@ -139,7 +146,11 @@ it, then `/sage lock` to fix it in place (locking lets clicks pass through).
 
 Key bindings (Options → Keybindings → SpecSage): **Toggle the Codex**, **Toggle
 stat overlay**, and **Pin hovered tooltip**. The Codex's Options tab and the
-Settings panel both carry a **Show stat overlay** check as well.
+Settings panel both carry a **Show stat overlay** check as well, the **Theme**
+picker (a dropdown in the Settings panel; in the Codex a button that cycles
+Minimal → Bordered → Class-coloured), and a **Buffs** group: *Show buffs
+section*, *Missing raid buffs* (on by default, only while grouped) and
+*Missing flask & food* (off by default).
 | `/sage dps` | Print a summary of the last fight |
 | `/sage watch <spellID>` | Track a spell's proc and cooldown |
 | `/sage unwatch <spellID>` | Stop tracking a spell |

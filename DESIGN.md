@@ -1075,6 +1075,71 @@ commands folded into `/sage`, options panel gains Codex settings, and
 `Stats:GetStatValue(statKey) -> displayString` for the Codex's live stat
 integration.
 
+### Theme presets, the `select` option kind, and the Buffs section (2026-09-05)
+
+Brought across from the author's **Upkeep** addon — the later fork of this
+same overlay, which kept refining it while SpecSage grew the Codex around
+an older copy. Three pieces, ported with SpecSage's names (`ns`,
+`SpecSageOverlayFrame`, `/sage`):
+
+- **Theme system** (`Core/Theme.lua`, loaded right after `Core/Config.lua`).
+  `ns.Colors` is the one status palette — `good`/`bad`/`warn`/`gold`/
+  `neutral`, blue-green and orange rather than green and red so the two
+  states stay apart under deuteranopia and protanopia — and Combat, Procs
+  and Buffs read it instead of carrying their own RGB literals (they read
+  it at file load, which is why Theme sits ahead of the modules in the TOC).
+  `ns.THEMES` holds the overlay-chrome presets (`minimal` — 1px hairline;
+  `bordered` — the tooltip border on tooltip parchment; `classcolor` — a
+  hairline in the player's class colour, read at apply time so a relog on
+  another class recolours it), `ns.THEME_ORDER` their display order, and
+  `ns.GetTheme(key)` falls back to minimal for a stale key. The overlay's
+  `ApplyTheme(frame, db)` builds the backdrop from the preset on creation
+  and again in `UI:OnConfigChanged` (the opacity slider still sets the
+  background alpha), replacing the backdrop that used to be hard-coded at
+  frame creation. `db.theme` defaults to `"minimal"`.
+- **`select` option kind.** The schema in `Core/Config.lua` gains a fourth
+  kind alongside check/range/action: one value out of `choices`, an array
+  of `{ value, label }` **or a function returning one**, read only through
+  `ns.OptionChoices(entry)`. The function form exists because Config loads
+  *before* Theme, so the Theme option cannot list `ns.THEME_ORDER` while
+  `BuildOptionGroups` runs. `ns.OptionChoiceIndex(entry)` maps the stored
+  value to a 1-based index (unknown → 1, the same fallback `GetTheme`
+  makes). Both surfaces render it: the Settings panel as a dropdown via
+  `AddDropdown`, which is deliberately backed by a **Number** setting (an
+  index) because the only confirmed-working Blizzard example does that and
+  a String-typed dropdown is the kind of metadata mismatch that asserts
+  deep in `Blizzard_SettingControls.lua`; the Codex Options tab — which has
+  no dropdown widget — as a label plus one skinned button showing the
+  current choice's label that `Codex:CycleOption(entry)` advances (wrapping)
+  on click, the same gesture as the BiS list toggle. `Options:GetFailures()`
+  exposes the panel's recorded registration failures so the suite can prove
+  the dropdown registered rather than merely not erroring.
+- **Buffs section** (`Modules/Buffs.lua`, fourth in `SECTION_ORDER`). Shows
+  nothing while nothing is missing — an empty row set hides the section —
+  so it only speaks up when there is something to fix. Raid buffs (Battle
+  Shout, Arcane Intellect, Fortitude, Mark of the Wild, Skyfury; the five
+  Blizzard exempted from secret values) are checked by spell ID **only while
+  grouped**, since solo nobody can hand them out; flask and food are matched
+  by aura *name* (`^Flask of `, `^Well Fed$`) so a new season's consumables
+  need no ID update. Every read is tri-state: true/false when it succeeded,
+  nil when the client refused the aura call, and nil never renders as
+  "missing". Options: `db.buffs = { enabled, showRaidBuffs, showSelfBuffs }`
+  (flask/food off by default — outside instances most players have neither
+  and would be told so permanently), a "Buffs" group in `ns.OPTION_GROUPS`.
+- **Shared aura back-off.** Procs' module-local refusal handling
+  (`AURA_RETRY_INTERVAL`, `auraBlockedUntil`, the one-time notice) moved to
+  `Core/Init.lua` as `ns.AurasReadable()` / `ns.NoteAurasBlocked()` /
+  `ns.AurasBlocked()` so one refusal parks Procs and Buffs together and the
+  notice ("...so proc and buff tracking is paused here.") is said once.
+  `ns.KnownPast(value, threshold, wantGreater)` came along with it: a
+  comparison that reports false instead of throwing on a secret value.
+  `Procs:AurasBlocked()` remains as a wrapper for the slash commands.
+
+The mock grew `IsInGroup()` (`mock.inGroup`), `GROUP_ROSTER_UPDATE`,
+`Settings.CreateDropdown` / `CreateControlTextContainer` (the generator is
+run at once so an empty list fails in the suite), and records
+`SetBackdropBorderColor` alongside `SetBackdrop`.
+
 ## Live Mythic+ meta loadout (v1.4) — schema, UI, and pipeline all shipped
 
 A third suggested-loadout kind, `mplusMetaLoadout`, alongside `mplusLoadout`

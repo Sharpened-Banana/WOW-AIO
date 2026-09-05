@@ -9,8 +9,8 @@ local ADDON, ns = ...
 local UI = ns:NewModule("UI")
 ns.UI = UI
 
-local SECTION_ORDER = { "stats", "combat", "procs" }
-local SECTION_TITLES = { stats = "Stats", combat = "Combat", procs = "Procs" }
+local SECTION_ORDER = { "stats", "combat", "procs", "buffs" }
+local SECTION_TITLES = { stats = "Stats", combat = "Combat", procs = "Procs", buffs = "Buffs" }
 
 local PADDING = 8
 local SECTION_GAP = 6
@@ -24,19 +24,34 @@ local layoutDirty = false
 -- Frame construction
 --------------------------------------------------------------------------------
 
+-- Rebuilds the backdrop from the chosen theme (Core/Theme.lua) and applies
+-- its colours. Called on creation and on every config change, since either
+-- the Theme option or the opacity slider can be what changed - and the
+-- class-coloured theme reads the player's class at apply time, so it is
+-- also what keeps the border right after a class-changing relog.
+local function ApplyTheme(frame, db)
+    local theme = ns.GetTheme(db.theme)
+
+    frame:SetBackdrop({
+        bgFile = theme.bgTexture,
+        edgeFile = theme.edgeTexture,
+        edgeSize = theme.edgeSize,
+    })
+
+    local br, bg, bb = unpack(theme.bgColor)
+    frame:SetBackdropColor(br, bg, bb, db.opacity)
+
+    local er, eg, eb, ea = theme.GetEdgeColor()
+    frame:SetBackdropBorderColor(er, eg, eb, ea)
+end
+
 local function CreateOverlayFrame()
     local frame = CreateFrame("Frame", "SpecSageOverlayFrame", UIParent, "BackdropTemplate")
     frame:SetSize(190, 100)
     frame:SetMovable(true)
     frame:SetClampedToScreen(true)
     frame:RegisterForDrag("LeftButton")
-    frame:SetBackdrop({
-        bgFile = "Interface\\Buttons\\WHITE8X8",
-        edgeFile = "Interface\\Buttons\\WHITE8X8",
-        edgeSize = 1,
-    })
-    frame:SetBackdropColor(0, 0, 0, 0.75)
-    frame:SetBackdropBorderColor(0, 0, 0, 1)
+    ApplyTheme(frame, ns.db)
 
     frame:SetScript("OnDragStart", function(self)
         if ns.db.locked then return end
@@ -333,7 +348,7 @@ function UI:OnConfigChanged()
 
     local db = ns.db
     frame:SetScale(db.scale)
-    frame:SetBackdropColor(0, 0, 0, db.opacity)
+    ApplyTheme(frame, db)
     frame:EnableMouse(not db.locked)
     frame.title:SetShown(not db.locked)
 

@@ -1,6 +1,6 @@
 ## Interface: 120100
 ## Title: SpecSage
-## Notes: All-in-one class guides, talent loadouts, stat overlay, combat metrics, and proc tracking.
+## Notes: All-in-one class guides, talent loadouts, stat overlay, combat metrics, proc tracking, and missing-buff alerts.
 ## Author: lonezebra
 ## Version: 1.3.0
 ## SavedVariables: SpecSageDB
@@ -11,6 +11,7 @@
 
 Core\Init.lua
 Core\Config.lua
+Core\Theme.lua
 Data\API.lua
 Data\Guides_Warrior.lua
 Data\Guides_Paladin.lua
@@ -37,6 +38,7 @@ UI\CharacterPanel.lua
 Modules\Stats.lua
 Modules\Combat.lua
 Modules\Procs.lua
+Modules\Buffs.lua
 Modules\Loadouts.lua
 Modules\BiS.lua
 Modules\ItemRanks.lua

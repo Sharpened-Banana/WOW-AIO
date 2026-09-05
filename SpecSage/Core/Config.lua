@@ -38,6 +38,14 @@ ns.STAT_LIST = {
 --   range  - number with min/max/step (a slider in the Settings panel, -/+
 --            steppers in the Codex, which has no slider widget of its own)
 --   action - a button that runs a named side effect
+--   select - one value out of a fixed list of choices (a dropdown in the
+--            Settings panel; in the Codex, which has no dropdown widget, a
+--            button showing the current choice that cycles to the next on
+--            click). `choices` is either an array of { value, label } or a
+--            function returning one - read through ns.OptionChoices, never
+--            directly, because a list that depends on a file loading AFTER
+--            this one (the themes in Core/Theme.lua) cannot exist yet when
+--            BuildOptionGroups runs at load.
 --------------------------------------------------------------------------------
 
 -- Where an option's value lives. Resolved at call time, never at load time:
@@ -60,6 +68,7 @@ ns.OPTION_SCOPES = {
     stats = function() return ns.db.stats end,
     combat = function() return ns.db.combat end,
     procs = function() return ns.db.procs end,
+    buffs = function() return ns.db.buffs end,
     statsShow = function() return ns.StatsShown() end,
     characterPanel = function() return ns.db.characterPanel end,
     minimap = function() return ns.db.minimap end,
@@ -103,6 +112,29 @@ function ns.SetOptionValue(entry, value)
     return true
 end
 
+-- The resolved choice list of a "select" entry: an array of { value, label }.
+-- Always an array, never nil, so both surfaces can iterate without a guard.
+function ns.OptionChoices(entry)
+    local choices = entry.choices
+    if type(choices) == "function" then
+        local ok, result = pcall(choices)
+        choices = ok and result or nil
+    end
+    return type(choices) == "table" and choices or {}
+end
+
+-- Index of the entry's current value within its choices, or 1 when the
+-- stored value matches nothing (a theme removed between versions, say) -
+-- the same fallback ns.GetTheme applies, so the two surfaces and the
+-- overlay agree on what is "selected".
+function ns.OptionChoiceIndex(entry)
+    local current = ns.GetOptionValue(entry)
+    for index, choice in ipairs(ns.OptionChoices(entry)) do
+        if choice.value == current then return index end
+    end
+    return 1
+end
+
 -- Snaps `value` onto the entry's step grid and clamps it to range. Stepping
 -- by a fractional step (opacity's 0.05) accumulates float error otherwise,
 -- so the value is rebuilt from a whole number of steps above min rather than
@@ -144,11 +176,26 @@ local function BuildOptionGroups()
           tooltip = "Only show the overlay while you are in combat." },
         { kind = "check", scope = "db", key = "showHeaders",
           variable = "SpecSage_headers", label = "Show section headers",
-          tooltip = "Show the Stats / Combat / Procs labels." },
+          tooltip = "Show the Stats / Combat / Procs / Buffs labels." },
         { kind = "check", scope = "db", key = "tooltips",
           variable = "SpecSage_tooltips", label = "Show tooltips on hover",
           tooltip = "Explain each stat and show the rating behind it when you hover a row. "
               .. "Clicks still pass through to whatever is underneath." },
+        -- Choices are resolved lazily: Core/Theme.lua loads after this file
+        -- (it has to sit ahead of the modules that read ns.Colors, and the
+        -- TOC keeps Config first), so ns.THEME_ORDER is nil while this
+        -- table is being built.
+        { kind = "select", scope = "db", key = "theme",
+          variable = "SpecSage_theme", label = "Theme",
+          tooltip = "How the overlay's border and background look.",
+          choices = function()
+              local choices = {}
+              for index, key in ipairs(ns.THEME_ORDER or {}) do
+                  local theme = ns.THEMES and ns.THEMES[key]
+                  choices[index] = { value = key, label = theme and theme.label or key }
+              end
+              return choices
+          end },
         { kind = "range", scope = "db", key = "scale",
           variable = "SpecSage_scale", label = "Scale", tooltip = "Overall size of the overlay.",
           min = 0.5, max = 2.0, step = 0.05, formatter = Two },
@@ -239,12 +286,26 @@ local function BuildOptionGroups()
           min = 5, max = 120, step = 5, formatter = Seconds },
     }
 
+    local buffs = {
+        { kind = "check", scope = "buffs", key = "enabled",
+          variable = "SpecSage_buffs", label = "Show buffs section",
+          tooltip = "Flag buffs that are missing from you. The section stays hidden while nothing is missing." },
+        { kind = "check", scope = "buffs", key = "showRaidBuffs",
+          variable = "SpecSage_buffs_raid", label = "Missing raid buffs",
+          tooltip = "While in a group, flag raid buffs (Battle Shout, Arcane Intellect, and the like) "
+              .. "that are not on you." },
+        { kind = "check", scope = "buffs", key = "showSelfBuffs",
+          variable = "SpecSage_buffs_self", label = "Missing flask & food",
+          tooltip = "Flag when you have no flask or Well Fed buff active." },
+    }
+
     return {
         { title = "Display", options = display },
         { title = "Codex", options = codex },
         { title = "Stats (this character)", options = stats },
         { title = "Combat", options = combat },
         { title = "Procs", options = procs },
+        { title = "Buffs", options = buffs },
     }
 end
 
@@ -263,6 +324,11 @@ local DEFAULTS = {
     showHeaders = true,
     hideOutOfCombat = false,
     tooltips = true,
+
+    -- Which Core/Theme.lua preset draws the overlay's backdrop and border
+    -- (minimal / bordered / classcolor). A key that no longer exists falls
+    -- back to minimal in ns.GetTheme rather than breaking the frame.
+    theme = "minimal",
 
     -- Modules/ItemRanks.lua: rank an item tooltip's secondary stats against
     -- the player's current spec's Codex stat priority.
@@ -332,6 +398,16 @@ local DEFAULTS = {
         maxAuto = 5,
         maxDuration = 60,
         showInactiveWatched = true,
+    },
+
+    -- Modules/Buffs.lua: the missing-buff section. Raid buffs on by default
+    -- because they only ever nag while grouped; flask/food off because
+    -- outside instanced content most players have neither and would be
+    -- told so permanently.
+    buffs = {
+        enabled = true,
+        showRaidBuffs = true,
+        showSelfBuffs = false,
     },
 
     -- Saved talent loadouts, keyed by specID: { {name=, category=, export=}, ... }.

@@ -83,6 +83,70 @@ function ns.SafeCall(fn)
     return nil
 end
 
+-- True only when value is known to be past threshold in the given
+-- direction (wantGreater true for >, false for <). A secret value cannot be
+-- compared at all, so this reports false rather than letting the comparison
+-- throw: an optional line quietly not appearing is fine, the whole tooltip
+-- or row disappearing is not.
+function ns.KnownPast(value, threshold, wantGreater)
+    return ns.SafeCall(function()
+        local number = value or 0
+        if wantGreater then return number > threshold end
+        return number < threshold
+    end) == true
+end
+
+--------------------------------------------------------------------------------
+-- Aura availability
+--
+-- In Midnight's restricted content the aura APIs do not merely return secret
+-- values, they refuse addon access outright: AuraUtil.ForEachAura throws
+-- "Auras cannot be accessed when secret while tainted by 'SpecSage'" from
+-- inside GetAuraSlots, before our callback ever runs, and
+-- C_UnitAuras.GetPlayerAuraBySpellID throws the same way. Guarding the
+-- values a callback receives is therefore not enough - the call itself has
+-- to be wrapped.
+--
+-- It also has to stop being retried. Procs updates on a 0.1s ticker and on
+-- every UNIT_AURA, so a call that is guaranteed to fail for the duration of
+-- an encounter fails thousands of times (25k+ in one session before this
+-- guard existed). Once a refusal is seen, aura reads are parked for a few
+-- seconds before being tried again - long enough to cost nothing, short
+-- enough that leaving restricted content restores tracking promptly.
+--
+-- Shared across every module that reads auras (Modules/Procs.lua,
+-- Modules/Buffs.lua) so one refusal backs all of them off together rather
+-- than each discovering, and re-announcing, the same restriction on its own.
+-- A module still wraps its own call in pcall and calls ns.NoteAurasBlocked
+-- on failure; this just holds the shared cooldown and the one-time notice.
+--------------------------------------------------------------------------------
+
+local AURA_RETRY_INTERVAL = 5
+local auraBlockedUntil = 0
+local auraNoticeShown = false
+
+function ns.AurasReadable()
+    return GetTime() >= auraBlockedUntil
+end
+
+function ns.NoteAurasBlocked()
+    auraBlockedUntil = GetTime() + AURA_RETRY_INTERVAL
+
+    -- Said once per session, not once per refusal: the player should know
+    -- why the Procs and Buffs sections emptied out, but this is a game
+    -- restriction, not an addon fault, and it must never become its own spam.
+    if not auraNoticeShown then
+        auraNoticeShown = true
+        ns.Print("this content hides aura information from addons, so proc and buff tracking is paused here.")
+    end
+end
+
+-- True when aura access is currently being refused. Lets callers (the slash
+-- commands) explain an empty result rather than implying there are no buffs.
+function ns.AurasBlocked()
+    return not ns.AurasReadable()
+end
+
 --------------------------------------------------------------------------------
 -- Number / text helpers
 --

@@ -68,45 +68,20 @@ end
 --------------------------------------------------------------------------------
 -- Aura availability
 --
--- In Midnight's restricted content the aura APIs do not merely return secret
--- values, they refuse addon access outright: AuraUtil.ForEachAura throws
--- "Auras cannot be accessed when secret while tainted by 'SpecSage'" from
--- inside GetAuraSlots, before our callback ever runs. Guarding the values a
--- callback receives is therefore not enough - the call itself has to be
--- wrapped.
---
--- It also has to stop being retried. This module updates on a 0.1s ticker
--- and on every UNIT_AURA, so a call that is guaranteed to fail for the
--- duration of an encounter fails thousands of times (25k+ in one session
--- before this guard existed). Once a refusal is seen, aura reads are parked
--- for a few seconds before being tried again - long enough to cost nothing,
--- short enough that leaving restricted content restores procs promptly.
+-- The refusal back-off (why the aura calls are pcall-wrapped and then parked
+-- for a few seconds) lives in Core/Init.lua as ns.AurasReadable /
+-- ns.NoteAurasBlocked, shared with Modules/Buffs.lua so one refusal backs
+-- both modules off together and the notice is said once, not once per
+-- module. This module keeps a method-shaped wrapper for the slash commands.
 --------------------------------------------------------------------------------
 
-local AURA_RETRY_INTERVAL = 5
-local auraBlockedUntil = 0
-local auraNoticeShown = false
-
-local function AurasReadable()
-    return GetTime() >= auraBlockedUntil
-end
-
-local function NoteAurasBlocked()
-    auraBlockedUntil = GetTime() + AURA_RETRY_INTERVAL
-
-    -- Said once per session, not once per refusal: the player should know
-    -- why the Procs section emptied out, but this is a game restriction, not
-    -- an addon fault, and it must never become its own spam.
-    if not auraNoticeShown then
-        auraNoticeShown = true
-        ns.Print("this content hides aura information from addons, so proc tracking is paused here.")
-    end
-end
+local AurasReadable = ns.AurasReadable
+local NoteAurasBlocked = ns.NoteAurasBlocked
 
 -- True when aura access is currently being refused. Lets callers (the slash
 -- commands) explain an empty result rather than implying there are no buffs.
 function Procs:AurasBlocked()
-    return not AurasReadable()
+    return ns.AurasBlocked()
 end
 
 local function GetPlayerAura(spellID)
@@ -179,9 +154,11 @@ end
 -- Rows
 --------------------------------------------------------------------------------
 
-local COLOR_ACTIVE = { 0.4, 1, 0.4 }
-local COLOR_COOLDOWN = { 1, 0.5, 0.5 }
-local COLOR_READY = { 0.6, 0.6, 0.6 }
+-- From the shared, colour-blind-safe palette in Core/Theme.lua (which the
+-- TOC loads before this file - these are read once, here, at load).
+local COLOR_ACTIVE = ns.Colors.good
+local COLOR_COOLDOWN = ns.Colors.warn
+local COLOR_READY = ns.Colors.neutral
 
 -- Proc rows show the game's own spell tooltip on hover.
 local function TooltipProvider(spellID)

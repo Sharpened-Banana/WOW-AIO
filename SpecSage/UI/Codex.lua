@@ -2378,9 +2378,39 @@ local function AcquireOptionActionRow(pool, index, parent)
     return row
 end
 
+-- A "select" option, in a window with no dropdown widget: the label on the
+-- left and one skinned button on the right showing the current choice's
+-- label. Clicking cycles to the next choice, the same gesture as the BiS
+-- tab's list toggle, so the player already knows what the button does.
+local function AcquireOptionSelectRow(pool, index, parent)
+    local row = pool[index]
+    if not row then
+        row = CreateFrame("Frame", nil, parent)
+        row:EnableMouse(true)
+        row:SetScript("OnEnter", OnOptionRowEnter)
+        row:SetScript("OnLeave", OnOptionRowLeave)
+
+        row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        row.label:SetFontObject(SpecSageBodyFontSmall)
+        row.label:SetJustifyH("LEFT")
+        row.label:SetPoint("LEFT", row, "LEFT", 0, 0)
+
+        -- Right-anchored like the range row's steppers so the control lines
+        -- up with them down the page. SkinButton widens it to fit whichever
+        -- choice label is showing, so the size here is only a floor.
+        row.button = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+        row.button:SetSize(OPTION_VALUE_WIDTH + OPTION_STEP_BUTTON_WIDTH * 2 + 8, 18)
+        row.button:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+        SkinButton(row.button)
+
+        pool[index] = row
+    end
+    return row
+end
+
 function Codex:EnsureOptionWidgets()
     if self.optionPools then return end
-    self.optionPools = { check = {}, range = {}, action = {} }
+    self.optionPools = { check = {}, range = {}, action = {}, select = {} }
 end
 
 -- Applies a changed option and refreshes both the overlay (so the change is
@@ -2402,6 +2432,18 @@ function Codex:StepOption(entry, direction)
     self:OnOptionChanged()
 end
 
+-- Advances a select option to the choice after the current one, wrapping
+-- from the last back to the first. A stored value matching no choice reads
+-- as the first (ns.OptionChoiceIndex), so a stale saved theme cycles onto
+-- the second choice rather than sticking.
+function Codex:CycleOption(entry)
+    local choices = ns.OptionChoices(entry)
+    if #choices == 0 then return end
+    local nextIndex = ns.OptionChoiceIndex(entry) % #choices + 1
+    ns.SetOptionValue(entry, choices[nextIndex].value)
+    self:OnOptionChanged()
+end
+
 function Codex:RenderOptions()
     self:EnsureOptionWidgets()
 
@@ -2410,7 +2452,7 @@ function Codex:RenderOptions()
     local pools = self.optionPools
     local y = -PADDING
     local textIndex = 0
-    local used = { check = 0, range = 0, action = 0 }
+    local used = { check = 0, range = 0, action = 0, select = 0 }
 
     for groupIndex, group in ipairs(ns.OPTION_GROUPS) do
         if groupIndex > 1 then y = y - GROUP_GAP end
@@ -2458,6 +2500,27 @@ function Codex:RenderOptions()
                 row:Show()
                 y = y - OPTION_ROW_HEIGHT
 
+            elseif entry.kind == "select" then
+                used.select = used.select + 1
+                local row = AcquireOptionSelectRow(pools.select, used.select, parent)
+                row:ClearAllPoints()
+                row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
+                row:SetSize(width, OPTION_ROW_HEIGHT)
+                row.label:SetText(entry.label or "")
+                row.label:SetTextColor(TEXT_SECONDARY_COLOR[1], TEXT_SECONDARY_COLOR[2], TEXT_SECONDARY_COLOR[3])
+
+                local choices = ns.OptionChoices(entry)
+                local choice = choices[ns.OptionChoiceIndex(entry)]
+                row.button:SetText(choice and choice.label or "-")
+                -- One choice (or none) leaves nothing to cycle to; the
+                -- button stays as a read-out rather than a dead control.
+                row.button:SetEnabled(#choices > 1)
+                row.button:SetScript("OnClick", function() self:CycleOption(entry) end)
+
+                SetOptionTooltip(row, entry)
+                row:Show()
+                y = y - OPTION_ROW_HEIGHT
+
             elseif entry.kind == "action" then
                 local action = ns.OPTION_ACTIONS[entry.action]
                 if action then
@@ -2482,6 +2545,7 @@ function Codex:RenderOptions()
     HidePoolFrom(pools.check, used.check + 1)
     HidePoolFrom(pools.range, used.range + 1)
     HidePoolFrom(pools.action, used.action + 1)
+    HidePoolFrom(pools.select, used.select + 1)
 
     self:FinishPool(pool, textIndex, y)
 end
@@ -2533,6 +2597,7 @@ function Codex:HideOtherTabWidgets(activeTab)
         HidePoolFrom(self.optionPools.check, 1)
         HidePoolFrom(self.optionPools.range, 1)
         HidePoolFrom(self.optionPools.action, 1)
+        HidePoolFrom(self.optionPools.select, 1)
     end
 
     if activeTab ~= "Notes" then

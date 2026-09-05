@@ -138,6 +138,43 @@ local function AddSlider(category, variable, name, tooltip, minValue, maxValue, 
     if not created then RecordFailure(variable .. " (slider)", err) end
 end
 
+-- optionsList is an array of { value, label }. Dropdown-backed settings are
+-- always NUMERIC (an index into that list), never string. The one
+-- confirmed-working example in Blizzard's own settings-menu documentation
+-- backs a dropdown with a plain number (RegisterAddOnSetting's default is 1,
+-- typed via type(1) == "number"); VarType.String is not something that
+-- example - or any other found - actually uses for a dropdown, and
+-- mismatched setting metadata is exactly what surfaces later as an
+-- assertion failure deep inside Blizzard_SettingControls.lua when the
+-- control gets built. get/set here therefore speak in indices; the caller
+-- translates to and from its real value.
+--
+-- The option list is handed over as a generator function rather than a
+-- fixed table because that is the real CreateDropdown contract: it calls
+-- the function each time the control is built, so a list that changes at
+-- runtime is always current.
+local function AddDropdown(category, variable, name, tooltip, optionsList, get, set)
+    local current = tonumber(get()) or 1
+
+    local setting = RegisterProxy(category, variable, VarType("Number"), name, current, get, function(value)
+        set(value)
+        ns.RefreshAll()
+    end)
+    if not setting then return end
+
+    local function GetOptions()
+        local ok, container = pcall(Settings.CreateControlTextContainer)
+        if not ok or not container then return nil end
+        for _, entry in ipairs(optionsList) do
+            container:Add(entry.value, entry.label)
+        end
+        return container:GetData()
+    end
+
+    local ok, err = pcall(Settings.CreateDropdown, category, setting, GetOptions, tooltip)
+    if not ok then RecordFailure(variable .. " (dropdown)", err) end
+end
+
 local function AddHeader(layout, text)
     if not CreateSettingsListSectionHeaderInitializer then return end
     pcall(layout.AddInitializer, layout, CreateSettingsListSectionHeaderInitializer(text))
@@ -190,6 +227,22 @@ local function BuildPanel()
                     function() return ns.GetOptionValue(entry) end,
                     function(value) ns.SetOptionValue(entry, value) end)
 
+            elseif entry.kind == "select" then
+                -- The dropdown speaks in list indices (see AddDropdown);
+                -- the schema's choices carry the real stored values, so the
+                -- translation happens here, once, for every select.
+                local choices = ns.OptionChoices(entry)
+                local optionsList = {}
+                for index, choice in ipairs(choices) do
+                    optionsList[index] = { value = index, label = choice.label }
+                end
+                AddDropdown(category, entry.variable, entry.label, entry.tooltip, optionsList,
+                    function() return ns.OptionChoiceIndex(entry) end,
+                    function(index)
+                        local choice = choices[index] or choices[1]
+                        if choice then ns.SetOptionValue(entry, choice.value) end
+                    end)
+
             elseif entry.kind == "action" then
                 local action = ns.OPTION_ACTIONS[entry.action]
                 if action then
@@ -203,6 +256,13 @@ local function BuildPanel()
 
     Settings.RegisterAddOnCategory(category)
     return category
+end
+
+-- What went wrong while the panel was last built, oldest first; empty when
+-- every widget registered. Exposed so the test suite (and a curious
+-- /dump) can tell a fully built panel from one that half-registered.
+function Options:GetFailures()
+    return failures
 end
 
 function Options:OnEnable()

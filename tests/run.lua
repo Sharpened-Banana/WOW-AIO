@@ -34,6 +34,7 @@ end
 local FILES = {
     "Core\\Init.lua",
     "Core\\Config.lua",
+    "Core\\Theme.lua",
     "Data\\API.lua",
     "Data\\Guides_Warrior.lua",
     "Data\\Guides_Paladin.lua",
@@ -60,6 +61,7 @@ local FILES = {
     "Modules\\Stats.lua",
     "Modules\\Combat.lua",
     "Modules\\Procs.lua",
+    "Modules\\Buffs.lua",
     "Modules\\Loadouts.lua",
     "Modules\\BiS.lua",
     "Modules\\ItemRanks.lua",
@@ -4230,6 +4232,243 @@ do
     run("feedback")
     check(Codex.copyBox:GetText() == ns.FeedbackURL(), "/sage feedback shows the same dialog")
     Codex.copyDialog:Hide()
+end
+
+--------------------------------------------------------------------------------
+section("Theme system (Core/Theme.lua, brought across from Upkeep, 2026-09-05)")
+--------------------------------------------------------------------------------
+
+do
+    check(type(ns.Colors) == "table", "ns.Colors palette exists")
+    for _, key in ipairs({ "good", "bad", "warn", "gold", "neutral" }) do
+        local colour = ns.Colors[key]
+        check(type(colour) == "table" and #colour == 3, "ns.Colors." .. key .. " is an RGB triple")
+    end
+
+    check(type(ns.THEMES) == "table", "ns.THEMES presets exist")
+    for _, key in ipairs({ "minimal", "bordered", "classcolor" }) do
+        local theme = ns.THEMES[key]
+        check(theme ~= nil and type(theme.label) == "string" and type(theme.GetEdgeColor) == "function",
+            "the " .. key .. " preset carries a label and an edge colour")
+    end
+    check(#ns.THEME_ORDER == 3, "THEME_ORDER lists every preset", #ns.THEME_ORDER)
+    for _, key in ipairs(ns.THEME_ORDER) do
+        check(ns.THEMES[key] ~= nil, "THEME_ORDER entry '" .. key .. "' names a real preset")
+    end
+    check(ns.GetTheme("no-such-theme") == ns.THEMES.minimal, "an unknown theme key falls back to minimal")
+    check(ns.DEFAULTS.theme == "minimal", "the default theme is minimal", ns.DEFAULTS.theme)
+
+    -- The modules take their row colours from the palette rather than their
+    -- own literals, so a palette fix reaches every section.
+    mock.inCombat = false
+    ns:GetModule("Combat"):Update()
+    local dpsRow = findRow("combat", "DPS")
+    check(dpsRow ~= nil and dpsRow.valueColor == ns.Colors.gold, "the Combat DPS row uses ns.Colors.gold")
+end
+
+do
+    -- The theme option is a "select" whose choices are the presets, in order.
+    local entry
+    for _, group in ipairs(ns.OPTION_GROUPS) do
+        for _, candidate in ipairs(group.options) do
+            if candidate.key == "theme" then entry = candidate end
+        end
+    end
+    check(entry ~= nil and entry.kind == "select", "the Theme option is a select in ns.OPTION_GROUPS",
+        entry and entry.kind)
+
+    local choices = ns.OptionChoices(entry)
+    check(#choices == #ns.THEME_ORDER, "the select offers one choice per theme", #choices)
+    local ordered = true
+    for index, key in ipairs(ns.THEME_ORDER) do
+        local choice = choices[index]
+        if not choice or choice.value ~= key or choice.label ~= ns.THEMES[key].label then ordered = false end
+    end
+    check(ordered, "the choices match THEME_ORDER, value and label alike")
+
+    -- Codex Options tab: a select renders as a label plus a cycling button.
+    ns.db.theme = "minimal"
+    Codex:SelectTab("Options")
+    check(Codex.optionPools.select ~= nil and CountShownOptionRows(Codex.optionPools.select) == 1,
+        "the Options tab renders one select row", Codex.optionPools.select and CountShownOptionRows(Codex.optionPools.select))
+    local selectRow = Codex.optionPools.select[1]
+    check(selectRow and selectRow.button:GetText() == "Minimal",
+        "the select button shows the current choice's label", selectRow and selectRow.button:GetText())
+
+    Codex:CycleOption(entry)
+    check(ns.db.theme == "bordered", "cycling advances db.theme to the next preset", ns.db.theme)
+    check(selectRow.button:GetText() == "Bordered", "the button re-renders with the new label", selectRow.button:GetText())
+    Codex:CycleOption(entry)
+    check(ns.db.theme == "classcolor", "cycling again reaches the third preset", ns.db.theme)
+    Codex:CycleOption(entry)
+    check(ns.db.theme == "minimal", "cycling wraps back to the first preset", ns.db.theme)
+
+    -- A stale saved value reads as the first choice and cycles onward.
+    ns.db.theme = "retired-theme"
+    check(ns.OptionChoiceIndex(entry) == 1, "an unknown stored value reads as the first choice")
+    Codex:CycleOption(entry)
+    check(ns.db.theme == "bordered", "cycling from an unknown value lands on the second choice", ns.db.theme)
+    ns.db.theme = "minimal"
+    Codex:OnOptionChanged()
+
+    -- Settings panel: the same entry registers as a dropdown without a
+    -- recorded failure, and the dropdown speaks in indices.
+    local options = ns:GetModule("Options")
+    mock.settingsRegistered = {}
+    local ok = pcall(function() options:OnEnable() end)
+    check(ok, "rebuilding the Settings panel with a select option does not error")
+    local registered = false
+    for _, variable in ipairs(mock.settingsRegistered) do
+        if variable == "SpecSage_theme" then registered = true end
+    end
+    check(registered, "the Settings panel registers SpecSage_theme")
+    check(#options:GetFailures() == 0, "no option failed to register", options:GetFailures()[1])
+    local buffsRegistered = false
+    for _, variable in ipairs(mock.settingsRegistered) do
+        if variable == "SpecSage_buffs_raid" then buffsRegistered = true end
+    end
+    check(buffsRegistered, "the Settings panel registers the Buffs options")
+end
+
+do
+    -- ApplyTheme rebuilds the overlay's backdrop whenever db.theme changes.
+    local frame = ns.UI.frame
+    ns.db.theme = "minimal"
+    ns.UI:OnConfigChanged()
+    check(frame.backdrop and frame.backdrop.edgeSize == 1, "minimal draws a 1px edge", frame.backdrop and frame.backdrop.edgeSize)
+
+    ns.db.theme = "bordered"
+    ns.UI:OnConfigChanged()
+    check(frame.backdrop.edgeFile == ns.THEMES.bordered.edgeTexture and frame.backdrop.edgeSize == 16,
+        "switching to bordered swaps the backdrop's edge texture and size",
+        tostring(frame.backdrop.edgeFile) .. " / " .. tostring(frame.backdrop.edgeSize))
+    check(frame.backdrop.bgFile == ns.THEMES.bordered.bgTexture, "and its background texture")
+    check(frame.backdropColor[4] == ns.db.opacity, "the opacity slider still governs the background alpha",
+        frame.backdropColor[4])
+    check(frame.backdropBorderColor[1] == 0.79, "bordered paints its gold border", frame.backdropBorderColor[1])
+
+    -- Class-coloured reads the player's class at apply time (mock: Death Knight).
+    ns.db.theme = "classcolor"
+    ns.UI:OnConfigChanged()
+    local border = frame.backdropBorderColor
+    check(math.abs(border[1] - 0.77) < 1e-9 and math.abs(border[3] - 0.23) < 1e-9,
+        "class-coloured borders the overlay in the player's class colour",
+        table.concat({ tostring(border[1]), tostring(border[2]), tostring(border[3]) }, ", "))
+
+    ns.db.theme = "minimal"
+    ns.UI:OnConfigChanged()
+    check(frame.backdrop.edgeSize == 1, "switching back restores the minimal edge")
+end
+
+--------------------------------------------------------------------------------
+section("Buffs module (Modules/Buffs.lua, brought across from Upkeep, 2026-09-05)")
+--------------------------------------------------------------------------------
+
+do
+    local BuffsModule = ns:GetModule("Buffs")
+    check(BuffsModule ~= nil, "Buffs module registered")
+    check(ns.db.buffs and ns.db.buffs.enabled == true and ns.db.buffs.showRaidBuffs == true
+        and ns.db.buffs.showSelfBuffs == false, "buffs defaults: enabled, raid buffs on, flask/food off")
+
+    -- Solo with nothing missing: no rows at all, so the section hides.
+    mock.ClearAuras()
+    mock.inGroup = false
+    ns.db.buffs.enabled, ns.db.buffs.showRaidBuffs, ns.db.buffs.showSelfBuffs = true, true, false
+    BuffsModule:Update()
+    check(#(rendered.buffs or {}) == 0, "solo, the buffs section has no rows and stays hidden", #(rendered.buffs or {}))
+
+    -- Grouped with no raid buffs: every raid buff is flagged.
+    mock.inGroup = true
+    BuffsModule:Update()
+    local shout = findRow("buffs", "Battle Shout")
+    check(shout ~= nil and shout.value == "missing", "a missing raid buff shows a 'missing' row while grouped",
+        shout and shout.value)
+    check(shout ~= nil and shout.valueColor == ns.Colors.bad, "the missing row is coloured ns.Colors.bad")
+    check(#rendered.buffs == 5, "all five raid buffs are flagged when none is present", #rendered.buffs)
+
+    -- The buff appearing clears its row.
+    mock.AddAura(6673, 3600)
+    mock.Fire("UNIT_AURA", "player")
+    check(findRow("buffs", "Battle Shout") == nil, "UNIT_AURA re-checks and drops the row once the buff is on")
+    check(findRow("buffs", "Arcane Intellect") ~= nil, "the others stay flagged")
+
+    -- Aura reads refused by the client: tri-state "can't tell", never "missing".
+    local savedByID = C_UnitAuras.GetPlayerAuraBySpellID
+    C_UnitAuras.GetPlayerAuraBySpellID = function()
+        error("Auras cannot be accessed when secret while tainted by 'SpecSage'")
+    end
+    local escaped = false
+    if not pcall(function() BuffsModule:Update() end) then escaped = true end
+    check(not escaped, "a refusing aura API never lets an error escape Buffs:Update")
+    check(#rendered.buffs == 0, "a blocked read reports nothing missing rather than everything", #rendered.buffs)
+    check(ns.AurasBlocked(), "the shared back-off notes the refusal")
+    C_UnitAuras.GetPlayerAuraBySpellID = savedByID
+
+    -- Still parked during the back-off window even though the API works again.
+    BuffsModule:Update()
+    check(#rendered.buffs == 0, "reads stay parked during the shared back-off window", #rendered.buffs)
+    mock.Advance(6)
+    BuffsModule:Update()
+    check(not ns.AurasBlocked() and findRow("buffs", "Arcane Intellect") ~= nil,
+        "buff tracking resumes once the back-off expires")
+
+    -- Procs shares the same back-off, so it reports blocked in step.
+    check(ns:GetModule("Procs"):AurasBlocked() == ns.AurasBlocked(), "Procs:AurasBlocked mirrors the shared state")
+
+    -- Flask & food: matched by name, so any "Flask of ..." counts.
+    ns.db.buffs.showSelfBuffs = true
+    mock.inGroup = false
+    mock.ClearAuras()
+    BuffsModule:Update()
+    check(findRow("buffs", "Flask") ~= nil and findRow("buffs", "Well Fed") ~= nil,
+        "with flask/food on, both are flagged when absent")
+    mock.spells[999101] = { name = "Well Fed", icon = 0 }
+    mock.spells[999102] = { name = "Flask of Tempered Aggression", icon = 0 }
+    mock.AddAura(999101, 3600)
+    BuffsModule:Update()
+    check(findRow("buffs", "Well Fed") == nil and findRow("buffs", "Flask") ~= nil,
+        "eating clears Well Fed but the flask is still flagged")
+    mock.AddAura(999102, 3600)
+    BuffsModule:Update()
+    check(#rendered.buffs == 0, "a 'Flask of ...' buff of any name clears the flask row", #rendered.buffs)
+    mock.spells[999101], mock.spells[999102] = nil, nil
+    mock.ClearAuras()
+
+    -- Options: each toggle silences its part; the section toggle hides all.
+    mock.inGroup = true
+    ns.db.buffs.showSelfBuffs = false
+    ns.db.buffs.showRaidBuffs = false
+    ns.RefreshAll()
+    check(#rendered.buffs == 0, "turning off raid buffs stops the raid rows", #rendered.buffs)
+    ns.db.buffs.showRaidBuffs = true
+    ns.RefreshAll()
+    check(#rendered.buffs == 5, "turning them back on restores the rows", #rendered.buffs)
+    ns.db.buffs.enabled = false
+    ns.RefreshAll()
+    check(#rendered.buffs == 0, "disabling the section clears it", #rendered.buffs)
+
+    -- Both option surfaces carry the Buffs group.
+    local buffsGroup
+    for _, group in ipairs(ns.OPTION_GROUPS) do
+        if group.title == "Buffs" then buffsGroup = group end
+    end
+    check(buffsGroup ~= nil and #buffsGroup.options == 3, "a Buffs group with three checks is in ns.OPTION_GROUPS",
+        buffsGroup and #buffsGroup.options)
+    local enabledEntry = buffsGroup and buffsGroup.options[1]
+    Codex:SelectTab("Options")
+    Codex:ToggleOption(enabledEntry)
+    check(ns.db.buffs.enabled == true, "the Codex Options tab toggles the buffs section back on")
+    check(#rendered.buffs == 5, "and the section re-renders through OnOptionChanged", #rendered.buffs)
+
+    -- The overlay lays the fourth section out under its own header. The
+    -- header FontStrings are internal to Overlay.lua, so the row count
+    -- above is the observable contract; the layout just must not error.
+    ns.db.showHeaders = true
+    check(pcall(function() ns.UI:Relayout() end), "the overlay lays out a fourth section without error")
+
+    mock.inGroup = false
+    ns.db.buffs.enabled, ns.db.buffs.showRaidBuffs, ns.db.buffs.showSelfBuffs = true, true, false
+    BuffsModule:Update()
 end
 
 --------------------------------------------------------------------------------

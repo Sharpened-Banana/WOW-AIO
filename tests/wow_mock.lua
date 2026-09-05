@@ -235,7 +235,7 @@ function CreateFrame(frameType, name, parent, template)
     function frame:GetScale() return self.scale or 1 end
     function frame:SetBackdrop(value) self.backdrop = value end
     function frame:SetBackdropColor(r, g, b, a) self.backdropColor = { r, g, b, a } end
-    function frame:SetBackdropBorderColor() end
+    function frame:SetBackdropBorderColor(r, g, b, a) self.backdropBorderColor = { r, g, b, a } end
     function frame:SetFrameStrata() end
     function frame:SetFrameLevel() end
 
@@ -469,6 +469,8 @@ for _, event in ipairs({
     -- fetch resolves, so Codex:OnBiSItemInfoReceived can re-render a
     -- checklist row that was still showing "Item 12345" when it was added.
     "GET_ITEM_INFO_RECEIVED",
+    -- Modules/Buffs.lua: re-check raid buffs when the group changes shape.
+    "GROUP_ROSTER_UPDATE",
 }) do
     mock.KNOWN_EVENTS[event] = true
 end
@@ -566,6 +568,11 @@ mock.stats = { [1] = 1000, [2] = 8500, [3] = 12000, [4] = 900 }
 mock.auras = {}
 
 function InCombatLockdown() return mock.inCombat end
+
+-- Modules/Buffs.lua only asks about raid buffs while grouped; tests flip
+-- this to see the section appear and disappear.
+mock.inGroup = false
+function IsInGroup() return mock.inGroup end
 function UnitGUID(unit) return unit == "player" and "Player-1234-ABCDEF" or "Pet-0-1234" end
 function UnitStat(_, index) return mock.stats[index] - 200, mock.stats[index], 200, 0 end
 function UnitHealthMax() return 4250000 end
@@ -1234,6 +1241,25 @@ Settings = {
     end,
 
     CreateCheckbox = function(_, setting) return setting end,
+    -- Dropdowns: the real API hands CreateDropdown a generator that builds
+    -- its list through a text container; the mock runs the generator at
+    -- once so a list that errors (or comes back empty) fails here, not only
+    -- in the live client.
+    CreateControlTextContainer = function()
+        local container = { data = {} }
+        function container:Add(value, label)
+            self.data[#self.data + 1] = { value = value, label = label }
+        end
+        function container:GetData() return self.data end
+        return container
+    end,
+    CreateDropdown = function(_, setting, getOptions)
+        assert(type(getOptions) == "function", "CreateDropdown needs an options generator")
+        local data = getOptions()
+        assert(type(data) == "table" and #data > 0, "dropdown " .. tostring(setting.variable) .. " has no options")
+        setting.options = data
+        return setting
+    end,
     CreateSlider = function(_, setting) return setting end,
     CreateSliderOptions = function(minValue, maxValue, step)
         local options = { min = minValue, max = maxValue, step = step }
